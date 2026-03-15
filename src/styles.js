@@ -602,7 +602,7 @@ const STYLES = `
   /* ═══════════════════════════════
      TARIFS
   ═══════════════════════════════ */
-  .tarifs { background: var(--bg); }
+  .tarifs { background: var(--bg); padding-top: 3rem; }
   .tarifs-head { text-align: center; margin-bottom: 4rem; }
   .tarifs-head .s-title-ar { text-align: center; }
   .tarifs-head .s-body     { margin: 0.8rem auto 0; text-align: center; }
