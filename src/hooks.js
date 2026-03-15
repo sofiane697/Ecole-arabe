@@ -30,18 +30,22 @@ export function useActiveSection() {
   const [active, setActive] = useState('accueil');
 
   useEffect(() => {
-    const obs = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(e.target.id);
-        }),
-      { rootMargin: '-72px 0px -60% 0px', threshold: 0 }
-    );
-    NAV.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) obs.observe(el);
-    });
-    return () => obs.disconnect();
+    const update = () => {
+      const threshold = window.innerHeight * 0.45;
+      let current = NAV[0].id;
+      for (const { id } of NAV) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= threshold) {
+          current = id;
+        }
+      }
+      setActive(current);
+    };
+
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+    return () => window.removeEventListener('scroll', update);
   }, []);
 
   return active;

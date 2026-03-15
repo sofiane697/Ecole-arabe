@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import STYLES from './styles';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
@@ -30,6 +30,105 @@ function GeoPattern() {
       </defs>
       <rect width="400" height="400" fill="url(#geo)" />
     </svg>
+  );
+}
+
+/* ══════════════════════════════════════════════════════
+   CARROUSEL MOBILE (section tarifs)
+══════════════════════════════════════════════════════ */
+function CarouselCards({ onInscribe }) {
+  const total = COURSES.length + 1; // +1 pour la carte Coran
+  const [idx, setIdx]   = useState(0);
+  const touchX          = useRef(null);
+
+  const prev = () => setIdx(i => Math.max(0, i - 1));
+  const next = () => setIdx(i => Math.min(total - 1, i + 1));
+
+  const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
+  const onTouchEnd   = (e) => {
+    if (touchX.current === null) return;
+    const diff = touchX.current - e.changedTouches[0].clientX;
+    if (diff > 40)  next();
+    if (diff < -40) prev();
+    touchX.current = null;
+  };
+
+  return (
+    <div className="carousel">
+      <div
+        className="carousel-track"
+        style={{ transform: `translateX(-${idx * 100}%)` }}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {COURSES.map((c, i) => (
+          <div key={i} className="carousel-slide">
+            <div className={`card ${c.featured ? 'feat' : ''}`}>
+              {c.featured && <div className="card-badge">Recommandé</div>}
+              <p className="card-lvl">{c.level}</p>
+              <div className="card-ar">{c.ar}</div>
+              <div className="card-fr">{c.fr}</div>
+              <div className="card-price">
+                <span className="card-amount">{c.price}</span>
+                <span className="card-unit">€ / mois</span>
+              </div>
+              <div className="card-freq">{c.freq}</div>
+              <div className="card-sep" />
+              <ul className="card-feats">
+                {c.features.map((f, j) => (
+                  <li key={j}><span className="card-dot" />{f}</li>
+                ))}
+              </ul>
+              <button className="card-cta" onClick={() => onInscribe(c.fr)}>
+                S'inscrire
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Carte Coran */}
+        <div className="carousel-slide">
+          <div className="card">
+            <p className="card-lvl">Spécialisation</p>
+            <div className="card-ar">تحفيظ القرآن الكريم</div>
+            <div className="card-fr">Lecture & Mémorisation Coranique</div>
+            <p style={{ fontSize: '0.83rem', color: 'var(--mid)', lineHeight: 1.75, marginTop: '0.5rem' }}>
+              Apprentissage du Tajwid, mémorisation des sourates et lecture du
+              Coran avec beauté et exactitude. Pour enfants et adultes.
+            </p>
+            <div className="card-sep" />
+            <ul className="card-feats">
+              {CORAN_FEATURES.map((f, i) => (
+                <li key={i}><span className="card-dot" />{f}</li>
+              ))}
+            </ul>
+            <div className="card-price" style={{ marginTop: '1rem' }}>
+              <span className="card-amount">60</span>
+              <span className="card-unit">€ / mois</span>
+            </div>
+            <div className="card-freq">2 séances / semaine · 1h</div>
+            <button className="card-cta" onClick={() => onInscribe('Lecture & Mémorisation Coranique')}>
+              S'inscrire
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Flèches */}
+      <button className="carousel-arrow prev" onClick={prev} disabled={idx === 0}>‹</button>
+      <button className="carousel-arrow next" onClick={next} disabled={idx === total - 1}>›</button>
+
+      {/* Dots */}
+      <div className="carousel-dots">
+        {Array.from({ length: total }).map((_, i) => (
+          <button
+            key={i}
+            className={`carousel-dot ${i === idx ? 'active' : ''}`}
+            onClick={() => setIdx(i)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -217,8 +316,8 @@ export default function App() {
           ))}
         </ul>
 
-        {/* Bouton S'inscrire + Toggle thème */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Nav droite : CTA + toggle thème + hamburger */}
+        <div className="nav-right">
           <button className="nav-cta" onClick={() => goTo('contact')}>
             S'inscrire
           </button>
@@ -229,16 +328,14 @@ export default function App() {
           >
             {darkMode ? '☀' : '☾'}
           </button>
+          <button
+            className={`hamburger ${menuOpen ? 'is-open' : ''}`}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Ouvrir le menu"
+          >
+            <span /><span /><span />
+          </button>
         </div>
-
-        {/* Hamburger mobile */}
-        <button
-          className={`hamburger ${menuOpen ? 'is-open' : ''}`}
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label="Ouvrir le menu"
-        >
-          <span /><span /><span />
-        </button>
 
       </nav>
 
@@ -375,6 +472,9 @@ export default function App() {
             Accessibles dès 5 ans.
           </p>
         </div>
+
+        {/* Carrousel mobile */}
+        <CarouselCards onInscribe={setModalCours} />
 
         <div className="wrap grid-cards">
 
