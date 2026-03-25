@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ADMIN_STYLES from './adminStyles';
-import { ADMIN_CREDENTIALS } from './mockData';
+import { loginAdmin } from './supabaseAdmin';
 
 export default function AdminLogin() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
 
   // Injecter les styles admin
@@ -24,13 +25,17 @@ export default function AdminLogin() {
     return () => { document.body.style.background = ''; };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
-      sessionStorage.setItem('admin_auth', 'true');
+    setLoading(true);
+    setError('');
+    try {
+      await loginAdmin(email, password);
       navigate('/admin');
-    } else {
+    } catch (err) {
       setError('Email ou mot de passe incorrect.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,8 +73,8 @@ export default function AdminLogin() {
             />
           </div>
           <p className="admin-login-error">{error}</p>
-          <button className="admin-login-btn" type="submit">
-            Se connecter
+          <button className="admin-login-btn" type="submit" disabled={loading}>
+            {loading ? 'Connexion…' : 'Se connecter'}
           </button>
         </form>
       </div>

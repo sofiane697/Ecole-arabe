@@ -19,11 +19,12 @@ Ecole-arabe/
     ├── index.js      # Point d'entrée React + React Router (routes publiques et admin)
     └── admin/
         ├── AdminApp.jsx      # Layout admin — sidebar, topbar, Outlet (route protégée)
-        ├── AdminLogin.jsx    # Page de connexion admin (auth fictive via sessionStorage)
-        ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés
-        ├── Inscriptions.jsx  # Liste des pré-inscriptions — filtres, changement de statut
-        ├── Messages.jsx      # Liste des messages — panneau de lecture, marquer lu/non lu
-        ├── mockData.js       # Données fictives (inscriptions, messages, identifiants)
+        ├── AdminLogin.jsx    # Page de connexion admin (Supabase Auth)
+        ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés (Supabase)
+        ├── Inscriptions.jsx  # Liste des pré-inscriptions — filtres, changement de statut (Supabase)
+        ├── Messages.jsx      # Liste des messages — panneau de lecture, marquer lu/non lu (Supabase)
+        ├── supabaseAdmin.js  # Fonctions API Supabase (fetch, update, login, logout)
+        ├── mockData.js       # Données fictives (conservées comme backup)
         └── adminStyles.js    # CSS complet de l'interface admin (thème sombre)
 ```
 
@@ -48,16 +49,21 @@ Ecole-arabe/
 | `/admin/inscriptions` | Inscriptions | Tableau filtrable — statut : Nouveau → Contacté → Inscrit |
 | `/admin/messages` | Messages | Tableau + panneau de lecture — marquer lu/non lu, répondre par email |
 
-### Identifiants fictifs (à remplacer par Supabase Auth)
+### Identifiants admin (Supabase Auth)
 
 - **Email :** `admin@alnour.fr`
-- **Mot de passe :** `admin123`
+- **Mot de passe :** `Admin123!`
+- **Accès :** `http://localhost:3000/admin/login` (à mettre en favori, aucun lien visible sur le site public)
 
 ### Authentification
 
-Actuellement basée sur `sessionStorage` (clé `admin_auth`).
-`AdminApp.jsx` redirige vers `/admin/login` si non authentifié.
-À terme : remplacer par Supabase Auth avec Row Level Security.
+Basée sur **Supabase Auth** (email + mot de passe).
+- `AdminLogin.jsx` appelle `loginAdmin()` → Supabase Auth → token JWT stocké en `sessionStorage`
+- `AdminApp.jsx` redirige vers `/admin/login` si non authentifié (clé `admin_auth` en sessionStorage)
+- `supabaseAdmin.js` utilise le token JWT pour les requêtes authentifiées (lecture/modification)
+- Les tables sont protégées par **Row Level Security** (RLS) :
+  - `anon` → INSERT uniquement (formulaires publics)
+  - `authenticated` → SELECT + UPDATE (admin connecté)
 
 ### Variables CSS admin
 
@@ -95,17 +101,61 @@ Définies dans `styles.js` :
 | `--fg-light` | `#9c8c7c`   | `#6b5d4f`   |
 | `--gold`     | `#b8862e`   | *(inchangé)*|
 
-## Point non fonctionnel — Supabase
+## Supabase — Configuration
 
-Dans `App.jsx` lignes 264-265, les clés sont en placeholder :
+### Projet Supabase
 
-```js
-const SUPABASE_URL  = 'https://VOTRE_URL.supabase.co';
-const SUPABASE_ANON = 'VOTRE_ANON_KEY';
+- **URL :** `https://nsdnzqdbpdncrksgxtar.supabase.co`
+- **ID projet :** `nsdnzqdbpdncrksgxtar`
+- **Région :** UE occidentale (Irlande) — eu-ouest-1
+- **Plan :** Gratuit (Nano)
+
+### Tables
+
+| Table | Usage | Accès anon | Accès authenticated |
+|-------|-------|------------|---------------------|
+| `inscriptions` | Pré-inscriptions (modal S'inscrire) | INSERT | SELECT, UPDATE |
+| `messages` | Formulaire contact | INSERT | SELECT, UPDATE |
+
+### Schéma `inscriptions`
+
+| Colonne | Type | Défaut |
+|---------|------|--------|
+| `id` | BIGINT (auto) | Identity |
+| `created_at` | TIMESTAMPTZ | NOW() |
+| `nom` | TEXT | NOT NULL |
+| `prenom` | TEXT | NOT NULL |
+| `age` | INT | — |
+| `annees_pratique` | INT | 0 |
+| `cours` | TEXT | — |
+| `statut` | TEXT | 'nouveau' |
+
+### Schéma `messages`
+
+| Colonne | Type | Défaut |
+|---------|------|--------|
+| `id` | BIGINT (auto) | Identity |
+| `created_at` | TIMESTAMPTZ | NOW() |
+| `nom` | TEXT | NOT NULL |
+| `prenom` | TEXT | NOT NULL |
+| `email` | TEXT | NOT NULL |
+| `cours` | TEXT | — |
+| `message` | TEXT | — |
+| `lu` | BOOLEAN | FALSE |
+
+### Flux de données
+
 ```
+Site public (visiteur)
+  ├── Formulaire contact  → POST /rest/v1/messages     (clé anon)
+  └── Modal pré-inscription → POST /rest/v1/inscriptions (clé anon)
 
-À remplacer avec les vraies clés depuis **supabase.com → Settings → API**.
-**Ne pas commiter les vraies clés dans git.**
+Admin (/admin)
+  ├── Login → POST /auth/v1/token → JWT
+  ├── Dashboard → GET inscriptions + messages (JWT)
+  ├── Inscriptions → GET + PATCH statut (JWT)
+  └── Messages → GET + PATCH lu (JWT)
+```
 
 ## Cours proposés (data.js)
 
@@ -126,9 +176,11 @@ npm run build # build de production
 
 ## Prochaines étapes
 
-1. **Connecter Supabase** — créer les tables `inscriptions` et `messages`, brancher les formulaires publics
-2. **Supabase Auth** — remplacer l'auth fictive par une vraie authentification admin
-3. **Row Level Security** — protéger les tables pour que seul l'admin puisse lire les données
+1. ~~**Connecter Supabase**~~ ✅ Tables créées, formulaires branchés
+2. ~~**Supabase Auth**~~ ✅ Login admin via Supabase Auth + JWT
+3. ~~**Row Level Security**~~ ✅ RLS activé (anon=INSERT, authenticated=SELECT+UPDATE)
+4. **Déploiement** — héberger le site (Vercel, Netlify…) avec les variables d'environnement
+5. **Améliorations** — notifications email, export CSV inscriptions, stats par période
 
 ## Historique des modifications
 
@@ -149,3 +201,11 @@ npm run build # build de production
   - Gestion des messages avec panneau de lecture et réponse par email
   - Design dark theme cohérent avec le site, sidebar navigation
   - Routing via `react-router-dom` v6
+
+- **Intégration Supabase** :
+  - Clés API branchées dans `App.jsx` (site public) et `supabaseAdmin.js` (admin)
+  - Formulaire contact → table `messages` (avant : allait dans `inscriptions`)
+  - Modal pré-inscription → table `inscriptions` (avant : pas connectée)
+  - Admin connecté à Supabase : lecture temps réel des inscriptions et messages
+  - Authentification admin via Supabase Auth (email + mot de passe → JWT)
+  - Row Level Security configuré sur les deux tables

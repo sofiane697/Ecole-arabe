@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from './adminStyles';
 import { MOCK_MESSAGES, MOCK_INSCRIPTIONS } from './mockData';
+import { logoutAdmin } from './supabaseAdmin';
 
 const IconDashboard = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -62,7 +63,7 @@ export default function AdminApp() {
   }, [navigate]);
 
   const handleLogout = () => {
-    sessionStorage.removeItem('admin_auth');
+    logoutAdmin();
     navigate('/admin/login');
   };
 

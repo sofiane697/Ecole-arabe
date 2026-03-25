@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MOCK_INSCRIPTIONS } from './mockData';
+import React, { useState, useEffect } from 'react';
+import { fetchInscriptions, updateInscriptionStatut } from './supabaseAdmin';
 
 const STATUTS = ['tous', 'nouveau', 'contacté', 'inscrit'];
 const COURS   = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
@@ -12,9 +12,17 @@ const STATUT_CFG  = {
 };
 
 export default function Inscriptions() {
-  const [data,       setData]       = useState(MOCK_INSCRIPTIONS);
-  const [filtreStat, setFiltreStat] = useState('tous');
-  const [filtreCours,setFiltreCours]= useState('tous');
+  const [data,        setData]        = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [filtreStat,  setFiltreStat]  = useState('tous');
+  const [filtreCours, setFiltreCours] = useState('tous');
+
+  useEffect(() => {
+    fetchInscriptions()
+      .then(setData)
+      .catch(err => console.error('Erreur:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = data.filter(i => {
     const okStat  = filtreStat  === 'tous' || i.statut === filtreStat;
@@ -22,11 +30,26 @@ export default function Inscriptions() {
     return okStat && okCours;
   });
 
-  const avancerStatut = (id) => {
-    setData(prev => prev.map(i =>
-      i.id === id ? { ...i, statut: STATUT_NEXT[i.statut] } : i
-    ));
+  const avancerStatut = async (id, currentStatut) => {
+    const next = STATUT_NEXT[currentStatut];
+    // Mise à jour optimiste
+    setData(prev => prev.map(i => i.id === id ? { ...i, statut: next } : i));
+    try {
+      await updateInscriptionStatut(id, next);
+    } catch (err) {
+      console.error('Erreur mise à jour:', err);
+      // Revenir en arrière en cas d'erreur
+      setData(prev => prev.map(i => i.id === id ? { ...i, statut: currentStatut } : i));
+    }
   };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign:'center', padding:'4rem', color:'var(--a-fg-light)' }}>
+        Chargement des inscriptions…
+      </div>
+    );
+  }
 
   return (
     <>
@@ -79,8 +102,9 @@ export default function Inscriptions() {
                 </td>
               </tr>
             ) : filtered.map(i => {
-              const s    = STATUT_CFG[i.statut];
-              const next = STATUT_NEXT[i.statut];
+              const s    = STATUT_CFG[i.statut] || { label: i.statut, cls: '' };
+              const next = STATUT_NEXT[i.statut] || 'nouveau';
+              const date = new Date(i.created_at).toLocaleDateString('fr-FR');
               return (
                 <tr key={i.id}>
                   <td className="muted">{i.id}</td>
@@ -90,19 +114,19 @@ export default function Inscriptions() {
                   <td className="muted">{i.age} ans</td>
                   <td>{i.cours}</td>
                   <td className="muted">
-                    {i.annees === 0 ? 'Débutant' : `${i.annees} an${i.annees > 1 ? 's' : ''}`}
+                    {i.annees_pratique === 0 ? 'Débutant' : `${i.annees_pratique} an${i.annees_pratique > 1 ? 's' : ''}`}
                   </td>
-                  <td className="muted">{i.date}</td>
+                  <td className="muted">{date}</td>
                   <td>
                     <span className={`badge ${s.cls}`}>● {s.label}</span>
                   </td>
                   <td>
                     <button
                       className="admin-status-btn"
-                      onClick={() => avancerStatut(i.id)}
-                      title={`Passer à : ${STATUT_CFG[next].label}`}
+                      onClick={() => avancerStatut(i.id, i.statut)}
+                      title={`Passer à : ${(STATUT_CFG[next] || {}).label || next}`}
                     >
-                      → {STATUT_CFG[next].label}
+                      → {(STATUT_CFG[next] || {}).label || next}
                     </button>
                   </td>
                 </tr>

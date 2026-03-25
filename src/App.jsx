@@ -135,16 +135,42 @@ function CarouselCards({ onInscribe }) {
 /* ══════════════════════════════════════════════════════
    MODAL PRÉ-INSCRIPTION
 ══════════════════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://nsdnzqdbpdncrksgxtar.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL';
+
 function PreInscriptionModal({ cours, onClose }) {
   const [data, setData]     = useState({ nom: '', prenom: '', age: '', annees: '' });
-  const [status, setStatus] = useState(null); // null | 'ok'
+  const [status, setStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
 
   const handleChange = (e) =>
     setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus('ok');
+    setStatus('loading');
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/inscriptions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'apikey':         SUPABASE_ANON,
+          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'Prefer':        'return=minimal',
+        },
+        body: JSON.stringify({
+          nom:             data.nom,
+          prenom:          data.prenom,
+          age:             parseInt(data.age),
+          annees_pratique: parseInt(data.annees),
+          cours:           cours,
+        }),
+      });
+      if (!res.ok) throw new Error(res.status);
+      setStatus('ok');
+    } catch (err) {
+      console.error(err);
+      setStatus('err');
+    }
   };
 
   return (
@@ -257,15 +283,8 @@ export default function App() {
     e.preventDefault();
     setFormStatus('loading');
 
-    /* ══════════════════════════════════════════
-       🔧 SUPABASE — remplacez vos clés ici
-       Trouvez-les sur : supabase.com → Settings → API
-    ══════════════════════════════════════════ */
-    const SUPABASE_URL  = 'https://VOTRE_URL.supabase.co';
-    const SUPABASE_ANON = 'VOTRE_ANON_KEY';
-
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/inscriptions`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
