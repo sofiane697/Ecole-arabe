@@ -3,7 +3,7 @@
 ## Présentation du projet
 
 Site vitrine one-page pour une école d'arabe fictive **"Al-Nour" (مدرسة النور)**.
-Stack : **React 18** (Create React App), CSS-in-JS, aucune librairie UI externe.
+Stack : **React 18** (Create React App), **React Router v6**, CSS-in-JS, aucune librairie UI externe.
 
 ## Structure des fichiers
 
@@ -12,21 +12,65 @@ Ecole-arabe/
 ├── public/
 │   └── index.html
 └── src/
-    ├── App.jsx       # Composant principal — tout le rendu HTML
+    ├── App.jsx       # Composant principal — tout le rendu HTML (site public)
     ├── data.js       # Données statiques (nav, cours, valeurs, contact)
     ├── hooks.js      # 3 hooks custom React
     ├── styles.js     # CSS complet injecté dynamiquement dans <head>
-    └── index.js      # Point d'entrée React
+    ├── index.js      # Point d'entrée React + React Router (routes publiques et admin)
+    └── admin/
+        ├── AdminApp.jsx      # Layout admin — sidebar, topbar, Outlet (route protégée)
+        ├── AdminLogin.jsx    # Page de connexion admin (auth fictive via sessionStorage)
+        ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés
+        ├── Inscriptions.jsx  # Liste des pré-inscriptions — filtres, changement de statut
+        ├── Messages.jsx      # Liste des messages — panneau de lecture, marquer lu/non lu
+        ├── mockData.js       # Données fictives (inscriptions, messages, identifiants)
+        └── adminStyles.js    # CSS complet de l'interface admin (thème sombre)
 ```
 
-## Sections de la page (dans l'ordre)
+## Sections du site public (dans l'ordre)
 
 1. **Nav** — logo, liens desktop, toggle dark/light, hamburger mobile
 2. **Hero** (`#accueil`) — titre arabe + description + CTA + motif SVG islamique
 3. **Présentation** (`#presentation`) — texte + compteurs animés + valeurs
 4. **Tarifs** (`#tarifs`) — 3 cartes de niveaux + 1 carte Coran + carrousel mobile
-5. **Contact** (`#contact`) — infos + formulaire connecté à Supabase
-6. **Footer**
+5. **Témoignages** — section avis d'élèves (crédibilité / confiance)
+6. **Contact** (`#contact`) — infos + formulaire connecté à Supabase
+7. **Footer**
+
+## Interface Administrateur
+
+### Routes
+
+| URL | Page | Description |
+|-----|------|-------------|
+| `/admin/login` | AdminLogin | Connexion email + mot de passe |
+| `/admin` | Dashboard | Vue d'ensemble — stats + dernières inscriptions/messages |
+| `/admin/inscriptions` | Inscriptions | Tableau filtrable — statut : Nouveau → Contacté → Inscrit |
+| `/admin/messages` | Messages | Tableau + panneau de lecture — marquer lu/non lu, répondre par email |
+
+### Identifiants fictifs (à remplacer par Supabase Auth)
+
+- **Email :** `admin@alnour.fr`
+- **Mot de passe :** `admin123`
+
+### Authentification
+
+Actuellement basée sur `sessionStorage` (clé `admin_auth`).
+`AdminApp.jsx` redirige vers `/admin/login` si non authentifié.
+À terme : remplacer par Supabase Auth avec Row Level Security.
+
+### Variables CSS admin
+
+Définies dans `adminStyles.js`, préfixées `--a-` pour éviter les conflits :
+
+| Variable | Valeur | Usage |
+|----------|--------|-------|
+| `--a-bg` | `#0f0d0a` | Fond principal |
+| `--a-bg-card` | `#1a1610` | Fond des cartes |
+| `--a-gold` | `#b8862e` | Accent principal |
+| `--a-green` | `#4caf7d` | Statut inscrit / lu |
+| `--a-blue` | `#5b9bd5` | Statut contacté |
+| `--a-red` | `#e05c5c` | Badges non lu / alertes |
 
 ## Fonctionnalités clés
 
@@ -37,6 +81,7 @@ Ecole-arabe/
 - **Carrousel mobile** — swipe tactile sur les cartes de tarifs (`CarouselCards`)
 - **Modal pré-inscription** — formulaire nom/prénom/âge déclenché par bouton "S'inscrire"
 - **Formulaire contact** — POST vers Supabase REST API
+- **Interface admin** — dashboard, gestion inscriptions et messages (React Router `/admin/*`)
 
 ## Variables CSS (thème)
 
@@ -79,6 +124,12 @@ npm start     # lancer en développement → http://localhost:3000
 npm run build # build de production
 ```
 
+## Prochaines étapes
+
+1. **Connecter Supabase** — créer les tables `inscriptions` et `messages`, brancher les formulaires publics
+2. **Supabase Auth** — remplacer l'auth fictive par une vraie authentification admin
+3. **Row Level Security** — protéger les tables pour que seul l'admin puisse lire les données
+
 ## Historique des modifications
 
 - **Dark mode nav** : ajout de `html.dark .nav-btn { color: var(--fg-mid); }` dans `styles.js`
@@ -88,3 +139,13 @@ npm run build # build de production
   par des icônes SVG inline dans `App.jsx` (pin, téléphone, enveloppe, horloge, fauteuil roulant).
   Le champ `icon` de `data.js` n'est plus utilisé — les SVG sont injectés directement dans le `.map()`
   de la section Contact via l'index `i`. CSS `.info-icon` mis à jour dans `styles.js` (flex au lieu de font-size).
+
+- **Section Témoignages** : ajout d'une section avis d'élèves entre les tarifs et le contact.
+
+- **Interface Admin** : ajout d'un espace admin complet accessible via `/admin` avec :
+  - Page de connexion (`/admin/login`)
+  - Dashboard avec statistiques et résumés
+  - Gestion des pré-inscriptions avec filtres et changement de statut
+  - Gestion des messages avec panneau de lecture et réponse par email
+  - Design dark theme cohérent avec le site, sidebar navigation
+  - Routing via `react-router-dom` v6

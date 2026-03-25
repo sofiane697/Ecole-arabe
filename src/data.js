@@ -69,6 +69,30 @@ export const CONTACT_INFO = [
   { icon: '♿', label: 'Accessibilité',        jsx: <>Établissement accessible PMR<br />Entrée de plain-pied · Sanitaires adaptés</> },
 ];
 
+export const TESTIMONIALS = [
+  {
+    name: 'Fatima B.',
+    role: 'Niveau Intermédiaire',
+    quote: "Grâce à l'École Al-Nour, j'ai appris à lire couramment en seulement 6 mois. La pédagogie est bienveillante et les enseignants sont extrêmement patients.",
+    stars: 5,
+    initials: 'FB',
+  },
+  {
+    name: 'Thomas M.',
+    role: 'Niveau Débutant',
+    quote: "Je recommande vivement ! L'apprentissage de l'alphabet a été progressif et bien structuré. Je n'aurais jamais cru pouvoir lire l'arabe aussi rapidement.",
+    stars: 5,
+    initials: 'TM',
+  },
+  {
+    name: 'Nadia K.',
+    role: 'Cours Coranique',
+    quote: "Mes deux enfants suivent les cours depuis un an. Leur progression est remarquable et ils adorent venir en classe. Un cadre bienveillant et exceptionnel.",
+    stars: 5,
+    initials: 'NK',
+  },
+];
+
 export const CORAN_FEATURES = [
   'Règles du Tajwid pas à pas',
   'Mémorisation progressive des sourates',

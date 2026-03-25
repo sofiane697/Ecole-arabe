@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import STYLES from './styles';
-import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES } from './data';
+import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
 
 /* ══════════════════════════════════════════════════════
@@ -539,6 +539,43 @@ export default function App() {
         </div>
       </section>
 
+
+      {/* ─────────────────────────────
+          TÉMOIGNAGES
+      ───────────────────────────── */}
+      <section className="section temoignages" id="temoignages">
+        <div className="temoig-deco">ق</div>
+
+        <div className="temoig-head sr">
+          <p className="s-eyebrow">Ils nous font confiance</p>
+          <h2 className="s-title">Témoignages</h2>
+          <p className="s-title-ar">آراء طلابنا</p>
+        </div>
+
+        <div className="wrap temoig-grid">
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} className={`temoig-card sr ${i > 0 ? `d${i}` : ''}`}>
+              <div className="temoig-stars">
+                {'★'.repeat(t.stars)}{'☆'.repeat(5 - t.stars)}
+              </div>
+              <p className="temoig-quote">« {t.quote} »</p>
+              <div className="temoig-footer">
+                <div className="temoig-avatar">{t.initials}</div>
+                <div>
+                  <div className="temoig-name">{t.name}</div>
+                  <div className="temoig-role">{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="orn">
+        <div className="orn-line" />
+        <div className="orn-glyph">❧</div>
+        <div className="orn-line" />
+      </div>
 
       {/* ─────────────────────────────
           CONTACT

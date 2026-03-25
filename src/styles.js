@@ -1014,6 +1014,118 @@ const STYLES = `
   }
 
   /* ═══════════════════════════════
+     TÉMOIGNAGES
+  ═══════════════════════════════ */
+  .temoignages {
+    background: var(--bg-alt);
+    position: relative;
+    overflow: hidden;
+  }
+  html.dark .temoignages { background: var(--bg-alt); }
+
+  .temoig-deco {
+    font-family: 'Scheherazade New', serif;
+    font-size: 18rem;
+    color: var(--gold);
+    opacity: 0.04;
+    position: absolute;
+    top: 50%;
+    left: -3rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+
+  .temoig-head {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .temoig-head .s-title-ar { text-align: center; }
+
+  .temoig-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+  }
+
+  .temoig-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    padding: 2rem 2rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .temoig-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 45px rgba(42,37,32,0.09);
+  }
+  html.dark .temoig-card { background: var(--bg-card); }
+  html.dark .temoig-card:hover { box-shadow: 0 18px 45px rgba(0,0,0,0.3); }
+
+  .temoig-stars {
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  .temoig-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.08rem;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.85;
+    color: var(--fg);
+    flex: 1;
+  }
+  html.dark .temoig-quote { color: var(--fg-mid); }
+
+  .temoig-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .temoig-avatar {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  .temoig-name {
+    font-family: 'Jost', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--fg);
+    letter-spacing: 0.04em;
+  }
+  html.dark .temoig-name { color: var(--fg); }
+
+  .temoig-role {
+    font-size: 0.67rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 0.15rem;
+  }
+
+
+  /* ═══════════════════════════════
      CARROUSEL MOBILE
   ═══════════════════════════════ */
   .carousel { display: none; }
@@ -1094,6 +1206,7 @@ const STYLES = `
     .card-wide-actions { align-items: flex-start; grid-column: span 2; }
     .contact-grid   { grid-template-columns: 1fr; gap: 3.5rem; }
     .footer         { padding: 2rem 2.5rem; }
+    .temoig-grid    { grid-template-columns: 1fr 1fr; }
   }
 
   @media (max-width: 768px) {
@@ -1123,6 +1236,10 @@ const STYLES = `
     /* Values */
     .values              { gap: 1.2rem; }
     .value               { padding: 1rem; }
+
+    /* Témoignages */
+    .temoig-grid         { grid-template-columns: 1fr; }
+    .temoig-deco         { display: none; }
 
     /* Carrousel / grille tarifs */
     .carousel            { display: block; position: relative; width: 100%; overflow: hidden; }
