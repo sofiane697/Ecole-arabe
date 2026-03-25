@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from './adminStyles';
-import { MOCK_MESSAGES, MOCK_INSCRIPTIONS } from './mockData';
-import { logoutAdmin } from './supabaseAdmin';
+import { logoutAdmin, fetchInscriptions, fetchMessages } from './supabaseAdmin';
 
 const IconDashboard = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -67,8 +66,13 @@ export default function AdminApp() {
     navigate('/admin/login');
   };
 
-  const unreadMessages  = MOCK_MESSAGES.filter(m => !m.lu).length;
-  const newInscriptions = MOCK_INSCRIPTIONS.filter(i => i.statut === 'nouveau').length;
+  const [unreadMessages,  setUnreadMessages]  = useState(0);
+  const [newInscriptions, setNewInscriptions] = useState(0);
+
+  useEffect(() => {
+    fetchMessages().then(msgs => setUnreadMessages(msgs.filter(m => !m.lu).length)).catch(() => {});
+    fetchInscriptions().then(insc => setNewInscriptions(insc.filter(i => i.statut === 'nouveau').length)).catch(() => {});
+  }, [location.pathname]); // recharger à chaque changement de page
   const currentTitle    = PAGE_TITLES[location.pathname] || 'Admin';
 
   const today = new Date().toLocaleDateString('fr-FR', {
