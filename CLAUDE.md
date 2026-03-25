@@ -83,3 +83,8 @@ npm run build # build de production
 
 - **Dark mode nav** : ajout de `html.dark .nav-btn { color: var(--fg-mid); }` dans `styles.js`
   pour améliorer la visibilité des liens du menu en mode sombre.
+
+- **Icônes de contact** : remplacement des caractères Unicode abstraits (`◈ ◉ ◎ ◇ ♿`) dans `CONTACT_INFO`
+  par des icônes SVG inline dans `App.jsx` (pin, téléphone, enveloppe, horloge, fauteuil roulant).
+  Le champ `icon` de `data.js` n'est plus utilisé — les SVG sont injectés directement dans le `.map()`
+  de la section Contact via l'index `i`. CSS `.info-icon` mis à jour dans `styles.js` (flex au lieu de font-size).

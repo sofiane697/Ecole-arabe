@@ -480,7 +480,7 @@ const STYLES = `
   /* ═══════════════════════════════
      SECTION — éléments communs
   ═══════════════════════════════ */
-  .section { padding: 7rem 4rem; }
+  .section { padding: 4rem; }
   .wrap    { max-width: 1160px; margin-inline: auto; }
 
   .s-eyebrow {
@@ -801,7 +801,7 @@ const STYLES = `
     padding: 1.15rem 0;
     border-bottom: 1px solid rgba(212,134,46,0.1);
   }
-  .info-icon  { font-size: 1rem; color: var(--gold); min-width: 1.5rem; text-align: center; margin-top: 3px; }
+  .info-icon  { color: var(--gold); min-width: 1.5rem; display: flex; align-items: flex-start; justify-content: center; margin-top: 2px; flex-shrink: 0; }
   .info-label {
     font-size: 0.63rem;
     letter-spacing: 0.2em;

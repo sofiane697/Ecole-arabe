@@ -558,9 +558,45 @@ export default function App() {
               obtenir des informations ? Nous répondons sous 24h.
             </p>
             <div className="infos">
-              {CONTACT_INFO.map(({ icon, label, jsx }, i) => (
+              {CONTACT_INFO.map(({ label, jsx }, i) => (
                 <div key={i} className="info-row">
-                  <div className="info-icon">{icon}</div>
+                  <div className="info-icon">
+                    {i === 0 && (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 21C12 21 5 13.5 5 8.5a7 7 0 0 1 14 0c0 5-7 12.5-7 12.5z"/>
+                        <circle cx="12" cy="8.5" r="2.5"/>
+                      </svg>
+                    )}
+                    {i === 1 && (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6.6 10.8a15.6 15.6 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2a11.4 11.4 0 0 0 3.6 1.1c.6.1 1 .6 1 1.2V20a2 2 0 0 1-2.2 2C8.4 21 3 15.6 3 8.8A2 2 0 0 1 5 6.6h2.7c.6 0 1.1.4 1.2 1 .1 1.2.4 2.4 1.1 3.5.1.3 0 .7-.2 1L6.6 10.8z"/>
+                      </svg>
+                    )}
+                    {i === 2 && (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m2 7 10 7 10-7"/>
+                      </svg>
+                    )}
+                    {i === 3 && (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5l3.5 2"/>
+                      </svg>
+                    )}
+                    {i === 4 && (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="5" r="2"/>
+                        <path d="M11 7v5"/>
+                        <path d="M9 12H7a2 2 0 0 0-2 2v1h12v-1a2 2 0 0 0-2-2h-2"/>
+                        <path d="M5 15v4"/>
+                        <path d="M19 15v4"/>
+                        <path d="M7 15h10"/>
+                        <circle cx="17" cy="5" r="1.5"/>
+                        <path d="M17 6.5V9"/>
+                      </svg>
+                    )}
+                  </div>
                   <div>
                     <div className="info-label">{label}</div>
                     <div className="info-val">{jsx}</div>
