@@ -74,6 +74,7 @@ const STYLES = `
   html.dark .hero-desc     { color: var(--fg-mid); }
   html.dark .s-title       { color: var(--fg-title); }
   html.dark .s-body        { color: var(--fg-mid); }
+  html.dark .nav-btn        { color: var(--fg-mid); }
   html.dark .logo-fr       { color: var(--fg-light); }
   html.dark .stat-l        { color: var(--fg-light); }
   html.dark .value         { background: rgba(255,255,255,0.03); }
