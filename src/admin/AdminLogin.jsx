@@ -8,6 +8,10 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('admin_theme');
+    return saved ? saved === 'dark' : true;
+  });
   const navigate = useNavigate();
 
   // Injecter les styles admin
@@ -19,11 +23,14 @@ export default function AdminLogin() {
       style.textContent = ADMIN_STYLES;
       document.head.appendChild(style);
     }
-    // Forcer le fond sombre sur <html>
     document.documentElement.classList.remove('dark');
-    document.body.style.background = '#0f0d0a';
-    return () => { document.body.style.background = ''; };
   }, []);
+
+  useEffect(() => {
+    document.body.style.background = darkMode ? '#000000' : '#f5f5f7';
+    localStorage.setItem('admin_theme', darkMode ? 'dark' : 'light');
+    return () => { document.body.style.background = ''; };
+  }, [darkMode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +47,15 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="admin-root admin-login-page">
+    <div className={`admin-root admin-login-page ${!darkMode ? 'admin-light' : ''}`}>
+      <button
+        className="admin-theme-toggle"
+        onClick={() => setDarkMode(d => !d)}
+        aria-label="Changer le thème"
+        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}
+      >
+        {darkMode ? '☀' : '☾'}
+      </button>
       <div className="admin-login-card">
         <div className="admin-login-logo">
           <span className="arabic">مدرسة النور</span>

@@ -40,6 +40,10 @@ const PAGE_TITLES = {
 export default function AdminApp() {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('admin_theme');
+    return saved ? saved === 'dark' : true; // dark par défaut
+  });
 
   // Injecter les styles
   useEffect(() => {
@@ -50,9 +54,22 @@ export default function AdminApp() {
       style.textContent = ADMIN_STYLES;
       document.head.appendChild(style);
     }
-    document.body.style.background = '#0f0d0a';
-    return () => { document.body.style.background = ''; };
   }, []);
+
+  // Appliquer le thème
+  useEffect(() => {
+    const root = document.querySelector('.admin-root');
+    if (root) {
+      if (darkMode) {
+        root.classList.remove('admin-light');
+      } else {
+        root.classList.add('admin-light');
+      }
+    }
+    document.body.style.background = darkMode ? '#000000' : '#f5f5f7';
+    localStorage.setItem('admin_theme', darkMode ? 'dark' : 'light');
+    return () => { document.body.style.background = ''; };
+  }, [darkMode]);
 
   // Garde : rediriger vers login si non connecté
   useEffect(() => {
@@ -145,7 +162,16 @@ export default function AdminApp() {
       <main className="admin-main">
         <header className="admin-topbar">
           <span className="admin-topbar-title">{currentTitle}</span>
-          <span className="admin-topbar-date">{today}</span>
+          <div className="admin-topbar-right">
+            <button
+              className="admin-theme-toggle"
+              onClick={() => setDarkMode(d => !d)}
+              aria-label="Changer le thème"
+            >
+              {darkMode ? '☀' : '☾'}
+            </button>
+            <span className="admin-topbar-date">{today}</span>
+          </div>
         </header>
 
         <div className="admin-content">

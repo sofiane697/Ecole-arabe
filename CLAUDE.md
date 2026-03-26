@@ -21,11 +21,11 @@ Ecole-arabe/
         ├── AdminApp.jsx      # Layout admin — sidebar, topbar, Outlet (route protégée)
         ├── AdminLogin.jsx    # Page de connexion admin (Supabase Auth)
         ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés (Supabase)
-        ├── Inscriptions.jsx  # Liste des pré-inscriptions — filtres, changement de statut (Supabase)
-        ├── Messages.jsx      # Liste des messages — panneau de lecture, marquer lu/non lu (Supabase)
+        ├── Inscriptions.jsx  # Pré-inscriptions — liste + panneau détail + progression statut (Supabase)
+        ├── Messages.jsx      # Messages — liste avec aperçu + panneau de lecture (Supabase)
         ├── supabaseAdmin.js  # Fonctions API Supabase (fetch, update, login, logout)
         ├── mockData.js       # Données fictives (conservées comme backup)
-        └── adminStyles.js    # CSS complet de l'interface admin (thème sombre)
+        └── adminStyles.js    # CSS complet de l'interface admin (thème sombre + clair)
 ```
 
 ## Sections du site public (dans l'ordre)
@@ -46,8 +46,8 @@ Ecole-arabe/
 |-----|------|-------------|
 | `/admin/login` | AdminLogin | Connexion email + mot de passe |
 | `/admin` | Dashboard | Vue d'ensemble — stats + dernières inscriptions/messages |
-| `/admin/inscriptions` | Inscriptions | Tableau filtrable — statut : Nouveau → Contacté → Inscrit |
-| `/admin/messages` | Messages | Tableau + panneau de lecture — marquer lu/non lu, répondre par email |
+| `/admin/inscriptions` | Inscriptions | Liste + panneau détail — stats, progression, changement de statut |
+| `/admin/messages` | Messages | Liste + panneau de lecture — onglets filtres, marquer lu/non lu, répondre |
 
 ### Identifiants admin (Supabase Auth)
 
@@ -69,18 +69,25 @@ Basée sur **Supabase Auth** (email + mot de passe).
 
 Définies dans `adminStyles.js`, préfixées `--a-` pour éviter les conflits :
 
-| Variable | Valeur | Usage |
-|----------|--------|-------|
-| `--a-bg` | `#0f0d0a` | Fond principal |
-| `--a-bg-card` | `#1a1610` | Fond des cartes |
-| `--a-gold` | `#b8862e` | Accent principal |
-| `--a-green` | `#4caf7d` | Statut inscrit / lu |
-| `--a-blue` | `#5b9bd5` | Statut contacté |
-| `--a-red` | `#e05c5c` | Badges non lu / alertes |
+| Variable | Dark | Light | Usage |
+|----------|------|-------|-------|
+| `--a-bg` | `#000000` | `#f5f5f7` | Fond principal |
+| `--a-bg-card` | `#1c1c1e` | `#ffffff` | Fond des cartes |
+| `--a-gold` | `#bf8a30` | *(inchangé)* | Accent principal |
+| `--a-green` | `#30d158` | `#248a3d` | Statut inscrit / lu |
+| `--a-blue` | `#0a84ff` | `#0071e3` | Statut contacté |
+| `--a-red` | `#ff453a` | `#d70015` | Badges non lu / alertes |
+
+### Thème admin (dark/light)
+
+- Toggle dans la **topbar** (bouton ☀/☾) et sur la **page login** (coin supérieur droit)
+- Persisté via `localStorage` (clé `admin_theme`), dark par défaut
+- La classe `.admin-light` sur `.admin-root` active le mode clair (override des variables CSS)
 
 ## Fonctionnalités clés
 
-- **Dark mode** — toggle ☀/☾, persisté en `localStorage`, transition CSS globale
+- **Dark mode (site public)** — toggle ☀/☾, persisté en `localStorage`, transition CSS globale
+- **Dark/Light mode (admin)** — toggle ☀/☾ dans topbar + login, persisté en `localStorage` (clé `admin_theme`)
 - **Scroll reveal** — éléments `.sr` s'animent à l'entrée viewport (IntersectionObserver)
 - **Section active** — lien nav surligné selon position de scroll (`useActiveSection`)
 - **Compteurs animés** — décompte 0 → target quand visible (`useCounter`)
@@ -89,17 +96,27 @@ Définies dans `adminStyles.js`, préfixées `--a-` pour éviter les conflits :
 - **Formulaire contact** — POST vers Supabase REST API
 - **Interface admin** — dashboard, gestion inscriptions et messages (React Router `/admin/*`)
 
-## Variables CSS (thème)
+## Variables CSS (thème site public)
 
-Définies dans `styles.js` :
+Définies dans `styles.js` — direction artistique Apple + Oriental :
 
 | Variable     | Light       | Dark        |
 |--------------|-------------|-------------|
-| `--bg`       | `#f9f5ee`   | `#13100d`   |
-| `--fg`       | `#2a2520`   | `#ede5d8`   |
-| `--fg-mid`   | `#6b5d4f`   | `#a08870`   |
-| `--fg-light` | `#9c8c7c`   | `#6b5d4f`   |
-| `--gold`     | `#b8862e`   | *(inchangé)*|
+| `--bg`       | `#ffffff`   | `#000000`   |
+| `--bg-alt`   | `#f5f5f7`   | `#0a0a0a`   |
+| `--bg-card`  | `#ffffff`   | `#1c1c1e`   |
+| `--fg`       | `#1d1d1f`   | `#f5f5f7`   |
+| `--fg-mid`   | `#6e6e73`   | `#a1a1a6`   |
+| `--fg-light` | `#86868b`   | `#6e6e73`   |
+| `--gold`     | `#bf8a30`   | *(inchangé)*|
+
+### Design system
+
+- **Typographie** : `Inter` (corps/UI), `Scheherazade New` (arabe), `Cormorant Garamond` (titres français)
+- **Coins arrondis** : `--radius-sm: 12px`, `--radius-md: 20px`, `--radius-lg: 28px`
+- **Boutons** : pilules arrondies (`border-radius: 980px`)
+- **Navbar** : glassmorphisme (`backdrop-filter: blur(20px)`)
+- **Ombres** : système progressif (`--shadow-sm/md/lg/xl`)
 
 ## Supabase — Configuration
 
@@ -209,3 +226,17 @@ npm run build # build de production
   - Admin connecté à Supabase : lecture temps réel des inscriptions et messages
   - Authentification admin via Supabase Auth (email + mot de passe → JWT)
   - Row Level Security configuré sur les deux tables
+
+- **Refonte visuelle Apple + Oriental** :
+  - Direction artistique inspirée d'Apple (minimalisme, whitespace, glassmorphisme, coins arrondis)
+  - Esprit oriental conservé (calligraphie Scheherazade New, accents dorés, motifs géométriques)
+  - Typographie : Inter (corps) + Scheherazade New (arabe) + Cormorant Garamond (titres)
+  - Palette : blanc pur / noir pur, gris Apple (#f5f5f7, #1c1c1e), or raffiné (#bf8a30)
+  - Boutons pilules, cards avec border-radius 28px, navbar glassmorphisme
+  - Couleurs système Apple pour l'admin (bleu #0a84ff, vert #30d158, rouge #ff453a)
+
+- **Toggle thème admin** : ajout du mode clair/sombre dans l'admin (topbar + login), persisté en localStorage
+
+- **Refonte UI Inscriptions** : remplacement du tableau par une liste avec avatars + panneau détail + barre de progression visuelle (Nouveau → Contacté → Inscrit)
+
+- **Refonte UI Messages** : remplacement du tableau par une liste avec aperçu + onglets filtres (Tous/Non lus/Lus) + panneau de lecture épuré avec avatar, métadonnées et actions en pilules
