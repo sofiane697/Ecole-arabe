@@ -248,10 +248,61 @@ export async function fetchEleves() {
 }
 
 /** Récupérer la progression d'un élève */
-export async function fetchEleveProgression(userId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/eleve_progression?user_id=eq.${userId}`);
+export async function fetchEleveProgression(eleveId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/eleve_progression?eleve_id=eq.${eleveId}`);
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
+}
+
+// ─── STORAGE PDF ─────────────────────────────────────────────────────────────
+
+/** Uploader un fichier PDF dans Supabase Storage (bucket "Cours de coran") */
+export async function uploadPDF(file) {
+  const BUCKET = 'Cours de coran';
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const fileName = `${Date.now()}-${safeName}`;
+  const res = await authFetch(
+    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${fileName}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'application/pdf' },
+      body: file,
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur upload ${res.status}`);
+  }
+  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${fileName}`;
+}
+
+/** Réinitialiser le mot de passe d'un élève (génère un provisoire + force changement à la prochaine connexion) */
+export async function resetElevePassword(id, newPassword) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_eleve_password`, {
+    method: 'POST',
+    body: JSON.stringify({ p_id: id, p_new_password: newPassword }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
+}
+
+/** Supprimer un élève (progression + profil) */
+export async function deleteEleve(id) {
+  // 1. Supprimer la progression de l'élève
+  await authFetch(`${SUPABASE_URL}/rest/v1/eleve_progression?eleve_id=eq.${id}`, { method: 'DELETE' });
+  // 2. Supprimer le profil
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Modifier les infos d'un élève (nom, prénom) */
+export async function updateEleve(id, data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
 /** Activer / désactiver un élève */

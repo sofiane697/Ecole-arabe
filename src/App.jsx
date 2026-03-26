@@ -399,7 +399,7 @@ export default function App() {
           </p>
           <div className="hero-actions">
             <button className="btn-fill"    onClick={() => goTo('tarifs')}>Découvrir les cours</button>
-            <button className="btn-outline" onClick={() => goTo('presentation')}>En savoir plus</button>
+            <a href="/portail/login" className="btn-outline" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center'}}>Mon portail</a>
           </div>
         </div>
 

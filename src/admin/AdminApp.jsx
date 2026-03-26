@@ -31,10 +31,23 @@ const IconLogout = () => (
   </svg>
 );
 
+const IconBook = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+  </svg>
+);
+const IconStudent = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+
 const PAGE_TITLES = {
   '/admin':              'Tableau de bord',
   '/admin/inscriptions': 'Pré-inscriptions',
   '/admin/messages':     'Messages',
+  '/admin/cours':        'Gestion des cours',
+  '/admin/eleves':       'Gestion des élèves',
 };
 
 export default function AdminApp() {
@@ -135,6 +148,22 @@ export default function AdminApp() {
             {unreadMessages > 0 && (
               <span className="admin-nav-badge">{unreadMessages}</span>
             )}
+          </NavLink>
+
+          <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Portail</div>
+
+          <NavLink
+            to="/admin/cours"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+          >
+            <IconBook /> Gestion des cours
+          </NavLink>
+
+          <NavLink
+            to="/admin/eleves"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+          >
+            <IconStudent /> Gestion des élèves
           </NavLink>
 
           <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>

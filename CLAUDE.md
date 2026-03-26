@@ -12,31 +12,42 @@ Ecole-arabe/
 ├── public/
 │   └── index.html
 └── src/
-    ├── App.jsx       # Composant principal — tout le rendu HTML (site public)
-    ├── data.js       # Données statiques (nav, cours, valeurs, contact)
-    ├── hooks.js      # 3 hooks custom React
-    ├── styles.js     # CSS complet injecté dynamiquement dans <head>
-    ├── index.js      # Point d'entrée React + React Router (routes publiques et admin)
-    └── admin/
-        ├── AdminApp.jsx      # Layout admin — sidebar, topbar, Outlet (route protégée)
-        ├── AdminLogin.jsx    # Page de connexion admin (Supabase Auth)
-        ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés (Supabase)
-        ├── Inscriptions.jsx  # Pré-inscriptions — liste + panneau détail + progression statut (Supabase)
-        ├── Messages.jsx      # Messages — liste avec aperçu + panneau de lecture (Supabase)
-        ├── supabaseAdmin.js  # Fonctions API Supabase (fetch, update, login, logout)
-        ├── mockData.js       # Données fictives (conservées comme backup)
-        └── adminStyles.js    # CSS complet de l'interface admin (thème sombre + clair)
+    ├── App.jsx            # Composant principal — site public (Hero, Tarifs, Témoignages, Contact…)
+    ├── data.js            # Données statiques (nav, cours, valeurs, contact)
+    ├── hooks.js           # 3 hooks custom React
+    ├── styles.js          # CSS complet injecté dynamiquement dans <head>
+    ├── index.js           # Point d'entrée React + React Router (routes publiques, admin, portail)
+    ├── admin/
+    │   ├── AdminApp.jsx      # Layout admin — sidebar, topbar, Outlet (route protégée)
+    │   ├── AdminLogin.jsx    # Page de connexion admin (Supabase Auth)
+    │   ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés
+    │   ├── Inscriptions.jsx  # Pré-inscriptions — liste + panneau détail + statut
+    │   ├── Messages.jsx      # Messages — liste + panneau de lecture
+    │   ├── Eleves.jsx        # Gestion élèves — liste, création, fiche détail, progression
+    │   ├── Cours.jsx         # Gestion cours — modules → niveaux → contenus + QCM
+    │   ├── supabaseAdmin.js  # Fonctions API Supabase (auth, CRUD, storage, progression)
+    │   ├── mockData.js       # Données fictives (backup)
+    │   └── adminStyles.js    # CSS complet interface admin (thème sombre + clair)
+    └── portail/
+        ├── portailStyles.js     # CSS du portail élève
+        ├── supabasePortail.js   # API Supabase côté élève (auth custom, progression)
+        ├── PortailLogin.jsx     # /portail/login — connexion + changement mot de passe 1ère connexion
+        ├── PortailApp.jsx       # Layout portail : sidebar + topbar + Outlet
+        ├── PortailDashboard.jsx # Grille de modules avec barres de progression
+        └── PortailModule.jsx    # Vue module : stepper niveaux + contenu + QCM
 ```
 
 ## Sections du site public (dans l'ordre)
 
 1. **Nav** — logo, liens desktop, toggle dark/light, hamburger mobile
-2. **Hero** (`#accueil`) — titre arabe + description + CTA + motif SVG islamique
+2. **Hero** (`#accueil`) — titre arabe + description + CTA + bouton "Mon portail"
 3. **Présentation** (`#presentation`) — texte + compteurs animés + valeurs
 4. **Tarifs** (`#tarifs`) — 3 cartes de niveaux + 1 carte Coran + carrousel mobile
 5. **Témoignages** — section avis d'élèves (crédibilité / confiance)
 6. **Contact** (`#contact`) — infos + formulaire connecté à Supabase
 7. **Footer**
+
+---
 
 ## Interface Administrateur
 
@@ -47,85 +58,61 @@ Ecole-arabe/
 | `/admin/login` | AdminLogin | Connexion email + mot de passe |
 | `/admin` | Dashboard | Vue d'ensemble — stats + dernières inscriptions/messages |
 | `/admin/inscriptions` | Inscriptions | Liste + panneau détail — stats, progression, changement de statut |
-| `/admin/messages` | Messages | Liste + panneau de lecture — onglets filtres, marquer lu/non lu, répondre |
+| `/admin/messages` | Messages | Liste + panneau de lecture — onglets filtres, marquer lu/non lu |
+| `/admin/eleves` | Eleves | Liste élèves + création + fiche détail + progression par module |
+| `/admin/cours` | Cours | CRUD drill-down : Modules → Niveaux → Contenus + QCM |
 
 ### Identifiants admin (Supabase Auth)
 
 - **Email :** `admin@alnour.fr`
 - **Mot de passe :** `Admin123!`
-- **Accès :** `http://localhost:3000/admin/login` (à mettre en favori, aucun lien visible sur le site public)
+- **Accès :** `http://localhost:3000/admin/login`
 
-### Authentification
+### Authentification admin
 
 Basée sur **Supabase Auth** (email + mot de passe).
 - `AdminLogin.jsx` appelle `loginAdmin()` → Supabase Auth → token JWT stocké en `sessionStorage`
-- `AdminApp.jsx` redirige vers `/admin/login` si non authentifié (clé `admin_auth` en sessionStorage)
-- `supabaseAdmin.js` utilise le token JWT pour les requêtes authentifiées (lecture/modification)
-- Les tables sont protégées par **Row Level Security** (RLS) :
-  - `anon` → INSERT uniquement (formulaires publics)
-  - `authenticated` → SELECT + UPDATE (admin connecté)
+- `supabaseAdmin.js` : `authFetch()` wrapper avec auto-refresh du token (401 → refresh_token)
+- Redirection automatique vers `/admin/login` si token expiré et refresh échoué
 
-### Variables CSS admin
+---
 
-Définies dans `adminStyles.js`, préfixées `--a-` pour éviter les conflits :
+## Portail Élève (LMS) ✅ COMPLET
 
-| Variable | Dark | Light | Usage |
-|----------|------|-------|-------|
-| `--a-bg` | `#000000` | `#f5f5f7` | Fond principal |
-| `--a-bg-card` | `#1c1c1e` | `#ffffff` | Fond des cartes |
-| `--a-gold` | `#bf8a30` | *(inchangé)* | Accent principal |
-| `--a-green` | `#30d158` | `#248a3d` | Statut inscrit / lu |
-| `--a-blue` | `#0a84ff` | `#0071e3` | Statut contacté |
-| `--a-red` | `#ff453a` | `#d70015` | Badges non lu / alertes |
+### Routes
 
-### Thème admin (dark/light)
+| URL | Page | Description |
+|-----|------|-------------|
+| `/portail/login` | PortailLogin | Connexion identifiant + mot de passe |
+| `/portail` | PortailDashboard | Grille des modules avec barre de progression |
+| `/portail/module/:id` | PortailModule | Stepper niveaux + contenu (vidéo/PDF/texte) + QCM |
 
-- Toggle dans la **topbar** (bouton ☀/☾) et sur la **page login** (coin supérieur droit)
-- Persisté via `localStorage` (clé `admin_theme`), dark par défaut
-- La classe `.admin-light` sur `.admin-root` active le mode clair (override des variables CSS)
+### Authentification élève (auth custom — PAS Supabase Auth)
 
-## Fonctionnalités clés
+- Pas de JWT, pas de Supabase Auth (incompatible ES256 sur plan gratuit)
+- `login_eleve(p_email, p_password)` → fonction SQL SECURITY DEFINER avec bcrypt
+- Session stockée dans `sessionStorage.eleve_user` = `{ id, nom, prenom, email, must_change_password }`
+- Identifiant élève = `{1ère lettre prénom}{2e lettre nom}{1ère lettre nom}{4 chiffres}` ex: `SoJ7577`
+- Email interne = `identifiant@eleve.alnour.fr` (jamais envoyé, juste clé unique en base)
+- 1ère connexion → forcé à changer le mot de passe provisoire (min 8 car. + 1 chiffre + 1 spécial)
 
-- **Dark mode (site public)** — toggle ☀/☾, persisté en `localStorage`, transition CSS globale
-- **Dark/Light mode (admin)** — toggle ☀/☾ dans topbar + login, persisté en `localStorage` (clé `admin_theme`)
-- **Scroll reveal** — éléments `.sr` s'animent à l'entrée viewport (IntersectionObserver)
-- **Section active** — lien nav surligné selon position de scroll (`useActiveSection`)
-- **Compteurs animés** — décompte 0 → target quand visible (`useCounter`)
-- **Carrousel mobile** — swipe tactile sur les cartes de tarifs (`CarouselCards`)
-- **Modal pré-inscription** — formulaire nom/prénom/âge déclenché par bouton "S'inscrire"
-- **Formulaire contact** — POST vers Supabase REST API
-- **Interface admin** — dashboard, gestion inscriptions et messages (React Router `/admin/*`)
+### Flux QCM (progression)
 
-## Variables CSS (thème site public)
+1. Élève sélectionne un module → voit les niveaux (Niveau 1 débloqué, reste verrouillé)
+2. Élève consulte le contenu du niveau (vidéos YouTube, PDF, texte)
+3. Élève clique "Passer le QCM" → questions à choix multiples (checkboxes, plusieurs bonnes réponses possibles)
+4. Score ≥ score_requis (défaut 80%) → `reussi = true` → niveau suivant débloqué
+5. Score < score_requis → possibilité de réessayer (tentatives comptées)
 
-Définies dans `styles.js` — direction artistique Apple + Oriental :
-
-| Variable     | Light       | Dark        |
-|--------------|-------------|-------------|
-| `--bg`       | `#ffffff`   | `#000000`   |
-| `--bg-alt`   | `#f5f5f7`   | `#0a0a0a`   |
-| `--bg-card`  | `#ffffff`   | `#1c1c1e`   |
-| `--fg`       | `#1d1d1f`   | `#f5f5f7`   |
-| `--fg-mid`   | `#6e6e73`   | `#a1a1a6`   |
-| `--fg-light` | `#86868b`   | `#6e6e73`   |
-| `--gold`     | `#bf8a30`   | *(inchangé)*|
-
-### Design system
-
-- **Typographie** : `Inter` (corps/UI), `Scheherazade New` (arabe), `Cormorant Garamond` (titres français)
-- **Coins arrondis** : `--radius-sm: 12px`, `--radius-md: 20px`, `--radius-lg: 28px`
-- **Boutons** : pilules arrondies (`border-radius: 980px`)
-- **Navbar** : glassmorphisme (`backdrop-filter: blur(20px)`)
-- **Ombres** : système progressif (`--shadow-sm/md/lg/xl`)
+---
 
 ## Supabase — Configuration
 
-### Projet Supabase
+### Projet
 
 - **URL :** `https://nsdnzqdbpdncrksgxtar.supabase.co`
-- **ID projet :** `nsdnzqdbpdncrksgxtar`
-- **Région :** UE occidentale (Irlande) — eu-ouest-1
-- **Plan :** Gratuit (Nano)
+- **Clé anon :** `sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL`
+- **Plan :** Gratuit (Nano) — région Irlande
 
 ### Tables
 
@@ -133,55 +120,76 @@ Définies dans `styles.js` — direction artistique Apple + Oriental :
 |-------|-------|------------|---------------------|
 | `inscriptions` | Pré-inscriptions (modal S'inscrire) | INSERT | SELECT, UPDATE |
 | `messages` | Formulaire contact | INSERT | SELECT, UPDATE |
+| `profils_eleves` | Comptes élèves (auth custom, bcrypt) | — | ALL |
+| `modules` | Catégories de cours | SELECT (actif=true) | ALL |
+| `niveaux` | Niveaux dans chaque module | SELECT | ALL |
+| `contenus` | Contenu par niveau (video/pdf/texte) | SELECT | ALL |
+| `qcm_questions` | Questions QCM (choix JSONB, reponse_correcte JSONB array) | SELECT | ALL |
+| `eleve_progression` | Suivi progression élève | — | ALL |
 
-### Schéma `inscriptions`
-
-| Colonne | Type | Défaut |
-|---------|------|--------|
-| `id` | BIGINT (auto) | Identity |
-| `created_at` | TIMESTAMPTZ | NOW() |
-| `nom` | TEXT | NOT NULL |
-| `prenom` | TEXT | NOT NULL |
-| `age` | INT | — |
-| `annees_pratique` | INT | 0 |
-| `cours` | TEXT | — |
-| `statut` | TEXT | 'nouveau' |
-
-### Schéma `messages`
+### Schéma `profils_eleves`
 
 | Colonne | Type | Défaut |
 |---------|------|--------|
-| `id` | BIGINT (auto) | Identity |
+| `id` | UUID | gen_random_uuid() |
 | `created_at` | TIMESTAMPTZ | NOW() |
 | `nom` | TEXT | NOT NULL |
 | `prenom` | TEXT | NOT NULL |
-| `email` | TEXT | NOT NULL |
-| `cours` | TEXT | — |
-| `message` | TEXT | — |
-| `lu` | BOOLEAN | FALSE |
+| `email` | TEXT | NOT NULL UNIQUE (= identifiant@eleve.alnour.fr) |
+| `password_hash` | TEXT | NOT NULL (bcrypt) |
+| `must_change_password` | BOOLEAN | TRUE |
+| `actif` | BOOLEAN | TRUE |
 
-### Flux de données
+### Fonctions SQL (SECURITY DEFINER)
 
-```
-Site public (visiteur)
-  ├── Formulaire contact  → POST /rest/v1/messages     (clé anon)
-  └── Modal pré-inscription → POST /rest/v1/inscriptions (clé anon)
+| Fonction | Rôle | Appelée par |
+|----------|------|-------------|
+| `admin_create_user(p_email, p_password, p_nom, p_prenom)` | Crée un élève avec bcrypt | Admin (authenticated) |
+| `login_eleve(p_email, p_password)` | Vérifie les identifiants, retourne JSON user | Portail (anon) |
+| `change_eleve_password(p_id, p_old, p_new)` | Change le mot de passe | Portail (anon) |
+| `save_progression(p_eleve_id, p_niveau_id, p_score, p_reussi)` | Upsert progression | Portail (anon) |
+| `get_progression(p_eleve_id)` | Retourne progression élève | Portail (anon) |
 
-Admin (/admin)
-  ├── Login → POST /auth/v1/token → JWT
-  ├── Dashboard → GET inscriptions + messages (JWT)
-  ├── Inscriptions → GET + PATCH statut (JWT)
-  └── Messages → GET + PATCH lu (JWT)
-```
+### Storage Supabase
 
-## Cours proposés (data.js)
+- **Bucket :** `Cours de coran` (public)
+- **Usage :** Upload des fichiers PDF depuis l'admin → URL publique stockée dans `contenus.contenu`
+- **Fonction :** `uploadPDF(file)` dans `supabaseAdmin.js`
 
-| Niveau | Nom                          | Prix      | Fréquence              |
-|--------|------------------------------|-----------|------------------------|
-| 1      | Débutant — Alphabet          | 35 €/mois | 1 séance/sem · 1h      |
-| 2      | Intermédiaire — Lecture      | 55 €/mois | 2 séances/sem · 1h     |
-| 3      | Avancé — Expression          | 75 €/mois | 2 séances/sem · 1h30   |
-| Spé    | Lecture & Mémorisation Coran | 60 €/mois | 2 séances/sem · 1h     |
+---
+
+## Variables CSS
+
+### Admin (`adminStyles.js`, préfixe `--a-`)
+
+| Variable | Dark | Light | Usage |
+|----------|------|-------|-------|
+| `--a-bg` | `#000000` | `#f5f5f7` | Fond principal |
+| `--a-bg-card` | `#1c1c1e` | `#ffffff` | Fond des cartes |
+| `--a-gold` | `#bf8a30` | *(inchangé)* | Accent principal |
+| `--a-green` | `#30d158` | `#248a3d` | Succès / actif |
+| `--a-blue` | `#0a84ff` | `#0071e3` | Info / contacté |
+| `--a-red` | `#ff453a` | `#d70015` | Erreur / inactif |
+
+### Portail (`portailStyles.js`, préfixe `--p-`)
+
+| Variable | Dark | Light |
+|----------|------|-------|
+| `--p-bg` | `#000000` | `#f5f5f7` |
+| `--p-bg-card` | `#1c1c1e` | `#ffffff` |
+| `--p-gold` | `#bf8a30` | *(inchangé)* |
+| `--p-green` | `#30d158` | `#248a3d` |
+| `--p-sidebar-w` | `260px` | *(inchangé)* |
+
+### Site public (`styles.js`)
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--bg` | `#ffffff` | `#000000` |
+| `--fg` | `#1d1d1f` | `#f5f5f7` |
+| `--gold` | `#bf8a30` | *(inchangé)* |
+
+---
 
 ## Commandes
 
@@ -191,52 +199,76 @@ npm start     # lancer en développement → http://localhost:3000
 npm run build # build de production
 ```
 
-## Prochaines étapes
+---
 
-1. ~~**Connecter Supabase**~~ ✅ Tables créées, formulaires branchés
-2. ~~**Supabase Auth**~~ ✅ Login admin via Supabase Auth + JWT
-3. ~~**Row Level Security**~~ ✅ RLS activé (anon=INSERT, authenticated=SELECT+UPDATE)
-4. **Déploiement** — héberger le site (Vercel, Netlify…) avec les variables d'environnement
-5. **Améliorations** — notifications email, export CSV inscriptions, stats par période
+## Plan d'amélioration admin
+
+### Pack Élèves — ✅ Terminé
+| # | Tâche | Statut |
+|---|-------|--------|
+| F1 | Réinitialiser le mot de passe d'un élève | ✅ |
+| F2 | Modifier nom/prénom + téléphone + email de contact | ✅ |
+| F3 | Supprimer un élève (avec confirmation) | ✅ |
+| D1 | Recherche + filtres (actif/inactif) + tri dans la liste | ✅ |
+| F4 | Export liste élèves en CSV (respecte les filtres actifs) | ✅ |
+| D2 | Compteurs stats en haut de la page élèves | ⏭ Ignoré |
+
+### Pack Cours — ⏳ En cours
+| # | Tâche | Statut |
+|---|-------|--------|
+| F6 | Import questions QCM depuis CSV (avec modèle téléchargeable + aperçu) | ✅ |
+| D5 | Aperçu miniature YouTube dans la modal contenu | ⬜ |
+| D6 | Upload image de couverture pour les modules | ⬜ |
+
+### Améliorations futures (non planifiées)
+- D3 — Mini-barre de progression dans la carte élève
+- D4 — Drag & drop pour réordonner modules/niveaux/contenus
+- F5 — Dupliquer un module
+- F7 — Tableau de bord de classe (vue croisée élèves × modules)
+
+---
+
+## Schéma `profils_eleves` (mis à jour)
+
+| Colonne | Type | Défaut |
+|---------|------|--------|
+| `id` | UUID | gen_random_uuid() |
+| `created_at` | TIMESTAMPTZ | NOW() |
+| `nom` | TEXT | NOT NULL |
+| `prenom` | TEXT | NOT NULL |
+| `email` | TEXT | NOT NULL UNIQUE |
+| `password_hash` | TEXT | NOT NULL (bcrypt) |
+| `must_change_password` | BOOLEAN | TRUE |
+| `actif` | BOOLEAN | TRUE |
+| `telephone` | TEXT | NULL (optionnel) |
+| `email_contact` | TEXT | NULL (optionnel, ex: parent) |
+
+---
 
 ## Historique des modifications
 
-- **Dark mode nav** : ajout de `html.dark .nav-btn { color: var(--fg-mid); }` dans `styles.js`
-  pour améliorer la visibilité des liens du menu en mode sombre.
+- **Pack élèves admin** : F1 reset mot de passe (SQL `admin_reset_eleve_password` + modale confirmation + affichage identifiants + bouton WhatsApp), F2 modifier nom/prénom/téléphone/email contact, F3 supprimer élève avec confirmation, D1 recherche temps réel + filtres actif/inactif + tri, F4 export CSV avec BOM UTF-8.
 
-- **Icônes de contact** : remplacement des caractères Unicode abstraits (`◈ ◉ ◎ ◇ ♿`) dans `CONTACT_INFO`
-  par des icônes SVG inline dans `App.jsx` (pin, téléphone, enveloppe, horloge, fauteuil roulant).
-  Le champ `icon` de `data.js` n'est plus utilisé — les SVG sont injectés directement dans le `.map()`
-  de la section Contact via l'index `i`. CSS `.info-icon` mis à jour dans `styles.js` (flex au lieu de font-size).
+- **Import QCM CSV** : bouton "⬆ Importer CSV" dans le tab QCM, modal avec guide visuel du format, téléchargement modèle pré-rempli, parsing robuste (guillemets, BOM, lignes vides), aperçu avant chargement, mode Remplacer/Ajouter, intégration directe dans le carrousel existant.
 
-- **Section Témoignages** : ajout d'une section avis d'élèves entre les tarifs et le contact.
+- **Auth custom élèves** : abandon de Supabase Auth pour les élèves (rate limit email + incompatibilité JWT ES256). Nouveau système : `password_hash` bcrypt dans `profils_eleves`, fonctions SQL SECURITY DEFINER, session dans `sessionStorage.eleve_user`.
 
-- **Interface Admin** : ajout d'un espace admin complet accessible via `/admin` avec :
-  - Page de connexion (`/admin/login`)
-  - Dashboard avec statistiques et résumés
-  - Gestion des pré-inscriptions avec filtres et changement de statut
-  - Gestion des messages avec panneau de lecture et réponse par email
-  - Design dark theme cohérent avec le site, sidebar navigation
-  - Routing via `react-router-dom` v6
+- **LMS complet** : portail élève avec modules, niveaux, contenus (vidéo/PDF/texte), QCM multi-réponses, progression par niveau. Admin : gestion cours (drill-down Modules→Niveaux→Contenus+QCM) et gestion élèves (création, fiche, progression).
 
-- **Intégration Supabase** :
-  - Clés API branchées dans `App.jsx` (site public) et `supabaseAdmin.js` (admin)
-  - Formulaire contact → table `messages` (avant : allait dans `inscriptions`)
-  - Modal pré-inscription → table `inscriptions` (avant : pas connectée)
-  - Admin connecté à Supabase : lecture temps réel des inscriptions et messages
-  - Authentification admin via Supabase Auth (email + mot de passe → JWT)
-  - Row Level Security configuré sur les deux tables
+- **Upload PDF** : drag & drop dans la modal de contenu admin, stockage dans Supabase Storage (bucket "Cours de coran"), URL publique auto-remplie.
 
-- **Refonte visuelle Apple + Oriental** :
-  - Direction artistique inspirée d'Apple (minimalisme, whitespace, glassmorphisme, coins arrondis)
-  - Esprit oriental conservé (calligraphie Scheherazade New, accents dorés, motifs géométriques)
-  - Typographie : Inter (corps) + Scheherazade New (arabe) + Cormorant Garamond (titres)
-  - Palette : blanc pur / noir pur, gris Apple (#f5f5f7, #1c1c1e), or raffiné (#bf8a30)
-  - Boutons pilules, cards avec border-radius 28px, navbar glassmorphisme
-  - Couleurs système Apple pour l'admin (bleu #0a84ff, vert #30d158, rouge #ff453a)
+- **QCM carrousel** : éditeur carrousel dans l'admin (navigation entre questions, checkboxes pour plusieurs bonnes réponses). Colonne `reponse_correcte` migrée de INT à JSONB array.
 
-- **Toggle thème admin** : ajout du mode clair/sombre dans l'admin (topbar + login), persisté en localStorage
+- **JWT auto-refresh** : `authFetch()` dans `supabaseAdmin.js` relance automatiquement avec `refresh_token` en cas de 401.
 
-- **Refonte UI Inscriptions** : remplacement du tableau par une liste avec avatars + panneau détail + barre de progression visuelle (Nouveau → Contacté → Inscrit)
+- **Portail layout** : correction du layout (sidebar fixed + `display:block` au lieu de grid cassé). Topbar hauteur fixe 60px, `white-space:nowrap` sur la date.
 
-- **Refonte UI Messages** : remplacement du tableau par une liste avec aperçu + onglets filtres (Tous/Non lus/Lus) + panneau de lecture épuré avec avatar, métadonnées et actions en pilules
+- **Dark mode nav** : ajout de `html.dark .nav-btn { color: var(--fg-mid); }` dans `styles.js`.
+
+- **Section Témoignages** : ajout entre Tarifs et Contact.
+
+- **Interface Admin** : dashboard, inscriptions, messages avec design dark/light, sidebar navigation, Supabase Auth JWT.
+
+- **Intégration Supabase** : formulaire contact → `messages`, modal pré-inscription → `inscriptions`, RLS configuré.
+
+- **Refonte visuelle Apple + Oriental** : Inter + Scheherazade New + Cormorant Garamond, palette Apple, boutons pilules, glassmorphisme navbar.
