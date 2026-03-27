@@ -230,6 +230,13 @@ export default function PortailModule() {
             </div>
           ) : selNiveau && !showQCM && !showResult ? (
             <>
+              {selNiveau.image_url && (
+                <img
+                  src={selNiveau.image_url}
+                  alt={selNiveau.titre}
+                  style={{ width:'100%', height:180, objectFit:'cover', borderRadius:'var(--p-radius)', marginBottom:20, display:'block' }}
+                />
+              )}
               <h2 style={S.sectionTitle}>{selNiveau.titre}</h2>
               {selNiveau.description && <p style={S.sectionDesc}>{selNiveau.description}</p>}
 
