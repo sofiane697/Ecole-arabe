@@ -96,6 +96,7 @@ export default function AdminApp() {
     navigate('/admin/login');
   };
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
   const [newInscriptions, setNewInscriptions] = useState(0);
 
@@ -112,8 +113,14 @@ export default function AdminApp() {
   return (
     <div className="admin-root admin-layout">
 
+      {/* ── Overlay mobile ── */}
+      <div
+        className={`admin-sidebar-overlay${sidebarOpen ? ' open' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       {/* ── Sidebar ── */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
           <span className="arabic">مدرسة النور</span>
           <span className="label">Espace Admin</span>
@@ -123,9 +130,9 @@ export default function AdminApp() {
           <div className="admin-nav-section">Navigation</div>
 
           <NavLink
-            to="/admin"
-            end
+            to="/admin" end
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
           >
             <IconDashboard /> Tableau de bord
           </NavLink>
@@ -133,6 +140,7 @@ export default function AdminApp() {
           <NavLink
             to="/admin/inscriptions"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
           >
             <IconUsers /> Pré-inscriptions
             {newInscriptions > 0 && (
@@ -143,6 +151,7 @@ export default function AdminApp() {
           <NavLink
             to="/admin/messages"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
           >
             <IconMail /> Messages
             {unreadMessages > 0 && (
@@ -155,6 +164,7 @@ export default function AdminApp() {
           <NavLink
             to="/admin/cours"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
           >
             <IconBook /> Gestion des cours
           </NavLink>
@@ -162,15 +172,16 @@ export default function AdminApp() {
           <NavLink
             to="/admin/eleves"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
           >
             <IconStudent /> Gestion des élèves
           </NavLink>
 
           <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>
-          <a href="/" className="admin-nav-link" target="_blank" rel="noreferrer">
+          <a href="/" className="admin-nav-link" target="_blank" rel="noreferrer" onClick={() => setSidebarOpen(false)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
             Voir le site
           </a>
@@ -190,7 +201,12 @@ export default function AdminApp() {
       {/* ── Contenu ── */}
       <main className="admin-main">
         <header className="admin-topbar">
-          <span className="admin-topbar-title">{currentTitle}</span>
+          <div className="admin-topbar-left">
+            <button className="admin-hamburger" onClick={() => setSidebarOpen(o => !o)}>
+              ☰
+            </button>
+            <span className="admin-topbar-title">{currentTitle}</span>
+          </div>
           <div className="admin-topbar-right">
             <button
               className="admin-theme-toggle"

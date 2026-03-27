@@ -1276,6 +1276,8 @@ const ADMIN_STYLES = `
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
   .admin-page-title {
     font-size: 1.4rem;
@@ -1287,6 +1289,84 @@ const ADMIN_STYLES = `
     font-size: 0.82rem;
     color: var(--a-fg-mid);
     margin-top: 0.25rem;
+  }
+
+  /* ─── Topbar left group ─── */
+  .admin-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  /* ─── Hamburger (masqué sur desktop) ─── */
+  .admin-hamburger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: none;
+    border: 1px solid var(--a-border);
+    color: var(--a-fg-mid);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all .2s;
+  }
+  .admin-hamburger:hover { color: var(--a-fg); border-color: var(--a-fg-mid); }
+
+  /* ─── Overlay sidebar mobile ─── */
+  .admin-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+  }
+  .admin-sidebar-overlay.open { display: block; }
+
+  /* ─── Responsive — tablette & mobile (≤ 1024px) ─── */
+  @media (max-width: 1024px) {
+    .admin-hamburger { display: flex; }
+
+    .admin-sidebar {
+      transform: translateX(-260px);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .admin-sidebar.open { transform: translateX(0); }
+
+    .admin-main { margin-left: 0; }
+
+    .admin-topbar { padding: 1rem 1.25rem; }
+    .admin-content { padding: 1.5rem; }
+
+    .admin-topbar-date { display: none; }
+
+    .admin-msg-layout { grid-template-columns: 1fr; }
+    .insc-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ─── Responsive — mobile (≤ 600px) ─── */
+  @media (max-width: 600px) {
+    .admin-topbar { padding: 0.8rem 1rem; }
+    .admin-content { padding: 1rem; }
+
+    .admin-topbar-title { font-size: 1rem; }
+
+    .admin-stat-value { font-size: 1.8rem; }
+    .admin-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .admin-stat-card { padding: 1rem 1.1rem; }
+
+    .admin-login-card { padding: 2rem 1.5rem; margin: 0 0.75rem; }
+
+    .admin-page-title { font-size: 1.1rem; }
+
+    .admin-filters { gap: 0.5rem; }
+
+    .admin-dash-grid { gap: 1rem; }
   }
 `;
 
