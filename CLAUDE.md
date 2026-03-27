@@ -152,9 +152,16 @@ Basée sur **Supabase Auth** (email + mot de passe).
 
 ### Storage Supabase
 
-- **Bucket :** `Cours de coran` (public)
-- **Usage :** Upload des fichiers PDF depuis l'admin → URL publique stockée dans `contenus.contenu`
-- **Fonction :** `uploadPDF(file)` dans `supabaseAdmin.js`
+| Bucket | Visibilité | Usage |
+|--------|-----------|-------|
+| `cours` | Public | Tous les nouveaux fichiers — structure `[module]/cover.jpg`, `[module]/[niveau]/cover.jpg`, `[module]/[niveau]/[contenu].[ext]` |
+| `Cours de coran` | Public | Anciens PDFs (URLs existantes toujours valides) |
+| `Images` | Public | Anciennes images de couverture (URLs existantes toujours valides) |
+
+**Fonctions Storage dans `supabaseAdmin.js` :**
+- `toSlug(str)` — convertit un titre en slug URL-safe
+- `uploadFile(file, path)` — upload dans le bucket `cours` au chemin donné
+- `deleteStorageFolder(prefix)` — supprime récursivement tous les fichiers sous un préfixe
 
 ---
 
@@ -217,7 +224,9 @@ npm run build # build de production
 | # | Tâche | Statut |
 |---|-------|--------|
 | F6 | Import questions QCM depuis CSV (avec modèle téléchargeable + aperçu) | ✅ |
-| D6 | Upload image de couverture pour modules ET niveaux (bucket `Images`) | ✅ |
+| D6 | Upload image de couverture pour modules ET niveaux | ✅ |
+| S1 | Réorganisation Storage — 1 bucket `cours` avec arborescence automatique | ✅ |
+| S2 | Suppression automatique des fichiers Storage à la suppression module/niveau | ✅ |
 | D5 | Aperçu miniature YouTube dans la modal contenu | ⬜ |
 
 ### Responsivité portail élève — ✅ Terminé

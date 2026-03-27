@@ -256,36 +256,47 @@ export async function fetchEleveProgression(eleveId) {
 
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 
-/** Uploader un fichier PDF dans Supabase Storage (bucket "Cours de coran") */
-export async function uploadPDF(file) {
-  const BUCKET = 'Cours de coran';
-  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-  const fileName = `${Date.now()}-${safeName}`;
-  const res = await authFetch(
-    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${fileName}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': file.type || 'application/pdf' },
-      body: file,
-    }
+/** Convertit un titre en chemin URL-safe (ex: "Les 5 piliers" → "Les-5-piliers") */
+export function toSlug(str) {
+  if (!str) return 'sans-titre';
+  return (
+    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s\-]/g, '').trim().replace(/\s+/g, '-') || 'sans-titre'
   );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Erreur upload ${res.status}`);
-  }
-  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${fileName}`;
 }
 
-/** Uploader une image de couverture (bucket "Images") */
-export async function uploadModuleImage(file, folder = 'modules') {
-  const BUCKET = 'Images';
-  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-  const fileName = `${folder}/${Date.now()}-${safeName}`;
+/** Supprimer récursivement tous les fichiers sous un préfixe dans le bucket "cours" */
+export async function deleteStorageFolder(prefix) {
+  const BUCKET = 'cours';
+  const listRes = await authFetch(
+    `${SUPABASE_URL}/storage/v1/object/list/${encodeURIComponent(BUCKET)}`,
+    { method: 'POST', body: JSON.stringify({ prefix, limit: 1000, offset: 0 }) }
+  );
+  if (!listRes.ok) return;
+  const items = await listRes.json().catch(() => []);
+  if (!Array.isArray(items)) return;
+
+  const files   = items.filter(i => i.id).map(i => `${prefix}/${i.name}`);
+  const folders = items.filter(i => !i.id && i.name).map(i => `${prefix}/${i.name}`);
+
+  for (const folder of folders) await deleteStorageFolder(folder);
+
+  if (files.length > 0) {
+    await authFetch(
+      `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`,
+      { method: 'DELETE', body: JSON.stringify({ prefixes: files }) }
+    );
+  }
+}
+
+/** Uploader un fichier dans le bucket "cours" au chemin spécifié */
+export async function uploadFile(file, path) {
+  const BUCKET = 'cours';
   const res = await authFetch(
-    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${fileName}`,
+    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${path}`,
     {
       method: 'POST',
-      headers: { 'Content-Type': file.type || 'image/jpeg' },
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
       body: file,
     }
   );
@@ -293,7 +304,7 @@ export async function uploadModuleImage(file, folder = 'modules') {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || `Erreur upload ${res.status}`);
   }
-  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${fileName}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${path}`;
 }
 
 /** Réinitialiser le mot de passe d'un élève (génère un provisoire + force changement à la prochaine connexion) */

@@ -244,10 +244,12 @@ export default function PortailModule() {
 
               {contenus.map(c => (
                 <div key={c.id} style={S.contentCard}>
-                  <div style={S.contentHeader}>
-                    <span style={S.contentType(TYPE_COLORS[c.type] || '#aaa')}>{c.type === 'video' ? '▶ Vidéo' : c.type === 'pdf' ? '📄 PDF' : '📝 Texte'}</span>
-                    <span style={S.contentTitle}>{c.titre}</span>
-                  </div>
+                  {c.type !== 'pdf' && (
+                    <div style={S.contentHeader}>
+                      <span style={S.contentType(TYPE_COLORS[c.type] || '#aaa')}>{c.type === 'video' ? '▶ Vidéo' : '📝 Texte'}</span>
+                      <span style={S.contentTitle}>{c.titre}</span>
+                    </div>
+                  )}
                   {c.type === 'video' && getYouTubeId(c.contenu) && (
                     <iframe
                       style={S.videoFrame}
@@ -258,9 +260,26 @@ export default function PortailModule() {
                     />
                   )}
                   {c.type === 'pdf' && (
-                    <a href={c.contenu} target="_blank" rel="noreferrer" style={S.pdfLink}>
-                      📄 Ouvrir le PDF — {c.titre}
-                    </a>
+                    <div style={{ padding:'14px 18px' }}>
+                      <a href={c.contenu} target="_blank" rel="noreferrer" style={{
+                        display:'flex', alignItems:'center', justifyContent:'space-between',
+                        padding:'14px 18px', borderRadius:'var(--p-radius-sm)',
+                        background:'rgba(10,132,255,0.06)', border:'1px solid rgba(10,132,255,0.18)',
+                        textDecoration:'none', gap:12,
+                      }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                          <span style={{ fontSize:32, flexShrink:0 }}>📄</span>
+                          <div>
+                            <div style={{ fontSize:14, fontWeight:600, color:'var(--p-fg)' }}>{c.titre}</div>
+                            <div style={{ fontSize:12, color:'var(--p-fg-mid)', marginTop:2 }}>Appuyez pour ouvrir le document</div>
+                          </div>
+                        </div>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--p-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                      </a>
+                    </div>
                   )}
                   {c.type === 'texte' && (
                     <div style={S.textContent}>{c.contenu}</div>

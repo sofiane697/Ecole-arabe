@@ -4,7 +4,7 @@ import {
   fetchNiveaux, createNiveau, updateNiveau, deleteNiveau,
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
-  uploadPDF, uploadModuleImage,
+  uploadFile, toSlug, deleteStorageFolder,
 } from './supabaseAdmin';
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
@@ -180,9 +180,13 @@ export default function Cours() {
     setLoading(false);
   };
 
-  const handleDeleteModule = async (id) => {
+  const handleDeleteModule = async (id, titre) => {
     if (!window.confirm('Supprimer ce module et tout son contenu ?')) return;
-    try { await deleteModule(id); await loadModules(); } catch(e) { alert(e.message); }
+    try {
+      await deleteModule(id);
+      await deleteStorageFolder(toSlug(titre)).catch(() => {});
+      await loadModules();
+    } catch(e) { alert(e.message); }
   };
 
   const handleSaveNiveau = async (data) => {
@@ -196,9 +200,13 @@ export default function Cours() {
     setLoading(false);
   };
 
-  const handleDeleteNiveau = async (id) => {
+  const handleDeleteNiveau = async (id, titre) => {
     if (!window.confirm('Supprimer ce niveau et tout son contenu ?')) return;
-    try { await deleteNiveau(id); await loadNiveaux(selModule.id); } catch(e) { alert(e.message); }
+    try {
+      await deleteNiveau(id);
+      await deleteStorageFolder(`${toSlug(selModule.titre)}/${toSlug(titre)}`).catch(() => {});
+      await loadNiveaux(selModule.id);
+    } catch(e) { alert(e.message); }
   };
 
   const handleSaveContenu = async (data) => {
@@ -267,7 +275,7 @@ export default function Cours() {
                   <h3 style={S.cardTitle}>{m.titre}</h3>
                   <div style={S.actions}>
                     <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id); }}><IconTrash /></button>
+                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id, m.titre); }}><IconTrash /></button>
                   </div>
                 </div>
                 {m.description && <p style={S.cardDesc}>{m.description}</p>}
@@ -313,7 +321,7 @@ export default function Cours() {
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <span style={S.badge('var(--a-blue)')}>Score requis : {n.score_requis}%</span>
               <button style={S.actionBtn} onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}><IconEdit /></button>
-              <button style={S.actionBtn} onClick={e => { e.stopPropagation(); handleDeleteNiveau(n.id); }}><IconTrash /></button>
+              <button style={S.actionBtn} onClick={e => { e.stopPropagation(); handleDeleteNiveau(n.id, n.titre); }}><IconTrash /></button>
             </div>
           </div>
         ))}
@@ -323,7 +331,7 @@ export default function Cours() {
         </div>
 
         {modal?.type === 'niveau' && (
-          <NiveauModal data={modal.data} onSave={handleSaveNiveau} onClose={() => setModal(null)} loading={loading} />
+          <NiveauModal data={modal.data} onSave={handleSaveNiveau} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} />
         )}
       </div>
     );
@@ -400,7 +408,7 @@ export default function Cours() {
       )}
 
       {modal?.type === 'contenu' && (
-        <ContenuModal data={modal.data} onSave={handleSaveContenu} onClose={() => setModal(null)} loading={loading} />
+        <ContenuModal data={modal.data} onSave={handleSaveContenu} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} niveauTitre={selNiveau?.titre} />
       )}
       {modal?.type === 'qcm-carousel' && (
         <QCMCarouselModal
@@ -442,7 +450,8 @@ function ModuleModal({ data, onSave, onClose, loading }) {
     setUploadErr('');
     setUploading(true);
     try {
-      const url = await uploadModuleImage(file, 'modules');
+      const ext = file.name.split('.').pop().toLowerCase();
+      const url = await uploadFile(file, `${toSlug(titre)}/cover.${ext}`);
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);
@@ -502,7 +511,7 @@ function ModuleModal({ data, onSave, onClose, loading }) {
   );
 }
 
-function NiveauModal({ data, onSave, onClose, loading }) {
+function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
   const [titre, setTitre] = useState(data?.titre || '');
   const [description, setDescription] = useState(data?.description || '');
   const [image_url, setImageUrl] = useState(data?.image_url || '');
@@ -519,7 +528,8 @@ function NiveauModal({ data, onSave, onClose, loading }) {
     setUploadErr('');
     setUploading(true);
     try {
-      const url = await uploadModuleImage(file, 'niveaux');
+      const ext = file.name.split('.').pop().toLowerCase();
+      const url = await uploadFile(file, `${toSlug(moduleTitre)}/${toSlug(titre)}/cover.${ext}`);
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);
@@ -575,7 +585,7 @@ function NiveauModal({ data, onSave, onClose, loading }) {
   );
 }
 
-function ContenuModal({ data, onSave, onClose, loading }) {
+function ContenuModal({ data, onSave, onClose, loading, moduleTitre, niveauTitre }) {
   const [type, setType] = useState(data?.type || 'video');
   const [titre, setTitre] = useState(data?.titre || '');
   const [contenu, setContenu] = useState(data?.contenu || '');
@@ -596,7 +606,9 @@ function ContenuModal({ data, onSave, onClose, loading }) {
     setUploadError('');
     setUploading(true);
     try {
-      const url = await uploadPDF(file);
+      const ext = file.name.split('.').pop().toLowerCase();
+      const slugTitle = toSlug(titre || file.name.replace(/\.[^.]+$/, ''));
+      const url = await uploadFile(file, `${toSlug(moduleTitre)}/${toSlug(niveauTitre)}/${slugTitle}.${ext}`);
       setContenu(url);
       if (!titre) setTitre(file.name.replace(/\.pdf$/i, ''));
     } catch(e) {
