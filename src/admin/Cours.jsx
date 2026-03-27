@@ -4,7 +4,7 @@ import {
   fetchNiveaux, createNiveau, updateNiveau, deleteNiveau,
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
-  uploadPDF,
+  uploadPDF, uploadModuleImage,
 } from './supabaseAdmin';
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
@@ -188,8 +188,8 @@ export default function Cours() {
   const handleSaveNiveau = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateNiveau(data.id, { titre: data.titre, description: data.description, ordre: data.ordre, score_requis: data.score_requis }); }
-      else { await createNiveau({ module_id: selModule.id, titre: data.titre, description: data.description, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
+      if (data.id) { await updateNiveau(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, score_requis: data.score_requis }); }
+      else { await createNiveau({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
       await loadNiveaux(selModule.id);
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -248,20 +248,33 @@ export default function Cours() {
       <div style={S.page}>
         <div style={S.grid}>
           {modules.map(m => (
-            <div key={m.id} style={S.card} onClick={() => openModule(m)}
+            <div key={m.id} style={{ ...S.card, padding:0, overflow:'hidden' }} onClick={() => openModule(m)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
-              <div style={S.cardHeader}>
-                <h3 style={S.cardTitle}>{m.titre}</h3>
-                <div style={S.actions}>
-                  <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
-                  <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id); }}><IconTrash /></button>
+              {/* Image de couverture */}
+              {m.image_url ? (
+                <div style={{ width:'100%', height:140, overflow:'hidden', position:'relative', background:'var(--a-bg)' }}>
+                  <img src={m.image_url} alt={m.titre} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
                 </div>
-              </div>
-              {m.description && <p style={S.cardDesc}>{m.description}</p>}
-              <div style={S.cardFooter}>
-                <span style={S.badge('var(--a-gold)')}>Ordre : {m.ordre}</span>
-                <span style={S.badge(m.actif ? 'var(--a-green)' : 'var(--a-red)')}>{m.actif ? 'Actif' : 'Inactif'}</span>
+              ) : (
+                <div style={{ width:'100%', height:80, background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>
+                  📚
+                </div>
+              )}
+              <div style={{ padding:16 }}>
+                <div style={S.cardHeader}>
+                  <h3 style={S.cardTitle}>{m.titre}</h3>
+                  <div style={S.actions}>
+                    <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
+                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id); }}><IconTrash /></button>
+                  </div>
+                </div>
+                {m.description && <p style={S.cardDesc}>{m.description}</p>}
+                <div style={S.cardFooter}>
+                  <span style={S.badge('var(--a-gold)')}>Ordre : {m.ordre}</span>
+                  <span style={S.badge(m.actif ? 'var(--a-green)' : 'var(--a-red)')}>{m.actif ? 'Actif' : 'Inactif'}</span>
+                </div>
               </div>
             </div>
           ))}
@@ -418,12 +431,59 @@ function ModuleModal({ data, onSave, onClose, loading }) {
   const [image_url, setImageUrl] = useState(data?.image_url || '');
   const [ordre, setOrdre] = useState(data?.ordre || 1);
   const [actif, setActif] = useState(data?.actif !== undefined ? data.actif : true);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+
+  const handleImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setUploadErr('Fichier non valide (JPG, PNG, WebP uniquement)'); return; }
+    if (file.size > 5 * 1024 * 1024) { setUploadErr('Image trop lourde (max 5 Mo)'); return; }
+    setUploadErr('');
+    setUploading(true);
+    try {
+      const url = await uploadModuleImage(file);
+      setImageUrl(url);
+    } catch(e) { setUploadErr(e.message); }
+    setUploading(false);
+  };
 
   return (
     <Modal title={data ? 'Modifier le module' : 'Nouveau module'} onClose={onClose}>
       <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Cours de Coran" /></div>
       <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description du module..." /></div>
-      <div style={S.field}><label style={S.label}>Image URL</label><input style={S.input} value={image_url} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." /></div>
+
+      {/* Zone upload image */}
+      <div style={S.field}>
+        <label style={S.label}>Image de couverture</label>
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
+          onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent', position:'relative', overflow:'hidden' }}>
+          {image_url ? (
+            <div style={{ position:'relative' }}>
+              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
+              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
+                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            </div>
+          )}
+        </div>
+        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {image_url && (
+          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
+            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          </div>
+        )}
+      </div>
+
       <div style={{ display:'flex', gap:12 }}>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Actif</label>
@@ -434,7 +494,7 @@ function ModuleModal({ data, onSave, onClose, loading }) {
       </div>
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, actif })}>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, actif })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -445,20 +505,69 @@ function ModuleModal({ data, onSave, onClose, loading }) {
 function NiveauModal({ data, onSave, onClose, loading }) {
   const [titre, setTitre] = useState(data?.titre || '');
   const [description, setDescription] = useState(data?.description || '');
+  const [image_url, setImageUrl] = useState(data?.image_url || '');
   const [ordre, setOrdre] = useState(data?.ordre || 1);
   const [score_requis, setScoreRequis] = useState(data?.score_requis || 80);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+
+  const handleImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setUploadErr('Fichier non valide (JPG, PNG, WebP uniquement)'); return; }
+    if (file.size > 5 * 1024 * 1024) { setUploadErr('Image trop lourde (max 5 Mo)'); return; }
+    setUploadErr('');
+    setUploading(true);
+    try {
+      const url = await uploadModuleImage(file);
+      setImageUrl(url);
+    } catch(e) { setUploadErr(e.message); }
+    setUploading(false);
+  };
 
   return (
     <Modal title={data ? 'Modifier le niveau' : 'Nouveau niveau'} onClose={onClose}>
       <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Niveau 1 - Introduction" /></div>
       <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} /></div>
+
+      {/* Zone upload image */}
+      <div style={S.field}>
+        <label style={S.label}>Image de couverture</label>
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
+          onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent' }}>
+          {image_url ? (
+            <div style={{ position:'relative' }}>
+              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
+              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
+                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            </div>
+          )}
+        </div>
+        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {image_url && (
+          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
+            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          </div>
+        )}
+      </div>
+
       <div style={{ display:'flex', gap:12 }}>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Score requis (%)</label><input style={S.input} type="number" min="0" max="100" value={score_requis} onChange={e => setScoreRequis(+e.target.value)} /></div>
       </div>
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, ordre, score_requis })}>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, score_requis })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>

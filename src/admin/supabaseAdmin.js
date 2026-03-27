@@ -254,7 +254,7 @@ export async function fetchEleveProgression(eleveId) {
   return res.json();
 }
 
-// ─── STORAGE PDF ─────────────────────────────────────────────────────────────
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
 
 /** Uploader un fichier PDF dans Supabase Storage (bucket "Cours de coran") */
 export async function uploadPDF(file) {
@@ -266,6 +266,26 @@ export async function uploadPDF(file) {
     {
       method: 'POST',
       headers: { 'Content-Type': file.type || 'application/pdf' },
+      body: file,
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur upload ${res.status}`);
+  }
+  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${fileName}`;
+}
+
+/** Uploader une image de couverture (bucket "Images") */
+export async function uploadModuleImage(file) {
+  const BUCKET = 'Images';
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const fileName = `${Date.now()}-${safeName}`;
+  const res = await authFetch(
+    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${fileName}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'image/jpeg' },
       body: file,
     }
   );

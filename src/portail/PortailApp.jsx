@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
 import { logoutEleve, getEleveUser } from './supabasePortail';
@@ -27,8 +27,9 @@ export default function PortailApp() {
     const saved = localStorage.getItem('portail_theme');
     return saved ? saved === 'dark' : true;
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const id = 'portail-styles';
     if (!document.getElementById(id)) {
       const style = document.createElement('style');
@@ -69,8 +70,14 @@ export default function PortailApp() {
 
   return (
     <div className={`portail-root portail-layout${darkMode ? '' : ' portail-light'}`}>
+      {/* Overlay mobile */}
+      <div
+        className={`portail-sidebar-overlay${sidebarOpen ? ' open' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside className="portail-sidebar">
+      <aside className={`portail-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="portail-sidebar-brand">
           <span className="arabic">مدرسة النور</span>
           <span className="label">Portail Élève</span>
@@ -79,12 +86,16 @@ export default function PortailApp() {
         <nav className="portail-nav">
           <div className="portail-nav-section">Navigation</div>
 
-          <NavLink to="/portail" end className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}>
+          <NavLink
+            to="/portail" end
+            className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
+          >
             <IconCourses /> Mes cours
           </NavLink>
 
           <div className="portail-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>
-          <a href="/" className="portail-nav-link" target="_blank" rel="noreferrer">
+          <a href="/" className="portail-nav-link" target="_blank" rel="noreferrer" onClick={() => setSidebarOpen(false)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -107,7 +118,12 @@ export default function PortailApp() {
       {/* Main */}
       <main className="portail-main">
         <header className="portail-topbar">
-          <span className="portail-topbar-title">{currentTitle}</span>
+          <div className="portail-topbar-left">
+            <button className="portail-hamburger" onClick={() => setSidebarOpen(o => !o)}>
+              ☰
+            </button>
+            <span className="portail-topbar-title">{currentTitle}</span>
+          </div>
           <div className="portail-topbar-right">
             <button className="portail-theme-toggle" onClick={() => setDarkMode(d => !d)}>
               {darkMode ? '☀' : '☾'}

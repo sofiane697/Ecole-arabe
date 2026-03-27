@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import STYLES from './styles';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
@@ -251,7 +251,7 @@ export default function App() {
   useScrollReveal();
 
   /* — CSS global injecté une seule fois — */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const tag = document.createElement('style');
     tag.innerHTML = STYLES;
     document.head.appendChild(tag);

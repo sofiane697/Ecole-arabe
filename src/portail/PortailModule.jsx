@@ -192,10 +192,10 @@ export default function PortailModule() {
         Retour aux cours
       </button>
 
-      <div style={S.layout}>
+      <div className="portail-module-layout">
         {/* ─── Stepper gauche ─── */}
-        <div style={S.stepper}>
-          <div style={S.stepperTitle}>{module_.titre}</div>
+        <div className="portail-module-stepper">
+          <div className="portail-stepper-title" style={S.stepperTitle}>{module_.titre}</div>
           {niveaux.map((n, i) => {
             const unlocked = isUnlocked(n, i);
             const passed = isPassed(n.id);
@@ -221,7 +221,7 @@ export default function PortailModule() {
         </div>
 
         {/* ─── Contenu principal ─── */}
-        <div style={S.main}>
+        <div className="portail-module-main">
           {selNiveau && !isUnlocked(selNiveau, niveaux.indexOf(selNiveau)) ? (
             <div style={S.locked}>
               <div style={S.lockedIcon}>🔒</div>

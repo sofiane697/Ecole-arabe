@@ -259,6 +259,116 @@ const PORTAIL_STYLES = `
     text-align: center;
     margin-top: 12px;
   }
+
+  /* ─── Topbar left group ─── */
+  .portail-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  /* ─── Hamburger (masqué sur desktop) ─── */
+  .portail-hamburger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: none;
+    border: 1px solid var(--p-border);
+    color: var(--p-fg-mid);
+    cursor: pointer;
+    font-size: 18px;
+    transition: all .2s;
+  }
+  .portail-hamburger:hover { color: var(--p-fg); border-color: var(--p-fg-mid); }
+
+  /* ─── Overlay sidebar mobile ─── */
+  .portail-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+  }
+  .portail-sidebar-overlay.open { display: block; }
+
+  /* ─── Module layout (CSS class, remplace inline style) ─── */
+  .portail-module-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 100px);
+    border: 1px solid var(--p-border);
+    border-radius: var(--p-radius);
+    overflow: hidden;
+    background: var(--p-bg-card);
+  }
+  .portail-module-stepper {
+    border-right: 1px solid var(--p-border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+  .portail-module-main {
+    padding: 28px;
+    overflow-y: auto;
+  }
+
+  /* ─── Responsive — tablette & mobile (≤ 1024px) ─── */
+  @media (max-width: 1024px) {
+    .portail-hamburger { display: flex; }
+
+    .portail-sidebar {
+      transform: translateX(-260px);
+      transition: transform 0.28s var(--p-ease-out);
+      z-index: 200;
+    }
+    .portail-sidebar.open { transform: translateX(0); }
+
+    .portail-main { margin-left: 0; }
+
+    .portail-content { padding: 24px 28px; }
+
+    .portail-module-layout {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .portail-module-stepper {
+      border-right: none;
+      border-bottom: 1px solid var(--p-border);
+      padding: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: row;
+      -webkit-overflow-scrolling: touch;
+    }
+    .portail-stepper-title { display: none; }
+    .portail-module-main { padding: 20px; }
+  }
+
+  /* ─── Responsive — mobile (≤ 600px) ─── */
+  @media (max-width: 600px) {
+    .portail-content { padding: 16px; }
+
+    .portail-topbar { padding: 0 16px; }
+    .portail-topbar-date { display: none; }
+    .portail-topbar-title { font-size: 15px; }
+
+    .portail-login-card {
+      padding: 28px 20px;
+      margin: 0 12px;
+      max-width: calc(100vw - 24px);
+      border-radius: var(--p-radius-sm);
+    }
+    .portail-login-brand .arabic { font-size: 22px; }
+
+    .portail-module-main { padding: 14px; }
+  }
 `;
 
 export default PORTAIL_STYLES;

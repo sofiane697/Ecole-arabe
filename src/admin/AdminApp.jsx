@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from './adminStyles';
 import { logoutAdmin, fetchInscriptions, fetchMessages } from './supabaseAdmin';
@@ -59,7 +59,7 @@ export default function AdminApp() {
   });
 
   // Injecter les styles
-  useEffect(() => {
+  useLayoutEffect(() => {
     const id = 'admin-styles';
     if (!document.getElementById(id)) {
       const style = document.createElement('style');

@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { fetchModulesEleve, fetchNiveauxEleve, fetchProgression } from './supabasePortail';
 
 const S = {
-  grid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:20 },
+  grid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:20 },
   card: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' },
-  cardImg: { width:'100%', height:140, objectFit:'cover', background:'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' },
+  cardImg: { width:'100%', height:140, objectFit:'cover', display:'block' },
+  cardImgContainer: { width:'100%', height:140, background:'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' },
   cardImgPlaceholder: { fontSize:40, opacity:.3 },
   cardBody: { padding:20 },
   cardTitle: { fontSize:17, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
@@ -85,7 +86,7 @@ export default function PortailDashboard() {
                 {m.image_url ? (
                   <img src={m.image_url} alt={m.titre} style={S.cardImg} />
                 ) : (
-                  <div style={S.cardImg}>
+                  <div style={S.cardImgContainer}>
                     <span style={S.cardImgPlaceholder}>📖</span>
                   </div>
                 )}

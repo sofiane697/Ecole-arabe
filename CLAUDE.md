@@ -217,8 +217,16 @@ npm run build # build de production
 | # | Tâche | Statut |
 |---|-------|--------|
 | F6 | Import questions QCM depuis CSV (avec modèle téléchargeable + aperçu) | ✅ |
+| D6 | Upload image de couverture pour modules ET niveaux (bucket `Images`) | ✅ |
 | D5 | Aperçu miniature YouTube dans la modal contenu | ⬜ |
-| D6 | Upload image de couverture pour les modules | ⬜ |
+
+### Responsivité portail élève — ✅ Terminé
+| # | Tâche | Statut |
+|---|-------|--------|
+| R1 | Hamburger ☰ + sidebar overlay (masquée sur ≤1024px) | ✅ |
+| R2 | Layout module responsive (stepper horizontal scroll sur mobile) | ✅ |
+| R3 | Breakpoints 1024px + 600px (padding, topbar, login card) | ✅ |
+| R4 | Grid dashboard `minmax(260px)` adaptatif | ✅ |
 
 ### Améliorations futures (non planifiées)
 - D3 — Mini-barre de progression dans la carte élève
@@ -246,6 +254,10 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Responsivité portail élève** : sidebar masquée + hamburger ☰ sur ≤1024px, overlay cliquable, stepper horizontal scroll sur mobile, breakpoints 600px/1024px (padding, topbar, login card), grid dashboard adaptatif `minmax(260px)`.
+
+- **D6 upload image couverture** : drag & drop image dans modal module ET modal niveau, bucket Supabase `Images` (public, séparé des PDFs), colonnes `image_url` ajoutées sur `modules` et `niveaux`.
 
 - **Pack élèves admin** : F1 reset mot de passe (SQL `admin_reset_eleve_password` + modale confirmation + affichage identifiants + bouton WhatsApp), F2 modifier nom/prénom/téléphone/email contact, F3 supprimer élève avec confirmation, D1 recherche temps réel + filtres actif/inactif + tri, F4 export CSV avec BOM UTF-8.
 
