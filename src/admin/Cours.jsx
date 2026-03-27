@@ -442,7 +442,7 @@ function ModuleModal({ data, onSave, onClose, loading }) {
     setUploadErr('');
     setUploading(true);
     try {
-      const url = await uploadModuleImage(file);
+      const url = await uploadModuleImage(file, 'modules');
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);
@@ -519,7 +519,7 @@ function NiveauModal({ data, onSave, onClose, loading }) {
     setUploadErr('');
     setUploading(true);
     try {
-      const url = await uploadModuleImage(file);
+      const url = await uploadModuleImage(file, 'niveaux');
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);

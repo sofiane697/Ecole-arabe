@@ -277,10 +277,10 @@ export async function uploadPDF(file) {
 }
 
 /** Uploader une image de couverture (bucket "Images") */
-export async function uploadModuleImage(file) {
+export async function uploadModuleImage(file, folder = 'modules') {
   const BUCKET = 'Images';
   const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-  const fileName = `${Date.now()}-${safeName}`;
+  const fileName = `${folder}/${Date.now()}-${safeName}`;
   const res = await authFetch(
     `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${fileName}`,
     {
