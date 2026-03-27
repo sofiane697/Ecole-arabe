@@ -71,7 +71,7 @@ export default function Dashboard() {
         {/* Dernières inscriptions */}
         <div>
           <p className="admin-section-title">Dernières pré-inscriptions</p>
-          <div className="admin-panel" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="admin-panel dash-table-wrap" style={{ padding: 0, overflow: 'hidden' }}>
             <table className="admin-table">
               <thead>
                 <tr>
@@ -115,7 +115,7 @@ export default function Dashboard() {
         {/* Derniers messages */}
         <div>
           <p className="admin-section-title">Derniers messages</p>
-          <div className="admin-panel" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="admin-panel dash-table-wrap" style={{ padding: 0, overflow: 'hidden' }}>
             <table className="admin-table">
               <thead>
                 <tr>

@@ -1367,6 +1367,37 @@ const ADMIN_STYLES = `
     .admin-filters { gap: 0.5rem; }
 
     .admin-dash-grid { gap: 1rem; }
+
+    /* ─── Dashboard tables → mode carte sur mobile ─── */
+    .dash-table-wrap .admin-table thead { display: none; }
+
+    .dash-table-wrap .admin-table tbody tr {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--a-border);
+      cursor: pointer;
+      gap: 0.5rem;
+    }
+    .dash-table-wrap .admin-table tbody tr:last-child { border-bottom: none; }
+    .dash-table-wrap .admin-table tbody tr:hover { background: var(--a-bg-hover); }
+
+    .dash-table-wrap .admin-table tbody td {
+      display: block;
+      padding: 0;
+      border: none;
+    }
+
+    /* Colonne Cours (2e) et Date (4e) masquées */
+    .dash-table-wrap .admin-table td:nth-child(2),
+    .dash-table-wrap .admin-table td:nth-child(4) { display: none; }
+
+    /* Colonne Nom (1e) prend tout l'espace */
+    .dash-table-wrap .admin-table td:nth-child(1) { flex: 1; min-width: 0; }
+
+    /* Colonne Badge (3e) à droite */
+    .dash-table-wrap .admin-table td:nth-child(3) { margin-left: auto; flex-shrink: 0; }
   }
 `;
 
