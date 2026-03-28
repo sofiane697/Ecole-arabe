@@ -276,6 +276,8 @@ Fonctionnalités souhaitées :
 
 ## Historique des modifications
 
+- **ConfirmModal partagé** : composant `src/admin/ConfirmModal.jsx` — modale animée (scale+fade, backdrop blur) avec icône SVG, titre, message JSX, boutons pill. Remplace les 3 `window.confirm()` dans `Cours.jsx` (suppr. module/niveau/contenu) et les 2 modales emoji dans `Eleves.jsx` (suppr. élève + reset MDP). Prop `danger` (rouge) ou `icon="warn"` (or). Fermeture avec Échap ou clic backdrop.
+
 - **Suppression étoile ornementale Hero** : suppression du SVG `.hero-star` (cercles + rayons, rotation 30s) dans `App.jsx` et de son CSS (`.hero-star`, `spinSlow`) dans `styles.js`.
 
 - **Responsivité portail élève** : sidebar masquée + hamburger ☰ sur ≤1024px, overlay cliquable, stepper horizontal scroll sur mobile, breakpoints 600px/1024px (padding, topbar, login card), grid dashboard adaptatif `minmax(260px)`.
