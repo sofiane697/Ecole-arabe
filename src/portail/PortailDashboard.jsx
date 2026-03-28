@@ -2,8 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchModulesEleve, fetchNiveauxEleve, fetchProgression } from './supabasePortail';
 
+// Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
+let _salamHasAnimated = false;
+
 const S = {
-  grid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:20 },
+  grid: (n) => ({
+    display: 'grid',
+    gridTemplateColumns: n === 1 ? '1fr' : n === 2 ? '1fr 1fr' : n === 3 ? '1fr 1fr 1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: 20,
+  }),
   card: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' },
   cardImg: { width:'100%', height:140, objectFit:'cover', display:'block' },
   cardImgContainer: { width:'100%', height:140, background:'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' },
@@ -20,8 +27,69 @@ const S = {
   emptyTitle: { fontSize:20, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
   loading: { textAlign:'center', padding:'60px', color:'var(--p-fg-mid)', fontSize:14 },
   welcome: { marginBottom:28 },
-  welcomeTitle: { fontSize:22, fontWeight:700, color:'var(--p-fg)', marginBottom:4 },
-  welcomeSub: { fontSize:14, color:'var(--p-fg-mid)' },
+  welcomeSub: { fontSize:14, color:'var(--p-fg-mid)', marginTop:6 },
+};
+
+const GREETING_KEYFRAMES = `
+@keyframes salamSpreadArabic {
+  0%   { opacity:0; transform: translateX(60px); filter: blur(6px); }
+  40%  { opacity:1; filter: blur(0); }
+  100% { opacity:1; transform: translateX(0); }
+}
+@keyframes salamSpreadName {
+  0%   { opacity:0; transform: translateX(-60px); filter: blur(6px); }
+  40%  { opacity:1; filter: blur(0); }
+  100% { opacity:1; transform: translateX(0); }
+}
+@keyframes salamGlow {
+  0%,100% { text-shadow: 0 0 0px transparent; }
+  50%      { text-shadow: 0 0 20px rgba(191,138,48,.5); }
+}
+`;
+
+function SalamGreeting({ prenom }) {
+  // useState lazy init : lu une seule fois au montage du composant
+  // _salamHasAnimated persiste pendant la navigation React Router mais reset au refresh
+  const [shouldAnimate] = useState(() => {
+    if (_salamHasAnimated) return false;
+    _salamHasAnimated = true;
+    return true;
+  });
+
+  return (
+    <>
+      <style>{GREETING_KEYFRAMES}</style>
+      <div style={{ display:'flex', alignItems:'baseline', gap:12, flexWrap:'wrap', overflow:'hidden' }}>
+        {prenom && (
+          <span style={{
+            fontSize: 22, fontWeight: 700, color: 'var(--p-fg)',
+            display: 'inline-block',
+            animation: shouldAnimate
+              ? 'salamSpreadName .75s cubic-bezier(0.22,1,0.36,1) .1s both'
+              : 'none',
+          }}>
+            {prenom}
+          </span>
+        )}
+        <span style={{
+          fontFamily: "'Scheherazade New', serif",
+          fontSize: 36, fontWeight: 700,
+          color: 'var(--p-gold)',
+          lineHeight: 1.3, direction: 'rtl',
+          display: 'inline-block',
+          animation: shouldAnimate
+            ? 'salamSpreadArabic .75s cubic-bezier(0.22,1,0.36,1) .1s both, salamGlow 3s ease-in-out 1s infinite'
+            : 'salamGlow 3s ease-in-out infinite',
+        }}>
+          السلام عليكم
+        </span>
+        <span style={{
+          fontSize: 28, display: 'inline-block',
+          animation: shouldAnimate ? 'salamSpreadArabic .75s cubic-bezier(0.22,1,0.36,1) .25s both' : 'none',
+        }}>👋</span>
+      </div>
+    </>
+  );
 };
 
 export default function PortailDashboard() {
@@ -54,13 +122,13 @@ export default function PortailDashboard() {
 
   // Récupérer le prénom
   let prenom = '';
-  try { prenom = JSON.parse(sessionStorage.getItem('eleve_user'))?.prenom || ''; } catch {}
+  try { prenom = (JSON.parse(sessionStorage.getItem('eleve_user'))?.prenom || '').trim().toUpperCase(); } catch {}
 
   return (
     <div>
       <div style={S.welcome}>
-        <div style={S.welcomeTitle}>Bienvenue{prenom ? `, ${prenom}` : ''} 👋</div>
-        <div style={S.welcomeSub}>Continuez votre apprentissage en sélectionnant un module ci-dessous.</div>
+        <SalamGreeting prenom={prenom} />
+        <div style={S.welcomeSub}>Démarre ton apprentissage en sélectionnant un module !</div>
       </div>
 
       {modules.length === 0 ? (
@@ -70,7 +138,7 @@ export default function PortailDashboard() {
           <p style={{ color:'var(--p-fg-mid)', fontSize:14 }}>Les cours seront bientôt disponibles. Revenez plus tard !</p>
         </div>
       ) : (
-        <div style={S.grid}>
+        <div style={S.grid(modules.length)}>
           {modules.map(m => {
             const nivs = niveauxMap[m.id] || [];
             const total = nivs.length;

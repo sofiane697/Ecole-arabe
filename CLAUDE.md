@@ -55,25 +55,25 @@ Ecole-arabe/
 
 | URL | Page | Description |
 |-----|------|-------------|
-| `/admin/login` | AdminLogin | Connexion email + mot de passe |
+| `/admin/login` | AdminLogin | Connexion identifiant + mot de passe |
 | `/admin` | Dashboard | Vue d'ensemble — stats + dernières inscriptions/messages |
 | `/admin/inscriptions` | Inscriptions | Liste + panneau détail — stats, progression, changement de statut |
 | `/admin/messages` | Messages | Liste + panneau de lecture — onglets filtres, marquer lu/non lu |
 | `/admin/eleves` | Eleves | Liste élèves + création + fiche détail + progression par module |
 | `/admin/cours` | Cours | CRUD drill-down : Modules → Niveaux → Contenus + QCM |
 
-### Identifiants admin (Supabase Auth)
+### Identifiants admin
 
-- **Email :** `admin@alnour.fr`
+- **Identifiant :** `admin`
 - **Mot de passe :** `Admin123!`
 - **Accès :** `http://localhost:3000/admin/login`
 
-### Authentification admin
+### Authentification admin (auth custom bcrypt — PAS Supabase Auth)
 
-Basée sur **Supabase Auth** (email + mot de passe).
-- `AdminLogin.jsx` appelle `loginAdmin()` → Supabase Auth → token JWT stocké en `sessionStorage`
-- `supabaseAdmin.js` : `authFetch()` wrapper avec auto-refresh du token (401 → refresh_token)
-- Redirection automatique vers `/admin/login` si token expiré et refresh échoué
+- `AdminLogin.jsx` appelle `loginAdmin(identifiant, password)` → RPC `login_admin_custom` (bcrypt)
+- Session stockée dans `sessionStorage.admin_session` = `{ id, identifiant, display_name }`
+- `supabaseAdmin.js` : `authFetch()` utilise la **service_role key** (`REACT_APP_SUPABASE_SERVICE_KEY` dans `.env.local`) — pas de JWT, pas de refresh
+- Table `profils_admins` : `id`, `identifiant`, `password_hash` (bcrypt), `display_name`
 
 ---
 
@@ -116,11 +116,12 @@ Basée sur **Supabase Auth** (email + mot de passe).
 
 ### Tables
 
-| Table | Usage | Accès anon | Accès authenticated |
+| Table | Usage | Accès anon | Accès service_role |
 |-------|-------|------------|---------------------|
-| `inscriptions` | Pré-inscriptions (modal S'inscrire) | INSERT | SELECT, UPDATE |
-| `messages` | Formulaire contact | INSERT | SELECT, UPDATE |
+| `inscriptions` | Pré-inscriptions (modal S'inscrire) | INSERT | ALL |
+| `messages` | Formulaire contact | INSERT | ALL |
 | `profils_eleves` | Comptes élèves (auth custom, bcrypt) | — | ALL |
+| `profils_admins` | Comptes admins (auth custom, bcrypt) | — | ALL |
 | `modules` | Catégories de cours | SELECT (actif=true) | ALL |
 | `niveaux` | Niveaux dans chaque module | SELECT | ALL |
 | `contenus` | Contenu par niveau (video/pdf/texte) | SELECT | ALL |
@@ -144,7 +145,9 @@ Basée sur **Supabase Auth** (email + mot de passe).
 
 | Fonction | Rôle | Appelée par |
 |----------|------|-------------|
-| `admin_create_user(p_email, p_password, p_nom, p_prenom)` | Crée un élève avec bcrypt | Admin (authenticated) |
+| `login_admin_custom(p_identifiant, p_password)` | Vérifie identifiant+bcrypt admin, retourne JSON | Admin (anon) |
+| `admin_create_user(p_email, p_password, p_nom, p_prenom)` | Crée un élève avec bcrypt | Admin (service_role) |
+| `admin_reset_eleve_password(p_id, p_new_password)` | Réinitialise le mot de passe élève | Admin (service_role) |
 | `login_eleve(p_email, p_password)` | Vérifie les identifiants, retourne JSON user | Portail (anon) |
 | `change_eleve_password(p_id, p_old, p_new)` | Change le mot de passe | Portail (anon) |
 | `save_progression(p_eleve_id, p_niveau_id, p_score, p_reussi)` | Upsert progression | Portail (anon) |
@@ -296,7 +299,9 @@ Fonctionnalités souhaitées :
 
 - **QCM carrousel** : éditeur carrousel dans l'admin (navigation entre questions, checkboxes pour plusieurs bonnes réponses). Colonne `reponse_correcte` migrée de INT à JSONB array.
 
-- **JWT auto-refresh** : `authFetch()` dans `supabaseAdmin.js` relance automatiquement avec `refresh_token` en cas de 401.
+- **Auth admin custom (bcrypt + service_role)** : abandon de Supabase Auth pour l'admin. Nouvelle table `profils_admins` + fonction SQL `login_admin_custom` (bcrypt). `AdminLogin.jsx` passe à un champ identifiant. `authFetch()` dans `supabaseAdmin.js` utilise la service_role key (`.env.local` → `REACT_APP_SUPABASE_SERVICE_KEY`) — plus de JWT, plus de refresh. Sidebar admin lit `display_name`/`identifiant` depuis `sessionStorage.admin_session`. Fiche élève : email remplacé par `ID : IDENTIFIANT`.
+
+- **JWT auto-refresh** : `authFetch()` dans `supabaseAdmin.js` relance automatiquement avec `refresh_token` en cas de 401. *(remplacé par service_role key)*
 
 - **Portail layout** : correction du layout (sidebar fixed + `display:block` au lieu de grid cassé). Topbar hauteur fixe 60px, `white-space:nowrap` sur la date.
 

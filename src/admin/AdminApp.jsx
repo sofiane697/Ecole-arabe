@@ -202,8 +202,10 @@ export default function AdminApp() {
 
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-user">
-            <strong>Administrateur</strong>
-            admin@alnour.fr
+            {(() => {
+              const s = JSON.parse(sessionStorage.getItem('admin_session') || '{}');
+              return (<><strong>{s.display_name || 'Administrateur'}</strong><span>{s.identifiant || ''}</span></>);
+            })()}
           </div>
           <button className="admin-logout-btn" onClick={handleLogout}>
             <IconLogout /> Se déconnecter

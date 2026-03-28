@@ -58,8 +58,10 @@ export default function PortailApp() {
   };
 
   const user = getEleveUser();
-  const userName = `${user?.prenom || ''} ${user?.nom || ''}`.trim() || 'Élève';
-  const userEmail = user?.email || '';
+  const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
+  const fmtNom    = (s) => s ? s.trim().toUpperCase() : s;
+  const userName = `${fmtPrenom(user?.prenom || '')} ${fmtNom(user?.nom || '')}`.trim() || 'Élève';
+  const userIdentifiant = user?.email ? user.email.replace('@eleve.alnour.fr', '').toUpperCase() : '';
 
   // Titre dynamique
   const currentTitle = PAGE_TITLES[location.pathname] || 'Mon cours';
@@ -107,7 +109,7 @@ export default function PortailApp() {
         <div className="portail-sidebar-footer">
           <div className="portail-sidebar-user">
             <strong>{userName}</strong>
-            <span>{userEmail}</span>
+            <span>ID : {userIdentifiant}</span>
           </div>
           <button className="portail-logout-btn" onClick={handleLogout}>
             <IconLogout /> Se déconnecter

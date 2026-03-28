@@ -2,6 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { fetchEleves, createEleve, updateEleve, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
+// ─── Formatage des noms ──────────────────────────────────────────────────────
+const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
+const fmtNom    = (s) => s.trim().toUpperCase();
+
 // ─── Icônes ──────────────────────────────────────────────────────────────────
 const IconPlus = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const IconBack = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
@@ -127,14 +131,16 @@ export default function Eleves() {
     if (!editForm.prenom.trim() || !editForm.nom.trim()) return;
     setEditLoading(true);
     try {
+      const cleanPrenom = fmtPrenom(editForm.prenom);
+      const cleanNom    = fmtNom(editForm.nom);
       await updateEleve(editEleve.id, {
-        prenom: editForm.prenom.trim(),
-        nom: editForm.nom.trim(),
+        prenom: cleanPrenom,
+        nom: cleanNom,
         telephone: editForm.telephone.trim() || null,
         email_contact: editForm.email_contact.trim() || null,
         classe_id: editForm.classe_id || null,
       });
-      const updated = { ...editEleve, prenom: editForm.prenom.trim(), nom: editForm.nom.trim(), telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: editForm.classe_id || null };
+      const updated = { ...editEleve, prenom: cleanPrenom, nom: cleanNom, telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: editForm.classe_id || null };
       setSelectedEleve(updated);
       setEleves(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEditEleve(null);
@@ -165,7 +171,7 @@ export default function Eleves() {
 
   // ─── VUE DÉTAIL ──────────────────────────────────────────────────────
   if (selectedEleve) {
-    const initials = (selectedEleve.prenom?.[0] || '') + (selectedEleve.nom?.[0] || '');
+    const initials = (fmtPrenom(selectedEleve.prenom || '')?.[0] || '') + (fmtNom(selectedEleve.nom || '')?.[0] || '');
     return (
       <div style={S.page}>
         <div style={S.breadcrumb} onClick={() => setSelectedEleve(null)}>
@@ -175,8 +181,8 @@ export default function Eleves() {
         <div style={S.detailHeader}>
           <div style={S.detailAvatar}>{initials}</div>
           <div style={{ flex:1 }}>
-            <div style={S.detailName}>{selectedEleve.prenom} {selectedEleve.nom}</div>
-            <div style={S.detailEmail}>{selectedEleve.email}</div>
+            <div style={S.detailName}>{fmtPrenom(selectedEleve.prenom || '')} {fmtNom(selectedEleve.nom || '')}</div>
+            <div style={S.detailEmail}>ID : {selectedEleve.email?.replace('@eleve.alnour.fr', '').toUpperCase()}</div>
             {(selectedEleve.telephone || selectedEleve.email_contact || selectedEleve.classe_id) && (
               <div style={{ display:'flex', gap:16, marginTop:6, flexWrap:'wrap' }}>
                 {selectedEleve.classe_id && (() => {
@@ -482,14 +488,14 @@ export default function Eleves() {
 
       <div style={S.grid}>
         {elevesFiltered.map(e => {
-          const initials = (e.prenom?.[0] || '') + (e.nom?.[0] || '');
+          const initials = (fmtPrenom(e.prenom || '')?.[0] || '') + (fmtNom(e.nom || '')?.[0] || '');
           return (
             <div key={e.id} style={S.card} onClick={() => openEleve(e)}
               onMouseEnter={ev => { ev.currentTarget.style.transform='translateY(-2px)'; ev.currentTarget.style.boxShadow='0 6px 24px rgba(0,0,0,.12)'; }}
               onMouseLeave={ev => { ev.currentTarget.style.transform=''; ev.currentTarget.style.boxShadow=''; }}>
               <div style={S.avatar()}>{initials}</div>
               <div style={S.info}>
-                <div style={S.name}>{e.prenom} {e.nom}</div>
+                <div style={S.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
                 <div style={S.email}>ID : <span style={{ fontFamily:'monospace', fontWeight:600, color:'var(--a-gold)' }}>{e.email?.replace('@eleve.alnour.fr','')?.toUpperCase()}</span></div>
                 <div style={S.date}>Inscrit le {new Date(e.created_at).toLocaleDateString('fr-FR')}</div>
               </div>
@@ -556,7 +562,7 @@ function CreateEleveModal({ onClose, onCreated }) {
     try {
       const tempPwd = generateTempPassword();
       const fakeEmail = `${identifiant.toLowerCase()}@eleve.alnour.fr`;
-      const eleve = await createEleve(nom, prenom, fakeEmail, tempPwd);
+      const eleve = await createEleve(fmtNom(nom), fmtPrenom(prenom), fakeEmail, tempPwd);
       if (classeId && eleve?.id) {
         await updateEleve(eleve.id, { classe_id: classeId }).catch(() => {});
       }

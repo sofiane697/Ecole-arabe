@@ -4,9 +4,9 @@ import ADMIN_STYLES from './adminStyles';
 import { loginAdmin } from './supabaseAdmin';
 
 export default function AdminLogin() {
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
+  const [identifiant, setIdentifiant] = useState('');
+  const [password, setPassword]       = useState('');
+  const [error, setError]             = useState('');
   const [loading, setLoading]   = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('admin_theme');
@@ -37,10 +37,10 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
     try {
-      await loginAdmin(email, password);
+      await loginAdmin(identifiant, password);
       navigate('/admin');
     } catch (err) {
-      setError('Email ou mot de passe incorrect.');
+      setError('Identifiant ou mot de passe incorrect.');
     } finally {
       setLoading(false);
     }
@@ -66,12 +66,12 @@ export default function AdminLogin() {
 
         <form onSubmit={handleSubmit}>
           <div className="admin-field">
-            <label>Email</label>
+            <label>Identifiant</label>
             <input
-              type="email"
-              value={email}
-              onChange={e => { setEmail(e.target.value); setError(''); }}
-              placeholder="admin@alnour.fr"
+              type="text"
+              value={identifiant}
+              onChange={e => { setIdentifiant(e.target.value); setError(''); }}
+              placeholder="admin"
               autoComplete="username"
               required
             />

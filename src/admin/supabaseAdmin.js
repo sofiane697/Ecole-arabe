@@ -1,53 +1,19 @@
 // ─── Configuration Supabase pour l'admin ────────────────────────────────────
 const SUPABASE_URL  = 'https://nsdnzqdbpdncrksgxtar.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL';
+const SERVICE_KEY   = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
 
-/**
- * Headers pour les requêtes authentifiées (admin).
- * Utilise le token de session si disponible, sinon la clé anon.
- */
-function getHeaders() {
-  const token = sessionStorage.getItem('admin_token') || SUPABASE_ANON;
-  return {
-    'Content-Type':  'application/json',
-    'apikey':         SUPABASE_ANON,
-    'Authorization': `Bearer ${token}`,
-  };
-}
-
-/** Rafraîchir le token admin automatiquement */
-async function refreshAdminToken() {
-  const refreshToken = sessionStorage.getItem('admin_refresh_token');
-  if (!refreshToken) return false;
-  try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    sessionStorage.setItem('admin_token', data.access_token);
-    sessionStorage.setItem('admin_refresh_token', data.refresh_token);
-    return true;
-  } catch { return false; }
-}
-
-/** Requête authentifiée avec retry automatique si JWT expiré */
+/** Requête authentifiée avec la service_role key */
 async function authFetch(url, options = {}) {
-  let res = await fetch(url, { ...options, headers: { ...getHeaders(), ...options.headers } });
-  if (res.status === 401) {
-    const refreshed = await refreshAdminToken();
-    if (refreshed) {
-      res = await fetch(url, { ...options, headers: { ...getHeaders(), ...options.headers } });
-    } else {
-      sessionStorage.removeItem('admin_token');
-      sessionStorage.removeItem('admin_auth');
-      window.location.href = '/admin/login';
-      throw new Error('Session expirée, veuillez vous reconnecter');
-    }
-  }
-  return res;
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey':        SERVICE_KEY,
+      'Authorization': `Bearer ${SERVICE_KEY}`,
+      ...(options.headers || {}),
+    },
+  });
 }
 
 /** Récupérer toutes les inscriptions */
@@ -80,35 +46,23 @@ export async function updateMessageLu(id, lu) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
-/** Connexion admin via Supabase Auth */
-export async function loginAdmin(email, password) {
-  const res = await fetch(
-    `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON,
-      },
-      body: JSON.stringify({ email, password }),
-    }
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error_description || err.msg || 'Erreur de connexion');
-  }
-  const data = await res.json();
-  // Stocker le token + refresh token pour les requêtes authentifiées
-  sessionStorage.setItem('admin_token', data.access_token);
-  sessionStorage.setItem('admin_refresh_token', data.refresh_token);
+/** Connexion admin via identifiant + mot de passe (bcrypt custom) */
+export async function loginAdmin(identifiant, password) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_admin_custom`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({ p_identifiant: identifiant, p_password: password }),
+  });
+  if (!res.ok) throw new Error('Identifiant ou mot de passe incorrect');
+  const admin = await res.json();
+  sessionStorage.setItem('admin_session', JSON.stringify(admin));
   sessionStorage.setItem('admin_auth', 'true');
-  return data;
+  return admin;
 }
 
 /** Déconnexion */
 export function logoutAdmin() {
-  sessionStorage.removeItem('admin_token');
-  sessionStorage.removeItem('admin_refresh_token');
+  sessionStorage.removeItem('admin_session');
   sessionStorage.removeItem('admin_auth');
 }
 
