@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import RichTextEditor from './RichTextEditor';
 import {
   fetchModules, createModule, updateModule, deleteModule,
-  fetchNiveaux, createNiveau, updateNiveau, deleteNiveau,
+  fetchThematiques, createThematique, updateThematique, deleteThematique,
+  fetchNiveaux, fetchNiveauxByThematique, createNiveau, updateNiveau, deleteNiveau,
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
   uploadFile, toSlug, deleteStorageFolder,
@@ -59,10 +61,10 @@ const S = {
 };
 
 // ─── Modal générique ─────────────────────────────────────────────────────────
-function Modal({ title, onClose, children }) {
+function Modal({ title, onClose, children, maxWidth }) {
   return (
     <div style={S.overlay} onClick={onClose}>
-      <div style={S.modal} onClick={e => e.stopPropagation()}>
+      <div style={{ ...S.modal, ...(maxWidth ? { maxWidth } : {}) }} onClick={e => e.stopPropagation()}>
         <div style={S.modalTitle}>{title}</div>
         {children}
       </div>
@@ -120,13 +122,15 @@ function parseQCMCsv(text) {
 
 // ─── Composant principal ─────────────────────────────────────────────────────
 export default function Cours() {
-  const [view, setView]   = useState('modules'); // 'modules' | 'niveaux' | 'niveau-detail'
-  const [modules, setModules]   = useState([]);
-  const [niveaux, setNiveaux]   = useState([]);
-  const [contenus, setContenus] = useState([]);
-  const [questions, setQuestions] = useState([]);
-  const [selModule, setSelModule] = useState(null);
-  const [selNiveau, setSelNiveau] = useState(null);
+  const [view, setView]   = useState('modules'); // 'modules' | 'thematiques' | 'niveaux' | 'niveau-detail'
+  const [modules, setModules]       = useState([]);
+  const [thematiques, setThematiques] = useState([]);
+  const [niveaux, setNiveaux]       = useState([]);
+  const [contenus, setContenus]     = useState([]);
+  const [questions, setQuestions]   = useState([]);
+  const [selModule, setSelModule]   = useState(null);
+  const [selThematique, setSelThematique] = useState(null);
+  const [selNiveau, setSelNiveau]   = useState(null);
   const [modal, setModal] = useState(null); // { type, data? }
   const [confirm, setConfirm] = useState(null); // { title, message, onConfirm }
   const [loading, setLoading] = useState(false);
@@ -138,8 +142,16 @@ export default function Cours() {
   }, []);
   useEffect(() => { loadModules(); }, [loadModules]);
 
+  const loadThematiques = useCallback(async (modId) => {
+    try { setThematiques(await fetchThematiques(modId)); } catch(e) { console.error(e); }
+  }, []);
+
   const loadNiveaux = useCallback(async (modId) => {
     try { setNiveaux(await fetchNiveaux(modId)); } catch(e) { console.error(e); }
+  }, []);
+
+  const loadNiveauxByThematique = useCallback(async (thId) => {
+    try { setNiveaux(await fetchNiveauxByThematique(thId)); } catch(e) { console.error(e); }
   }, []);
 
   const loadContenus = useCallback(async (nivId) => {
@@ -153,8 +165,14 @@ export default function Cours() {
   // ─── Navigation ─────────────────────────────────────────────────────
   const openModule = (mod) => {
     setSelModule(mod);
+    setView('thematiques');
+    loadThematiques(mod.id);
+  };
+
+  const openThematique = (th) => {
+    setSelThematique(th);
     setView('niveaux');
-    loadNiveaux(mod.id);
+    loadNiveauxByThematique(th.id);
   };
 
   const openNiveau = (niv) => {
@@ -167,7 +185,8 @@ export default function Cours() {
 
   const goBack = () => {
     if (view === 'niveau-detail') { setView('niveaux'); setSelNiveau(null); }
-    else if (view === 'niveaux') { setView('modules'); setSelModule(null); }
+    else if (view === 'niveaux') { setView('thematiques'); setSelNiveau(null); loadThematiques(selModule.id); }
+    else if (view === 'thematiques') { setView('modules'); setSelModule(null); setSelThematique(null); }
   };
 
   // ─── Handlers CRUD ──────────────────────────────────────────────────
@@ -197,12 +216,39 @@ export default function Cours() {
     });
   };
 
+  const handleSaveThematique = async (data) => {
+    setLoading(true);
+    try {
+      if (data.id) { await updateThematique(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre }); }
+      else { await createThematique({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || thematiques.length + 1 }); }
+      await loadThematiques(selModule.id);
+      setModal(null);
+    } catch(e) { alert(e.message); }
+    setLoading(false);
+  };
+
+  const handleDeleteThematique = (id, titre) => {
+    setConfirm({
+      title: 'Supprimer cette thématique ?',
+      message: <span>La thématique <strong>"{titre}"</strong> et tous ses niveaux (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await deleteThematique(id);
+          await deleteStorageFolder(`${toSlug(selModule.titre)}/${toSlug(titre)}`).catch(() => {});
+          await loadThematiques(selModule.id);
+        } catch(e) { alert(e.message); }
+      },
+    });
+  };
+
   const handleSaveNiveau = async (data) => {
     setLoading(true);
     try {
       if (data.id) { await updateNiveau(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, score_requis: data.score_requis }); }
-      else { await createNiveau({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
-      await loadNiveaux(selModule.id);
+      else { await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
+      if (selThematique) { await loadNiveauxByThematique(selThematique.id); }
+      else { await loadNiveaux(selModule.id); }
       setModal(null);
     } catch(e) { alert(e.message); }
     setLoading(false);
@@ -321,13 +367,67 @@ export default function Cours() {
     );
   }
 
-  // ─── VUE NIVEAUX ───────────────────────────────────────────────────
-  if (view === 'niveaux') {
+  // ─── VUE THÉMATIQUES ───────────────────────────────────────────────
+  if (view === 'thematiques') {
     return (
       <div style={S.page}>
         <div style={S.breadcrumb} onClick={goBack}>
           <IconBack /> <span style={S.breadcrumbText}>Retour aux modules</span>
           <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre}</span>
+        </div>
+
+        <div style={S.grid}>
+          {thematiques.map(th => (
+            <div key={th.id} style={{ ...S.card, padding:0, overflow:'hidden' }} onClick={() => openThematique(th)}
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
+              {th.image_url ? (
+                <div style={{ width:'100%', height:140, overflow:'hidden', position:'relative', background:'var(--a-bg)' }}>
+                  <img src={th.image_url} alt={th.titre} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
+                </div>
+              ) : (
+                <div style={{ width:'100%', height:80, background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>
+                  📖
+                </div>
+              )}
+              <div style={{ padding:16 }}>
+                <div style={S.cardHeader}>
+                  <h3 style={S.cardTitle}>{th.titre}</h3>
+                  <div style={S.actions}>
+                    <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'thematique', data:th }); }}><IconEdit /></button>
+                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteThematique(th.id, th.titre); }}><IconTrash /></button>
+                  </div>
+                </div>
+                {th.description && <p style={S.cardDesc}>{th.description}</p>}
+                <div style={S.cardFooter}>
+                  <span style={S.badge('var(--a-gold)')}>Ordre : {th.ordre}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div style={S.addCard} onClick={() => setModal({ type:'thematique' })}
+            onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
+            <IconPlus /> Ajouter une thématique
+          </div>
+        </div>
+
+        {modal?.type === 'thematique' && (
+          <ThematiqueModal data={modal.data} onSave={handleSaveThematique} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} />
+        )}
+        {confirm && <ConfirmModal {...confirm} onCancel={() => setConfirm(null)} />}
+      </div>
+    );
+  }
+
+  // ─── VUE NIVEAUX ───────────────────────────────────────────────────
+  if (view === 'niveaux') {
+    return (
+      <div style={S.page}>
+        <div style={S.breadcrumb} onClick={goBack}>
+          <IconBack /> <span style={S.breadcrumbText}>Retour aux thématiques</span>
+          <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre}</span>
         </div>
 
         {niveaux.map(n => (
@@ -364,7 +464,7 @@ export default function Cours() {
     <div style={S.page}>
       <div style={S.breadcrumb} onClick={goBack}>
         <IconBack /> <span style={S.breadcrumbText}>Retour aux niveaux</span>
-        <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selNiveau?.titre}</span>
+        <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre} → {selNiveau?.titre}</span>
       </div>
 
       <div style={S.tabs}>
@@ -534,6 +634,76 @@ function ModuleModal({ data, onSave, onClose, loading }) {
   );
 }
 
+function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
+  const [titre, setTitre] = useState(data?.titre || '');
+  const [description, setDescription] = useState(data?.description || '');
+  const [image_url, setImageUrl] = useState(data?.image_url || '');
+  const [ordre, setOrdre] = useState(data?.ordre || 1);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+
+  const handleImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setUploadErr('Fichier non valide (JPG, PNG, WebP uniquement)'); return; }
+    if (file.size > 5 * 1024 * 1024) { setUploadErr('Image trop lourde (max 5 Mo)'); return; }
+    setUploadErr('');
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const url = await uploadFile(file, `${toSlug(moduleTitre)}/${toSlug(titre)}/cover.${ext}`);
+      setImageUrl(url);
+    } catch(e) { setUploadErr(e.message); }
+    setUploading(false);
+  };
+
+  return (
+    <Modal title={data ? 'Modifier la thématique' : 'Nouvelle thématique'} onClose={onClose}>
+      <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Grammaire arabe" /></div>
+      <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la thématique..." /></div>
+
+      {/* Zone upload image */}
+      <div style={S.field}>
+        <label style={S.label}>Image de couverture</label>
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
+          onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent', position:'relative', overflow:'hidden' }}>
+          {image_url ? (
+            <div style={{ position:'relative' }}>
+              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
+              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
+                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            </div>
+          )}
+        </div>
+        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {image_url && (
+          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
+            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          </div>
+        )}
+      </div>
+
+      <div style={S.field}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
+      <div style={S.btnRow}>
+        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre })}>
+          {loading ? '...' : 'Enregistrer'}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
   const [titre, setTitre] = useState(data?.titre || '');
   const [description, setDescription] = useState(data?.description || '');
@@ -648,7 +818,7 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, niveauTitre
   };
 
   return (
-    <Modal title={data ? 'Modifier le contenu' : 'Nouveau contenu'} onClose={onClose}>
+    <Modal title={data ? 'Modifier le contenu' : 'Nouveau contenu'} onClose={onClose} maxWidth={type === 'texte' ? 680 : 500}>
       <div style={S.field}>
         <label style={S.label}>Type *</label>
         <select style={S.select} value={type} onChange={e => { setType(e.target.value); setContenu(''); setUploadError(''); }}>
@@ -728,7 +898,7 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, niveauTitre
       {type === 'texte' && (
         <div style={S.field}>
           <label style={S.label}>Contenu *</label>
-          <textarea style={S.textarea} value={contenu} onChange={e => setContenu(e.target.value)} placeholder="Contenu texte du cours..." rows={6} />
+          <RichTextEditor value={contenu} onChange={setContenu} />
         </div>
       )}
 
@@ -739,7 +909,7 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, niveauTitre
 
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim() || !contenu.trim()} onClick={() => onSave({ id: data?.id, type, titre, contenu, ordre })}>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim() || !contenu.replace(/<[^>]*>/g, '').trim()} onClick={() => onSave({ id: data?.id, type, titre, contenu, ordre })}>
           {loading ? 'Enregistrement...' : 'Enregistrer'}
         </button>
       </div>
