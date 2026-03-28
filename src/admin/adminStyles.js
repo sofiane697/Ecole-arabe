@@ -1399,6 +1399,17 @@ const ADMIN_STYLES = `
     /* Colonne Badge (3e) à droite */
     .dash-table-wrap .admin-table td:nth-child(3) { margin-left: auto; flex-shrink: 0; }
   }
+
+  /* ─── Rich Text Editor ─── */
+  .rte-editor h1 { font-size:1.6em; font-weight:700; margin:.4em 0; color:var(--a-fg); }
+  .rte-editor h2 { font-size:1.3em; font-weight:700; margin:.4em 0; color:var(--a-fg); }
+  .rte-editor h3 { font-size:1.1em; font-weight:600; margin:.4em 0; color:var(--a-fg); }
+  .rte-editor ul { list-style:disc; padding-left:1.5em; margin:.25em 0; }
+  .rte-editor ol { list-style:decimal; padding-left:1.5em; margin:.25em 0; }
+  .rte-editor p  { margin:.2em 0; }
+  .rte-editor a   { color:var(--a-blue); }
+  .rte-editor img { max-width:100%; height:auto; border-radius:6px; margin:8px 0; }
+  .rte-editor [dir="rtl"] { text-align:right; }
 `;
 
 export default ADMIN_STYLES;

@@ -155,7 +155,6 @@ const PORTAIL_STYLES = `
   .portail-content {
     padding: 32px 40px;
     flex: 1;
-    max-width: 1200px;
     width: 100%;
     box-sizing: border-box;
   }
@@ -369,6 +368,18 @@ const PORTAIL_STYLES = `
 
     .portail-module-main { padding: 14px; }
   }
+
+  /* ─── Rendu texte riche portail ─── */
+  .portail-rich-text h1 { font-size:1.5em; font-weight:700; margin:.5em 0; color:var(--p-fg); }
+  .portail-rich-text h2 { font-size:1.25em; font-weight:700; margin:.5em 0; color:var(--p-fg); }
+  .portail-rich-text h3 { font-size:1.1em; font-weight:600; margin:.5em 0; color:var(--p-fg); }
+  .portail-rich-text ul { list-style:disc; padding-left:1.5em; margin:.3em 0; }
+  .portail-rich-text ol { list-style:decimal; padding-left:1.5em; margin:.3em 0; }
+  .portail-rich-text p  { margin:.25em 0; }
+  .portail-rich-text a   { color:var(--p-blue); }
+  .portail-rich-text { overflow:auto; }
+  .portail-rich-text img { max-width:100%; height:auto; border-radius:6px; margin:8px 0; }
+  .portail-rich-text [dir="rtl"] { text-align:right; }
 `;
 
 export default PORTAIL_STYLES;

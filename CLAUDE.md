@@ -60,7 +60,7 @@ Ecole-arabe/
 | `/admin/inscriptions` | Inscriptions | Liste + panneau détail — stats, progression, changement de statut |
 | `/admin/messages` | Messages | Liste + panneau de lecture — onglets filtres, marquer lu/non lu |
 | `/admin/eleves` | Eleves | Liste élèves + création + fiche détail + progression par module |
-| `/admin/cours` | Cours | CRUD drill-down : Modules → Niveaux → Contenus + QCM |
+| `/admin/cours` | Cours | CRUD drill-down : Modules → Thématiques → Niveaux → Contenus + QCM |
 
 ### Identifiants admin
 
@@ -86,15 +86,15 @@ Ecole-arabe/
 |-----|------|-------------|
 | `/portail/login` | PortailLogin | Connexion identifiant + mot de passe |
 | `/portail` | PortailDashboard | Grille des modules avec barre de progression |
-| `/portail/module/:id` | PortailModule | Stepper niveaux + contenu (vidéo/PDF/texte) + QCM |
+| `/portail/module/:id` | PortailModule | Smart router : si thématiques → grille thématiques ; sinon → niveaux |
+| `/portail/module/:moduleId/thematique/:thId` | PortailModule | Niveaux d'une thématique + contenu + QCM |
 
 ### Authentification élève (auth custom — PAS Supabase Auth)
 
 - Pas de JWT, pas de Supabase Auth (incompatible ES256 sur plan gratuit)
-- `login_eleve(p_email, p_password)` → fonction SQL SECURITY DEFINER avec bcrypt
-- Session stockée dans `sessionStorage.eleve_user` = `{ id, nom, prenom, email, must_change_password }`
+- `login_eleve(p_identifiant, p_password)` → fonction SQL SECURITY DEFINER avec bcrypt
+- Session stockée dans `sessionStorage.eleve_user` = `{ id, nom, prenom, identifiant, must_change_password }`
 - Identifiant élève = `{1ère lettre prénom}{2e lettre nom}{1ère lettre nom}{4 chiffres}` ex: `SoJ7577`
-- Email interne = `identifiant@eleve.alnour.fr` (jamais envoyé, juste clé unique en base)
 - 1ère connexion → forcé à changer le mot de passe provisoire (min 8 car. + 1 chiffre + 1 spécial)
 
 ### Flux QCM (progression)
@@ -124,7 +124,8 @@ Ecole-arabe/
 | `profils_eleves` | Comptes élèves (auth custom, bcrypt) | — | ALL |
 | `profils_admins` | Comptes admins (auth custom, bcrypt) | — | ALL |
 | `modules` | Catégories de cours | SELECT (actif=true) | ALL |
-| `niveaux` | Niveaux dans chaque module | SELECT | ALL |
+| `thematiques` | Sous-modules intermédiaires (module → thématique → niveau) | SELECT | ALL |
+| `niveaux` | Niveaux dans chaque thématique (thematique_id FK) | SELECT | ALL |
 | `contenus` | Contenu par niveau (video/pdf/texte) | SELECT | ALL |
 | `qcm_questions` | Questions QCM (choix JSONB, reponse_correcte JSONB array) | SELECT | ALL |
 | `eleve_progression` | Suivi progression élève | — | ALL |
@@ -147,9 +148,9 @@ Ecole-arabe/
 | Fonction | Rôle | Appelée par |
 |----------|------|-------------|
 | `login_admin_custom(p_identifiant, p_password)` | Vérifie identifiant+bcrypt admin, retourne JSON | Admin (anon) |
-| `admin_create_user(p_email, p_password, p_nom, p_prenom)` | Crée un élève avec bcrypt | Admin (service_role) |
-| `admin_reset_eleve_password(p_id, p_new_password)` | Réinitialise le mot de passe élève | Admin (service_role) |
-| `login_eleve(p_email, p_password)` | Vérifie les identifiants, retourne JSON user | Portail (anon) |
+| `admin_create_user(p_identifiant, p_password, p_nom, p_prenom)` | Crée un élève avec bcrypt | Admin (anon) |
+| `admin_reset_eleve_password(p_id, p_new_password)` | Réinitialise le mot de passe élève | Admin (anon) |
+| `login_eleve(p_identifiant, p_password)` | Vérifie les identifiants, retourne JSON user | Portail (anon) |
 | `change_eleve_password(p_id, p_old, p_new)` | Change le mot de passe | Portail (anon) |
 | `save_progression(p_eleve_id, p_niveau_id, p_score, p_reussi)` | Upsert progression | Portail (anon) |
 | `get_progression(p_eleve_id)` | Retourne progression élève | Portail (anon) |
@@ -291,6 +292,10 @@ Fonctionnalités souhaitées :
 - **Pack élèves admin** : F1 reset mot de passe (SQL `admin_reset_eleve_password` + modale confirmation + affichage identifiants + bouton WhatsApp), F2 modifier nom/prénom/téléphone/email contact, F3 supprimer élève avec confirmation, D1 recherche temps réel + filtres actif/inactif + tri, F4 export CSV avec BOM UTF-8.
 
 - **Import QCM CSV** : bouton "⬆ Importer CSV" dans le tab QCM, modal avec guide visuel du format, téléchargement modèle pré-rempli, parsing robuste (guillemets, BOM, lignes vides), aperçu avant chargement, mode Remplacer/Ajouter, intégration directe dans le carrousel existant.
+
+- **Éditeur de texte riche (RTE)** : composant `src/admin/RichTextEditor.jsx` — éditeur WYSIWYG zéro dépendance (`contentEditable` + `execCommand`). Toolbar complète : Bold/Italic/Underline/Barré, H1/H2/H3/¶, listes, alignement, 10 couleurs prédéfinies + picker, LTR/RTL/police arabe (Scheherazade New), insertion image (upload Supabase Storage `contenu-images/` ou URL). Onglets Éditeur / Aperçu. Plein écran. Sélection image au clic : bordure dorée + poignée redimensionnement (coin bas-droit, drag) + mini-toolbar (float gauche/centré/droite/inline, largeur px, supprimer) + **drag & drop** de l'image avec ghost et zones visuelles (gauche/centré/droite). CSS : `.rte-editor` dans `adminStyles.js`, rendu portail `.portail-rich-text` dans `portailStyles.js` (avec `overflow:auto` pour clearfix float). `ContenuModal` utilise `<RichTextEditor>` pour le type texte, modal élargie à 680px. Portail : `dangerouslySetInnerHTML` avec détection `startsWith('<')` pour rétrocompatibilité texte brut.
+
+- **Thématiques (sous-modules)** : nouvelle couche intermédiaire entre Modules et Niveaux. Table `thematiques` (`id BIGINT`, `module_id BIGINT`, `titre`, `description`, `image_url`, `ordre`). `niveaux.thematique_id` (FK nullable). Admin : drill-down Modules → Thématiques (grille de cartes identique aux modules) → Niveaux. Portail : `PortailModule` détecte si le module a des thématiques (smart router) → affiche grille de cartes thématiques ou niveaux directement. Routes portail : `/portail/module/:id` et `/portail/module/:moduleId/thematique/:thId`.
 
 - **Auth custom élèves** : abandon de Supabase Auth pour les élèves (rate limit email + incompatibilité JWT ES256). Nouveau système : `password_hash` bcrypt dans `profils_eleves`, fonctions SQL SECURITY DEFINER, session dans `sessionStorage.eleve_user`.
 
