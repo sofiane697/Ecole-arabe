@@ -83,7 +83,7 @@ const makeStyles = (fullscreen) => ({
 });
 
 // ─── Composant principal ──────────────────────────────────────────────────────
-export default function RichTextEditor({ value, onChange }) {
+export default function RichTextEditor({ value, onChange, uploadFolder = 'contenu-images' }) {
   const editorRef     = useRef(null);
   const colorRef      = useRef(null);
   const imgFileRef    = useRef(null);
@@ -201,7 +201,8 @@ export default function RichTextEditor({ value, onChange }) {
     setImgUploading(true);
     try {
       const ext = file.name.split('.').pop().toLowerCase();
-      const url = await uploadFile(file, `contenu-images/${toSlug(file.name.replace(/\.[^.]+$/, ''))}-${Date.now()}.${ext}`);
+      const slug = toSlug(file.name.replace(/\.[^.]+$/, ''));
+      const url = await uploadFile(file, `${uploadFolder}/${slug}-${Date.now()}.${ext}`);
       insertImage(url);
     } catch(e) { alert('Erreur upload image : ' + e.message); }
     setImgUploading(false);

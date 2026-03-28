@@ -530,7 +530,7 @@ export default function Cours() {
       )}
 
       {modal?.type === 'contenu' && (
-        <ContenuModal data={modal.data} onSave={handleSaveContenu} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} niveauTitre={selNiveau?.titre} />
+        <ContenuModal data={modal.data} onSave={handleSaveContenu} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} thematiqueTitre={selThematique?.titre} niveauTitre={selNiveau?.titre} />
       )}
       {modal?.type === 'qcm-carousel' && (
         <QCMCarouselModal
@@ -784,7 +784,7 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
   );
 }
 
-function ContenuModal({ data, onSave, onClose, loading, moduleTitre, niveauTitre }) {
+function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTitre, niveauTitre }) {
   const [type, setType] = useState(data?.type || 'video');
   const [titre, setTitre] = useState(data?.titre || '');
   const [contenu, setContenu] = useState(data?.contenu || '');
@@ -904,7 +904,11 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, niveauTitre
       {type === 'texte' && (
         <div style={S.field}>
           <label style={S.label}>Contenu *</label>
-          <RichTextEditor value={contenu} onChange={setContenu} />
+          <RichTextEditor
+            value={contenu}
+            onChange={setContenu}
+            uploadFolder={[moduleTitre, thematiqueTitre, niveauTitre].filter(Boolean).map(toSlug).join('/') + '/images'}
+          />
         </div>
       )}
 
