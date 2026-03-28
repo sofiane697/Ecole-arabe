@@ -180,18 +180,18 @@ export async function deleteQuestion(id) {
 
 // ─── ÉLÈVES ──────────────────────────────────────────────────────────────────
 
-/** Créer un compte élève via fonction SQL (sans email, sans rate limit) */
-export async function createEleve(nom, prenom, email, password) {
+/** Créer un compte élève via fonction SQL */
+export async function createEleve(nom, prenom, identifiant, password) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_user`, {
     method: 'POST',
-    body: JSON.stringify({ p_email: email, p_password: password, p_nom: nom, p_prenom: prenom }),
+    body: JSON.stringify({ p_identifiant: identifiant, p_password: password, p_nom: nom, p_prenom: prenom }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || err.hint || `Erreur création élève ${res.status}`);
   }
   const userId = await res.json();
-  return { id: userId, nom, prenom, email };
+  return { id: userId, nom, prenom, identifiant };
 }
 
 /** Récupérer tous les élèves */

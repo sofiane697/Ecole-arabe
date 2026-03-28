@@ -59,9 +59,7 @@ export default function PortailLogin() {
     setLoading(true);
     setError('');
     try {
-      // Convertir l'identifiant en "email" interne
-      const fakeEmail = `${identifiant.trim().toLowerCase()}@eleve.alnour.fr`;
-      const data = await loginEleve(fakeEmail, password);
+      const data = await loginEleve(identifiant.trim().toLowerCase(), password);
 
       // Vérifier si c'est la première connexion (mot de passe provisoire)
       if (data.must_change_password) {

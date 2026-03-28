@@ -164,7 +164,7 @@ export default function Eleves() {
     const tempPwd = generateTempPassword();
     try {
       await resetElevePassword(eleve.id, tempPwd);
-      const identifiant = eleve.email.replace('@eleve.alnour.fr', '').toUpperCase();
+      const identifiant = (eleve.identifiant || '').toUpperCase();
       setResetResult({ identifiant, tempPassword: tempPwd, prenom: eleve.prenom, nom: eleve.nom });
     } catch(e) { alert(e.message); }
   };
@@ -182,7 +182,7 @@ export default function Eleves() {
           <div style={S.detailAvatar}>{initials}</div>
           <div style={{ flex:1 }}>
             <div style={S.detailName}>{fmtPrenom(selectedEleve.prenom || '')} {fmtNom(selectedEleve.nom || '')}</div>
-            <div style={S.detailEmail}>ID : {selectedEleve.email?.replace('@eleve.alnour.fr', '').toUpperCase()}</div>
+            <div style={S.detailEmail}>ID : {(selectedEleve.identifiant || '').toUpperCase()}</div>
             {(selectedEleve.telephone || selectedEleve.email_contact || selectedEleve.classe_id) && (
               <div style={{ display:'flex', gap:16, marginTop:6, flexWrap:'wrap' }}>
                 {selectedEleve.classe_id && (() => {
@@ -414,7 +414,7 @@ export default function Eleves() {
       const q = search.toLowerCase();
       const matchSearch = !q
         || `${e.prenom} ${e.nom}`.toLowerCase().includes(q)
-        || e.email?.replace('@eleve.alnour.fr','').toLowerCase().includes(q);
+        || e.identifiant?.toLowerCase().includes(q);
       const matchActif = filterActif === 'tous' || (filterActif === 'actif' ? e.actif : !e.actif);
       return matchSearch && matchActif;
     })
@@ -428,7 +428,7 @@ export default function Eleves() {
     const rows = elevesFiltered.map(e => [
       e.prenom || '',
       e.nom || '',
-      e.email?.replace('@eleve.alnour.fr', '').toUpperCase() || '',
+      (e.identifiant || '').toUpperCase(),
       e.telephone || '',
       e.email_contact || '',
       new Date(e.created_at).toLocaleDateString('fr-FR'),
@@ -496,7 +496,7 @@ export default function Eleves() {
               <div style={S.avatar()}>{initials}</div>
               <div style={S.info}>
                 <div style={S.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
-                <div style={S.email}>ID : <span style={{ fontFamily:'monospace', fontWeight:600, color:'var(--a-gold)' }}>{e.email?.replace('@eleve.alnour.fr','')?.toUpperCase()}</span></div>
+                <div style={S.email}>ID : <span style={{ fontFamily:'monospace', fontWeight:600, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>
                 <div style={S.date}>Inscrit le {new Date(e.created_at).toLocaleDateString('fr-FR')}</div>
               </div>
               <span style={S.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
@@ -561,8 +561,7 @@ function CreateEleveModal({ onClose, onCreated }) {
     setError('');
     try {
       const tempPwd = generateTempPassword();
-      const fakeEmail = `${identifiant.toLowerCase()}@eleve.alnour.fr`;
-      const eleve = await createEleve(fmtNom(nom), fmtPrenom(prenom), fakeEmail, tempPwd);
+      const eleve = await createEleve(fmtNom(nom), fmtPrenom(prenom), identifiant.toLowerCase(), tempPwd);
       if (classeId && eleve?.id) {
         await updateEleve(eleve.id, { classe_id: classeId }).catch(() => {});
       }

@@ -61,7 +61,7 @@ export default function PortailApp() {
   const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
   const fmtNom    = (s) => s ? s.trim().toUpperCase() : s;
   const userName = `${fmtPrenom(user?.prenom || '')} ${fmtNom(user?.nom || '')}`.trim() || 'Élève';
-  const userIdentifiant = user?.email ? user.email.replace('@eleve.alnour.fr', '').toUpperCase() : '';
+  const userIdentifiant = user?.identifiant ? user.identifiant.toUpperCase() : '';
 
   // Titre dynamique
   const currentTitle = PAGE_TITLES[location.pathname] || 'Mon cours';

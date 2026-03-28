@@ -304,7 +304,7 @@ export default function Classes() {
       <div style={S.eleveGrid}>
         {elevesClasse.map(e => {
           const initiales = (e.prenom?.[0] || '') + (e.nom?.[0] || '');
-          const identifiant = e.email?.replace('@eleve.alnour.fr', '').toUpperCase() || '—';
+          const identifiant = (e.identifiant || '').toUpperCase() || '—';
           const dateInscription = e.created_at
             ? new Date(e.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
             : '—';
@@ -343,7 +343,7 @@ export default function Classes() {
 // ─── Modal Info Élève (lecture seule) ─────────────────────────────────────────
 function EleveInfoModal({ eleve, onClose }) {
   const initiales = (eleve.prenom?.[0] || '') + (eleve.nom?.[0] || '');
-  const identifiant = eleve.email?.replace('@eleve.alnour.fr', '').toUpperCase() || '—';
+  const identifiant = (eleve.identifiant || '').toUpperCase() || '—';
   const dateInscription = eleve.created_at
     ? new Date(eleve.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
     : '—';

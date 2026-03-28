@@ -11,11 +11,11 @@ const ANON_HEADERS = {
 // ─── AUTH CUSTOM (sans Supabase Auth) ────────────────────────────────────────
 
 /** Connexion élève via fonction SQL */
-export async function loginEleve(email, password) {
+export async function loginEleve(identifiant, password) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_eleve`, {
     method: 'POST',
     headers: ANON_HEADERS,
-    body: JSON.stringify({ p_email: email, p_password: password }),
+    body: JSON.stringify({ p_identifiant: identifiant, p_password: password }),
   });
   const data = await res.json();
   if (!res.ok) {
