@@ -6,6 +6,7 @@ import {
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
   uploadFile, toSlug, deleteStorageFolder,
 } from './supabaseAdmin';
+import ConfirmModal from './ConfirmModal';
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
 const IconBack  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
@@ -127,6 +128,7 @@ export default function Cours() {
   const [selModule, setSelModule] = useState(null);
   const [selNiveau, setSelNiveau] = useState(null);
   const [modal, setModal] = useState(null); // { type, data? }
+  const [confirm, setConfirm] = useState(null); // { title, message, onConfirm }
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('contenus'); // 'contenus' | 'qcm'
 
@@ -180,13 +182,19 @@ export default function Cours() {
     setLoading(false);
   };
 
-  const handleDeleteModule = async (id, titre) => {
-    if (!window.confirm('Supprimer ce module et tout son contenu ?')) return;
-    try {
-      await deleteModule(id);
-      await deleteStorageFolder(toSlug(titre)).catch(() => {});
-      await loadModules();
-    } catch(e) { alert(e.message); }
+  const handleDeleteModule = (id, titre) => {
+    setConfirm({
+      title: 'Supprimer ce module ?',
+      message: <span>Le module <strong>"{titre}"</strong> et tout son contenu (niveaux, cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await deleteModule(id);
+          await deleteStorageFolder(toSlug(titre)).catch(() => {});
+          await loadModules();
+        } catch(e) { alert(e.message); }
+      },
+    });
   };
 
   const handleSaveNiveau = async (data) => {
@@ -200,13 +208,19 @@ export default function Cours() {
     setLoading(false);
   };
 
-  const handleDeleteNiveau = async (id, titre) => {
-    if (!window.confirm('Supprimer ce niveau et tout son contenu ?')) return;
-    try {
-      await deleteNiveau(id);
-      await deleteStorageFolder(`${toSlug(selModule.titre)}/${toSlug(titre)}`).catch(() => {});
-      await loadNiveaux(selModule.id);
-    } catch(e) { alert(e.message); }
+  const handleDeleteNiveau = (id, titre) => {
+    setConfirm({
+      title: 'Supprimer ce niveau ?',
+      message: <span>Le niveau <strong>"{titre}"</strong> et tout son contenu (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await deleteNiveau(id);
+          await deleteStorageFolder(`${toSlug(selModule.titre)}/${toSlug(titre)}`).catch(() => {});
+          await loadNiveaux(selModule.id);
+        } catch(e) { alert(e.message); }
+      },
+    });
   };
 
   const handleSaveContenu = async (data) => {
@@ -220,9 +234,15 @@ export default function Cours() {
     setLoading(false);
   };
 
-  const handleDeleteContenu = async (id) => {
-    if (!window.confirm('Supprimer ce contenu ?')) return;
-    try { await deleteContenu(id); await loadContenus(selNiveau.id); } catch(e) { alert(e.message); }
+  const handleDeleteContenu = (id) => {
+    setConfirm({
+      title: 'Supprimer ce contenu ?',
+      message: <span>Ce fichier/contenu sera supprimé définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try { await deleteContenu(id); await loadContenus(selNiveau.id); } catch(e) { alert(e.message); }
+      },
+    });
   };
 
   const handleImportQCM = (importedQuestions, mode) => {
@@ -296,6 +316,7 @@ export default function Cours() {
         {modal?.type === 'module' && (
           <ModuleModal data={modal.data} onSave={handleSaveModule} onClose={() => setModal(null)} loading={loading} />
         )}
+        {confirm && <ConfirmModal {...confirm} onCancel={() => setConfirm(null)} />}
       </div>
     );
   }
@@ -333,6 +354,7 @@ export default function Cours() {
         {modal?.type === 'niveau' && (
           <NiveauModal data={modal.data} onSave={handleSaveNiveau} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} />
         )}
+        {confirm && <ConfirmModal {...confirm} onCancel={() => setConfirm(null)} />}
       </div>
     );
   }
@@ -427,6 +449,7 @@ export default function Cours() {
           onClose={() => setModal(null)}
         />
       )}
+      {confirm && <ConfirmModal {...confirm} onCancel={() => setConfirm(null)} />}
     </div>
   );
 }

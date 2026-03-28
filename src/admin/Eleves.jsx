@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchEleves, createEleve, updateEleve, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
+import ConfirmModal from './ConfirmModal';
 
 // ─── Icônes ──────────────────────────────────────────────────────────────────
 const IconPlus = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -302,55 +303,26 @@ export default function Eleves() {
 
         {/* ─── Modal confirmation reset mot de passe ─── */}
         {confirmReset && (
-          <div style={S.overlay} onClick={() => setConfirmReset(null)}>
-            <div style={{ ...S.modal, maxWidth:400 }} onClick={e => e.stopPropagation()}>
-              <div style={{ textAlign:'center', marginBottom:20 }}>
-                <div style={{ fontSize:40, marginBottom:10 }}>⚠️</div>
-                <div style={{ fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:8 }}>
-                  Réinitialiser le mot de passe ?
-                </div>
-                <div style={{ fontSize:13, color:'var(--a-fg-mid)', lineHeight:1.6 }}>
-                  Un nouveau mot de passe provisoire va être généré pour <strong>{confirmReset.prenom} {confirmReset.nom}</strong>.<br/>
-                  L'élève devra le changer à sa prochaine connexion.
-                </div>
-              </div>
-              <div style={{ display:'flex', gap:10, justifyContent:'center' }}>
-                <button style={{ ...S.btnCancel, fontSize:13 }} onClick={() => setConfirmReset(null)}>
-                  Annuler
-                </button>
-                <button style={{ ...S.btnSave, fontSize:13, background:'var(--a-gold)' }} onClick={handleConfirmReset}>
-                  🔑 Confirmer la réinitialisation
-                </button>
-              </div>
-            </div>
-          </div>
+          <ConfirmModal
+            title="Réinitialiser le mot de passe ?"
+            message={<span>Un nouveau mot de passe provisoire va être généré pour <strong>{confirmReset.prenom} {confirmReset.nom}</strong>.<br/>L'élève devra le changer à sa prochaine connexion.</span>}
+            confirmLabel="Confirmer la réinitialisation"
+            danger={false}
+            icon="warn"
+            onConfirm={handleConfirmReset}
+            onCancel={() => setConfirmReset(null)}
+          />
         )}
 
         {/* ─── Modal confirmation suppression élève ─── */}
         {confirmDelete && (
-          <div style={S.overlay} onClick={() => setConfirmDelete(null)}>
-            <div style={{ ...S.modal, maxWidth:400 }} onClick={e => e.stopPropagation()}>
-              <div style={{ textAlign:'center', marginBottom:20 }}>
-                <div style={{ fontSize:40, marginBottom:10 }}>🗑</div>
-                <div style={{ fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:8 }}>
-                  Supprimer cet élève ?
-                </div>
-                <div style={{ fontSize:13, color:'var(--a-fg-mid)', lineHeight:1.6 }}>
-                  Le compte de <strong>{confirmDelete.prenom} {confirmDelete.nom}</strong> sera définitivement supprimé,
-                  ainsi que toute sa progression. <br/>
-                  <span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span>
-                </div>
-              </div>
-              <div style={{ display:'flex', gap:10, justifyContent:'center' }}>
-                <button style={{ ...S.btnCancel, fontSize:13 }} onClick={() => setConfirmDelete(null)}>
-                  Annuler
-                </button>
-                <button style={{ ...S.btnSave, fontSize:13, background:'var(--a-red)' }} onClick={handleConfirmDelete}>
-                  Supprimer définitivement
-                </button>
-              </div>
-            </div>
-          </div>
+          <ConfirmModal
+            title="Supprimer cet élève ?"
+            message={<span>Le compte de <strong>{confirmDelete.prenom} {confirmDelete.nom}</strong> sera définitivement supprimé, ainsi que toute sa progression.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>}
+            confirmLabel="Supprimer définitivement"
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setConfirmDelete(null)}
+          />
         )}
 
         {/* ─── Modal résultat reset mot de passe ─── */}
