@@ -72,8 +72,9 @@ Ecole-arabe/
 
 - `AdminLogin.jsx` appelle `loginAdmin(identifiant, password)` → RPC `login_admin_custom` (bcrypt)
 - Session stockée dans `sessionStorage.admin_session` = `{ id, identifiant, display_name }`
-- `supabaseAdmin.js` : `authFetch()` utilise la **service_role key** (`REACT_APP_SUPABASE_SERVICE_KEY` dans `.env.local`) — pas de JWT, pas de refresh
+- `supabaseAdmin.js` : `authFetch()` utilise la **clé anon** directement — RLS ouvert pour `anon` sur toutes les tables de contenu admin
 - Table `profils_admins` : `id`, `identifiant`, `password_hash` (bcrypt), `display_name`
+- Créer un nouvel admin : `INSERT INTO profils_admins (identifiant, password_hash, display_name) VALUES ('prof', extensions.crypt('MDP!', extensions.gen_salt('bf')), 'Nom Affiché');`
 
 ---
 

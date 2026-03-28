@@ -1,16 +1,15 @@
 // ─── Configuration Supabase pour l'admin ────────────────────────────────────
 const SUPABASE_URL  = 'https://nsdnzqdbpdncrksgxtar.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL';
-const SERVICE_KEY   = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
 
-/** Requête authentifiée avec la service_role key */
+/** Requête avec la clé anon (RLS ouvert pour anon sur les tables admin) */
 async function authFetch(url, options = {}) {
   return fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'apikey':        SERVICE_KEY,
-      'Authorization': `Bearer ${SERVICE_KEY}`,
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
       ...(options.headers || {}),
     },
   });
@@ -46,15 +45,16 @@ export async function updateMessageLu(id, lu) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
-/** Connexion admin via identifiant + mot de passe (bcrypt custom) */
+/** Connexion admin via identifiant + mot de passe (bcrypt, table profils_admins) */
 export async function loginAdmin(identifiant, password) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_admin_custom`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
-    body: JSON.stringify({ p_identifiant: identifiant, p_password: password }),
+    body: JSON.stringify({ p_identifiant: identifiant.trim(), p_password: password }),
   });
   if (!res.ok) throw new Error('Identifiant ou mot de passe incorrect');
   const admin = await res.json();
+  if (!admin || !admin.id) throw new Error('Identifiant ou mot de passe incorrect');
   sessionStorage.setItem('admin_session', JSON.stringify(admin));
   sessionStorage.setItem('admin_auth', 'true');
   return admin;
