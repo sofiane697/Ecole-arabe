@@ -6,7 +6,7 @@ import {
   fetchNiveaux, fetchNiveauxByThematique, createNiveau, updateNiveau, deleteNiveau,
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
-  uploadFile, toSlug, deleteStorageFolder,
+  uploadFile, toSlug, deleteStorageFolder, deleteOldCover,
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
@@ -574,7 +574,9 @@ function ModuleModal({ data, onSave, onClose, loading }) {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop().toLowerCase();
-      const url = await uploadFile(file, `${toSlug(titre)}/cover.${ext}`);
+      const folder = toSlug(titre);
+      await deleteOldCover(folder).catch(() => {});
+      const url = await uploadFile(file, `${folder}/cover.${ext}`);
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);
@@ -651,7 +653,9 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop().toLowerCase();
-      const url = await uploadFile(file, `${toSlug(moduleTitre)}/${toSlug(titre)}/cover.${ext}`);
+      const folder = `${toSlug(moduleTitre)}/${toSlug(titre)}`;
+      await deleteOldCover(folder).catch(() => {});
+      const url = await uploadFile(file, `${folder}/cover.${ext}`);
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);
@@ -722,7 +726,9 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop().toLowerCase();
-      const url = await uploadFile(file, `${toSlug(moduleTitre)}/${toSlug(titre)}/cover.${ext}`);
+      const folder = `${toSlug(moduleTitre)}/${toSlug(titre)}`;
+      await deleteOldCover(folder).catch(() => {});
+      const url = await uploadFile(file, `${folder}/cover.${ext}`);
       setImageUrl(url);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);

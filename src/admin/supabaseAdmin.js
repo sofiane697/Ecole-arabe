@@ -243,6 +243,26 @@ export async function deleteStorageFolder(prefix) {
   }
 }
 
+/** Supprimer l'ancienne image de couverture (cover.*) d'un dossier avant un nouvel upload */
+export async function deleteOldCover(folderPath) {
+  const BUCKET = 'cours';
+  const listRes = await authFetch(
+    `${SUPABASE_URL}/storage/v1/object/list/${encodeURIComponent(BUCKET)}`,
+    { method: 'POST', body: JSON.stringify({ prefix: folderPath, limit: 20, offset: 0 }) }
+  );
+  if (!listRes.ok) return;
+  const items = await listRes.json().catch(() => []);
+  if (!Array.isArray(items)) return;
+  const covers = items
+    .filter(i => i.id && i.name.startsWith('cover.'))
+    .map(i => `${folderPath}/${i.name}`);
+  if (covers.length === 0) return;
+  await authFetch(
+    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`,
+    { method: 'DELETE', body: JSON.stringify({ prefixes: covers }) }
+  );
+}
+
 /** Uploader un fichier dans le bucket "cours" au chemin spécifié */
 export async function uploadFile(file, path) {
   const BUCKET = 'cours';
@@ -288,6 +308,40 @@ export async function updateEleve(id, data) {
     method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+// ─── THÉMATIQUES ─────────────────────────────────────────────────────────────
+
+export async function fetchThematiques(moduleId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function createThematique(data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques`, {
+    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function updateThematique(id, data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+export async function deleteThematique(id) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+export async function fetchNiveauxByThematique(thId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux?thematique_id=eq.${thId}&order=ordre`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
 }
 
 // ─── Niveaux scolaires ────────────────────────────────────────────────────────
