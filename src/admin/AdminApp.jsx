@@ -47,6 +47,7 @@ const PAGE_TITLES = {
   '/admin/inscriptions': 'Pré-inscriptions',
   '/admin/messages':     'Messages',
   '/admin/cours':        'Gestion des cours',
+  '/admin/classes':      'Gestion des classes',
   '/admin/eleves':       'Gestion des élèves',
 };
 
@@ -167,6 +168,18 @@ export default function AdminApp() {
             onClick={() => setSidebarOpen(false)}
           >
             <IconBook /> Gestion des cours
+          </NavLink>
+
+          <NavLink
+            to="/admin/classes"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Gestion des classes
           </NavLink>
 
           <NavLink

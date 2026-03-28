@@ -336,6 +336,63 @@ export async function updateEleve(id, data) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
+// ─── Niveaux scolaires ────────────────────────────────────────────────────────
+export async function fetchNiveauxScolaires() {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?order=ordre.asc,nom.asc`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+export async function createNiveauScolaire(nom, ordre) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires`, {
+    method: 'POST', headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({ nom, ordre }),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const data = await res.json();
+  return data[0];
+}
+export async function updateNiveauScolaire(id, data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+export async function deleteNiveauScolaire(id) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+// ─── Classes ──────────────────────────────────────────────────────────────────
+export async function fetchClasses(niveauId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?niveau_id=eq.${niveauId}&order=nom.asc`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+export async function fetchAllClasses() {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?order=nom.asc`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+export async function createClasse(niveauId, nom) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes`, {
+    method: 'POST', headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({ niveau_id: niveauId, nom }),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const data = await res.json();
+  return data[0];
+}
+export async function updateClasse(id, nom) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ nom }),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+export async function deleteClasse(id) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
 /** Activer / désactiver un élève */
 export async function updateEleveActif(id, actif) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, {

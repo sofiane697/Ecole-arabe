@@ -8,6 +8,7 @@ import Dashboard from './admin/Dashboard';
 import Inscriptions from './admin/Inscriptions';
 import Messages from './admin/Messages';
 import Cours from './admin/Cours';
+import Classes from './admin/Classes';
 import Eleves from './admin/Eleves';
 import PortailLogin from './portail/PortailLogin';
 import PortailApp from './portail/PortailApp';
@@ -28,6 +29,7 @@ root.render(
         <Route path="inscriptions" element={<Inscriptions />} />
         <Route path="messages" element={<Messages />} />
         <Route path="cours" element={<Cours />} />
+        <Route path="classes" element={<Classes />} />
         <Route path="eleves" element={<Eleves />} />
       </Route>
 

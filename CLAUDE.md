@@ -237,11 +237,23 @@ npm run build # build de production
 | R3 | Breakpoints 1024px + 600px (padding, topbar, login card) | ✅ |
 | R4 | Grid dashboard `minmax(260px)` adaptatif | ✅ |
 
+### Système Professeurs + Classes — ⏳ À planifier (révoqué le 27/03/2026)
+> ⚠️ Une première implémentation a été entièrement annulée (code + DB). À reprendre proprement.
+
+Fonctionnalités souhaitées :
+- Comptes **professeurs** (auth bcrypt, connexion sur `/admin/login`)
+- Accès admin restreint : professeurs voient uniquement "Gestion des cours" (leurs propres modules)
+- **Classes** (ex: N1, N1-1, N1-2) avec arborescence parent/enfant
+- Assignation élève → classe depuis la fiche élève (dropdown)
+- Assignation professeur → classe depuis la fiche professeur
+- Portail élève : affiche les modules du professeur de sa classe + modules admin globaux
+- "Gestion des classes" dans la sidebar admin entre Cours et Élèves
+
 ### Améliorations futures (non planifiées)
+- D5 — Aperçu miniature YouTube dans la modal contenu
 - D3 — Mini-barre de progression dans la carte élève
 - D4 — Drag & drop pour réordonner modules/niveaux/contenus
 - F5 — Dupliquer un module
-- F7 — Tableau de bord de classe (vue croisée élèves × modules)
 
 ---
 
@@ -263,6 +275,8 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Suppression étoile ornementale Hero** : suppression du SVG `.hero-star` (cercles + rayons, rotation 30s) dans `App.jsx` et de son CSS (`.hero-star`, `spinSlow`) dans `styles.js`.
 
 - **Responsivité portail élève** : sidebar masquée + hamburger ☰ sur ≤1024px, overlay cliquable, stepper horizontal scroll sur mobile, breakpoints 600px/1024px (padding, topbar, login card), grid dashboard adaptatif `minmax(260px)`.
 

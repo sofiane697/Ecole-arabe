@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
 
 // ─── Icônes ──────────────────────────────────────────────────────────────────
 const IconPlus = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -67,14 +67,22 @@ export default function Eleves() {
   const [confirmReset, setConfirmReset] = useState(null);  // élève en attente de confirmation reset
   const [confirmDelete, setConfirmDelete] = useState(null); // élève en attente de confirmation suppression
   const [editEleve, setEditEleve] = useState(null);       // élève en cours d'édition
-  const [editForm, setEditForm] = useState({ prenom:'', nom:'', telephone:'', email_contact:'' });
+  const [editForm, setEditForm] = useState({ prenom:'', nom:'', telephone:'', email_contact:'', classe_id:'' });
   const [editLoading, setEditLoading] = useState(false);
+  const [allClasses, setAllClasses] = useState([]);
+  const [niveauxScolaires, setNiveauxScolaires] = useState([]);
 
   const loadEleves = useCallback(async () => {
     try { setEleves(await fetchEleves()); } catch(e) { console.error(e); }
   }, []);
 
   useEffect(() => { loadEleves(); }, [loadEleves]);
+
+  useEffect(() => {
+    Promise.all([fetchAllClasses(), fetchNiveauxScolaires()])
+      .then(([cs, ns]) => { setAllClasses(cs); setNiveauxScolaires(ns); })
+      .catch(() => {});
+  }, []);
 
   // ─── Voir le détail d'un élève ───────────────────────────────────────
   const openEleve = async (eleve) => {
@@ -111,7 +119,7 @@ export default function Eleves() {
 
   const handleOpenEdit = (eleve) => {
     setEditEleve(eleve);
-    setEditForm({ prenom: eleve.prenom || '', nom: eleve.nom || '', telephone: eleve.telephone || '', email_contact: eleve.email_contact || '' });
+    setEditForm({ prenom: eleve.prenom || '', nom: eleve.nom || '', telephone: eleve.telephone || '', email_contact: eleve.email_contact || '', classe_id: eleve.classe_id || '' });
   };
 
   const handleSaveEdit = async () => {
@@ -123,8 +131,9 @@ export default function Eleves() {
         nom: editForm.nom.trim(),
         telephone: editForm.telephone.trim() || null,
         email_contact: editForm.email_contact.trim() || null,
+        classe_id: editForm.classe_id || null,
       });
-      const updated = { ...editEleve, prenom: editForm.prenom.trim(), nom: editForm.nom.trim(), telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null };
+      const updated = { ...editEleve, prenom: editForm.prenom.trim(), nom: editForm.nom.trim(), telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: editForm.classe_id || null };
       setSelectedEleve(updated);
       setEleves(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEditEleve(null);
@@ -167,8 +176,17 @@ export default function Eleves() {
           <div style={{ flex:1 }}>
             <div style={S.detailName}>{selectedEleve.prenom} {selectedEleve.nom}</div>
             <div style={S.detailEmail}>{selectedEleve.email}</div>
-            {(selectedEleve.telephone || selectedEleve.email_contact) && (
+            {(selectedEleve.telephone || selectedEleve.email_contact || selectedEleve.classe_id) && (
               <div style={{ display:'flex', gap:16, marginTop:6, flexWrap:'wrap' }}>
+                {selectedEleve.classe_id && (() => {
+                  const cl = allClasses.find(c => c.id === selectedEleve.classe_id);
+                  const nv = cl ? niveauxScolaires.find(n => n.id === cl.niveau_id) : null;
+                  return cl ? (
+                    <span style={{ fontSize:12, color:'var(--a-gold)', fontWeight:600 }}>
+                      🏫 {nv ? `${nv.nom} — ` : ''}{cl.nom}
+                    </span>
+                  ) : null;
+                })()}
                 {selectedEleve.telephone && (
                   <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>
                     📞 {selectedEleve.telephone}
@@ -248,6 +266,23 @@ export default function Eleves() {
                   placeholder="ex : parent@email.com"
                   type="email"
                 />
+              </div>
+              <div style={{ height:1, background:'var(--a-border)', margin:'8px 0 16px' }} />
+              <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:12 }}>Classe (optionnel)</div>
+              <div style={S.field}>
+                <label style={S.label}>Classe</label>
+                <select style={{ ...S.input, cursor:'pointer' }} value={editForm.classe_id} onChange={e => setEditForm(f => ({ ...f, classe_id: e.target.value }))}>
+                  <option value="">— Aucune classe —</option>
+                  {niveauxScolaires.map(n => {
+                    const cs = allClasses.filter(c => c.niveau_id === n.id);
+                    if (!cs.length) return null;
+                    return (
+                      <optgroup key={n.id} label={n.nom}>
+                        {cs.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                      </optgroup>
+                    );
+                  })}
+                </select>
               </div>
               <div style={{ fontSize:12, color:'var(--a-fg-mid)', marginBottom:16, lineHeight:1.5 }}>
                 ℹ️ L'identifiant de connexion reste inchangé.
@@ -528,9 +563,18 @@ function generateTempPassword() {
 function CreateEleveModal({ onClose, onCreated }) {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
+  const [classeId, setClasseId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState(null); // { identifiant, tempPassword }
+  const [result, setResult] = useState(null);
+  const [allClasses, setAllClasses] = useState([]);
+  const [niveauxScolaires, setNiveauxScolaires] = useState([]);
+
+  useEffect(() => {
+    Promise.all([fetchAllClasses(), fetchNiveauxScolaires()])
+      .then(([cs, ns]) => { setAllClasses(cs); setNiveauxScolaires(ns); })
+      .catch(() => {});
+  }, []);
 
   const identifiant = nom.trim() && prenom.trim() ? generateIdentifiant(prenom, nom) : '';
 
@@ -540,7 +584,10 @@ function CreateEleveModal({ onClose, onCreated }) {
     try {
       const tempPwd = generateTempPassword();
       const fakeEmail = `${identifiant.toLowerCase()}@eleve.alnour.fr`;
-      await createEleve(nom, prenom, fakeEmail, tempPwd);
+      const eleve = await createEleve(nom, prenom, fakeEmail, tempPwd);
+      if (classeId && eleve?.id) {
+        await updateEleve(eleve.id, { classe_id: classeId }).catch(() => {});
+      }
       setResult({ identifiant, tempPassword: tempPwd });
     } catch(e) {
       setError(e.message);
@@ -664,6 +711,23 @@ function CreateEleveModal({ onClose, onCreated }) {
             <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:4 }}>
               {prenom[0]?.toUpperCase()} (prénom) + {nom[1]?.toLowerCase()} (2e lettre nom) + {nom[0]?.toUpperCase()} (nom) + 4 chiffres
             </div>
+          </div>
+        )}
+        {niveauxScolaires.length > 0 && (
+          <div style={S.field}>
+            <label style={S.label}>Classe (optionnel)</label>
+            <select style={{ ...S.input, cursor:'pointer' }} value={classeId} onChange={e => setClasseId(e.target.value)}>
+              <option value="">— Aucune classe —</option>
+              {niveauxScolaires.map(n => {
+                const cs = allClasses.filter(c => c.niveau_id === n.id);
+                if (!cs.length) return null;
+                return (
+                  <optgroup key={n.id} label={n.nom}>
+                    {cs.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                  </optgroup>
+                );
+              })}
+            </select>
           </div>
         )}
         <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.5, marginBottom:8 }}>

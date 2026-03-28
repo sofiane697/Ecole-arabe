@@ -92,12 +92,34 @@ const STYLES = `
     to   { transform: scaleX(1); opacity: 1; }
   }
   @keyframes pulse {
-    0%, 100% { opacity: 0.04; transform: translateY(-50%) scale(1); }
-    50%      { opacity: 0.08; transform: translateY(-50%) scale(1.02); }
+    0%, 100% { opacity: 0.12; transform: scale(1); }
+    50%      { opacity: 0.22; transform: scale(1.04); }
   }
   @keyframes float {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50%      { transform: translateX(-50%) translateY(8px); }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%      { transform: translateY(-14px) rotate(1deg); }
+    66%      { transform: translateY(-6px) rotate(-1deg); }
+  }
+  @keyframes floatB {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50%      { transform: translateY(12px) rotate(-2deg); }
+  }
+  @keyframes floatC {
+    0%, 100% { transform: translateY(0px); }
+    40%      { transform: translateY(-10px); }
+    80%      { transform: translateY(6px); }
+  }
+  @keyframes orbPulse {
+    0%, 100% { transform: scale(1); opacity: 0.2; }
+    50%      { transform: scale(1.2); opacity: 0.38; }
+  }
+  @keyframes orbPulse2 {
+    0%, 100% { transform: scale(1); opacity: 0.12; }
+    50%      { transform: scale(1.25); opacity: 0.25; }
+  }
+  @keyframes spinSlow {
+    from { transform: translate(-50%,-50%) rotate(0deg); }
+    to   { transform: translate(-50%,-50%) rotate(360deg); }
   }
   @keyframes shimmer {
     0% { background-position: -200% 0; }
@@ -341,18 +363,75 @@ const STYLES = `
       radial-gradient(ellipse 60% 50% at 60% 50%, rgba(191,138,48,0.08) 0%, transparent 70%),
       radial-gradient(ellipse 40% 60% at 10% 70%, rgba(191,138,48,0.04) 0%, transparent 60%);
   }
+  /* ── Wrapper déco hero ── */
+  .hero-deco-wrap {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 52%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* ── Orbes lumineux ── */
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(191,138,48,0.35) 0%, rgba(191,138,48,0) 70%);
+  }
+  .hero-orb-1 {
+    width: 420px; height: 420px;
+    top: 10%; right: 5%;
+    animation: orbPulse 5s ease-in-out infinite;
+  }
+  .hero-orb-2 {
+    width: 280px; height: 280px;
+    bottom: 15%; right: 25%;
+    animation: orbPulse2 7s ease-in-out infinite 1s;
+  }
+  html.dark .hero-orb-1 { background: radial-gradient(circle, rgba(191,138,48,0.45) 0%, rgba(191,138,48,0) 70%); }
+  html.dark .hero-orb-2 { background: radial-gradient(circle, rgba(191,138,48,0.30) 0%, rgba(191,138,48,0) 70%); }
+
+  /* ── Motif géométrique ── */
   .hero-geo {
     position: absolute;
-    right: -2rem;
-    top: 50%;
+    right: -3rem; top: 50%;
     transform: translateY(-50%);
-    width: 45vw;
-    max-width: 580px;
-    opacity: 0.035;
-    pointer-events: none;
-    animation: pulse 6s ease infinite;
+    width: 90%;
+    opacity: 0.12;
+    animation: pulse 8s ease-in-out infinite;
   }
-  html.dark .hero-geo { opacity: 0.06; }
+  html.dark .hero-geo { opacity: 0.18; }
+
+  /* ── Lettres calligraphiques flottantes ── */
+  .hero-calli-1, .hero-calli-2, .hero-calli-3 {
+    position: absolute;
+    font-family: 'Scheherazade New', serif;
+    color: #b8862e;
+    pointer-events: none;
+    line-height: 1;
+  }
+  .hero-calli-1 {
+    font-size: 18rem;
+    top: 5%; right: 8%;
+    opacity: 0.08;
+    animation: float 7s ease-in-out infinite;
+  }
+  .hero-calli-2 {
+    font-size: 10rem;
+    bottom: 12%; right: 38%;
+    opacity: 0.10;
+    animation: floatB 9s ease-in-out infinite 1.5s;
+  }
+  .hero-calli-3 {
+    font-size: 8rem;
+    top: 55%; right: 8%;
+    opacity: 0.07;
+    animation: floatC 6s ease-in-out infinite 0.8s;
+  }
+  html.dark .hero-calli-1 { opacity: 0.14; }
+  html.dark .hero-calli-2 { opacity: 0.16; }
+  html.dark .hero-calli-3 { opacity: 0.12; }
+
   .hero-inner {
     position: relative;
     z-index: 2;
@@ -1352,7 +1431,7 @@ const STYLES = `
     .hero-title-fr       { font-size: clamp(1.2rem, 4.5vw, 1.8rem); }
     .hero-desc           { font-size: 0.95rem; max-width: 100%; margin-inline: auto; }
     .hero-actions        { justify-content: center; flex-direction: column; align-items: center; }
-    .hero-geo            { display: none; }
+    .hero-deco-wrap      { display: none; }
 
     .section             { padding: 3.5rem 1.4rem; }
     .orn                 { padding: 1rem 1.4rem; }

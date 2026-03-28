@@ -14,22 +14,36 @@ function Counter({ target, prefix = '', suffix = '' }) {
 }
 
 /** SVG motif géométrique islamique */
-function GeoPattern() {
+function HeroDeco() {
   return (
-    <svg className="hero-geo" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="geo" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-          <polygon points="40,2 78,22 78,58 40,78 2,58 2,22"    fill="none" stroke="#b8862e" strokeWidth="0.8" />
-          <polygon points="40,14 66,28 66,52 40,66 14,52 14,28" fill="none" stroke="#b8862e" strokeWidth="0.4" />
-          <circle  cx="40" cy="40" r="4"                         fill="none" stroke="#b8862e" strokeWidth="0.6" />
-          <line x1="40" y1="2"  x2="40" y2="14" stroke="#b8862e" strokeWidth="0.4" />
-          <line x1="40" y1="66" x2="40" y2="78" stroke="#b8862e" strokeWidth="0.4" />
-          <line x1="2"  y1="40" x2="14" y2="40" stroke="#b8862e" strokeWidth="0.4" />
-          <line x1="66" y1="40" x2="78" y2="40" stroke="#b8862e" strokeWidth="0.4" />
-        </pattern>
-      </defs>
-      <rect width="400" height="400" fill="url(#geo)" />
-    </svg>
+    <div className="hero-deco-wrap">
+      {/* Orbe principal */}
+      <div className="hero-orb hero-orb-1" />
+      <div className="hero-orb hero-orb-2" />
+
+      {/* Motif géométrique islamique */}
+      <svg className="hero-geo" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="geo" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+            <polygon points="50,3 97,27 97,73 50,97 3,73 3,27" fill="none" stroke="#b8862e" strokeWidth="1.2" />
+            <polygon points="50,18 82,35 82,65 50,82 18,65 18,35" fill="none" stroke="#b8862e" strokeWidth="0.6" />
+            <circle cx="50" cy="50" r="6" fill="none" stroke="#b8862e" strokeWidth="0.8" />
+            <circle cx="50" cy="50" r="2" fill="#b8862e" opacity="0.6" />
+            <line x1="50" y1="3"  x2="50" y2="18" stroke="#b8862e" strokeWidth="0.6" />
+            <line x1="50" y1="82" x2="50" y2="97" stroke="#b8862e" strokeWidth="0.6" />
+            <line x1="3"  y1="50" x2="18" y2="50" stroke="#b8862e" strokeWidth="0.6" />
+            <line x1="82" y1="50" x2="97" y2="50" stroke="#b8862e" strokeWidth="0.6" />
+          </pattern>
+        </defs>
+        <rect width="500" height="500" fill="url(#geo)" />
+      </svg>
+
+      {/* Grande lettre calligraphie flottante */}
+      <div className="hero-calli-1">ن</div>
+      <div className="hero-calli-2">و</div>
+      <div className="hero-calli-3">ر</div>
+
+    </div>
   );
 }
 
@@ -386,7 +400,7 @@ export default function App() {
       ───────────────────────────── */}
       <section className="hero" id="accueil">
         <div className="hero-glow" />
-        <GeoPattern />
+        <HeroDeco />
 
         <div className="hero-inner">
           <div className="hero-eyebrow">Bienvenue à l'école Al-Nour</div>
