@@ -17,7 +17,7 @@ const IconLogout = () => (
 );
 
 const PAGE_TITLES = {
-  '/portail': 'Mes cours',
+  '/portail': 'Mes modules',
 };
 
 export default function PortailApp() {
@@ -64,7 +64,10 @@ export default function PortailApp() {
   const userIdentifiant = user?.identifiant ? user.identifiant.toUpperCase() : '';
 
   // Titre dynamique
-  const currentTitle = PAGE_TITLES[location.pathname] || 'Mon cours';
+  const currentTitle = PAGE_TITLES[location.pathname] ||
+    (location.pathname.includes('/thematique/') ? 'Mon cours' :
+     location.pathname.startsWith('/portail/module/') ? 'Mes Thématiques' :
+     'Mon cours');
 
   const today = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -93,7 +96,7 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
           >
-            <IconCourses /> Mes cours
+            <IconCourses /> Mes modules
           </NavLink>
 
           <div className="portail-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>

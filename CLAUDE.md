@@ -100,10 +100,14 @@ Ecole-arabe/
 ### Flux QCM (progression)
 
 1. Élève sélectionne un module → voit les niveaux (Niveau 1 débloqué, reste verrouillé)
-2. Élève consulte le contenu du niveau (vidéos YouTube, PDF, texte)
+2. Élève consulte le contenu du niveau (vidéos YouTube, PDF, texte, Word, PowerPoint)
 3. Élève clique "Passer le QCM" → questions à choix multiples (checkboxes, plusieurs bonnes réponses possibles)
 4. Score ≥ score_requis (défaut 80%) → `reussi = true` → niveau suivant débloqué
 5. Score < score_requis → possibilité de réessayer (tentatives comptées)
+
+**Règle de déblocage des niveaux :**
+- Niveau précédent **sans QCM** → niveau suivant débloqué automatiquement (accès libre)
+- Niveau précédent **avec QCM** → niveau suivant débloqué uniquement si score ≥ score_requis
 
 ---
 
@@ -126,7 +130,7 @@ Ecole-arabe/
 | `modules` | Catégories de cours | SELECT (actif=true) | ALL |
 | `thematiques` | Sous-modules intermédiaires (module → thématique → niveau) | SELECT | ALL |
 | `niveaux` | Niveaux dans chaque thématique (thematique_id FK) | SELECT | ALL |
-| `contenus` | Contenu par niveau (video/pdf/texte) | SELECT | ALL |
+| `contenus` | Contenu par niveau (video/pdf/texte/word/ppt) | SELECT | ALL |
 | `qcm_questions` | Questions QCM (choix JSONB, reponse_correcte JSONB array) | SELECT | ALL |
 | `eleve_progression` | Suivi progression élève | — | ALL |
 
@@ -280,6 +284,12 @@ Fonctionnalités souhaitées :
 ---
 
 ## Historique des modifications
+
+- **Déblocage niveaux intelligent** : les niveaux sans QCM ne bloquent plus les suivants. Au chargement d'une thématique, `PortailModule.jsx` récupère en parallèle la présence de QCM pour tous les niveaux (`niveauxWithQCM` = Set d'IDs). `isUnlocked` : si niveau précédent sans QCM → débloqué automatiquement ; si avec QCM → doit être réussi. La sélection automatique du niveau courant respecte également cette logique.
+
+- **Intégration Word (.docx) et PowerPoint (.pptx)** : nouveaux types de contenus dans la modal admin (`Cours.jsx`). Upload drag & drop vers Supabase Storage (bucket `cours`) avec validation MIME stricte par type (10 Mo Word, 20 Mo PPT). Rendu portail via **Microsoft Office Online Viewer** (`https://view.officeapps.live.com/op/embed.aspx?src=URL`) en iframe — PPT en ratio 16/9 avec navigation slides, Word en hauteur fixe 600px. Aucune installation requise côté élève, fonctionne sur tous navigateurs/appareils. Contrainte SQL à ajouter : `ALTER TABLE contenus ADD CONSTRAINT contenus_type_check CHECK (type IN ('video', 'pdf', 'texte', 'word', 'ppt'));`
+
+- **Restriction thématiques par niveau scolaire** : colonne `niveaux_scolaires_ids UUID[]` sur `thematiques` (tableau des UUIDs autorisés), colonne `niveau_scolaire_id UUID` sur `profils_eleves` (dérivé automatiquement de `classe.niveau_id` à chaque modification de classe). Admin `Cours.jsx` : checkboxes niveaux scolaires dans `ThematiqueModal`. Admin `Eleves.jsx` : `updateEleveNiveauScolaire()` appelé en `Promise.all` avec `updateEleve()` lors de la sauvegarde. Portail : filtrage client-side (`Array.includes`) dans `fetchThematiquesEleve`. `PortailModule.jsx` : toujours rafraîchit `niveau_scolaire_id` depuis la DB au chargement du module (détecte les changements admin en temps réel). Fonctions SQL SECURITY DEFINER : `admin_update_eleve_niveau_scolaire`, `get_eleve_niveau_scolaire`.
 
 - **ConfirmModal partagé** : composant `src/admin/ConfirmModal.jsx` — modale animée (scale+fade, backdrop blur) avec icône SVG, titre, message JSX, boutons pill. Remplace les 3 `window.confirm()` dans `Cours.jsx` (suppr. module/niveau/contenu) et les 2 modales emoji dans `Eleves.jsx` (suppr. élève + reset MDP). Prop `danger` (rouge) ou `icon="warn"` (or). Fermeture avec Échap ou clic backdrop.
 

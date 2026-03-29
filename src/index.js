@@ -38,6 +38,7 @@ root.render(
       <Route path="/portail" element={<PortailApp />}>
         <Route index element={<PortailDashboard />} />
         <Route path="module/:id" element={<PortailModule />} />
+        <Route path="module/:moduleId/thematique/:thId" element={<PortailModule />} />
       </Route>
     </Routes>
   </BrowserRouter>

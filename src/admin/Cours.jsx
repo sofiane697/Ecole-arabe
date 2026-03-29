@@ -19,9 +19,11 @@ const IconTrash = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const IconVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
 const IconFile  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
 const IconText  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>;
+const IconWord  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>;
+const IconPPT   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>;
 
-const TYPE_ICONS = { video: <IconVideo />, pdf: <IconFile />, texte: <IconText /> };
-const TYPE_COLORS = { video: 'var(--a-red)', pdf: 'var(--a-blue)', texte: 'var(--a-green)' };
+const TYPE_ICONS = { video: <IconVideo />, pdf: <IconFile />, texte: <IconText />, word: <IconWord />, ppt: <IconPPT /> };
+const TYPE_COLORS = { video: 'var(--a-red)', pdf: 'var(--a-blue)', texte: 'var(--a-green)', word: '#2b579a', ppt: '#c43e1c' };
 
 // ─── Styles inline ───────────────────────────────────────────────────────────
 const S = {
@@ -838,13 +840,21 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
   const [uploadError, setUploadError] = useState('');
   const [dragOver, setDragOver] = useState(false);
 
+  const ACCEPTED_MIME = {
+    pdf:  'application/pdf',
+    word: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ppt:  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  };
+  const ACCEPTED_LABEL = { pdf: 'PDF', word: 'Word (.docx)', ppt: 'PowerPoint (.pptx)' };
+
   const handleFile = async (file) => {
-    if (!file || file.type !== 'application/pdf') {
-      setUploadError('Seuls les fichiers PDF sont acceptés.');
+    if (!file || file.type !== ACCEPTED_MIME[type]) {
+      setUploadError(`Seuls les fichiers ${ACCEPTED_LABEL[type]} sont acceptés.`);
       return;
     }
-    if (file.size > 20 * 1024 * 1024) {
-      setUploadError('Fichier trop lourd (max 20 Mo).');
+    const maxSize = type === 'ppt' ? 20 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setUploadError(`Fichier trop lourd (max ${type === 'ppt' ? '20' : '10'} Mo).`);
       return;
     }
     setUploadError('');
@@ -854,7 +864,7 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
       const slugTitle = toSlug(titre || file.name.replace(/\.[^.]+$/, ''));
       const url = await uploadFile(file, `${toSlug(moduleTitre)}/${toSlug(niveauTitre)}/${slugTitle}.${ext}`);
       setContenu(url);
-      if (!titre) setTitre(file.name.replace(/\.pdf$/i, ''));
+      if (!titre) setTitre(file.name.replace(/\.[^.]+$/, ''));
     } catch(e) {
       setUploadError(e.message || 'Erreur lors de l\'upload.');
     }
@@ -876,6 +886,8 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
           <option value="video">Vidéo YouTube</option>
           <option value="pdf">PDF</option>
           <option value="texte">Texte</option>
+          <option value="word">Word (.docx)</option>
+          <option value="ppt">PowerPoint (.pptx)</option>
         </select>
       </div>
 
@@ -884,17 +896,19 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
         <input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Titre du contenu" />
       </div>
 
-      {/* ─── Zone PDF : drag & drop + URL ─── */}
-      {type === 'pdf' && (
+      {/* ─── Zone fichier : PDF / Word / PowerPoint — drag & drop + URL ─── */}
+      {(type === 'pdf' || type === 'word' || type === 'ppt') && (
         <div style={S.field}>
-          <label style={S.label}>Fichier PDF *</label>
+          <label style={S.label}>
+            {type === 'pdf' ? 'Fichier PDF *' : type === 'word' ? 'Fichier Word (.docx) *' : 'Fichier PowerPoint (.pptx) *'}
+          </label>
 
           {/* Zone drag & drop */}
           <div
             onDragOver={e => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
-            onClick={() => document.getElementById('pdf-file-input').click()}
+            onClick={() => document.getElementById('doc-file-input').click()}
             style={{
               border: `2px dashed ${dragOver ? 'var(--a-gold)' : contenu ? 'var(--a-green)' : 'var(--a-border)'}`,
               borderRadius: 'var(--a-radius-sm)',
@@ -906,9 +920,13 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
               marginBottom: 10,
             }}>
             <input
-              id="pdf-file-input"
+              id="doc-file-input"
               type="file"
-              accept="application/pdf"
+              accept={
+                type === 'pdf'  ? 'application/pdf' :
+                type === 'word' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+              }
               style={{ display:'none' }}
               onChange={e => e.target.files[0] && handleFile(e.target.files[0])}
             />
@@ -916,15 +934,21 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
               <div style={{ color:'var(--a-gold)', fontSize:14 }}>⏳ Upload en cours...</div>
             ) : contenu ? (
               <div style={{ color:'var(--a-green)', fontSize:13 }}>
-                ✅ PDF uploadé avec succès
+                ✅ Fichier uploadé avec succès
                 <div style={{ fontSize:11, color:'var(--a-fg-mid)', marginTop:4, wordBreak:'break-all' }}>{contenu.split('/').pop()}</div>
                 <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2 }}>Cliquer pour remplacer</div>
               </div>
             ) : (
               <div style={{ color:'var(--a-fg-mid)', fontSize:13 }}>
-                <div style={{ fontSize:28, marginBottom:8 }}>📄</div>
-                <strong>Glisser-déposer votre PDF ici</strong>
-                <div style={{ fontSize:12, marginTop:4 }}>ou cliquer pour parcourir — max 20 Mo</div>
+                <div style={{ fontSize:28, marginBottom:8 }}>
+                  {type === 'pdf' ? '📄' : type === 'word' ? '📃' : '📊'}
+                </div>
+                <strong>
+                  Glisser-déposer votre {type === 'pdf' ? 'PDF' : type === 'word' ? 'fichier Word' : 'PowerPoint'} ici
+                </strong>
+                <div style={{ fontSize:12, marginTop:4 }}>
+                  ou cliquer pour parcourir — max {type === 'ppt' ? '20' : '10'} Mo
+                </div>
               </div>
             )}
           </div>

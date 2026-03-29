@@ -8,7 +8,7 @@ let _salamHasAnimated = false;
 const S = {
   grid: (n) => ({
     display: 'grid',
-    gridTemplateColumns: n === 1 ? '1fr' : n === 2 ? '1fr 1fr' : n === 3 ? '1fr 1fr 1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
+    gridTemplateColumns: `repeat(${Math.min(n, 4)}, 1fr)`,
     gap: 20,
   }),
   card: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' },

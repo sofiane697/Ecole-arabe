@@ -98,7 +98,8 @@ const S = {
   empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)', fontSize:14 },
 };
 
-const TYPE_COLORS = { video: '#ff453a', pdf: '#0a84ff', texte: '#30d158' };
+const TYPE_COLORS = { video: '#ff453a', pdf: '#0a84ff', texte: '#30d158', word: '#2b579a', ppt: '#c43e1c' };
+const TYPE_LABELS = { video: '▶ Vidéo', texte: '📝 Texte', word: '📃 Word', ppt: '📊 PowerPoint' };
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <polyline points="15 18 9 12 15 6"/>
@@ -140,16 +141,15 @@ function ModuleEntryView({ moduleId }) {
 
   useEffect(() => {
     (async () => {
-      // Récupérer niveau_scolaire_id depuis la session
+      // Toujours vérifier en DB pour détecter un changement de classe depuis l'admin
       let niveauScolaireId = getEleveNiveauScolaireId();
-
-      // Fallback : si absent de la session, le chercher en DB et mettre à jour la session
-      if (!niveauScolaireId && eleveId) {
-        niveauScolaireId = await fetchEleveNiveauScolaireId(eleveId).catch(() => null);
-        if (niveauScolaireId) {
+      if (eleveId) {
+        const freshId = await fetchEleveNiveauScolaireId(eleveId).catch(() => niveauScolaireId);
+        if (freshId !== niveauScolaireId) {
+          niveauScolaireId = freshId;
           try {
             const user = JSON.parse(sessionStorage.getItem('eleve_user') || '{}');
-            user.niveau_scolaire_id = niveauScolaireId;
+            user.niveau_scolaire_id = freshId;
             sessionStorage.setItem('eleve_user', JSON.stringify(user));
           } catch {}
         }
@@ -278,6 +278,8 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
   const [showResult, setShowResult]     = useState(false);
   const [score, setScore]               = useState(0);
   const [loading, setLoading]           = useState(true);
+  // Set des IDs de niveaux qui possèdent au moins une question QCM
+  const [niveauxWithQCM, setNiveauxWithQCM] = useState(new Set());
   const eleveId = getEleveId();
 
   const loadData = useCallback(async () => {
@@ -286,10 +288,25 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
         byThematique ? fetchNiveauxByThematiqueEleve(fetchId) : fetchNiveauxEleve(fetchId),
         fetchProgression(eleveId),
       ]);
+
+      // Vérifier en parallèle quels niveaux ont un QCM
+      const qcmResults = await Promise.all(nivs.map(n => fetchQCMEleve(n.id)));
+      const withQCM = new Set(nivs.filter((_, i) => qcmResults[i].length > 0).map(n => n.id));
+
       setNiveaux(nivs);
       setProgressionState(prog);
-      const firstUnpassed = nivs.find(n => !prog.some(p => p.niveau_id === n.id && p.reussi));
-      setSelNiveau(firstUnpassed || nivs[0] || null);
+      setNiveauxWithQCM(withQCM);
+
+      // Sélectionner le premier niveau accessible non encore réussi
+      // (un niveau sans QCM ne bloque pas le suivant → on cherche le premier "utile")
+      const isUnlockedLocal = (index) => {
+        if (index === 0) return true;
+        const prevId = nivs[index - 1].id;
+        if (!withQCM.has(prevId)) return true; // pas de QCM → débloqué
+        return prog.some(p => p.niveau_id === prevId && p.reussi);
+      };
+      const firstTarget = nivs.find((n, i) => isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi));
+      setSelNiveau(firstTarget || nivs[0] || null);
     } catch(e) { console.error(e); }
     setLoading(false);
   }, [fetchId, byThematique, eleveId]);
@@ -309,7 +326,11 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
 
   const isUnlocked = (niv, index) => {
     if (index === 0) return true;
-    return progression.some(p => p.niveau_id === niveaux[index - 1].id && p.reussi);
+    const prevId = niveaux[index - 1].id;
+    // Si le niveau précédent n'a pas de QCM → débloqué automatiquement
+    if (!niveauxWithQCM.has(prevId)) return true;
+    // Si le niveau précédent a un QCM → il doit être réussi
+    return progression.some(p => p.niveau_id === prevId && p.reussi);
   };
   const isPassed = (nivId) => progression.some(p => p.niveau_id === nivId && p.reussi);
   const getProgForNiveau = (nivId) => progression.find(p => p.niveau_id === nivId);
@@ -388,7 +409,7 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
                 <div key={c.id} style={S.contentCard}>
                   {c.type !== 'pdf' && (
                     <div style={S.contentHeader}>
-                      <span style={S.contentType(TYPE_COLORS[c.type] || '#aaa')}>{c.type === 'video' ? '▶ Vidéo' : '📝 Texte'}</span>
+                      <span style={S.contentType(TYPE_COLORS[c.type] || '#aaa')}>{TYPE_LABELS[c.type] || c.type}</span>
                       <span style={S.contentTitle}>{c.titre}</span>
                     </div>
                   )}
@@ -425,6 +446,21 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
                         ? { dangerouslySetInnerHTML: { __html: c.contenu } }
                         : { children: c.contenu }
                       )}
+                    />
+                  )}
+                  {(c.type === 'word' || c.type === 'ppt') && (
+                    <iframe
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(c.contenu)}`}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        borderRadius: '0 0 var(--p-radius) var(--p-radius)',
+                        ...(c.type === 'ppt'
+                          ? { aspectRatio: '16/9' }
+                          : { height: '600px' }),
+                      }}
+                      title={c.titre}
+                      allowFullScreen
                     />
                   )}
                 </div>
