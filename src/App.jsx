@@ -574,12 +574,14 @@ export default function App() {
 
         <div className="hero-inner">
           <div className="hero-eyebrow">Bienvenue à l'école Raqib</div>
-          <h1 className="hero-title-ar">رقيب</h1>
-          <p  className="hero-title-fr">L'art de la langue arabe</p>
+          <div className="hero-title-row">
+            <span className="hero-title-fr-name">RAQIB</span>
+            <h1 className="hero-title-ar">رقيب</h1>
+          </div>
+          <p  className="hero-title-fr">Transmettre le savoir, éclairer les cœurs</p>
           <p  className="hero-desc">
-            Une institution d'excellence dédiée à l'enseignement de la langue arabe —
-            alphabet, grammaire, lecture coranique et culture — pour enfants et adultes,
-            tous niveaux confondus.
+            Une institution d'excellence dédiée à l'enseignement de la lecture du Coran,
+            aux sciences islamiques et à la langue arabe — pour enfants et adultes.
           </p>
           <div className="hero-actions">
             <button className="btn-fill"    onClick={() => goTo('tarifs')}>Découvrir les cours</button>
