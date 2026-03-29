@@ -181,7 +181,7 @@ const STYLES = `
   }
   .logo:hover { opacity: 0.8; }
   .logo-img {
-    height: 58px;
+    height: 72px;
     width: auto;
     object-fit: contain;
     flex-shrink: 0;
