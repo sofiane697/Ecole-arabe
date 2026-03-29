@@ -1,8 +1,8 @@
-# CLAUDE.md — Guzur (جذور)
+# CLAUDE.md — Raqib (رقيب)
 
 ## Présentation du projet
 
-Site vitrine one-page pour une école d'arabe **"Guzur" (جذور)**.
+Site vitrine one-page pour une école d'arabe **"Raqib" (رقيب)**.
 Stack : **React 18** (Create React App), **React Router v6**, CSS-in-JS, aucune librairie UI externe.
 
 ## Structure des fichiers
@@ -29,12 +29,15 @@ Ecole-arabe/
     │   ├── mockData.js       # Données fictives (backup)
     │   └── adminStyles.js    # CSS complet interface admin (thème sombre + clair)
     └── portail/
-        ├── portailStyles.js     # CSS du portail élève
-        ├── supabasePortail.js   # API Supabase côté élève (auth custom, progression)
-        ├── PortailLogin.jsx     # /portail/login — connexion + changement mot de passe 1ère connexion
-        ├── PortailApp.jsx       # Layout portail : sidebar + topbar + Outlet
-        ├── PortailDashboard.jsx # Grille de modules avec barres de progression
-        └── PortailModule.jsx    # Vue module : stepper niveaux + contenu + QCM
+        ├── portailStyles.js        # CSS du portail élève
+        ├── supabasePortail.js      # API Supabase côté élève (auth custom, progression)
+        ├── PortailLogin.jsx        # /portail/login — connexion + changement mot de passe 1ère connexion
+        ├── PortailApp.jsx          # Layout portail : sidebar + topbar + Outlet
+        ├── PortailDashboard.jsx    # Grille de modules avec barres de progression
+        ├── PortailModule.jsx       # Vue module : stepper niveaux + contenu + QCM
+        ├── PortailDevoirs.jsx      # /portail/devoirs — page devoirs (vide, à alimenter)
+        ├── PortailResultats.jsx    # /portail/resultats — page résultats (vide, à alimenter)
+        └── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
 ```
 
 ## Sections du site public (dans l'ordre)
@@ -88,6 +91,13 @@ Ecole-arabe/
 | `/portail` | PortailDashboard | Grille des modules avec barre de progression |
 | `/portail/module/:id` | PortailModule | Smart router : si thématiques → grille thématiques ; sinon → niveaux |
 | `/portail/module/:moduleId/thematique/:thId` | PortailModule | Niveaux d'une thématique + contenu + QCM |
+| `/portail/devoirs` | PortailDevoirs | Devoirs assignés par le professeur (page prête, contenu à venir) |
+| `/portail/resultats` | PortailResultats | Notes et résultats d'évaluations (page prête, contenu à venir) |
+| `/portail/observations` | PortailObservations | Observations et commentaires du professeur (page prête, contenu à venir) |
+
+### Sidebar portail — Ressources externes
+- **Voir mon livre interactif** → `https://www.mon-kitabi.fr/kitabis/` (nouvel onglet)
+- **Al - Muqri** → `https://fr.muqri.com/` (nouvel onglet)
 
 ### Authentification élève (auth custom — PAS Supabase Auth)
 
@@ -284,6 +294,14 @@ Fonctionnalités souhaitées :
 ---
 
 ## Historique des modifications
+
+- **Portail — Mes devoirs / Mes résultats / Mes observations** : 3 nouvelles pages portail ajoutées à la sidebar (section Navigation). Chaque page affiche un état vide élégant, prêt à être alimenté. Routes : `/portail/devoirs`, `/portail/resultats`, `/portail/observations`. Composants : `PortailDevoirs.jsx`, `PortailResultats.jsx`, `PortailObservations.jsx`. `PAGE_TITLES` mis à jour pour le titre dynamique de la topbar. Icônes SVG dédiées pour chaque lien.
+
+- **Portail — Ressources sidebar** : "Voir le site" remplacé par "Voir mon livre interactif" (`mon-kitabi.fr/kitabis/`) + ajout lien "Al - Muqri" (`fr.muqri.com`). Section renommée "Site" → "Ressources".
+
+- **Rebranding RAQIB** : renommage complet "GUZUR"/"جذور" → **"RAQIB"/"رقيب"** dans tous les fichiers. Logo agrandi : 42px → 58px → 72px.
+
+- **Palette Couleurs n°3** (`#CE8F8A` · `#FBF0E9` · `#805050` · `#D4C2A1` · `#AD9C92`) : rose terracotta, crème, bordeaux, beige chaud, taupe. Bloc `html.theme-3` complet dans `styles.js`.
 
 - **Rebranding GUZUR + logo** : changement du nom de l'école de "Al-Nour"/"مدرسة النور" vers **"GUZUR"/"جذور"** dans tous les fichiers (`App.jsx`, `data.js`, `AdminLogin.jsx`, `AdminApp.jsx`, `PortailApp.jsx`, `PortailLogin.jsx`, `Eleves.jsx`, `public/index.html`, `CLAUDE.md`). Ajout du logo `public/Logo.png` dans la navbar : bouton `.logo` restructuré en `flex-row` avec `<img class="logo-img">` + `<div class="logo-text">` (`.logo-ar` + `.logo-fr`). CSS `styles.js` mis à jour (`.logo { flex-direction: row; gap: 10px; }`, `.logo-img { height:42px; }`).
 
