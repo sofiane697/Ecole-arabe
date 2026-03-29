@@ -14,6 +14,9 @@ import PortailLogin from './portail/PortailLogin';
 import PortailApp from './portail/PortailApp';
 import PortailDashboard from './portail/PortailDashboard';
 import PortailModule from './portail/PortailModule';
+import PortailDevoirs from './portail/PortailDevoirs';
+import PortailResultats from './portail/PortailResultats';
+import PortailObservations from './portail/PortailObservations';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -39,6 +42,9 @@ root.render(
         <Route index element={<PortailDashboard />} />
         <Route path="module/:id" element={<PortailModule />} />
         <Route path="module/:moduleId/thematique/:thId" element={<PortailModule />} />
+        <Route path="devoirs" element={<PortailDevoirs />} />
+        <Route path="resultats" element={<PortailResultats />} />
+        <Route path="observations" element={<PortailObservations />} />
       </Route>
     </Routes>
   </BrowserRouter>
