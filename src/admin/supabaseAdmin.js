@@ -302,10 +302,19 @@ export async function deleteEleve(id) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
-/** Modifier les infos d'un élève (nom, prénom) */
+/** Modifier les infos d'un élève (nom, prénom, téléphone, email_contact, classe_id) */
 export async function updateEleve(id, data) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, {
     method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Modifier le niveau scolaire d'un élève (via fonction SECURITY DEFINER — contourne le RLS) */
+export async function updateEleveNiveauScolaire(eleveId, niveauScolaireId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_eleve_niveau_scolaire`, {
+    method: 'POST',
+    body: JSON.stringify({ p_id: eleveId, p_niveau_scolaire_id: niveauScolaireId || null }),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }

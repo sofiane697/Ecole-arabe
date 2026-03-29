@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   fetchModulesEleve, fetchNiveauxEleve, fetchNiveauxByThematiqueEleve,
-  fetchThematiquesEleve, fetchContenusEleve, fetchQCMEleve,
+  fetchThematiquesEleve, fetchAllThematiquesEleve, fetchEleveNiveauScolaireId, fetchContenusEleve, fetchQCMEleve,
   fetchProgression, saveProgression,
 } from './supabasePortail';
 
@@ -13,6 +13,9 @@ function getYouTubeId(url) {
 }
 function getEleveId() {
   try { return JSON.parse(sessionStorage.getItem('eleve_user'))?.id; } catch { return null; }
+}
+function getEleveNiveauScolaireId() {
+  try { return JSON.parse(sessionStorage.getItem('eleve_user'))?.niveau_scolaire_id ?? null; } catch { return null; }
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
@@ -129,6 +132,7 @@ export default function PortailModule() {
 function ModuleEntryView({ moduleId }) {
   const navigate = useNavigate();
   const [thematiques, setThematiques] = useState(null);
+  const [moduleHasThematiques, setModuleHasThematiques] = useState(false);
   const [module_, setModule_] = useState(null);
   const [niveauxMap, setNiveauxMap] = useState({});
   const [progression, setProgression] = useState([]);
@@ -136,17 +140,37 @@ function ModuleEntryView({ moduleId }) {
 
   useEffect(() => {
     (async () => {
-      const [ths, mods] = await Promise.all([fetchThematiquesEleve(moduleId), fetchModulesEleve()]);
+      // Récupérer niveau_scolaire_id depuis la session
+      let niveauScolaireId = getEleveNiveauScolaireId();
+
+      // Fallback : si absent de la session, le chercher en DB et mettre à jour la session
+      if (!niveauScolaireId && eleveId) {
+        niveauScolaireId = await fetchEleveNiveauScolaireId(eleveId).catch(() => null);
+        if (niveauScolaireId) {
+          try {
+            const user = JSON.parse(sessionStorage.getItem('eleve_user') || '{}');
+            user.niveau_scolaire_id = niveauScolaireId;
+            sessionStorage.setItem('eleve_user', JSON.stringify(user));
+          } catch {}
+        }
+      }
+
+      const [allThs, filteredThs, mods] = await Promise.all([
+        fetchAllThematiquesEleve(moduleId),
+        fetchThematiquesEleve(moduleId, niveauScolaireId),
+        fetchModulesEleve(),
+      ]);
       setModule_(mods.find(m => String(m.id) === String(moduleId)) || null);
-      setThematiques(ths);
-      if (ths.length > 0) {
+      setModuleHasThematiques(allThs.length > 0);
+      setThematiques(filteredThs);
+      if (filteredThs.length > 0) {
         const [prog, ...nivArrays] = await Promise.all([
           fetchProgression(eleveId),
-          ...ths.map(th => fetchNiveauxByThematiqueEleve(th.id)),
+          ...filteredThs.map(th => fetchNiveauxByThematiqueEleve(th.id)),
         ]);
         setProgression(prog);
         const map = {};
-        ths.forEach((th, i) => { map[th.id] = nivArrays[i]; });
+        filteredThs.forEach((th, i) => { map[th.id] = nivArrays[i]; });
         setNiveauxMap(map);
       }
     })().catch(console.error);
@@ -154,8 +178,8 @@ function ModuleEntryView({ moduleId }) {
 
   if (thematiques === null) return <div style={S.empty}>Chargement...</div>;
 
-  // Pas de thématiques → vue niveaux directe (comportement existant)
-  if (thematiques.length === 0) {
+  // Le module n'a aucune thématique → vue niveaux directe
+  if (!moduleHasThematiques) {
     return (
       <NiveauxView
         fetchId={moduleId}
@@ -163,6 +187,23 @@ function ModuleEntryView({ moduleId }) {
         stepperTitle={module_?.titre || ''}
         onBack={() => navigate('/portail')}
       />
+    );
+  }
+
+  // Le module a des thématiques mais aucune accessible → message
+  if (thematiques.length === 0) {
+    return (
+      <div>
+        <button style={S.backBtn} onClick={() => navigate('/portail')}>
+          <IconBack /> Retour aux cours
+        </button>
+        {module_ && (
+          <div style={S.moduleHeader}>
+            <h2 style={S.moduleTitle}>{module_.titre}</h2>
+          </div>
+        )}
+        <div style={S.empty}>Aucune thématique disponible pour votre niveau.</div>
+      </div>
     );
   }
 

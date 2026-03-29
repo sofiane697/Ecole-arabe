@@ -7,6 +7,7 @@ import {
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
   uploadFile, toSlug, deleteStorageFolder, deleteOldCover,
+  fetchNiveauxScolaires,
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
@@ -135,12 +136,14 @@ export default function Cours() {
   const [confirm, setConfirm] = useState(null); // { title, message, onConfirm }
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('contenus'); // 'contenus' | 'qcm'
+  const [niveauxScolaires, setNiveauxScolaires] = useState([]);
 
   // ─── Chargement des modules ─────────────────────────────────────────
   const loadModules = useCallback(async () => {
     try { setModules(await fetchModules()); } catch(e) { console.error(e); }
   }, []);
   useEffect(() => { loadModules(); }, [loadModules]);
+  useEffect(() => { fetchNiveauxScolaires().then(setNiveauxScolaires).catch(() => {}); }, []);
 
   const loadThematiques = useCallback(async (modId) => {
     try { setThematiques(await fetchThematiques(modId)); } catch(e) { console.error(e); }
@@ -219,8 +222,8 @@ export default function Cours() {
   const handleSaveThematique = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateThematique(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre }); }
-      else { await createThematique({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || thematiques.length + 1 }); }
+      if (data.id) { await updateThematique(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
+      else { await createThematique({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || thematiques.length + 1, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
       await loadThematiques(selModule.id);
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -402,6 +405,13 @@ export default function Cours() {
                 {th.description && <p style={S.cardDesc}>{th.description}</p>}
                 <div style={S.cardFooter}>
                   <span style={S.badge('var(--a-gold)')}>Ordre : {th.ordre}</span>
+                  {th.niveaux_scolaires_ids?.length > 0
+                    ? th.niveaux_scolaires_ids.map(nsId => {
+                        const ns = niveauxScolaires.find(n => n.id === nsId);
+                        return ns ? <span key={nsId} style={S.badge('var(--a-blue)')}>{ns.nom}</span> : null;
+                      })
+                    : <span style={S.badge('var(--a-red)')}>Aucun accès</span>
+                  }
                 </div>
               </div>
             </div>
@@ -644,6 +654,18 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState('');
+  const [niveauxScolairesList, setNiveauxScolairesList] = useState([]);
+  const [selectedNsIds, setSelectedNsIds] = useState(data?.niveaux_scolaires_ids || []);
+
+  useEffect(() => {
+    fetchNiveauxScolaires().then(setNiveauxScolairesList).catch(() => {});
+  }, []);
+
+  const toggleNs = (id) => {
+    setSelectedNsIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
 
   const handleImageFile = async (file) => {
     if (!file) return;
@@ -697,10 +719,33 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
         )}
       </div>
 
+      {/* Niveaux scolaires autorisés */}
+      <div style={S.field}>
+        <label style={S.label}>Niveaux scolaires autorisés</label>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4 }}>
+          {niveauxScolairesList.map(ns => (
+            <label key={ns.id} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer',
+                background: selectedNsIds.includes(ns.id) ? 'rgba(191,138,48,.13)' : 'var(--a-bg)',
+                border:`1px solid ${selectedNsIds.includes(ns.id) ? 'var(--a-gold)' : 'var(--a-border)'}`,
+                borderRadius:'var(--a-radius-sm)', padding:'4px 10px', fontSize:13, transition:'all .15s',
+                userSelect:'none' }}>
+              <input type="checkbox" checked={selectedNsIds.includes(ns.id)} onChange={() => toggleNs(ns.id)} style={{ accentColor:'var(--a-gold)', cursor:'pointer' }} />
+              {ns.nom}
+            </label>
+          ))}
+          {niveauxScolairesList.length === 0 && (
+            <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>Chargement…</span>
+          )}
+        </div>
+        {selectedNsIds.length === 0 && niveauxScolairesList.length > 0 && (
+          <div style={{ color:'var(--a-red)', fontSize:12, marginTop:6 }}>⚠ Aucun niveau sélectionné → thématique invisible pour tous les élèves</div>
+        )}
+      </div>
+
       <div style={S.field}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre })}>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, niveaux_scolaires_ids: selectedNsIds })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>

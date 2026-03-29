@@ -81,6 +81,42 @@ export async function fetchQCMEleve(niveauId) {
   return res.json();
 }
 
+/** Toutes les thématiques d'un module (sans filtre) — pour détecter si le module est structuré en thématiques */
+export async function fetchAllThematiquesEleve(moduleId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Thématiques filtrées par niveau scolaire de l'élève (filtrage côté client) */
+export async function fetchThematiquesEleve(moduleId, niveauScolaireId) {
+  if (!niveauScolaireId) return [];
+  const all = await fetchAllThematiquesEleve(moduleId);
+  // Filtrage client : garde les thématiques dont niveaux_scolaires_ids contient l'UUID de l'élève
+  return all.filter(th =>
+    Array.isArray(th.niveaux_scolaires_ids) &&
+    th.niveaux_scolaires_ids.includes(niveauScolaireId)
+  );
+}
+
+/** Récupérer le niveau scolaire d'un élève depuis la DB (fallback si absent de la session) */
+export async function fetchEleveNiveauScolaireId(eleveId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_eleve_niveau_scolaire`, {
+    method: 'POST',
+    headers: ANON_HEADERS,
+    body: JSON.stringify({ p_id: eleveId }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data ?? null;
+}
+
+export async function fetchNiveauxByThematiqueEleve(thId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?thematique_id=eq.${thId}&order=ordre`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
 // ─── PROGRESSION ──────────────────────────────────────────────────────────────
 
 export async function fetchProgression(eleveId) {

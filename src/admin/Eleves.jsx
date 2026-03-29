@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
 // ─── Formatage des noms ──────────────────────────────────────────────────────
@@ -133,14 +133,20 @@ export default function Eleves() {
     try {
       const cleanPrenom = fmtPrenom(editForm.prenom);
       const cleanNom    = fmtNom(editForm.nom);
-      await updateEleve(editEleve.id, {
-        prenom: cleanPrenom,
-        nom: cleanNom,
-        telephone: editForm.telephone.trim() || null,
-        email_contact: editForm.email_contact.trim() || null,
-        classe_id: editForm.classe_id || null,
-      });
-      const updated = { ...editEleve, prenom: cleanPrenom, nom: cleanNom, telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: editForm.classe_id || null };
+      // Dériver niveau_scolaire_id depuis la classe sélectionnée
+      const classeId = editForm.classe_id || null;
+      const niveauScolaireId = classeId ? (allClasses.find(c => c.id === classeId)?.niveau_id || null) : null;
+      await Promise.all([
+        updateEleve(editEleve.id, {
+          prenom: cleanPrenom,
+          nom: cleanNom,
+          telephone: editForm.telephone.trim() || null,
+          email_contact: editForm.email_contact.trim() || null,
+          classe_id: classeId,
+        }),
+        updateEleveNiveauScolaire(editEleve.id, niveauScolaireId),
+      ]);
+      const updated = { ...editEleve, prenom: cleanPrenom, nom: cleanNom, telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: classeId, niveau_scolaire_id: niveauScolaireId };
       setSelectedEleve(updated);
       setEleves(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEditEleve(null);
@@ -231,7 +237,7 @@ export default function Eleves() {
         {/* ─── Modal modifier nom/prénom ─── */}
         {editEleve && (
           <div style={S.overlay} onClick={() => setEditEleve(null)}>
-            <div style={{ ...S.modal, maxWidth:400 }} onClick={e => e.stopPropagation()}>
+            <div style={{ ...S.modal, maxWidth:400, maxHeight:'85vh', overflowY:'auto' }} onClick={e => e.stopPropagation()}>
               <div style={S.modalTitle}>✏️ Modifier l'élève</div>
               <div style={S.field}>
                 <label style={S.label}>Prénom</label>
