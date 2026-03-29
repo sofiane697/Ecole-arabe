@@ -58,7 +58,7 @@ export default function AdminLogin() {
       </button>
       <div className="admin-login-card">
         <div className="admin-login-logo">
-          <span className="arabic">جذور — GUZUR</span>
+          <span className="arabic">رقيب — RAQIB</span>
           <span className="label">Administration</span>
         </div>
 

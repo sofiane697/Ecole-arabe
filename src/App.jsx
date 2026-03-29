@@ -482,10 +482,10 @@ export default function App() {
 
         {/* Logo */}
         <button className="logo" onClick={() => goTo('accueil')}>
-          <img src="/Logo.png" alt="Guzur" className="logo-img" />
+          <img src="/Logo.png" alt="Raqib" className="logo-img" />
           <div className="logo-text">
-            <span className="logo-ar">جذور</span>
-            <span className="logo-fr">GUZUR</span>
+            <span className="logo-ar">رقيب</span>
+            <span className="logo-fr">RAQIB</span>
           </div>
         </button>
 
@@ -557,8 +557,8 @@ export default function App() {
         <HeroDeco />
 
         <div className="hero-inner">
-          <div className="hero-eyebrow">Bienvenue à l'école Guzur</div>
-          <h1 className="hero-title-ar">جذور</h1>
+          <div className="hero-eyebrow">Bienvenue à l'école Raqib</div>
+          <h1 className="hero-title-ar">رقيب</h1>
           <p  className="hero-title-fr">L'art de la langue arabe</p>
           <p  className="hero-desc">
             Une institution d'excellence dédiée à l'enseignement de la langue arabe —
@@ -593,7 +593,7 @@ export default function App() {
             <p className="s-title-ar">التعليم نور يضيء العقول</p>
             <p className="s-body">
               Fondée avec la conviction que la langue arabe est un pont entre les
-              cultures et les générations, l'École Guzur propose un enseignement
+              cultures et les générations, l'École Raqib propose un enseignement
               structuré, progressif et adapté à chaque apprenant.
             </p>
             <p className="s-body" style={{ marginTop: '1rem' }}>
@@ -908,8 +908,8 @@ export default function App() {
           FOOTER
       ───────────────────────────── */}
       <footer className="footer">
-        <div className="footer-logo">جذور — GUZUR</div>
-        <span className="footer-copy">© 2025 Guzur — Tous droits réservés</span>
+        <div className="footer-logo">رقيب — RAQIB</div>
+        <span className="footer-copy">© 2025 Raqib — Tous droits réservés</span>
         <ul className="footer-nav">
           <li><a href="#">Mentions légales</a></li>
           <li><a href="#">Confidentialité</a></li>

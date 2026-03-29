@@ -181,7 +181,7 @@ const STYLES = `
   }
   .logo:hover { opacity: 0.8; }
   .logo-img {
-    height: 42px;
+    height: 58px;
     width: auto;
     object-fit: contain;
     flex-shrink: 0;
@@ -193,14 +193,14 @@ const STYLES = `
   }
   .logo-ar {
     font-family: 'Scheherazade New', serif;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     color: var(--gold);
     line-height: 1.1;
   }
   .logo-fr {
     font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--fg-light);
