@@ -87,6 +87,10 @@ const STYLES = `
     from { opacity: 0; transform: scale(0.95); }
     to   { opacity: 1; transform: scale(1); }
   }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
   @keyframes growX {
     from { transform: scaleX(0); opacity: 0; }
     to   { transform: scaleX(1); opacity: 1; }
@@ -165,8 +169,9 @@ const STYLES = `
   /* Logo */
   .logo {
     display: flex;
-    flex-direction: column;
-    line-height: 1.2;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
     background: none;
     border: none;
     cursor: pointer;
@@ -174,17 +179,28 @@ const STYLES = `
     text-align: left;
     transition: opacity 0.2s;
   }
-  .logo:hover { opacity: 0.7; }
+  .logo:hover { opacity: 0.8; }
+  .logo-img {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
   .logo-ar {
     font-family: 'Scheherazade New', serif;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: var(--gold);
     line-height: 1.1;
   }
   .logo-fr {
     font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    font-size: 0.6rem;
+    font-weight: 700;
+    font-size: 0.65rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--fg-light);
@@ -1468,6 +1484,147 @@ const STYLES = `
     .section                { padding: 3rem 1.2rem; }
     .card                   { padding: 1.8rem 1.4rem; }
   }
+
+
+  /* ═══════════════════════════════════════════════════════
+     THÈME N°2 — Palette rose / pêche / mauve
+     #FFC4A5 · #FFAA95 · #E38F97 · #B27D8B · #696571
+  ═══════════════════════════════════════════════════════ */
+
+  /* Hero — fond blanc avec dégradé pêche subtil */
+  html.theme-2 .hero {
+    background: linear-gradient(135deg, #ffffff 0%, #fff0e8 100%);
+  }
+
+  /* Hero — lueur */
+  html.theme-2 .hero-glow {
+    background:
+      radial-gradient(ellipse 65% 55% at 65% 45%, rgba(178,125,139,0.25) 0%, transparent 70%),
+      radial-gradient(ellipse 45% 65% at 10% 75%, rgba(105,101,113,0.12) 0%, transparent 65%);
+  }
+
+  /* Hero — orbes */
+  html.theme-2 .hero-orb-1 {
+    background: radial-gradient(circle, rgba(178,125,139,0.55) 0%, rgba(255,170,149,0) 70%);
+  }
+  html.theme-2 .hero-orb-2 {
+    background: radial-gradient(circle, rgba(105,101,113,0.35) 0%, rgba(178,125,139,0) 70%);
+  }
+
+  /* Hero — calligraphie flottante */
+  html.theme-2 .hero-calli-1,
+  html.theme-2 .hero-calli-2,
+  html.theme-2 .hero-calli-3 { color: #B27D8B; }
+  html.theme-2 .hero-calli-1 { opacity: 0.18; }
+  html.theme-2 .hero-calli-2 { opacity: 0.20; }
+  html.theme-2 .hero-calli-3 { opacity: 0.15; }
+
+  /* Nav — fond blanc + bordure basse gris-violet */
+  html.theme-2 .nav {
+    background: rgba(255,255,255,0.90);
+    border-bottom: 2px solid #696571;
+  }
+
+  /* Bouton fill — ombre mauve */
+  html.theme-2 .btn-fill:hover {
+    box-shadow: 0 8px 28px rgba(178,125,139,0.45);
+  }
+
+  /* Section Présentation — gris-violet */
+  html.theme-2 .pres {
+    background: #696571;
+  }
+  html.theme-2 .pres .s-title,
+  html.theme-2 .pres .s-eyebrow,
+  html.theme-2 .pres .s-title-ar,
+  html.theme-2 .pres .s-body,
+  html.theme-2 .pres .stat-n,
+  html.theme-2 .pres .stat-l,
+  html.theme-2 .pres .pres-deco { color: #FFC4A5; }
+  html.theme-2 .pres .stat-n   { color: #FFAA95; }
+
+  /* Cartes valeurs — fond blanc, bordure gauche rose */
+  html.theme-2 .value {
+    background: #ffffff;
+    border: 1px solid rgba(227,143,151,0.22);
+    border-left: 3px solid #E38F97;
+  }
+  html.theme-2 .value:hover {
+    border-left-color: #B27D8B;
+    box-shadow: 0 8px 30px rgba(105,101,113,0.18);
+  }
+
+  /* Cartes tarifs — fond blanc, texte lisible */
+  html.theme-2 .card {
+    background: #ffffff;
+    border-color: rgba(227,143,151,0.25);
+  }
+  html.theme-2 .card:hover {
+    box-shadow: 0 20px 50px rgba(105,101,113,0.20);
+    border-color: #B27D8B;
+  }
+  /* Texte des cartes normales — forcer lisibilité */
+  html.theme-2 .card-fr,
+  html.theme-2 .card-ar      { color: #696571; }
+  html.theme-2 .card-feats li { color: #696571; }
+  html.theme-2 .card-unit,
+  html.theme-2 .card-freq    { color: #B27D8B; }
+
+  /* Carte vedette (milieu) — dégradé rose→mauve, tout en blanc */
+  html.theme-2 .card.feat {
+    background: linear-gradient(145deg, #E38F97 0%, #B27D8B 100%);
+    border-color: transparent;
+    box-shadow: 0 12px 40px rgba(178,125,139,0.40);
+  }
+  html.theme-2 .feat .card-lvl        { color: rgba(255,255,255,0.80); }
+  html.theme-2 .feat .card-ar         { color: rgba(255,255,255,0.70); }
+  html.theme-2 .feat .card-fr         { color: #ffffff; }
+  html.theme-2 .feat .card-amount     { color: #ffffff; }
+  html.theme-2 .feat .card-unit       { color: rgba(255,255,255,0.65); }
+  html.theme-2 .feat .card-freq       { color: rgba(255,255,255,0.60); }
+  html.theme-2 .feat .card-sep        { background: rgba(255,255,255,0.20); }
+  html.theme-2 .feat .card-feats li   { color: rgba(255,255,255,0.90); }
+  html.theme-2 .feat .card-dot        { background: #FFC4A5; }
+  html.theme-2 .feat .card-cta        { background: #ffffff; color: #E38F97; }
+  html.theme-2 .feat .card-cta:hover  { background: #FFC4A5; color: #B27D8B; }
+  html.theme-2 .card-badge            { background: #ffffff; color: #E38F97; }
+
+  /* Scrollbar */
+  html.theme-2 ::-webkit-scrollbar-thumb {
+    background: rgba(178,125,139,0.45);
+  }
+
+  /* Séparateur ornemental */
+  html.theme-2 .orn { background: #FFC4A5; }
+  html.theme-2 .orn-line {
+    background: linear-gradient(to right, transparent, #B27D8B, transparent);
+    opacity: 0.4;
+  }
+
+  /* Témoignages — gris-violet */
+  html.theme-2 .testi {
+    background: #696571;
+  }
+  html.theme-2 .testi .s-title,
+  html.theme-2 .testi .s-eyebrow,
+  html.theme-2 .testi .s-title-ar,
+  html.theme-2 .testi .s-body { color: #FFC4A5; }
+
+  /* Séparateur ornemental — gris-violet */
+  html.theme-2 .orn { background: #696571; }
+  html.theme-2 .orn-line {
+    background: linear-gradient(to right, transparent, #FFC4A5, transparent);
+    opacity: 0.5;
+    height: 1px;
+  }
+  html.theme-2 .orn-glyph { color: #FFC4A5; opacity: 0.7; }
+
+  /* Footer */
+  html.theme-2 footer {
+    background: #696571;
+    color: #FFC4A5;
+  }
+  html.theme-2 footer a { color: #FFAA95; }
 `;
 
 export default STYLES;

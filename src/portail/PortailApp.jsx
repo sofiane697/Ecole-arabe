@@ -84,7 +84,7 @@ export default function PortailApp() {
       {/* Sidebar */}
       <aside className={`portail-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="portail-sidebar-brand">
-          <span className="arabic">مدرسة النور</span>
+          <span className="arabic">جذور — GUZUR</span>
           <span className="label">Portail Élève</span>
         </div>
 

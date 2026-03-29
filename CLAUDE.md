@@ -1,8 +1,8 @@
-# CLAUDE.md — École Al-Nour
+# CLAUDE.md — Guzur (جذور)
 
 ## Présentation du projet
 
-Site vitrine one-page pour une école d'arabe fictive **"Al-Nour" (مدرسة النور)**.
+Site vitrine one-page pour une école d'arabe **"Guzur" (جذور)**.
 Stack : **React 18** (Create React App), **React Router v6**, CSS-in-JS, aucune librairie UI externe.
 
 ## Structure des fichiers
@@ -284,6 +284,10 @@ Fonctionnalités souhaitées :
 ---
 
 ## Historique des modifications
+
+- **Rebranding GUZUR + logo** : changement du nom de l'école de "Al-Nour"/"مدرسة النور" vers **"GUZUR"/"جذور"** dans tous les fichiers (`App.jsx`, `data.js`, `AdminLogin.jsx`, `AdminApp.jsx`, `PortailApp.jsx`, `PortailLogin.jsx`, `Eleves.jsx`, `public/index.html`, `CLAUDE.md`). Ajout du logo `public/Logo.png` dans la navbar : bouton `.logo` restructuré en `flex-row` avec `<img class="logo-img">` + `<div class="logo-text">` (`.logo-ar` + `.logo-fr`). CSS `styles.js` mis à jour (`.logo { flex-direction: row; gap: 10px; }`, `.logo-img { height:42px; }`).
+
+- **Sélecteur de palettes de couleurs (ThemeSwitcher)** : bouton flottant 🎨 (bas-droite) sur le site public permettant de basculer entre des palettes visuelles. Chaque thème définit des variables CSS (`--gold`, `--gold-light`, `--gold-soft`, `--bg`, `--bg-alt`, `--bg-card`, `--fg`, `--fg-mid`, `--fg-light`, `--border`) appliquées via `document.documentElement.style.setProperty()` + une classe CSS (`theme-1`, `theme-2`) sur `<html>` pour les couleurs hardcodées (orbs, calligraphie, nav glassmorphisme). Thème sauvegardé dans `localStorage.site_palette`. Palettes définies dans le tableau `THEMES` de `App.jsx`. **"Couleurs de base"** (palette or/blanc Apple-style) et **"Couleurs n°2"** (`#FFC4A5`, `#FFAA95`, `#E38F97`, `#B27D8B`, `#696571` — fond blanc, fonds alternatifs corail, accents rosés). Le bloc `html.theme-2` dans `styles.js` couvre toutes les sections (hero, orbs, nav, boutons, présentation, tarifs, témoignages, footer).
 
 - **Déblocage niveaux intelligent** : les niveaux sans QCM ne bloquent plus les suivants. Au chargement d'une thématique, `PortailModule.jsx` récupère en parallèle la présence de QCM pour tous les niveaux (`niveauxWithQCM` = Set d'IDs). `isUnlocked` : si niveau précédent sans QCM → débloqué automatiquement ; si avec QCM → doit être réussi. La sélection automatique du niveau courant respecte également cette logique.
 

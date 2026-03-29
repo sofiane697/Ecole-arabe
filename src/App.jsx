@@ -3,6 +3,150 @@ import STYLES from './styles';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
 
+// ─── Palettes de couleurs ─────────────────────────────────────────────────────
+const THEMES = [
+  {
+    id: 1,
+    cls:         'theme-1',
+    name:        'Couleurs de base',
+    accent:      '#bf8a30',
+    accentLight: '#d4a245',
+    accentSoft:  'rgba(191,138,48,0.09)',
+    bg:          '#ffffff',
+    bgAlt:       '#f5f5f7',
+    bgCard:      '#ffffff',
+    fg:          '#1d1d1f',
+    fgMid:       '#6e6e73',
+    fgLight:     '#86868b',
+    border:      'rgba(0,0,0,0.06)',
+  },
+  {
+    id: 2,
+    cls:         'theme-2',
+    name:        'Couleurs n°2',
+    // #FFC4A5 · #FFAA95 · #E38F97 · #B27D8B · #696571
+    accent:      '#E38F97',                      // rose → boutons, accents, liens actifs
+    accentLight: '#FFAA95',                      // saumon → survol
+    accentSoft:  'rgba(227,143,151,0.22)',
+    bg:          '#ffffff',                      // blanc → fond principal
+    bgAlt:       '#FFC4A5',                      // pêche → sections alternées
+    bgCard:      '#ffffff',                      // blanc → fond des cartes
+    fg:          '#696571',                      // gris-violet → texte principal
+    fgMid:       '#B27D8B',                      // mauve → texte secondaire
+    fgLight:     '#B27D8B',                      // mauve → labels, détails
+    border:      'rgba(105,101,113,0.18)',
+  },
+  // ➕ Ajouter ici les prochaines palettes (id: 3, id: 4, ...)
+];
+
+const ALL_THEME_CLASSES = THEMES.map(t => t.cls);
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  // Retirer toutes les classes de thème puis appliquer la bonne
+  root.classList.remove(...ALL_THEME_CLASSES);
+  if (theme.cls) root.classList.add(theme.cls);
+  // Variables CSS
+  root.style.setProperty('--gold',       theme.accent);
+  root.style.setProperty('--gold-light', theme.accentLight);
+  root.style.setProperty('--gold-soft',  theme.accentSoft);
+  root.style.setProperty('--bg',         theme.bg);
+  root.style.setProperty('--bg-alt',     theme.bgAlt);
+  root.style.setProperty('--bg-card',    theme.bgCard);
+  root.style.setProperty('--fg',         theme.fg);
+  root.style.setProperty('--fg-mid',     theme.fgMid);
+  root.style.setProperty('--fg-light',   theme.fgLight);
+  root.style.setProperty('--border',     theme.border);
+  localStorage.setItem('site_palette', String(theme.id));
+}
+
+// ─── Sélecteur de palette flottant ───────────────────────────────────────────
+function ThemeSwitcher({ themeId, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Fermer si clic en dehors
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const S = {
+    wrap: {
+      position: 'fixed', bottom: 24, right: 24, zIndex: 9000,
+      display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10,
+    },
+    panel: {
+      background: 'var(--bg-card)', border: '1px solid var(--border)',
+      borderRadius: 16, padding: '14px 16px',
+      boxShadow: '0 8px 40px rgba(0,0,0,.18)',
+      display: open ? 'flex' : 'none',
+      flexDirection: 'column', gap: 8, minWidth: 210,
+      animation: 'fadeSlideUp .2s ease',
+    },
+    panelTitle: {
+      fontSize: 11, fontWeight: 700, color: 'var(--fg-light)',
+      textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 4,
+    },
+    row: (active) => ({
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '8px 10px', borderRadius: 10, cursor: 'pointer',
+      background: active ? 'var(--gold-soft)' : 'transparent',
+      border: `1px solid ${active ? 'var(--gold)' : 'transparent'}`,
+      transition: 'all .15s',
+    }),
+    swatch: (color, active) => ({
+      width: 28, height: 28, borderRadius: '50%', background: color, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: active ? `0 0 0 3px ${color}44` : 'none',
+      transition: 'box-shadow .2s',
+    }),
+    check: { fontSize: 14, color: '#fff', fontWeight: 700, lineHeight: 1 },
+    label: (active) => ({
+      fontSize: 13, fontWeight: active ? 600 : 400,
+      color: active ? 'var(--fg)' : 'var(--fg-mid)', lineHeight: 1.3,
+    }),
+    trigger: {
+      width: 44, height: 44, borderRadius: '50%', border: 'none',
+      background: 'var(--gold)', color: '#fff', fontSize: 20,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 4px 20px rgba(0,0,0,.25)', transition: 'transform .2s',
+    },
+  };
+
+  return (
+    <div ref={ref} style={S.wrap}>
+      {/* Panel palettes */}
+      <div style={S.panel}>
+        <div style={S.panelTitle}>Palette de couleurs</div>
+        {THEMES.map(t => {
+          const active = t.id === themeId;
+          return (
+            <div key={t.id} style={S.row(active)} onClick={() => { onChange(t); setOpen(false); }}>
+              <div style={S.swatch(t.accent, active)}>
+                {active && <span style={S.check}>✓</span>}
+              </div>
+              <div>
+                <div style={S.label(active)}>{t.name}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bouton déclencheur */}
+      <button
+        style={S.trigger}
+        onClick={() => setOpen(o => !o)}
+        title="Changer la palette de couleurs"
+      >
+        🎨
+      </button>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════
    PETITS COMPOSANTS RÉUTILISABLES
 ══════════════════════════════════════════════════════ */
@@ -25,14 +169,14 @@ function HeroDeco() {
       <svg className="hero-geo" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="geo" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-            <polygon points="50,3 97,27 97,73 50,97 3,73 3,27" fill="none" stroke="#b8862e" strokeWidth="1.2" />
-            <polygon points="50,18 82,35 82,65 50,82 18,65 18,35" fill="none" stroke="#b8862e" strokeWidth="0.6" />
-            <circle cx="50" cy="50" r="6" fill="none" stroke="#b8862e" strokeWidth="0.8" />
-            <circle cx="50" cy="50" r="2" fill="#b8862e" opacity="0.6" />
-            <line x1="50" y1="3"  x2="50" y2="18" stroke="#b8862e" strokeWidth="0.6" />
-            <line x1="50" y1="82" x2="50" y2="97" stroke="#b8862e" strokeWidth="0.6" />
-            <line x1="3"  y1="50" x2="18" y2="50" stroke="#b8862e" strokeWidth="0.6" />
-            <line x1="82" y1="50" x2="97" y2="50" stroke="#b8862e" strokeWidth="0.6" />
+            <polygon points="50,3 97,27 97,73 50,97 3,73 3,27" fill="none" style={{ stroke:'var(--gold)' }} strokeWidth="1.2" />
+            <polygon points="50,18 82,35 82,65 50,82 18,65 18,35" fill="none" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
+            <circle cx="50" cy="50" r="6" fill="none" style={{ stroke:'var(--gold)' }} strokeWidth="0.8" />
+            <circle cx="50" cy="50" r="2" style={{ fill:'var(--gold)' }} opacity="0.6" />
+            <line x1="50" y1="3"  x2="50" y2="18" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
+            <line x1="50" y1="82" x2="50" y2="97" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
+            <line x1="3"  y1="50" x2="18" y2="50" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
+            <line x1="82" y1="50" x2="97" y2="50" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
           </pattern>
         </defs>
         <rect width="500" height="500" fill="url(#geo)" />
@@ -244,6 +388,13 @@ export default function App() {
   const [formStatus, setFormStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
   const [modalCours, setModalCours] = useState(null); // null | string (nom du cours)
   const [darkMode, setDarkMode]     = useState(() => localStorage.getItem('theme') === 'dark');
+  const [themeId, setThemeId]       = useState(() => parseInt(localStorage.getItem('site_palette') || '1'));
+
+  /* — Appliquer la palette au montage et à chaque changement — */
+  useEffect(() => {
+    const t = THEMES.find(t => t.id === themeId) || THEMES[0];
+    applyTheme(t);
+  }, [themeId]);
 
   /* — Toggle dark mode — */
   useEffect(() => {
@@ -331,8 +482,11 @@ export default function App() {
 
         {/* Logo */}
         <button className="logo" onClick={() => goTo('accueil')}>
-          <span className="logo-ar">مدرسة النور</span>
-          <span className="logo-fr">École Al-Nour</span>
+          <img src="/Logo.png" alt="Guzur" className="logo-img" />
+          <div className="logo-text">
+            <span className="logo-ar">جذور</span>
+            <span className="logo-fr">GUZUR</span>
+          </div>
         </button>
 
         {/* Liens desktop */}
@@ -403,8 +557,8 @@ export default function App() {
         <HeroDeco />
 
         <div className="hero-inner">
-          <div className="hero-eyebrow">Bienvenue à l'école Al-Nour</div>
-          <h1 className="hero-title-ar">مدرسة النور</h1>
+          <div className="hero-eyebrow">Bienvenue à l'école Guzur</div>
+          <h1 className="hero-title-ar">جذور</h1>
           <p  className="hero-title-fr">L'art de la langue arabe</p>
           <p  className="hero-desc">
             Une institution d'excellence dédiée à l'enseignement de la langue arabe —
@@ -439,7 +593,7 @@ export default function App() {
             <p className="s-title-ar">التعليم نور يضيء العقول</p>
             <p className="s-body">
               Fondée avec la conviction que la langue arabe est un pont entre les
-              cultures et les générations, l'École Al-Nour propose un enseignement
+              cultures et les générations, l'École Guzur propose un enseignement
               structuré, progressif et adapté à chaque apprenant.
             </p>
             <p className="s-body" style={{ marginTop: '1rem' }}>
@@ -754,8 +908,8 @@ export default function App() {
           FOOTER
       ───────────────────────────── */}
       <footer className="footer">
-        <div className="footer-logo">مدرسة النور</div>
-        <span className="footer-copy">© 2025 École Al-Nour — Tous droits réservés</span>
+        <div className="footer-logo">جذور — GUZUR</div>
+        <span className="footer-copy">© 2025 Guzur — Tous droits réservés</span>
         <ul className="footer-nav">
           <li><a href="#">Mentions légales</a></li>
           <li><a href="#">Confidentialité</a></li>
@@ -765,6 +919,12 @@ export default function App() {
       {modalCours && (
         <PreInscriptionModal cours={modalCours} onClose={() => setModalCours(null)} />
       )}
+
+      {/* ─── Sélecteur de palette ─── */}
+      <ThemeSwitcher
+        themeId={themeId}
+        onChange={(t) => { applyTheme(t); setThemeId(t.id); }}
+      />
 
     </>
   );

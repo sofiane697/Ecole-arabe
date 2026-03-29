@@ -73,7 +73,7 @@ export const TESTIMONIALS = [
   {
     name: 'Fatima B.',
     role: 'Niveau Intermédiaire',
-    quote: "Grâce à l'École Al-Nour, j'ai appris à lire couramment en seulement 6 mois. La pédagogie est bienveillante et les enseignants sont extrêmement patients.",
+    quote: "Grâce à l'École Guzur, j'ai appris à lire couramment en seulement 6 mois. La pédagogie est bienveillante et les enseignants sont extrêmement patients.",
     stars: 5,
     initials: 'FB',
   },

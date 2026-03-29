@@ -102,7 +102,7 @@ export default function PortailLogin() {
       <div className="portail-root portail-login-page">
         <div className="portail-login-card">
           <div className="portail-login-brand">
-            <span className="arabic">مدرسة النور</span>
+            <span className="arabic">جذور — GUZUR</span>
             <span className="label">Première connexion</span>
           </div>
 
@@ -152,7 +152,7 @@ export default function PortailLogin() {
     <div className="portail-root portail-login-page">
       <div className="portail-login-card">
         <div className="portail-login-brand">
-          <span className="arabic">مدرسة النور</span>
+          <span className="arabic">جذور — GUZUR</span>
           <span className="label">Portail Élève</span>
         </div>
 
