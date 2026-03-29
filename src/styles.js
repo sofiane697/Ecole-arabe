@@ -1625,6 +1625,137 @@ const STYLES = `
     color: #FFC4A5;
   }
   html.theme-2 footer a { color: #FFAA95; }
+
+  /* ══════════════════════════════════════════════════════
+     THÈME 3 — #CE8F8A · #FBF0E9 · #805050 · #D4C2A1 · #AD9C92
+  ══════════════════════════════════════════════════════ */
+
+  /* Hero — dégradé crème très subtil */
+  html.theme-3 .hero {
+    background: linear-gradient(135deg, #ffffff 0%, #FBF0E9 100%);
+  }
+
+  /* Hero — lueur */
+  html.theme-3 .hero-glow {
+    background:
+      radial-gradient(ellipse 65% 55% at 65% 45%, rgba(206,143,138,0.25) 0%, transparent 70%),
+      radial-gradient(ellipse 45% 65% at 10% 75%, rgba(128,80,80,0.12) 0%, transparent 65%);
+  }
+
+  /* Hero — orbes */
+  html.theme-3 .hero-orb-1 {
+    background: radial-gradient(circle, rgba(206,143,138,0.55) 0%, rgba(212,194,161,0) 70%);
+  }
+  html.theme-3 .hero-orb-2 {
+    background: radial-gradient(circle, rgba(128,80,80,0.35) 0%, rgba(173,156,146,0) 70%);
+  }
+
+  /* Hero — calligraphie flottante */
+  html.theme-3 .hero-calli-1,
+  html.theme-3 .hero-calli-2,
+  html.theme-3 .hero-calli-3 { color: #CE8F8A; }
+  html.theme-3 .hero-calli-1 { opacity: 0.18; }
+  html.theme-3 .hero-calli-2 { opacity: 0.20; }
+  html.theme-3 .hero-calli-3 { opacity: 0.15; }
+
+  /* Nav — fond blanc + bordure basse taupe */
+  html.theme-3 .nav {
+    background: rgba(255,255,255,0.90);
+    border-bottom: 2px solid #AD9C92;
+  }
+
+  /* Bouton fill — ombre terracotta */
+  html.theme-3 .btn-fill:hover {
+    box-shadow: 0 8px 28px rgba(206,143,138,0.45);
+  }
+
+  /* Section Présentation — beige chaud */
+  html.theme-3 .pres {
+    background: #D4C2A1;
+  }
+  html.theme-3 .pres .s-title,
+  html.theme-3 .pres .s-eyebrow,
+  html.theme-3 .pres .s-title-ar,
+  html.theme-3 .pres .s-body,
+  html.theme-3 .pres .stat-n,
+  html.theme-3 .pres .stat-l,
+  html.theme-3 .pres .pres-deco { color: #805050; }
+  html.theme-3 .pres .stat-n   { color: #805050; font-weight: 700; }
+
+  /* Cartes valeurs — fond blanc, bordure gauche rose */
+  html.theme-3 .value {
+    background: #ffffff;
+    border: 1px solid rgba(206,143,138,0.22);
+    border-left: 3px solid #CE8F8A;
+  }
+  html.theme-3 .value:hover {
+    border-left-color: #805050;
+    box-shadow: 0 8px 30px rgba(128,80,80,0.15);
+  }
+
+  /* Cartes tarifs — fond blanc, texte bordeaux */
+  html.theme-3 .card {
+    background: #ffffff;
+    border-color: rgba(206,143,138,0.25);
+  }
+  html.theme-3 .card:hover {
+    box-shadow: 0 20px 50px rgba(128,80,80,0.18);
+    border-color: #CE8F8A;
+  }
+  html.theme-3 .card-fr,
+  html.theme-3 .card-ar      { color: #805050; }
+  html.theme-3 .card-feats li { color: #805050; }
+  html.theme-3 .card-unit,
+  html.theme-3 .card-freq    { color: #AD9C92; }
+
+  /* Carte vedette — dégradé rose terracotta → bordeaux */
+  html.theme-3 .card.feat {
+    background: linear-gradient(145deg, #CE8F8A 0%, #805050 100%);
+    border-color: transparent;
+    box-shadow: 0 12px 40px rgba(128,80,80,0.40);
+  }
+  html.theme-3 .feat .card-lvl        { color: rgba(255,255,255,0.80); }
+  html.theme-3 .feat .card-ar         { color: rgba(255,255,255,0.70); }
+  html.theme-3 .feat .card-fr         { color: #ffffff; }
+  html.theme-3 .feat .card-amount     { color: #ffffff; }
+  html.theme-3 .feat .card-unit       { color: rgba(255,255,255,0.65); }
+  html.theme-3 .feat .card-freq       { color: rgba(255,255,255,0.60); }
+  html.theme-3 .feat .card-sep        { background: rgba(255,255,255,0.20); }
+  html.theme-3 .feat .card-feats li   { color: rgba(255,255,255,0.90); }
+  html.theme-3 .feat .card-dot        { background: #FBF0E9; }
+  html.theme-3 .feat .card-cta        { background: #ffffff; color: #805050; }
+  html.theme-3 .feat .card-cta:hover  { background: #FBF0E9; color: #805050; }
+  html.theme-3 .card-badge            { background: #ffffff; color: #CE8F8A; }
+
+  /* Scrollbar */
+  html.theme-3 ::-webkit-scrollbar-thumb {
+    background: rgba(206,143,138,0.45);
+  }
+
+  /* Séparateur ornemental */
+  html.theme-3 .orn { background: #D4C2A1; }
+  html.theme-3 .orn-line {
+    background: linear-gradient(to right, transparent, #CE8F8A, transparent);
+    opacity: 0.5;
+    height: 1px;
+  }
+  html.theme-3 .orn-glyph { color: #CE8F8A; opacity: 0.7; }
+
+  /* Témoignages — taupe chaud */
+  html.theme-3 .testi {
+    background: #AD9C92;
+  }
+  html.theme-3 .testi .s-title,
+  html.theme-3 .testi .s-eyebrow,
+  html.theme-3 .testi .s-title-ar,
+  html.theme-3 .testi .s-body { color: #FBF0E9; }
+
+  /* Footer — bordeaux profond */
+  html.theme-3 footer {
+    background: #805050;
+    color: #FBF0E9;
+  }
+  html.theme-3 footer a { color: #D4C2A1; }
 `;
 
 export default STYLES;

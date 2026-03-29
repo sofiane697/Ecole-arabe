@@ -36,7 +36,23 @@ const THEMES = [
     fgLight:     '#B27D8B',                      // mauve → labels, détails
     border:      'rgba(105,101,113,0.18)',
   },
-  // ➕ Ajouter ici les prochaines palettes (id: 3, id: 4, ...)
+  {
+    id: 3,
+    cls:         'theme-3',
+    name:        'Couleurs n°3',
+    // #CE8F8A · #FBF0E9 · #805050 · #D4C2A1 · #AD9C92
+    accent:      '#CE8F8A',                      // rose terracotta → boutons, accents
+    accentLight: '#D4C2A1',                      // beige chaud → survol doux
+    accentSoft:  'rgba(206,143,138,0.12)',
+    bg:          '#ffffff',                      // blanc → fond principal
+    bgAlt:       '#FBF0E9',                      // crème → sections alternées
+    bgCard:      '#ffffff',                      // blanc → fond des cartes
+    fg:          '#805050',                      // bordeaux → texte principal
+    fgMid:       '#AD9C92',                      // taupe → texte secondaire
+    fgLight:     '#D4C2A1',                      // beige → labels discrets
+    border:      'rgba(173,156,146,0.20)',
+  },
+  // ➕ Ajouter ici les prochaines palettes (id: 4, id: 5, ...)
 ];
 
 const ALL_THEME_CLASSES = THEMES.map(t => t.cls);
