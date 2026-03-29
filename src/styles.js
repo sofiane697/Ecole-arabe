@@ -489,7 +489,7 @@ const STYLES = `
     font-family: 'Inter', sans-serif;
     font-size: clamp(2rem, 5vw, 4.2rem);
     font-weight: 700;
-    color: #d472a1;
+    color: #d4c2a1;
     letter-spacing: 0.08em;
     line-height: 1.1;
   }
@@ -497,13 +497,13 @@ const STYLES = `
     font-family: 'Scheherazade New', serif;
     font-size: clamp(3rem, 7vw, 6rem);
     font-weight: 700;
-    color: #d472a1;
+    color: #d4c2a1;
     direction: rtl;
     line-height: 1.1;
     margin-bottom: 0;
     animation: none;
   }
-  html.dark .hero-title-ar { color: #d472a1; }
+  html.dark .hero-title-ar { color: #d4c2a1; }
   .hero-title-fr {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(1.5rem, 3.5vw, 2.8rem);
