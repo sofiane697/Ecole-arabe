@@ -451,7 +451,7 @@ const STYLES = `
   .hero-inner {
     position: relative;
     z-index: 2;
-    padding: 6rem 4rem;
+    padding: 3.5rem 4rem;
     max-width: 720px;
   }
   .hero-eyebrow {
@@ -467,7 +467,7 @@ const STYLES = `
     background: var(--gold-soft);
     padding: 0.45rem 1.1rem 0.45rem 0.9rem;
     border-radius: 980px;
-    margin-bottom: 2rem;
+    margin-bottom: 1.2rem;
     animation: scaleIn 0.8s 0.1s var(--ease-out) both;
   }
   .hero-eyebrow::before {
@@ -519,7 +519,7 @@ const STYLES = `
     line-height: 1.8;
     color: var(--fg-mid);
     max-width: 480px;
-    margin-bottom: 3rem;
+    margin-bottom: 1.8rem;
     animation: fadeUp 1s 0.45s var(--ease-out) both;
   }
   html.dark .hero-desc { color: var(--fg-mid); }
