@@ -3,42 +3,97 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
 import { logoutEleve, getEleveUser } from './supabasePortail';
 
-const IconCourses = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-  </svg>
-);
-const IconDevoirs = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
-    <polyline points="10 9 9 9 8 9"/>
-  </svg>
-);
-const IconResultats = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10"/>
-    <line x1="12" y1="20" x2="12" y2="4"/>
-    <line x1="6" y1="20" x2="6" y2="14"/>
-  </svg>
-);
-const IconObservations = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
-const IconLogout = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-    <polyline points="16 17 21 12 16 7"/>
-    <line x1="21" y1="12" x2="9" y2="12"/>
-  </svg>
-);
+const BG_LETTERS = [
+  // Zone gauche (bord sidebar)
+  { l:'ب', size:'80px', top:'5%',  left:'2%',  color:'#AED6F1', dur:'12s', delay:'0s',   anim:'1' },
+  { l:'ك', size:'75px', top:'30%', left:'4%',  color:'#FADBD8', dur:'11s', delay:'2s',   anim:'2' },
+  { l:'ن', size:'70px', top:'58%', left:'1%',  color:'#A9DFBF', dur:'14s', delay:'4s',   anim:'3' },
+  { l:'ل', size:'65px', top:'80%', left:'3%',  color:'#FCF3CF', dur:'10s', delay:'1s',   anim:'4' },
+  // Zone droite (bord droit)
+  { l:'ر', size:'85px', top:'8%',  left:'88%', color:'#A9DFBF', dur:'9s',  delay:'1.5s', anim:'1' },
+  { l:'م', size:'70px', top:'28%', left:'84%', color:'#FCF3CF', dur:'13s', delay:'3s',   anim:'2' },
+  { l:'ع', size:'80px', top:'50%', left:'90%', color:'#AED6F1', dur:'10s', delay:'5s',   anim:'3' },
+  { l:'ق', size:'65px', top:'72%', left:'85%', color:'#FADBD8', dur:'8s',  delay:'2.5s', anim:'4' },
+  { l:'ص', size:'75px', top:'90%', left:'92%', color:'#A9DFBF', dur:'11s', delay:'0.5s', anim:'1' },
+  // Zone haute
+  { l:'و', size:'72px', top:'2%',  left:'30%', color:'#FADBD8', dur:'13s', delay:'3.5s', anim:'2' },
+  { l:'ح', size:'68px', top:'3%',  left:'55%', color:'#FCF3CF', dur:'9s',  delay:'1s',   anim:'3' },
+  { l:'ذ', size:'78px', top:'2%',  left:'72%', color:'#AED6F1', dur:'11s', delay:'4.5s', anim:'4' },
+  // Zone basse
+  { l:'ز', size:'70px', top:'90%', left:'25%', color:'#A9DFBF', dur:'12s', delay:'2s',   anim:'1' },
+  { l:'ط', size:'74px', top:'88%', left:'55%', color:'#FADBD8', dur:'10s', delay:'0s',   anim:'2' },
+];
+
+const TOPBAR_KEYFRAMES = `
+@keyframes topbarLetterIn {
+  0%   { opacity:0; transform:translateY(-14px) scale(0.85); }
+  60%  { transform:translateY(3px) scale(1.05); }
+  80%  { transform:translateY(-1px) scale(0.98); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes topbarLetterFloat {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(-4px); }
+}
+@keyframes topbarStarSpin {
+  0%   { transform:rotate(0deg) scale(1); }
+  50%  { transform:rotate(180deg) scale(1.3); }
+  100% { transform:rotate(360deg) scale(1); }
+}
+@keyframes topbarBubble {
+  0%,100% { transform:translateY(0); opacity:.8; }
+  50%      { transform:translateY(-5px); opacity:1; }
+}
+`;
+const FUN_COLORS = ['#7EC8E3', '#7DCFA0', '#F4A896', '#F7D070'];
+
+const PAGE_EMOJIS = {
+  '/portail':              '📚',
+  '/portail/devoirs':      '📝',
+  '/portail/resultats':    '📊',
+  '/portail/observations': '👁️',
+};
+
+function TopbarFunTitle({ title, emoji }) {
+  let ci = 0;
+  return (
+    <>
+      <style>{TOPBAR_KEYFRAMES}</style>
+      <span style={{
+        display:'inline-flex', alignItems:'center', gap:8,
+        fontFamily:"'Nunito','Inter',sans-serif",
+        fontSize:40, fontWeight:900,
+      }}>
+        {/* Emoji gauche */}
+        <span style={{ fontSize:28, display:'inline-block', animation:'topbarBubble 2.5s ease-in-out infinite' }}>{emoji}</span>
+        {/* Lettres animées */}
+        {title.split(' ').map((word, wi) => (
+          <span key={wi} style={{ display:'inline-flex', gap:0 }}>
+            {word.split('').map((char) => {
+              const color = FUN_COLORS[ci % FUN_COLORS.length];
+              const delay = `${ci * 0.04}s`;
+              ci++;
+              return (
+                <span key={ci} style={{
+                  color,
+                  textShadow:`0 2px 10px ${color}55`,
+                  display:'inline-block',
+                  animation:`topbarLetterIn 0.5s cubic-bezier(0.22,1,0.36,1) ${delay} both, topbarLetterFloat ${2.2 + (ci % 3) * 0.4}s ease-in-out ${delay} infinite`,
+                }}>{char}</span>
+              );
+            })}
+          </span>
+        ))}
+        {/* Étoiles droite */}
+        <span style={{ fontSize:22, display:'inline-block', animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
+        <span style={{ fontSize:18, display:'inline-block', animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
+      </span>
+    </>
+  );
+}
 
 const PAGE_TITLES = {
-  '/portail':                  'Mes modules',
+  '/portail':                  'Mes Modules',
   '/portail/devoirs':          'Mes devoirs',
   '/portail/resultats':        'Mes résultats',
   '/portail/observations':     'Mes observations',
@@ -49,7 +104,7 @@ export default function PortailApp() {
   const location  = useLocation();
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('portail_theme');
-    return saved ? saved === 'dark' : true;
+    return saved ? saved === 'dark' : false;
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -61,7 +116,7 @@ export default function PortailApp() {
       style.textContent = PORTAIL_STYLES;
       document.head.appendChild(style);
     }
-    document.body.style.background = darkMode ? '#000' : '#f5f5f7';
+    document.body.style.background = darkMode ? '#000' : 'linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%)';
     return () => { document.body.style.background = ''; };
   }, [darkMode]);
 
@@ -99,6 +154,17 @@ export default function PortailApp() {
 
   return (
     <div className={`portail-root portail-layout${darkMode ? '' : ' portail-light'}`}>
+      {/* Lettres arabes de fond */}
+      <div className="portail-bg-letters" aria-hidden="true">
+        {BG_LETTERS.map((l, i) => (
+          <span key={i} className="portail-bg-letter"
+            data-anim={l.anim}
+            style={{ top:l.top, left:l.left, fontSize:l.size, color:l.color,
+                     '--dur':l.dur, '--delay':l.delay }}>
+            {l.l}
+          </span>
+        ))}
+      </div>
       {/* Overlay mobile */}
       <div
         className={`portail-sidebar-overlay${sidebarOpen ? ' open' : ''}`}
@@ -108,7 +174,10 @@ export default function PortailApp() {
       {/* Sidebar */}
       <aside className={`portail-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="portail-sidebar-brand">
-          <span className="arabic">رقيب — RAQIB</span>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <img src="/logo-eleve.png" alt="Logo" style={{ height:50, width:'auto', objectFit:'contain' }} />
+            <span className="arabic">رقيب — RAQIB</span>
+          </div>
           <span className="label">Portail Élève</span>
         </div>
 
@@ -120,7 +189,7 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
           >
-            <IconCourses /> Mes modules
+            <span style={{fontSize:18}}>📚</span> Mes Modules
           </NavLink>
 
           <NavLink
@@ -128,7 +197,7 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
           >
-            <IconDevoirs /> Mes devoirs
+            <span style={{fontSize:18}}>📝</span> Mes devoirs
           </NavLink>
 
           <NavLink
@@ -136,7 +205,7 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
           >
-            <IconResultats /> Mes résultats
+            <span style={{fontSize:18}}>📊</span> Mes résultats
           </NavLink>
 
           <NavLink
@@ -144,7 +213,7 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
           >
-            <IconObservations /> Mes observations
+            <span style={{fontSize:18}}>👁️</span> Mes observations
           </NavLink>
 
           <div className="portail-nav-section" style={{ marginTop: '1.5rem' }}>Ressources</div>
@@ -160,6 +229,12 @@ export default function PortailApp() {
             </svg>
             Al - Muqri
           </a>
+          <a href="https://us05web.zoom.us/j/86234248993?pwd=KMayngoYNo4AgejJFVVnw9zGHbMu2T.1" className="portail-nav-link" target="_blank" rel="noreferrer" onClick={() => setSidebarOpen(false)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 10l4.553-2.07A1 1 0 0 1 21 8.845v6.31a1 1 0 0 1-1.447.916L15 14"/><rect x="3" y="7" width="12" height="10" rx="2"/>
+            </svg>
+            Mon ZOOM
+          </a>
         </nav>
 
         <div className="portail-sidebar-footer">
@@ -168,7 +243,7 @@ export default function PortailApp() {
             <span>ID : {userIdentifiant}</span>
           </div>
           <button className="portail-logout-btn" onClick={handleLogout}>
-            <IconLogout /> Se déconnecter
+            <span style={{fontSize:14}}>🚪</span> Se déconnecter
           </button>
         </div>
       </aside>
@@ -180,7 +255,7 @@ export default function PortailApp() {
             <button className="portail-hamburger" onClick={() => setSidebarOpen(o => !o)}>
               ☰
             </button>
-            <span className="portail-topbar-title">{currentTitle}</span>
+            <TopbarFunTitle key={currentTitle} title={currentTitle} emoji={PAGE_EMOJIS[location.pathname] || '📖'} />
           </div>
           <div className="portail-topbar-right">
             <button className="portail-theme-toggle" onClick={() => setDarkMode(d => !d)}>

@@ -174,35 +174,35 @@ function Counter({ target, prefix = '', suffix = '' }) {
 }
 
 /** SVG motif géométrique islamique */
+// Sélection esthétique — lettres espacées, sans chevauchement
+const HERO_LETTERS = [
+  { l:'ل', size:'18rem', top:'6%',  left:'52%', dur:'8.5s', delay:'0s',   anim:'1' },
+  { l:'ا', size:'13rem', top:'3%',  left:'5%',  dur:'6.0s', delay:'2.1s', anim:'3' },
+  { l:'م', size:'9rem',  top:'40%', left:'68%', dur:'5.5s', delay:'1.5s', anim:'2' },
+  { l:'ن', size:'11rem', top:'63%', left:'48%', dur:'6.8s', delay:'3.2s', anim:'4' },
+  { l:'ع', size:'7rem',  top:'25%', left:'38%', dur:'4.8s', delay:'0.8s', anim:'1' },
+  { l:'ح', size:'14rem', top:'32%', left:'4%',  dur:'7.2s', delay:'1.9s', anim:'3' },
+  { l:'ق', size:'6rem',  top:'82%', left:'72%', dur:'4.2s', delay:'4.0s', anim:'2' },
+  { l:'ي', size:'8rem',  top:'12%', left:'78%', dur:'5.8s', delay:'2.7s', anim:'4' },
+  { l:'ص', size:'5rem',  top:'46%', left:'30%', dur:'4.5s', delay:'0.4s', anim:'2' },
+  { l:'ب', size:'10rem', top:'76%', left:'24%', dur:'6.3s', delay:'3.5s', anim:'3' },
+];
+
 function HeroDeco() {
   return (
     <div className="hero-deco-wrap">
-      {/* Orbe principal */}
       <div className="hero-orb hero-orb-1" />
       <div className="hero-orb hero-orb-2" />
-
-      {/* Motif géométrique islamique */}
-      <svg className="hero-geo" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="geo" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-            <polygon points="50,3 97,27 97,73 50,97 3,73 3,27" fill="none" style={{ stroke:'var(--gold)' }} strokeWidth="1.2" />
-            <polygon points="50,18 82,35 82,65 50,82 18,65 18,35" fill="none" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
-            <circle cx="50" cy="50" r="6" fill="none" style={{ stroke:'var(--gold)' }} strokeWidth="0.8" />
-            <circle cx="50" cy="50" r="2" style={{ fill:'var(--gold)' }} opacity="0.6" />
-            <line x1="50" y1="3"  x2="50" y2="18" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
-            <line x1="50" y1="82" x2="50" y2="97" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
-            <line x1="3"  y1="50" x2="18" y2="50" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
-            <line x1="82" y1="50" x2="97" y2="50" style={{ stroke:'var(--gold)' }} strokeWidth="0.6" />
-          </pattern>
-        </defs>
-        <rect width="500" height="500" fill="url(#geo)" />
-      </svg>
-
-      {/* Grande lettre calligraphie flottante */}
-      <div className="hero-calli-1">ن</div>
-      <div className="hero-calli-2">و</div>
-      <div className="hero-calli-3">ر</div>
-
+      {HERO_LETTERS.map(({ l, size, top, left, dur, delay, anim }, i) => (
+        <div
+          key={i}
+          className="hero-letter"
+          data-anim={anim}
+          style={{ fontSize: size, top, left, '--dur': dur, '--delay': delay }}
+        >
+          {l}
+        </div>
+      ))}
     </div>
   );
 }

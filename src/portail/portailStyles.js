@@ -1,4 +1,6 @@
 const PORTAIL_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap');
+
   /* ─── Portail Élève — Variables ─── */
   .portail-root {
     --p-bg:         #000000;
@@ -24,20 +26,50 @@ const PORTAIL_STYLES = `
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ─── Mode clair ─── */
+  /* ─── Mode clair — Palette Pastel Moderne ─── */
   .portail-root.portail-light {
-    --p-bg:         #f5f5f7;
+    --p-bg:         #f8f9fa;
     --p-bg-card:    #ffffff;
-    --p-bg-hover:   #f0f0f2;
+    --p-bg-hover:   #f0f0f0;
     --p-bg-input:   #ffffff;
-    --p-border:     rgba(0,0,0,0.08);
-    --p-fg:         #1d1d1f;
-    --p-fg-mid:     #6e6e73;
-    --p-fg-light:   #86868b;
-    --p-green:      #248a3d;
-    --p-blue:       #0071e3;
-    --p-red:        #d70015;
+    --p-border:     rgba(0,0,0,0.07);
+    --p-gold:       #5BA87A;
+    --p-gold-l:     #A8D8B0;
+    --p-fg:         #2d3436;
+    --p-fg-mid:     #636e72;
+    --p-fg-light:   #b2bec3;
+    --p-green:      #5BA87A;
+    --p-blue:       #5BA8C4;
+    --p-red:        #E87070;
+    --p-yellow:     #F0C050;
   }
+  .portail-root.portail-light .portail-sidebar {
+    background: #ffffff;
+    border-right: 1px solid rgba(0,0,0,0.07);
+  }
+  .portail-root.portail-light .portail-sidebar-brand .arabic { color: #5BA87A; }
+  .portail-root.portail-light .portail-nav-link.active {
+    background: rgba(91,168,122,0.18);
+    color: #1E6B45;
+  }
+  .portail-root.portail-light .portail-nav-link:hover {
+    background: rgba(0,0,0,0.04);
+    color: #2d3436;
+  }
+  .portail-root.portail-light .portail-topbar {
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+  }
+  .portail-root.portail-light.portail-layout {
+    background: linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%);
+  }
+  .portail-root.portail-light .portail-login-page { background: linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%); }
+  .portail-root.portail-light .portail-login-card {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.07);
+  }
+  .portail-root.portail-light .portail-login-btn { background: #5BA87A; color: #ffffff; }
+  .portail-root.portail-light .portail-login-field input:focus { border-color: #5BA87A; }
 
   /* ─── Layout ─── */
   .portail-layout {
@@ -62,8 +94,6 @@ const PORTAIL_STYLES = `
     z-index: 10;
     overflow-y: auto;
   }
-  .portail-root.portail-light .portail-sidebar { background: #ffffff; }
-
   .portail-sidebar-brand {
     padding: 0 20px 24px;
     border-bottom: 1px solid var(--p-border);
@@ -118,6 +148,8 @@ const PORTAIL_STYLES = `
     flex-direction: column;
     min-height: 100vh;
     min-width: 0;
+    position: relative;
+    z-index: 1;
   }
 
   /* ─── Topbar ─── */
@@ -126,7 +158,7 @@ const PORTAIL_STYLES = `
     align-items: center;
     justify-content: space-between;
     padding: 0 32px;
-    height: 60px;
+    height: 80px;
     border-bottom: 1px solid var(--p-border);
     background: var(--p-bg);
     position: sticky;
@@ -134,7 +166,7 @@ const PORTAIL_STYLES = `
     z-index: 5;
     flex-shrink: 0;
   }
-  .portail-topbar-title { font-size: 17px; font-weight: 700; color: var(--p-fg); white-space: nowrap; }
+  .portail-topbar-title { font-size: 18px; font-weight: 600; color: var(--p-fg); white-space: nowrap; }
   .portail-topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .portail-topbar-date { font-size: 12px; color: var(--p-fg-light); white-space: nowrap; }
 
@@ -153,7 +185,7 @@ const PORTAIL_STYLES = `
 
   /* ─── Content ─── */
   .portail-content {
-    padding: 32px 40px;
+    padding: 40px 40px;
     flex: 1;
     width: 100%;
     box-sizing: border-box;
@@ -380,6 +412,44 @@ const PORTAIL_STYLES = `
   .portail-rich-text { overflow:auto; }
   .portail-rich-text img { max-width:100%; height:auto; border-radius:6px; margin:8px 0; }
   .portail-rich-text [dir="rtl"] { text-align:right; }
+
+  /* ─── Lettres arabes de fond ─── */
+  @keyframes bgFloat1 {
+    0%,100% { transform:translate(0,0) rotate(-4deg); opacity:0.13; }
+    50%      { transform:translate(10px,-18px) rotate(4deg); opacity:0.22; }
+  }
+  @keyframes bgFloat2 {
+    0%,100% { transform:translate(0,0) rotate(6deg); opacity:0.11; }
+    50%      { transform:translate(-12px,14px) rotate(-5deg); opacity:0.19; }
+  }
+  @keyframes bgFloat3 {
+    0%,100% { transform:translate(0,0) rotate(-6deg); opacity:0.14; }
+    50%      { transform:translate(14px,10px) rotate(7deg); opacity:0.23; }
+  }
+  @keyframes bgFloat4 {
+    0%,100% { transform:translate(0,0) rotate(9deg); opacity:0.10; }
+    50%      { transform:translate(-9px,-16px) rotate(-7deg); opacity:0.18; }
+  }
+  .portail-bg-letters {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .portail-bg-letter {
+    position: absolute;
+    font-family: 'Scheherazade New', serif;
+    font-weight: 700;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+  .portail-bg-letter[data-anim="1"] { animation: bgFloat1 var(--dur) ease-in-out var(--delay) infinite; }
+  .portail-bg-letter[data-anim="2"] { animation: bgFloat2 var(--dur) ease-in-out var(--delay) infinite; }
+  .portail-bg-letter[data-anim="3"] { animation: bgFloat3 var(--dur) ease-in-out var(--delay) infinite; }
+  .portail-bg-letter[data-anim="4"] { animation: bgFloat4 var(--dur) ease-in-out var(--delay) infinite; }
+  .portail-root:not(.portail-light) .portail-bg-letter { opacity: 0 !important; }
+  .portail-root:not(.portail-light) .portail-module-bg-letter { opacity: 0 !important; }
 `;
 
 export default PORTAIL_STYLES;

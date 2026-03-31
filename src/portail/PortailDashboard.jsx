@@ -5,24 +5,102 @@ import { fetchModulesEleve, fetchNiveauxEleve, fetchProgression } from './supaba
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
 
+const FUN_KEYFRAMES = `
+@keyframes funTitleIn {
+  0%   { opacity:0; transform:translateY(-18px) scale(0.92); }
+  60%  { transform:translateY(4px) scale(1.02); }
+  80%  { transform:translateY(-2px) scale(0.99); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes starSpin {
+  0%   { transform:rotate(0deg) scale(1); }
+  50%  { transform:rotate(180deg) scale(1.3); }
+  100% { transform:rotate(360deg) scale(1); }
+}
+@keyframes bubbleFloat {
+  0%,100% { transform:translateY(0); opacity:.7; }
+  50%      { transform:translateY(-5px); opacity:1; }
+}
+`;
+
+const LETTER_COLORS = ['#7EC8E3', '#7DCFA0', '#F4A896', '#F7D070'];
+
+function FunTitle() {
+  const word1 = 'Mes';
+  const word2 = 'Modules';
+  return (
+    <>
+      <style>{FUN_KEYFRAMES}</style>
+      <div style={{
+        fontFamily:"'Nunito', 'Inter', sans-serif",
+        marginBottom: 24,
+        animation: 'funTitleIn 0.75s cubic-bezier(0.22,1,0.36,1) both',
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+          <span style={{ fontSize:20, animation:'bubbleFloat 2.5s ease-in-out infinite' }}>📚</span>
+          {/* "Mes" lettre par lettre en couleurs rotatives */}
+          <span style={{ fontSize:40, fontWeight:900, letterSpacing:2, display:'inline-flex', gap:0 }}>
+            {word1.split('').map((char, i) => (
+              <span key={i} style={{
+                color: LETTER_COLORS[i % LETTER_COLORS.length],
+                textShadow:`0 3px 10px ${LETTER_COLORS[i % LETTER_COLORS.length]}55`,
+                display:'inline-block',
+              }}>{char}</span>
+            ))}
+          </span>
+          {/* "Modules" lettre par lettre en couleurs rotatives */}
+          <span style={{ fontSize:40, fontWeight:900, letterSpacing:2, display:'inline-flex', gap:0 }}>
+            {word2.split('').map((char, i) => (
+              <span key={i} style={{
+                color: LETTER_COLORS[i % LETTER_COLORS.length],
+                textShadow:`0 3px 10px ${LETTER_COLORS[i % LETTER_COLORS.length]}55`,
+                display:'inline-block',
+              }}>{char}</span>
+            ))}
+          </span>
+          <span style={{ fontSize:18, animation:'starSpin 5s linear infinite', display:'inline-block' }}>⭐</span>
+          <span style={{ fontSize:16, animation:'bubbleFloat 3s ease-in-out 0.8s infinite', display:'inline-block' }}>✨</span>
+        </div>
+        {/* Bulles décoratives */}
+        <div style={{ display:'flex', gap:5, alignItems:'center', marginTop:6, paddingLeft:4 }}>
+          {['#7EC8E3','#7DCFA0','#F4A896','#F7D070','#7EC8E3','#F4A896'].map((c, i) => (
+            <span key={i} style={{
+              color: c, fontSize: [8,11,7,10,9,8][i],
+              animation:`bubbleFloat ${2+i*0.3}s ease-in-out ${i*0.2}s infinite`,
+              display:'inline-block',
+            }}>●</span>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+const CARD_PASTELS = [
+  { bg:'#DAEEFF', btnGrad:'linear-gradient(135deg,#7EC8E3,#5BA8D4)', btnShadow:'rgba(91,168,212,0.3)' },
+  { bg:'#D5F5E3', btnGrad:'linear-gradient(135deg,#7DCFA0,#5BA87A)', btnShadow:'rgba(91,168,122,0.3)' },
+  { bg:'#FADBD8', btnGrad:'linear-gradient(135deg,#F4A896,#E8806D)', btnShadow:'rgba(232,128,109,0.3)' },
+  { bg:'#FEF9E7', btnGrad:'linear-gradient(135deg,#F7D070,#F0B429)', btnShadow:'rgba(240,180,41,0.3)' },
+];
+
 const S = {
   grid: (n) => ({
     display: 'grid',
     gridTemplateColumns: `repeat(${Math.min(n, 4)}, 1fr)`,
     gap: 20,
   }),
-  card: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' },
+  card: (palette) => ({ background: palette ? palette.bg : 'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' }),
   cardImg: { width:'100%', height:140, objectFit:'cover', display:'block' },
-  cardImgContainer: { width:'100%', height:140, background:'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' },
-  cardImgPlaceholder: { fontSize:40, opacity:.3 },
+  cardImgContainer: (bg) => ({ width:'100%', height:140, background: bg || 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' }),
+  cardImgPlaceholder: { fontSize:40, opacity:.4 },
   cardBody: { padding:20 },
   cardTitle: { fontSize:17, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
   cardDesc: { fontSize:13, color:'var(--p-fg-mid)', margin:'0 0 16px', lineHeight:1.5 },
-  progressBar: { height:6, borderRadius:3, background:'var(--p-border)', overflow:'hidden' },
-  progressFill: (pct) => ({ height:'100%', borderRadius:3, background: pct >= 100 ? 'var(--p-green)' : 'var(--p-gold)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
+  progressBar: { height:8, borderRadius:4, background:'rgba(0,0,0,0.12)', overflow:'hidden' },
+  progressFill: (pct) => ({ height:'100%', borderRadius:4, background:'#ffffff', boxShadow:'0 1px 3px rgba(0,0,0,0.2)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
   progressText: { display:'flex', justifyContent:'space-between', marginTop:8, fontSize:12, color:'var(--p-fg-mid)' },
-  btn: { display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background:'var(--p-gold)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s' },
-  btnCompleted: { display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'1px solid var(--p-green)', background:'transparent', color:'var(--p-green)', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16 },
+  btn: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-gold)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s, transform .15s' }),
+  btnCompleted: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-green)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, opacity:0.75 }),
   empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)' },
   emptyTitle: { fontSize:20, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
   loading: { textAlign:'center', padding:'60px', color:'var(--p-fg-mid)', fontSize:14 },
@@ -43,7 +121,7 @@ const GREETING_KEYFRAMES = `
 }
 @keyframes salamGlow {
   0%,100% { text-shadow: 0 0 0px transparent; }
-  50%      { text-shadow: 0 0 20px rgba(191,138,48,.5); }
+  50%      { text-shadow: 0 0 20px rgba(91,168,122,.5); }
 }
 `;
 
@@ -74,7 +152,7 @@ function SalamGreeting({ prenom }) {
         <span style={{
           fontFamily: "'Scheherazade New', serif",
           fontSize: 36, fontWeight: 700,
-          color: 'var(--p-gold)',
+          color: '#5BA87A',
           lineHeight: 1.3, direction: 'rtl',
           display: 'inline-block',
           animation: shouldAnimate
@@ -139,7 +217,8 @@ export default function PortailDashboard() {
         </div>
       ) : (
         <div style={S.grid(modules.length)}>
-          {modules.map(m => {
+          {modules.map((m, index) => {
+            const palette = CARD_PASTELS[index % CARD_PASTELS.length];
             const nivs = niveauxMap[m.id] || [];
             const total = nivs.length;
             const reussis = nivs.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
@@ -147,14 +226,14 @@ export default function PortailDashboard() {
             const completed = pct >= 100;
 
             return (
-              <div key={m.id} style={S.card}
+              <div key={m.id} style={S.card(palette)}
                 onClick={() => navigate(`/portail/module/${m.id}`)}
-                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; }}
                 onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
                 {m.image_url ? (
                   <img src={m.image_url} alt={m.titre} style={S.cardImg} />
                 ) : (
-                  <div style={S.cardImgContainer}>
+                  <div style={S.cardImgContainer(palette.bg)}>
                     <span style={S.cardImgPlaceholder}>📖</span>
                   </div>
                 )}
@@ -166,11 +245,11 @@ export default function PortailDashboard() {
                       <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
                       <div style={S.progressText}>
                         <span>{reussis} / {total} niveaux</span>
-                        <span style={{ fontWeight:600, color: completed ? 'var(--p-green)' : 'var(--p-gold)' }}>{pct}%</span>
+                        <span style={{ fontWeight:600, color:'var(--p-fg-mid)' }}>{pct}%</span>
                       </div>
                     </>
                   )}
-                  <button style={completed ? S.btnCompleted : S.btn}>
+                  <button style={completed ? S.btnCompleted(palette) : S.btn(palette)}>
                     {completed ? '✓ Terminé' : reussis > 0 ? 'Continuer' : 'Commencer'}
                   </button>
                 </div>

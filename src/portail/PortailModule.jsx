@@ -19,6 +19,13 @@ function getEleveNiveauScolaireId() {
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
+const CARD_PASTELS = [
+  { bg:'#DAEEFF', btnGrad:'linear-gradient(135deg,#7EC8E3,#5BA8D4)', btnShadow:'rgba(91,168,212,0.3)' },
+  { bg:'#D5F5E3', btnGrad:'linear-gradient(135deg,#7DCFA0,#5BA87A)', btnShadow:'rgba(91,168,122,0.3)' },
+  { bg:'#FADBD8', btnGrad:'linear-gradient(135deg,#F4A896,#E8806D)', btnShadow:'rgba(232,128,109,0.3)' },
+  { bg:'#FEF9E7', btnGrad:'linear-gradient(135deg,#F7D070,#F0B429)', btnShadow:'rgba(240,180,41,0.3)' },
+];
+
 const S = {
   // Thématiques grid — cartes à largeur fixe (auto-fill)
   grid: {
@@ -26,18 +33,18 @@ const S = {
     gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: 20,
   },
-  card: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' },
+  card: (palette) => ({ background: palette ? palette.bg : 'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' }),
   cardImg: { width:'100%', height:140, objectFit:'cover', display:'block' },
-  cardImgContainer: { width:'100%', height:140, background:'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' },
-  cardImgPlaceholder: { fontSize:40, opacity:.3 },
+  cardImgContainer: (bg) => ({ width:'100%', height:140, background: bg || 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' }),
+  cardImgPlaceholder: { fontSize:40, opacity:.4 },
   cardBody: { padding:20 },
   cardTitle: { fontSize:17, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
   cardDesc: { fontSize:13, color:'var(--p-fg-mid)', margin:'0 0 16px', lineHeight:1.5 },
-  progressBar: { height:6, borderRadius:3, background:'var(--p-border)', overflow:'hidden' },
-  progressFill: (pct) => ({ height:'100%', borderRadius:3, background: pct >= 100 ? 'var(--p-green)' : 'var(--p-gold)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
+  progressBar: { height:8, borderRadius:4, background:'rgba(0,0,0,0.12)', overflow:'hidden' },
+  progressFill: (pct) => ({ height:'100%', borderRadius:4, background:'#ffffff', boxShadow:'0 1px 3px rgba(0,0,0,0.2)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
   progressText: { display:'flex', justifyContent:'space-between', marginTop:8, fontSize:12, color:'var(--p-fg-mid)' },
-  btn: { display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background:'var(--p-gold)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s' },
-  btnCompleted: { display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'1px solid var(--p-green)', background:'transparent', color:'var(--p-green)', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16 },
+  btn: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-gold)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s, transform .15s' }),
+  btnCompleted: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-green)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, opacity:0.75 }),
   moduleHeader: { marginBottom:28 },
   moduleTitle: { fontSize:24, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
   moduleDesc: { fontSize:14, color:'var(--p-fg-mid)' },
@@ -97,6 +104,99 @@ const S = {
   lockedIcon: { fontSize:48, marginBottom:12 },
   empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)', fontSize:14 },
 };
+
+const FUN_TITLE_KEYFRAMES = `
+@keyframes funModTitleIn {
+  0%   { opacity:0; transform:translateY(-18px) scale(0.92); }
+  60%  { transform:translateY(4px) scale(1.02); }
+  80%  { transform:translateY(-2px) scale(0.99); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes funModBubble {
+  0%,100% { transform:translateY(0); opacity:.7; }
+  50%      { transform:translateY(-5px); opacity:1; }
+}
+`;
+const FUN_LETTER_COLORS = ['#7EC8E3', '#7DCFA0', '#F4A896', '#F7D070'];
+
+function FunModuleTitle({ text }) {
+  return (
+    <>
+      <style>{FUN_TITLE_KEYFRAMES}</style>
+      <div style={{
+        fontFamily:"'Nunito','Inter',sans-serif",
+        marginBottom: 8,
+        animation: 'funModTitleIn 0.75s cubic-bezier(0.22,1,0.36,1) both',
+      }}>
+        <span style={{ fontSize:40, fontWeight:900, letterSpacing:2, display:'inline-flex', flexWrap:'wrap', gap:0 }}>
+          {text.split('').map((char, i) => (
+            <span key={i} style={{
+              color: char === ' ' ? 'inherit' : FUN_LETTER_COLORS[i % FUN_LETTER_COLORS.length],
+              textShadow: char === ' ' ? 'none' : `0 3px 10px ${FUN_LETTER_COLORS[i % FUN_LETTER_COLORS.length]}55`,
+              display: 'inline-block',
+              whiteSpace: 'pre',
+            }}>{char}</span>
+          ))}
+        </span>
+        <div style={{ display:'flex', gap:5, marginTop:6, paddingLeft:2 }}>
+          {['#7EC8E3','#7DCFA0','#F4A896','#F7D070','#7EC8E3','#F4A896'].map((c, i) => (
+            <span key={i} style={{
+              color: c, fontSize:[8,11,7,10,9,8][i],
+              animation:`funModBubble ${2+i*0.3}s ease-in-out ${i*0.2}s infinite`,
+              display:'inline-block',
+            }}>●</span>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+const MODULE_FADE_KEYFRAMES = `
+@keyframes moduleBgFloat {
+  0%,100% { opacity:0.12; transform:scale(1) rotate(var(--rot,0deg)); }
+  50%      { opacity:0.22; transform:scale(1.06) translateY(-10px) rotate(var(--rot,0deg)); }
+}
+`;
+
+const MODULE_BG_LETTERS = [
+  // Zone gauche
+  { l:'ب', size:'80px', top:'6%',  left:'2%',  color:'#F4A896', dur:'8s',  delay:'0s',   rot:'-8deg'  },
+  { l:'ك', size:'72px', top:'30%', left:'3%',  color:'#7EC8E3', dur:'9s',  delay:'2s',   rot:'-5deg'  },
+  { l:'ن', size:'68px', top:'58%', left:'1%',  color:'#7DCFA0', dur:'10s', delay:'4s',   rot:'6deg'   },
+  { l:'ل', size:'65px', top:'82%', left:'2%',  color:'#F7D070', dur:'7s',  delay:'1s',   rot:'15deg'  },
+  // Zone droite
+  { l:'ر', size:'78px', top:'7%',  left:'88%', color:'#7DCFA0', dur:'9s',  delay:'1.8s', rot:'12deg'  },
+  { l:'م', size:'65px', top:'28%', left:'85%', color:'#F7D070', dur:'8s',  delay:'0.6s', rot:'9deg'   },
+  { l:'ص', size:'74px', top:'52%', left:'90%', color:'#F4A896', dur:'10s', delay:'3s',   rot:'-10deg' },
+  { l:'و', size:'68px', top:'76%', left:'86%', color:'#7EC8E3', dur:'7s',  delay:'2s',   rot:'7deg'   },
+  // Zone haute
+  { l:'ع', size:'70px', top:'3%',  left:'32%', color:'#F4A896', dur:'8s',  delay:'1.5s', rot:'-12deg' },
+  { l:'ق', size:'64px', top:'4%',  left:'60%', color:'#F7D070', dur:'7s',  delay:'3.5s', rot:'-3deg'  },
+  // Zone basse
+  { l:'ح', size:'75px', top:'90%', left:'28%', color:'#7DCFA0', dur:'9s',  delay:'0.5s', rot:'4deg'   },
+  { l:'ذ', size:'66px', top:'88%', left:'62%', color:'#F4A896', dur:'8s',  delay:'2.5s', rot:'-6deg'  },
+];
+
+function ModuleBgLetters() {
+  return (
+    <>
+      <style>{MODULE_FADE_KEYFRAMES}</style>
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, overflow:'hidden' }}>
+        {MODULE_BG_LETTERS.map((l, i) => (
+          <span key={i} className="portail-module-bg-letter" style={{
+            position:'absolute', top:l.top, left:l.left,
+            fontSize:l.size, color:l.color,
+            fontFamily:"'Scheherazade New', serif", fontWeight:700,
+            userSelect:'none', willChange:'opacity, transform',
+            '--rot': l.rot,
+            animation:`moduleBgFloat ${l.dur} ease-in-out ${l.delay} infinite`,
+          }}>{l.l}</span>
+        ))}
+      </div>
+    </>
+  );
+}
 
 const TYPE_COLORS = { video: '#ff453a', pdf: '#0a84ff', texte: '#30d158', word: '#2b579a', ppt: '#c43e1c' };
 const TYPE_LABELS = { video: '▶ Vidéo', texte: '📝 Texte', word: '📃 Word', ppt: '📊 PowerPoint' };
@@ -210,19 +310,23 @@ function ModuleEntryView({ moduleId }) {
   // Vue thématiques (page intermédiaire)
   return (
     <div>
+      <ModuleBgLetters />
       <button style={S.backBtn} onClick={() => navigate('/portail')}>
         <IconBack /> Retour aux cours
       </button>
 
       {module_ && (
         <div style={S.moduleHeader}>
-          <h2 style={S.moduleTitle}>{module_.titre}</h2>
+          <h1 style={{ fontSize:25, fontWeight:800, color:'var(--p-fg)', margin:'0 0 8px', letterSpacing:'-0.3px', lineHeight:1.2 }}>
+            {module_.titre}
+          </h1>
           {module_.description && <p style={S.moduleDesc}>{module_.description}</p>}
         </div>
       )}
 
       <div style={S.grid}>
-        {thematiques.map(th => {
+        {thematiques.map((th, index) => {
+          const palette = CARD_PASTELS[index % CARD_PASTELS.length];
           const nivs = niveauxMap[th.id] || [];
           const total = nivs.length;
           const reussis = nivs.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
@@ -231,14 +335,14 @@ function ModuleEntryView({ moduleId }) {
           const started = reussis > 0;
 
           return (
-            <div key={th.id} style={S.card}
+            <div key={th.id} style={S.card(palette)}
               onClick={() => navigate(`/portail/module/${moduleId}/thematique/${th.id}`, { state: { titre: th.titre } })}
-              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {th.image_url ? (
                 <img src={th.image_url} alt={th.titre} style={S.cardImg} />
               ) : (
-                <div style={S.cardImgContainer}>
+                <div style={S.cardImgContainer(palette.bg)}>
                   <span style={S.cardImgPlaceholder}>📂</span>
                 </div>
               )}
@@ -250,11 +354,11 @@ function ModuleEntryView({ moduleId }) {
                     <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
                     <div style={S.progressText}>
                       <span>{reussis} / {total} niveaux</span>
-                      <span style={{ color: completed ? 'var(--p-green)' : 'var(--p-gold)' }}>{pct}%</span>
+                      <span style={{ color:'var(--p-fg-mid)' }}>{pct}%</span>
                     </div>
                   </>
                 )}
-                <button style={completed ? S.btnCompleted : S.btn}>
+                <button style={completed ? S.btnCompleted(palette) : S.btn(palette)}>
                   {completed ? '✓ Terminé' : started ? 'Continuer' : 'Commencer'}
                 </button>
               </div>
@@ -359,6 +463,7 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
 
   return (
     <div>
+      <ModuleBgLetters />
       <button style={S.backBtn} onClick={onBack}>
         <IconBack /> Retour
       </button>

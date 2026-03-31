@@ -295,6 +295,12 @@ Fonctionnalités souhaitées :
 
 ## Historique des modifications
 
+- **Portail — Titres animés en topbar** : suppression des titres noirs (`portail-topbar-title`) et des composants `FunTitle`/`FunModuleTitle` dans le contenu. Nouveau composant `TopbarFunTitle` dans `PortailApp.jsx` : lettres colorées lettre par lettre (palette `#7EC8E3/#7DCFA0/#F4A896/#F7D070`), animation bounce en entrée (`topbarLetterIn`) + flottement infini décalé (`topbarLetterFloat`), emoji gauche par page (`PAGE_EMOJIS`), étoile ⭐ et étincelle ✨ animées à droite. Taille 40px. Topbar hauteur 60px → 80px. Padding `.portail-content` ajusté à 40px.
+
+- **Portail — Logo élève dans la sidebar** : `public/logo-eleve.png` ajouté à gauche de "رقيب — RAQIB" dans `.portail-sidebar-brand`, hauteur 50px.
+
+- **Portail — Lettres arabes de fond refonte** : `BG_LETTERS` (14 lettres) et `MODULE_BG_LETTERS` (12 lettres) redistribués en 4 zones non-chevauchantes (gauche/droite/haut/bas), tailles 60–90px. Nouvelles keyframes `bgFloat1-4` avec opacité 0.10–0.23 (contre 0.04–0.085 avant). Animation module : `moduleBgFloat` flottement doux (remplace `moduleFade` pulse clignotant 0→0.18→0).
+
 - **Portail — Mes devoirs / Mes résultats / Mes observations** : 3 nouvelles pages portail ajoutées à la sidebar (section Navigation). Chaque page affiche un état vide élégant, prêt à être alimenté. Routes : `/portail/devoirs`, `/portail/resultats`, `/portail/observations`. Composants : `PortailDevoirs.jsx`, `PortailResultats.jsx`, `PortailObservations.jsx`. `PAGE_TITLES` mis à jour pour le titre dynamique de la topbar. Icônes SVG dédiées pour chaque lien.
 
 - **Portail — Ressources sidebar** : "Voir le site" remplacé par "Voir mon livre interactif" (`mon-kitabi.fr/kitabis/`) + ajout lien "Al - Muqri" (`fr.muqri.com`). Section renommée "Site" → "Ressources".

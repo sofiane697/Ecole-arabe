@@ -407,46 +407,44 @@ const STYLES = `
   html.dark .hero-orb-1 { background: radial-gradient(circle, rgba(191,138,48,0.45) 0%, rgba(191,138,48,0) 70%); }
   html.dark .hero-orb-2 { background: radial-gradient(circle, rgba(191,138,48,0.30) 0%, rgba(191,138,48,0) 70%); }
 
-  /* ── Motif géométrique ── */
-  .hero-geo {
-    position: absolute;
-    right: -3rem; top: 50%;
-    transform: translateY(-50%);
-    width: 90%;
-    opacity: 0.12;
-    animation: pulse 8s ease-in-out infinite;
+  /* ── Lettres arabes — 4 dérives asynchrones ── */
+  @keyframes letterDrift1 {
+    0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+    30%  { opacity:0.12; transform:translate(8px,-10px) scale(1); }
+    60%  { opacity:0.13; transform:translate(12px,-5px) scale(1.02); }
+    100% { opacity:0;    transform:translate(0,0) scale(0.93); }
   }
-  html.dark .hero-geo { opacity: 0.18; }
-
-  /* ── Lettres calligraphiques flottantes ── */
-  .hero-calli-1, .hero-calli-2, .hero-calli-3 {
+  @keyframes letterDrift2 {
+    0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+    25%  { opacity:0.11; transform:translate(-6px,9px) scale(1.01); }
+    65%  { opacity:0.13; transform:translate(-10px,4px) scale(1); }
+    100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+  }
+  @keyframes letterDrift3 {
+    0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+    40%  { opacity:0.13; transform:translate(10px,8px) scale(1.02); }
+    70%  { opacity:0.11; transform:translate(5px,12px) scale(1); }
+    100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+  }
+  @keyframes letterDrift4 {
+    0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+    35%  { opacity:0.14; transform:translate(-8px,-7px) scale(1.02); }
+    75%  { opacity:0.12; transform:translate(-4px,-12px) scale(1); }
+    100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+  }
+  .hero-letter {
     position: absolute;
     font-family: 'Scheherazade New', serif;
-    color: #b8862e;
+    color: var(--gold);
     pointer-events: none;
     line-height: 1;
+    will-change: transform, opacity;
   }
-  .hero-calli-1 {
-    font-size: 18rem;
-    top: 5%; right: 8%;
-    opacity: 0.08;
-    animation: float 7s ease-in-out infinite;
-  }
-  .hero-calli-2 {
-    font-size: 10rem;
-    bottom: 12%; right: 38%;
-    opacity: 0.10;
-    animation: floatB 9s ease-in-out infinite 1.5s;
-  }
-  .hero-calli-3 {
-    font-size: 8rem;
-    top: 55%; right: 8%;
-    opacity: 0.07;
-    animation: floatC 6s ease-in-out infinite 0.8s;
-  }
-  html.dark .hero-calli-1 { opacity: 0.14; }
-  html.dark .hero-calli-2 { opacity: 0.16; }
-  html.dark .hero-calli-3 { opacity: 0.12; }
+  .hero-letter[data-anim="1"] { animation: letterDrift1 var(--dur) ease-in-out var(--delay) infinite; }
+  .hero-letter[data-anim="2"] { animation: letterDrift2 var(--dur) ease-in-out var(--delay) infinite; }
+  .hero-letter[data-anim="3"] { animation: letterDrift3 var(--dur) ease-in-out var(--delay) infinite; }
+  .hero-letter[data-anim="4"] { animation: letterDrift4 var(--dur) ease-in-out var(--delay) infinite; }
+  html.dark .hero-letter { color: var(--gold-light); }
 
   .hero-inner {
     position: relative;
@@ -1527,12 +1525,7 @@ const STYLES = `
   }
 
   /* Hero — calligraphie flottante */
-  html.theme-2 .hero-calli-1,
-  html.theme-2 .hero-calli-2,
-  html.theme-2 .hero-calli-3 { color: #B27D8B; }
-  html.theme-2 .hero-calli-1 { opacity: 0.18; }
-  html.theme-2 .hero-calli-2 { opacity: 0.20; }
-  html.theme-2 .hero-calli-3 { opacity: 0.15; }
+  html.theme-2 .hero-letter { color: #B27D8B; }
 
   /* Nav — fond blanc + bordure basse gris-violet */
   html.theme-2 .nav {
@@ -1666,12 +1659,7 @@ const STYLES = `
   }
 
   /* Hero — calligraphie flottante */
-  html.theme-3 .hero-calli-1,
-  html.theme-3 .hero-calli-2,
-  html.theme-3 .hero-calli-3 { color: #CE8F8A; }
-  html.theme-3 .hero-calli-1 { opacity: 0.18; }
-  html.theme-3 .hero-calli-2 { opacity: 0.20; }
-  html.theme-3 .hero-calli-3 { opacity: 0.15; }
+  html.theme-3 .hero-letter { color: #CE8F8A; }
 
   /* Nav — fond blanc + bordure basse taupe */
   html.theme-3 .nav {
