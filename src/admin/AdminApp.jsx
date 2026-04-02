@@ -48,7 +48,8 @@ const PAGE_TITLES = {
   '/admin/messages':     'Messages',
   '/admin/cours':        'Gestion des cours',
   '/admin/classes':      'Gestion des classes',
-  '/admin/eleves':       'Gestion des élèves',
+  '/admin/eleves':        'Gestion des élèves',
+  '/admin/enseignants':   'Gestion des enseignants',
 };
 
 export default function AdminApp() {
@@ -188,6 +189,20 @@ export default function AdminApp() {
             onClick={() => setSidebarOpen(false)}
           >
             <IconStudent /> Gestion des élèves
+          </NavLink>
+
+          <NavLink
+            to="/admin/enseignants"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+              <line x1="12" y1="11" x2="12" y2="16"/>
+              <line x1="9.5" y1="13.5" x2="14.5" y2="13.5"/>
+            </svg>
+            Gestion des enseignants
           </NavLink>
 
           <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>

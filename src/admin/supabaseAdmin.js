@@ -353,6 +353,40 @@ export async function fetchNiveauxByThematique(thId) {
   return res.json();
 }
 
+// ─── LEÇONS ──────────────────────────────────────────────────────────────────
+
+export async function fetchLecons(thId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${thId}&order=ordre`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function createLecon(data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons`, {
+    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function updateLecon(id, data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+export async function deleteLecon(id) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+export async function fetchNiveauxByLecon(leconId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux?lecon_id=eq.${leconId}&order=ordre`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
 // ─── Niveaux scolaires ────────────────────────────────────────────────────────
 export async function fetchNiveauxScolaires() {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?order=ordre.asc,nom.asc`);
@@ -408,6 +442,69 @@ export async function updateClasse(id, nom) {
 export async function deleteClasse(id) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?id=eq.${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+// ─── Enseignants ──────────────────────────────────────────────────────────────
+export async function fetchEnseignants() {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants?order=nom.asc`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+export async function createEnseignant(data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants`, {
+    method: 'POST', headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const rows = await res.json();
+  return rows[0];
+}
+export async function updateEnseignant(id, data) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${id}`, {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+export async function deleteEnseignant(id) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+// ─── Enseignant ↔ Classes (jointure) ──────────────────────────────────────────
+export async function fetchEnseignantClasses(enseignantId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?enseignant_id=eq.${enseignantId}&select=classe_id`);
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const rows = await res.json();
+  return rows.map(r => r.classe_id);
+}
+export async function setEnseignantClasses(enseignantId, classeIds) {
+  // Supprime toutes les assignations existantes puis réinsère
+  const del = await authFetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?enseignant_id=eq.${enseignantId}`, { method: 'DELETE' });
+  if (!del.ok) throw new Error(`Erreur ${del.status}`);
+  if (classeIds.length === 0) return;
+  const rows = classeIds.map(cid => ({ enseignant_id: enseignantId, classe_id: cid }));
+  const ins = await authFetch(`${SUPABASE_URL}/rest/v1/enseignant_classes`, {
+    method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows),
+  });
+  if (!ins.ok) throw new Error(`Erreur ${ins.status}`);
+}
+
+/** Créer le compte auth d'un enseignant (identifiant + mot de passe bcrypt) */
+export async function adminCreateEnseignantAccount(id, identifiant, password) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_enseignant`, {
+    method: 'POST',
+    body: JSON.stringify({ p_id: id, p_identifiant: identifiant, p_password: password }),
+  });
+  if (!res.ok) throw new Error(`Erreur création compte enseignant ${res.status}`);
+}
+
+/** Réinitialiser le mot de passe d'un enseignant */
+export async function adminResetEnseignantPassword(id, newPassword) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_enseignant_password`, {
+    method: 'POST',
+    body: JSON.stringify({ p_id: id, p_new_password: newPassword }),
+  });
+  if (!res.ok) throw new Error(`Erreur reset mot de passe enseignant ${res.status}`);
 }
 
 /** Activer / désactiver un élève */

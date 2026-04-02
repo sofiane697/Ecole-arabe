@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   fetchModulesEleve, fetchNiveauxEleve, fetchNiveauxByThematiqueEleve,
   fetchThematiquesEleve, fetchAllThematiquesEleve, fetchEleveNiveauScolaireId, fetchContenusEleve, fetchQCMEleve,
-  fetchProgression, saveProgression,
+  fetchProgression, saveProgression, fetchLeconsEleve, fetchNiveauxByLeconEleve, fetchQCMExistenceForNiveaux,
 } from './supabasePortail';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -208,18 +208,31 @@ const IconBack = () => (
 
 // ─── Composant principal — routeur intelligent ────────────────────────────────
 export default function PortailModule() {
-  const { id, moduleId, thId } = useParams();
+  const { id, moduleId, thId, leconId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Route /portail/module/:moduleId/thematique/:thId → vue niveaux pour une thématique
+  // Route /portail/module/:moduleId/thematique/:thId/lecon/:leconId → Mon cours
+  if (leconId) {
+    const leconTitle = location.state?.titre || 'Leçon';
+    return (
+      <NiveauxView
+        fetchId={leconId}
+        byLecon={true}
+        stepperTitle={leconTitle}
+        onBack={() => navigate(`/portail/module/${moduleId}/thematique/${thId}`, { state: location.state?.thState })}
+      />
+    );
+  }
+
+  // Route /portail/module/:moduleId/thematique/:thId → Mes Leçons
   if (thId) {
     const thematiqueTitle = location.state?.titre || 'Thématique';
     return (
-      <NiveauxView
-        fetchId={thId}
-        byThematique={true}
-        stepperTitle={thematiqueTitle}
+      <LeconsEntryView
+        thId={thId}
+        moduleId={moduleId}
+        thematiqueTitle={thematiqueTitle}
         onBack={() => navigate(`/portail/module/${moduleId}`)}
       />
     );
@@ -237,6 +250,7 @@ function ModuleEntryView({ moduleId }) {
   const [module_, setModule_] = useState(null);
   const [niveauxMap, setNiveauxMap] = useState({});
   const [progression, setProgression] = useState([]);
+  const [qcmNiveauxIds, setQcmNiveauxIds] = useState(new Set());
   const eleveId = getEleveId();
 
   useEffect(() => {
@@ -272,6 +286,11 @@ function ModuleEntryView({ moduleId }) {
         const map = {};
         filteredThs.forEach((th, i) => { map[th.id] = nivArrays[i]; });
         setNiveauxMap(map);
+        const allNivIds = nivArrays.flat().map(n => n.id);
+        if (allNivIds.length > 0) {
+          const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
+          setQcmNiveauxIds(qcmIds);
+        }
       }
     })().catch(console.error);
   }, [moduleId, eleveId]);
@@ -328,14 +347,16 @@ function ModuleEntryView({ moduleId }) {
         {thematiques.map((th, index) => {
           const palette = CARD_PASTELS[index % CARD_PASTELS.length];
           const nivs = niveauxMap[th.id] || [];
-          const total = nivs.length;
-          const reussis = nivs.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+          const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
+          const total = nivsAvecQCM.length;
+          const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
           const pct = total > 0 ? Math.round((reussis / total) * 100) : 0;
           const completed = total > 0 && pct >= 100;
           const started = reussis > 0;
 
           return (
-            <div key={th.id} style={S.card(palette)}
+            <div key={th.id}
+              style={S.card(palette)}
               onClick={() => navigate(`/portail/module/${moduleId}/thematique/${th.id}`, { state: { titre: th.titre } })}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
@@ -370,56 +391,240 @@ function ModuleEntryView({ moduleId }) {
   );
 }
 
-// ─── Vue niveaux + contenu + QCM (logique extraite de l'ancien PortailModule) ─
-function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
-  const [niveaux, setNiveaux]           = useState([]);
-  const [progression, setProgressionState] = useState([]);
-  const [selNiveau, setSelNiveau]       = useState(null);
-  const [contenus, setContenus]         = useState([]);
-  const [questions, setQuestions]       = useState([]);
-  const [showQCM, setShowQCM]           = useState(false);
-  const [answers, setAnswers]           = useState({});
-  const [showResult, setShowResult]     = useState(false);
-  const [score, setScore]               = useState(0);
-  const [loading, setLoading]           = useState(true);
-  // Set des IDs de niveaux qui possèdent au moins une question QCM
+// ─── Vue Leçons (intermédiaire entre Thématiques et Mon Cours) ───────────────
+function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
+  const navigate = useNavigate();
+  const [lecons, setLecons] = useState(null);
+  const [progression, setProgression] = useState([]);
+  const [niveauxMap, setNiveauxMap] = useState({});
+  const [qcmNiveauxIds, setQcmNiveauxIds] = useState(new Set());
+  const eleveId = getEleveId();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [lecs, prog] = await Promise.all([
+          fetchLeconsEleve(thId),
+          fetchProgression(eleveId),
+        ]);
+        setLecons(lecs);
+        setProgression(prog);
+        if (lecs.length > 0) {
+          const map = {};
+          await Promise.all(lecs.map(async (l) => {
+            try { map[l.id] = await fetchNiveauxByLeconEleve(l.id); } catch { map[l.id] = []; }
+          }));
+          setNiveauxMap(map);
+          const allNivIds = Object.values(map).flat().map(n => n.id);
+          if (allNivIds.length > 0) {
+            const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
+            setQcmNiveauxIds(qcmIds);
+          }
+        }
+      } catch(e) { console.error(e); setLecons([]); }
+    })();
+  }, [thId, eleveId]);
+
+  if (lecons === null) return <div style={S.empty}>Chargement...</div>;
+
+  // Pas de leçons → vue niveaux directe par thématique
+  if (lecons.length === 0) {
+    return (
+      <NiveauxView
+        fetchId={thId}
+        byThematique={true}
+        stepperTitle={thematiqueTitle}
+        onBack={onBack}
+      />
+    );
+  }
+
+  return (
+    <div>
+      <ModuleBgLetters />
+      <button style={S.backBtn} onClick={onBack}>
+        <IconBack /> Retour aux thématiques
+      </button>
+      <div style={S.moduleHeader}>
+        <h1 style={{ fontSize:25, fontWeight:800, color:'var(--p-fg)', margin:'0 0 8px', letterSpacing:'-0.3px', lineHeight:1.2 }}>
+          {thematiqueTitle}
+        </h1>
+      </div>
+
+      <div style={S.grid}>
+        {(() => {
+          // Précompute la chaîne de déblocage : une leçon est débloquée seulement si
+          // la précédente est elle-même débloquée ET complétée (avec QCM validé)
+          const leconCompleted = (l) => {
+            const withQCM = (niveauxMap[l.id] || []).filter(nv => qcmNiveauxIds.has(nv.id));
+            if (withQCM.length === 0) return false;
+            return withQCM.every(nv => progression.some(p => p.niveau_id === nv.id && p.reussi));
+          };
+          const unlocked = lecons.reduce((acc, lec, i) => {
+            acc.push(i === 0 ? true : acc[i - 1] && leconCompleted(lecons[i - 1]));
+            return acc;
+          }, []);
+
+          return lecons.map((lec, index) => {
+          const palette = CARD_PASTELS[index % CARD_PASTELS.length];
+          const nivs = niveauxMap[lec.id] || [];
+          const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
+          const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+          const completed = nivsAvecQCM.length > 0 && reussis === nivsAvecQCM.length;
+          const started = reussis > 0;
+          const locked = !unlocked[index];
+
+          return (
+            <div key={lec.id}
+              style={{ ...S.card(palette), ...(locked ? { opacity:0.45, cursor:'not-allowed', filter:'grayscale(0.25)' } : {}) }}
+              onClick={() => { if (!locked) navigate(
+                `/portail/module/${moduleId}/thematique/${thId}/lecon/${lec.id}`,
+                { state: { titre: lec.titre, thState: { titre: thematiqueTitle } } }
+              ); }}
+              onMouseEnter={e => { if (!locked) { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; } }}
+              onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
+              {lec.image_url ? (
+                <img src={lec.image_url} alt={lec.titre} style={S.cardImg} loading="lazy" />
+              ) : (
+                <div style={S.cardImgContainer(palette.bg)}>
+                  <span style={S.cardImgPlaceholder}>{locked ? '🔒' : '📝'}</span>
+                </div>
+              )}
+              <div style={S.cardBody}>
+                <h3 style={S.cardTitle}>{lec.titre}</h3>
+                {lec.description && <p style={S.cardDesc}>{lec.description}</p>}
+                <button style={locked ? { ...S.btn(palette), opacity:0.6, cursor:'not-allowed' } : completed ? S.btnCompleted(palette) : S.btn(palette)} disabled={locked}>
+                  {locked ? '🔒 Verrouillée' : completed ? '✓ Terminé' : started ? 'Continuer' : 'Commencer'}
+                </button>
+              </div>
+            </div>
+          );
+          });
+        })()}
+      </div>
+    </div>
+  );
+}
+
+// ─── Styles NiveauxView — nouveau design "Focus Mode" ────────────────────────
+const NIVEAU_COLORS = ['#4F8EF7', '#27AE8F', '#F0A500', '#8B5CF6'];
+const NS = {
+  backBtn: { display:'inline-flex', alignItems:'center', gap:6, color:'var(--p-fg-mid)', fontSize:13, fontWeight:500, cursor:'pointer', marginBottom:20, background:'none', border:'none', padding:0 },
+  empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)', fontSize:14 },
+  // Zone 1 — Progression globale
+  progressHeader: { display:'flex', alignItems:'center', gap:14, background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', padding:'14px 20px', marginBottom:16 },
+  progressLeft: { display:'flex', flexDirection:'column', gap:3, flex:'0 0 auto' },
+  progressTitle: { fontSize:11, fontWeight:700, color:'var(--p-fg-light)', textTransform:'uppercase', letterSpacing:'0.8px' },
+  progressBadge: { fontSize:12, fontWeight:700, color:'var(--p-gold)', background:'rgba(191,138,48,0.12)', padding:'2px 8px', borderRadius:20, display:'inline-block' },
+  progressBarWrap: { flex:1, height:8, background:'rgba(127,127,127,0.12)', borderRadius:4, overflow:'hidden', minWidth:60 },
+  progressBarFill: (pct) => ({ height:'100%', width:`${pct}%`, background:'linear-gradient(90deg, #30d158, #7DCFA0)', borderRadius:4, transition:'width 0.6s ease-out' }),
+  progressPct: { fontSize:13, fontWeight:700, color:'var(--p-green)', flex:'0 0 auto' },
+  // Zone 2 — Chips navigation
+  chipsRow: { display:'flex', gap:8, overflowX:'auto', paddingBottom:4, marginBottom:20, scrollbarWidth:'none' },
+  chip: (active, passed, locked) => ({
+    display:'inline-flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:980,
+    whiteSpace:'nowrap', flexShrink:0, cursor: locked ? 'not-allowed' : 'pointer',
+    fontSize:12, fontWeight:600, transition:'all .2s',
+    background: active ? 'var(--p-gold)' : passed ? 'rgba(48,209,88,0.1)' : locked ? 'rgba(127,127,127,0.06)' : 'var(--p-bg-card)',
+    color: active ? '#fff' : passed ? 'var(--p-green)' : locked ? 'var(--p-fg-light)' : 'var(--p-fg-mid)',
+    border: `1.5px solid ${active ? 'transparent' : passed ? 'rgba(48,209,88,0.3)' : 'var(--p-border)'}`,
+    boxShadow: active ? '0 4px 14px rgba(191,138,48,0.35)' : 'none',
+    opacity: locked ? 0.5 : 1,
+  }),
+  chipLabel: { maxWidth:110, overflow:'hidden', textOverflow:'ellipsis' },
+  // Zone 3 — Carte principale
+  mainCard: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', marginBottom:16 },
+  heroContainer: { position:'relative', height:220, overflow:'hidden', flexShrink:0 },
+  heroImg: { width:'100%', height:'100%', objectFit:'cover', display:'block' },
+  heroOverlay: { position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 55%)' },
+  heroTitleOnImg: { position:'absolute', bottom:20, left:20, right:20, fontSize:22, fontWeight:700, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.5)' },
+  heroGradient: (idx) => { const c = NIVEAU_COLORS[idx % NIVEAU_COLORS.length]; return { background:`linear-gradient(160deg, ${c}1A 0%, ${c}08 100%)`, padding:'24px 20px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'flex-start', gap:14 }; },
+  heroGradientBadge: (idx) => { const c = NIVEAU_COLORS[idx % NIVEAU_COLORS.length]; return { width:48, height:48, borderRadius:14, background:`${c}1A`, border:`1px solid ${c}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }; },
+  heroGradientTitle: { fontSize:20, fontWeight:700, color:'var(--p-fg)', lineHeight:1.3 },
+  heroGradientDesc: { fontSize:13, color:'var(--p-fg-mid)', marginTop:5, lineHeight:1.55 },
+  contentBody: { padding:20 },
+  contentItem: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius-sm)', border:'1px solid var(--p-border)', marginBottom:14, overflow:'hidden' },
+  contentItemHeader: { display:'flex', alignItems:'center', gap:10, padding:'12px 16px', borderBottom:'1px solid var(--p-border)' },
+  contentTypeBadge: (c) => ({ fontSize:11, fontWeight:600, padding:'2px 8px', borderRadius:20, background:`${c}18`, color:c, flexShrink:0 }),
+  contentItemTitle: { fontSize:13, fontWeight:600, color:'var(--p-fg)' },
+  videoFrame: { width:'100%', aspectRatio:'16/9', border:'none', display:'block' },
+  textContent: { padding:'14px 16px', fontSize:14, color:'var(--p-fg)', lineHeight:1.7 },
+  successBanner: { display:'flex', alignItems:'center', gap:10, background:'rgba(48,209,88,0.08)', border:'1px solid rgba(48,209,88,0.2)', borderRadius:'var(--p-radius-sm)', padding:'13px 16px', marginBottom:16, fontSize:14, fontWeight:600, color:'var(--p-green)' },
+  qcmCTA: { display:'flex', alignItems:'center', justifyContent:'center', gap:10, width:'100%', padding:'16px', borderRadius:'var(--p-radius-sm)', border:'none', background:'var(--p-gold)', color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer', boxShadow:'0 4px 18px rgba(191,138,48,0.3)', transition:'opacity .2s, transform .15s' },
+  // Niveau verrouillé
+  lockedCard: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', padding:'60px 24px', textAlign:'center', marginBottom:16 },
+  lockedIcon: { fontSize:52, marginBottom:14 },
+  lockedTitle: { fontSize:18, fontWeight:700, color:'var(--p-fg)', marginBottom:8 },
+  lockedDesc: { fontSize:14, color:'var(--p-fg-mid)', lineHeight:1.6, maxWidth:340, margin:'0 auto 24px' },
+  lockedPrevBtn: { display:'inline-flex', alignItems:'center', gap:6, padding:'10px 22px', borderRadius:980, border:'1px solid var(--p-border)', background:'transparent', color:'var(--p-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' },
+  // Zone 4 — QCM carrousel
+  qcmCard: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', padding:'28px 24px', marginBottom:16 },
+  qcmDotsRow: { display:'flex', gap:5, marginBottom:8, flexWrap:'wrap' },
+  qcmDot: (answered, current) => ({ width: current ? 22 : 8, height:8, borderRadius:4, background: answered ? 'var(--p-gold)' : 'rgba(127,127,127,0.18)', transition:'all .3s ease', flexShrink:0 }),
+  qcmCounter: { fontSize:12, color:'var(--p-fg-light)', marginBottom:14 },
+  qcmQuestion: { fontSize:16, fontWeight:700, color:'var(--p-fg)', marginBottom:20, lineHeight:1.55 },
+  answerBtn: (selected) => ({ display:'flex', alignItems:'center', gap:14, width:'100%', textAlign:'left', padding:'13px 16px', marginBottom:10, borderRadius:'var(--p-radius-sm)', cursor:'pointer', transition:'all .15s', border:`1.5px solid ${selected ? 'var(--p-gold)' : 'var(--p-border)'}`, background: selected ? 'rgba(191,138,48,0.07)' : 'transparent', color:'var(--p-fg)', fontSize:14, fontWeight: selected ? 600 : 400 }),
+  answerLetter: (selected) => ({ width:28, height:28, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, background: selected ? 'var(--p-gold)' : 'rgba(127,127,127,0.1)', color: selected ? '#fff' : 'var(--p-fg-mid)', transition:'all .15s' }),
+  qcmNavRow: { display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, marginTop:20 },
+  qcmNavBtn: (primary, disabled) => ({ padding:'10px 22px', borderRadius:980, border: primary ? 'none' : '1px solid var(--p-border)', background: primary ? 'var(--p-gold)' : 'transparent', color: primary ? '#fff' : 'var(--p-fg-mid)', fontSize:13, fontWeight:600, cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, transition:'opacity .2s' }),
+  qcmBackLink: { display:'block', textAlign:'center', marginTop:16, fontSize:13, color:'var(--p-fg-light)', cursor:'pointer', background:'none', border:'none', width:'100%' },
+  // Résultat
+  resultCard: (passed) => ({ textAlign:'center', padding:'40px 24px', background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:`1px solid ${passed ? 'rgba(48,209,88,0.22)' : 'rgba(255,69,58,0.18)'}`, marginBottom:16 }),
+  resultEmoji: { fontSize:56, marginBottom:14 },
+  resultTitle: (passed) => ({ fontSize:24, fontWeight:800, color: passed ? 'var(--p-green)' : 'var(--p-red)', marginBottom:8 }),
+  resultScore: { fontSize:16, color:'var(--p-fg-mid)', marginBottom:24 },
+  resultBtns: { display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center' },
+  resultBtn: (primary) => ({ padding:'11px 24px', borderRadius:980, border: primary ? 'none' : '1px solid var(--p-border)', background: primary ? 'var(--p-gold)' : 'transparent', color: primary ? '#fff' : 'var(--p-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' }),
+};
+
+// ─── Vue niveaux + contenu + QCM — Focus Mode ────────────────────────────────
+function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
+  const [niveaux, setNiveaux]               = useState([]);
+  const [progression, setProgressionState]  = useState([]);
+  const [selNiveau, setSelNiveau]           = useState(null);
+  const [contenus, setContenus]             = useState([]);
+  const [questions, setQuestions]           = useState([]);
+  const [showQCM, setShowQCM]               = useState(false);
+  const [qcmPage, setQcmPage]               = useState(0);
+  const [answers, setAnswers]               = useState({});
+  const [showResult, setShowResult]         = useState(false);
+  const [score, setScore]                   = useState(0);
+  const [loading, setLoading]               = useState(true);
   const [niveauxWithQCM, setNiveauxWithQCM] = useState(new Set());
   const eleveId = getEleveId();
 
   const loadData = useCallback(async () => {
     try {
       const [nivs, prog] = await Promise.all([
-        byThematique ? fetchNiveauxByThematiqueEleve(fetchId) : fetchNiveauxEleve(fetchId),
+        byLecon
+          ? fetchNiveauxByLeconEleve(fetchId)
+          : byThematique
+            ? fetchNiveauxByThematiqueEleve(fetchId)
+            : fetchNiveauxEleve(fetchId),
         fetchProgression(eleveId),
       ]);
-
-      // Vérifier en parallèle quels niveaux ont un QCM
       const qcmResults = await Promise.all(nivs.map(n => fetchQCMEleve(n.id)));
       const withQCM = new Set(nivs.filter((_, i) => qcmResults[i].length > 0).map(n => n.id));
-
       setNiveaux(nivs);
       setProgressionState(prog);
       setNiveauxWithQCM(withQCM);
-
-      // Sélectionner le premier niveau accessible non encore réussi
-      // (un niveau sans QCM ne bloque pas le suivant → on cherche le premier "utile")
       const isUnlockedLocal = (index) => {
         if (index === 0) return true;
         const prevId = nivs[index - 1].id;
-        if (!withQCM.has(prevId)) return true; // pas de QCM → débloqué
+        if (!withQCM.has(prevId)) return true;
         return prog.some(p => p.niveau_id === prevId && p.reussi);
       };
       const firstTarget = nivs.find((n, i) => isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi));
       setSelNiveau(firstTarget || nivs[0] || null);
     } catch(e) { console.error(e); }
     setLoading(false);
-  }, [fetchId, byThematique, eleveId]);
+  }, [fetchId, byThematique, byLecon, eleveId]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
   useEffect(() => {
     if (!selNiveau) return;
-    setShowQCM(false); setShowResult(false); setAnswers({});
+    setShowQCM(false); setShowResult(false); setAnswers({}); setQcmPage(0);
     (async () => {
       try {
         const [c, q] = await Promise.all([fetchContenusEleve(selNiveau.id), fetchQCMEleve(selNiveau.id)]);
@@ -431,12 +636,10 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
   const isUnlocked = (niv, index) => {
     if (index === 0) return true;
     const prevId = niveaux[index - 1].id;
-    // Si le niveau précédent n'a pas de QCM → débloqué automatiquement
     if (!niveauxWithQCM.has(prevId)) return true;
-    // Si le niveau précédent a un QCM → il doit être réussi
     return progression.some(p => p.niveau_id === prevId && p.reussi);
   };
-  const isPassed = (nivId) => progression.some(p => p.niveau_id === nivId && p.reussi);
+  const isPassed    = (nivId) => progression.some(p => p.niveau_id === nivId && p.reussi);
   const getProgForNiveau = (nivId) => progression.find(p => p.niveau_id === nivId);
 
   const handleSubmitQCM = async () => {
@@ -459,191 +662,226 @@ function NiveauxView({ fetchId, byThematique, stepperTitle, onBack }) {
     if (idx < niveaux.length - 1) setSelNiveau(niveaux[idx + 1]);
   };
 
-  if (loading) return <div style={S.empty}>Chargement...</div>;
+  if (loading) return <div style={NS.empty}>Chargement...</div>;
+
+  const passedCount = niveaux.filter(n => isPassed(n.id)).length;
+  const totalPct    = niveaux.length > 0 ? Math.round((passedCount / niveaux.length) * 100) : 0;
+  const selIdx      = selNiveau ? niveaux.indexOf(selNiveau) : -1;
+  const isLocked    = selNiveau && selIdx >= 0 && !isUnlocked(selNiveau, selIdx);
 
   return (
     <div>
       <ModuleBgLetters />
-      <button style={S.backBtn} onClick={onBack}>
-        <IconBack /> Retour
-      </button>
+      <button style={NS.backBtn} onClick={onBack}><IconBack /> Retour</button>
 
-      <div className="portail-module-layout">
-        {/* ─── Stepper ─── */}
-        <div className="portail-module-stepper">
-          <div className="portail-stepper-title" style={S.stepperTitle}>{stepperTitle}</div>
-          {niveaux.map((n, i) => {
-            const unlocked = isUnlocked(n, i);
-            const passed = isPassed(n.id);
-            const active = selNiveau?.id === n.id;
-            const prog = getProgForNiveau(n.id);
+      {/* Zone 1 — Barre de progression globale */}
+      {niveaux.length > 0 && (
+        <div style={NS.progressHeader}>
+          <div style={NS.progressLeft}>
+            <span style={NS.progressTitle}>{stepperTitle || 'Mon cours'}</span>
+            <span style={NS.progressBadge}>{passedCount} / {niveaux.length} niveau{niveaux.length > 1 ? 'x' : ''}</span>
+          </div>
+          <div style={NS.progressBarWrap}>
+            <div style={NS.progressBarFill(totalPct)} />
+          </div>
+          <span style={NS.progressPct}>{totalPct}%</span>
+        </div>
+      )}
+
+      {/* Zone 2 — Navigation horizontale par chips */}
+      <div style={NS.chipsRow}>
+        {niveaux.map((n, i) => {
+          const unlocked = isUnlocked(n, i);
+          const passed   = isPassed(n.id);
+          const active   = selNiveau?.id === n.id;
+          return (
+            <button key={n.id} style={NS.chip(active, passed, !unlocked)}
+              onClick={() => { if (unlocked) setSelNiveau(n); }}
+              disabled={!unlocked}>
+              {passed ? '✓' : !unlocked ? '🔒' : n.ordre}{' '}
+              <span style={NS.chipLabel}>{n.titre}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Zone 3 & 4 — Contenu principal */}
+      {isLocked ? (
+        <div style={NS.lockedCard}>
+          <div style={NS.lockedIcon}>🔒</div>
+          <div style={NS.lockedTitle}>Ce niveau est verrouillé</div>
+          <p style={NS.lockedDesc}>Réussis le niveau précédent pour débloquer ce contenu.</p>
+          <button style={NS.lockedPrevBtn} onClick={() => { if (selIdx > 0) setSelNiveau(niveaux[selIdx - 1]); }}>
+            ← Niveau précédent
+          </button>
+        </div>
+
+      ) : showResult ? (
+        <div style={NS.resultCard(score >= (selNiveau.score_requis || 80))}>
+          <div style={NS.resultEmoji}>{score >= (selNiveau.score_requis || 80) ? '🎉' : '😔'}</div>
+          <div style={NS.resultTitle(score >= (selNiveau.score_requis || 80))}>
+            {score >= (selNiveau.score_requis || 80) ? 'Félicitations !' : 'Pas encore...'}
+          </div>
+          <div style={NS.resultScore}>
+            Tu as obtenu <strong>{score}%</strong> (requis : {selNiveau.score_requis || 80}%)
+          </div>
+          <div style={NS.resultBtns}>
+            {score >= (selNiveau.score_requis || 80) ? (
+              selIdx < niveaux.length - 1 ? (
+                <button style={NS.resultBtn(true)} onClick={handleNextLevel}>Niveau suivant →</button>
+              ) : (
+                <button style={NS.resultBtn(true)} onClick={onBack}>Terminé ! ✓</button>
+              )
+            ) : (
+              <>
+                <button style={NS.resultBtn(false)} onClick={() => { setShowQCM(false); setShowResult(false); }}>Revoir le cours</button>
+                <button style={NS.resultBtn(true)} onClick={() => { setShowQCM(true); setShowResult(false); setAnswers({}); setQcmPage(0); }}>Réessayer</button>
+              </>
+            )}
+          </div>
+        </div>
+
+      ) : showQCM && questions.length > 0 ? (
+        <div style={NS.qcmCard}>
+          {/* Dots de progression */}
+          <div style={NS.qcmDotsRow}>
+            {questions.map((_, i) => (
+              <span key={i} style={NS.qcmDot((answers[i] || []).length > 0, i === qcmPage)} />
+            ))}
+          </div>
+          <div style={NS.qcmCounter}>Question {qcmPage + 1} / {questions.length}</div>
+          <div style={NS.qcmQuestion}>{questions[qcmPage]?.question}</div>
+          {(questions[qcmPage]?.choix || []).map((ch, ci) => {
+            const selected = (answers[qcmPage] || []).includes(ci);
             return (
-              <div key={n.id} style={S.step(active, !unlocked)} onClick={() => unlocked && setSelNiveau(n)}>
-                <div style={S.stepIcon(passed, active)}>
-                  {passed ? '✓' : !unlocked ? '🔒' : n.ordre}
-                </div>
-                <div>
-                  <div style={S.stepTitle(active)}>{n.titre}</div>
-                  {prog?.score != null && (
-                    <div style={S.stepScore}>Score : {prog.score}% · {prog.tentatives} tentative{prog.tentatives > 1 ? 's' : ''}</div>
-                  )}
-                </div>
-              </div>
+              <button key={ci} style={NS.answerBtn(selected)}
+                onClick={() => {
+                  const prev = answers[qcmPage] || [];
+                  setAnswers({ ...answers, [qcmPage]: selected ? prev.filter(v => v !== ci) : [...prev, ci] });
+                }}>
+                <span style={NS.answerLetter(selected)}>{String.fromCharCode(65 + ci)}</span>
+                {ch}
+              </button>
             );
           })}
+          <div style={NS.qcmNavRow}>
+            <button style={NS.qcmNavBtn(false, qcmPage === 0)}
+              onClick={() => setQcmPage(p => p - 1)} disabled={qcmPage === 0}>
+              ← Précédente
+            </button>
+            {qcmPage < questions.length - 1 ? (
+              <button style={NS.qcmNavBtn(true, !(answers[qcmPage] || []).length)}
+                onClick={() => setQcmPage(p => p + 1)}
+                disabled={!(answers[qcmPage] || []).length}>
+                Suivante →
+              </button>
+            ) : (
+              <button style={NS.qcmNavBtn(true, questions.some((_, qi) => !(answers[qi] || []).length))}
+                disabled={questions.some((_, qi) => !(answers[qi] || []).length)}
+                onClick={handleSubmitQCM}>
+                ✅ Valider
+              </button>
+            )}
+          </div>
+          <button style={NS.qcmBackLink} onClick={() => { setShowQCM(false); setQcmPage(0); }}>
+            ← Retour au cours
+          </button>
         </div>
 
-        {/* ─── Contenu principal ─── */}
-        <div className="portail-module-main">
-          {selNiveau && !isUnlocked(selNiveau, niveaux.indexOf(selNiveau)) ? (
-            <div style={S.locked}>
-              <div style={S.lockedIcon}>🔒</div>
-              <div style={{ fontSize:18, fontWeight:600, color:'var(--p-fg)', marginBottom:8 }}>Niveau verrouillé</div>
-              <p>Réussissez le niveau précédent pour débloquer celui-ci.</p>
+      ) : selNiveau ? (
+        <div style={NS.mainCard}>
+          {/* Hero — image ou dégradé coloré */}
+          {selNiveau.image_url ? (
+            <div style={NS.heroContainer}>
+              <img src={selNiveau.image_url} alt={selNiveau.titre} style={NS.heroImg} />
+              <div style={NS.heroOverlay} />
+              <div style={NS.heroTitleOnImg}>{selNiveau.titre}</div>
             </div>
-          ) : selNiveau && !showQCM && !showResult ? (
-            <>
-              {selNiveau.image_url && (
-                <img src={selNiveau.image_url} alt={selNiveau.titre}
-                  style={{ width:'100%', height:180, objectFit:'cover', borderRadius:'var(--p-radius)', marginBottom:20, display:'block' }} />
-              )}
-              <h2 style={S.sectionTitle}>{selNiveau.titre}</h2>
-              {selNiveau.description && <p style={S.sectionDesc}>{selNiveau.description}</p>}
-              {contenus.length === 0 && <div style={S.empty}>Aucun contenu disponible pour ce niveau.</div>}
-              {contenus.map(c => (
-                <div key={c.id} style={S.contentCard}>
-                  {c.type !== 'pdf' && (
-                    <div style={S.contentHeader}>
-                      <span style={S.contentType(TYPE_COLORS[c.type] || '#aaa')}>{TYPE_LABELS[c.type] || c.type}</span>
-                      <span style={S.contentTitle}>{c.titre}</span>
-                    </div>
-                  )}
-                  {c.type === 'video' && getYouTubeId(c.contenu) && (
-                    <iframe style={S.videoFrame} src={`https://www.youtube.com/embed/${getYouTubeId(c.contenu)}`}
-                      title={c.titre} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                  )}
-                  {c.type === 'pdf' && (
-                    <div style={{ padding:'14px 18px' }}>
-                      <a href={c.contenu} target="_blank" rel="noreferrer" style={{
-                        display:'flex', alignItems:'center', justifyContent:'space-between',
-                        padding:'14px 18px', borderRadius:'var(--p-radius-sm)',
-                        background:'rgba(10,132,255,0.06)', border:'1px solid rgba(10,132,255,0.18)', textDecoration:'none', gap:12,
-                      }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                          <span style={{ fontSize:32, flexShrink:0 }}>📄</span>
-                          <div>
-                            <div style={{ fontSize:14, fontWeight:600, color:'var(--p-fg)' }}>{c.titre}</div>
-                            <div style={{ fontSize:12, color:'var(--p-fg-mid)', marginTop:2 }}>Appuyez pour ouvrir le document</div>
-                          </div>
-                        </div>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--p-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                        </svg>
-                      </a>
-                    </div>
-                  )}
-                  {c.type === 'texte' && (
-                    <div
-                      className="portail-rich-text"
-                      style={S.textContent}
-                      {...(c.contenu?.startsWith('<')
-                        ? { dangerouslySetInnerHTML: { __html: c.contenu } }
-                        : { children: c.contenu }
-                      )}
-                    />
-                  )}
-                  {(c.type === 'word' || c.type === 'ppt') && (
-                    <iframe
-                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(c.contenu)}`}
-                      style={{
-                        width: '100%',
-                        border: 'none',
-                        borderRadius: '0 0 var(--p-radius) var(--p-radius)',
-                        ...(c.type === 'ppt'
-                          ? { aspectRatio: '16/9' }
-                          : { height: '600px' }),
-                      }}
-                      title={c.titre}
-                      allowFullScreen
-                    />
-                  )}
-                </div>
-              ))}
-              {questions.length > 0 && !isPassed(selNiveau.id) && (
-                <button style={S.qcmBtn} onClick={() => { setShowQCM(true); setAnswers({}); }}>
-                  📝 Passer le QCM ({questions.length} question{questions.length > 1 ? 's' : ''})
-                </button>
-              )}
-              {isPassed(selNiveau.id) && (
-                <div style={{ ...S.result(true), marginTop:24, padding:20 }}>
-                  <span style={{ color:'var(--p-green)', fontWeight:600, fontSize:14 }}>✅ Niveau réussi — Score : {getProgForNiveau(selNiveau.id)?.score}%</span>
-                </div>
-              )}
-            </>
-          ) : showQCM && !showResult ? (
-            <>
-              <h2 style={S.sectionTitle}>QCM — {selNiveau.titre}</h2>
-              <p style={S.sectionDesc}>Répondez à toutes les questions. Score requis : {selNiveau.score_requis || 80}%</p>
-              {questions.map((q, qi) => (
-                <div key={q.id} style={S.qcmCard}>
-                  <div style={S.qcmNum}>Question {qi + 1} / {questions.length}</div>
-                  <div style={S.qcmQ}>{q.question}</div>
-                  {(q.choix || []).map((ch, ci) => {
-                    const selected = (answers[qi] || []).includes(ci);
-                    return (
-                      <div key={ci} style={S.choiceLabel(selected, false, false)}
-                        onClick={() => {
-                          const prev = answers[qi] || [];
-                          setAnswers({ ...answers, [qi]: selected ? prev.filter(v => v !== ci) : [...prev, ci] });
-                        }}>
-                        <div style={{ ...S.choiceRadio(selected), borderRadius:4 }}>
-                          {selected && <div style={{ ...S.choiceRadioDot, borderRadius:2 }} />}
-                        </div>
-                        <span>{ch}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-              <div style={{ display:'flex', gap:12, marginTop:8 }}>
-                <button style={S.resultBtn(false)} onClick={() => setShowQCM(false)}>← Retour au cours</button>
-                <button style={{ ...S.qcmBtn, opacity: questions.some((_, qi) => !(answers[qi] || []).length) ? .5 : 1 }}
-                  disabled={questions.some((_, qi) => !(answers[qi] || []).length)}
-                  onClick={handleSubmitQCM}>
-                  Valider mes réponses
-                </button>
-              </div>
-            </>
-          ) : showResult ? (
-            <div style={S.result(score >= (selNiveau.score_requis || 80))}>
-              <div style={S.resultIcon}>{score >= (selNiveau.score_requis || 80) ? '🎉' : '😔'}</div>
-              <div style={S.resultTitle(score >= (selNiveau.score_requis || 80))}>
-                {score >= (selNiveau.score_requis || 80) ? 'Félicitations !' : 'Pas encore...'}
-              </div>
-              <div style={S.resultScore}>Vous avez obtenu <strong>{score}%</strong> (requis : {selNiveau.score_requis || 80}%)</div>
+          ) : (
+            <div style={NS.heroGradient(selIdx >= 0 ? selIdx : 0)}>
+              <div style={NS.heroGradientBadge(selIdx >= 0 ? selIdx : 0)}>📖</div>
               <div>
-                {score >= (selNiveau.score_requis || 80) ? (
-                  <>
-                    <p style={{ color:'var(--p-fg-mid)', fontSize:14, marginBottom:16 }}>Le niveau suivant est maintenant débloqué !</p>
-                    {niveaux.indexOf(selNiveau) < niveaux.length - 1 ? (
-                      <button style={S.resultBtn(true)} onClick={handleNextLevel}>Passer au niveau suivant →</button>
-                    ) : (
-                      <button style={S.resultBtn(true)} onClick={onBack}>Terminé ! ✓</button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p style={{ color:'var(--p-fg-mid)', fontSize:14, marginBottom:16 }}>Révisez le contenu et réessayez !</p>
-                    <button style={S.resultBtn(false)} onClick={() => { setShowQCM(false); setShowResult(false); }}>Revoir le cours</button>
-                    <button style={S.resultBtn(true)} onClick={() => { setShowQCM(true); setShowResult(false); setAnswers({}); }}>Réessayer le QCM</button>
-                  </>
+                <div style={NS.heroGradientTitle}>{selNiveau.titre}</div>
+                {selNiveau.description && <div style={NS.heroGradientDesc}>{selNiveau.description}</div>}
+              </div>
+            </div>
+          )}
+          {/* Description si image de couverture */}
+          {selNiveau.image_url && selNiveau.description && (
+            <p style={{ padding:'14px 20px 0', margin:0, fontSize:14, color:'var(--p-fg-mid)', lineHeight:1.6 }}>
+              {selNiveau.description}
+            </p>
+          )}
+
+          {/* Liste des contenus */}
+          <div style={NS.contentBody}>
+            {contenus.length === 0 && (
+              <div style={{ textAlign:'center', padding:'32px 0', color:'var(--p-fg-mid)', fontSize:14 }}>
+                Aucun contenu disponible pour ce niveau.
+              </div>
+            )}
+            {contenus.map(c => (
+              <div key={c.id} style={NS.contentItem}>
+                {c.type !== 'pdf' && (
+                  <div style={NS.contentItemHeader}>
+                    <span style={NS.contentTypeBadge(TYPE_COLORS[c.type] || '#aaa')}>{TYPE_LABELS[c.type] || c.type}</span>
+                    <span style={NS.contentItemTitle}>{c.titre}</span>
+                  </div>
+                )}
+                {c.type === 'video' && getYouTubeId(c.contenu) && (
+                  <iframe style={NS.videoFrame}
+                    src={`https://www.youtube.com/embed/${getYouTubeId(c.contenu)}`}
+                    title={c.titre} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                )}
+                {c.type === 'pdf' && (
+                  <div style={{ padding:'12px 14px' }}>
+                    <a href={c.contenu} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderRadius:'var(--p-radius-sm)', background:'rgba(10,132,255,0.06)', border:'1px solid rgba(10,132,255,0.18)', textDecoration:'none', gap:12 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                        <span style={{ fontSize:30, flexShrink:0 }}>📄</span>
+                        <div>
+                          <div style={{ fontSize:14, fontWeight:600, color:'var(--p-fg)' }}>{c.titre}</div>
+                          <div style={{ fontSize:12, color:'var(--p-fg-mid)', marginTop:2 }}>Appuyer pour ouvrir le document</div>
+                        </div>
+                      </div>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--p-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                      </svg>
+                    </a>
+                  </div>
+                )}
+                {c.type === 'texte' && (
+                  <div className="portail-rich-text" style={NS.textContent}
+                    {...(c.contenu?.startsWith('<')
+                      ? { dangerouslySetInnerHTML: { __html: c.contenu } }
+                      : { children: c.contenu }
+                    )} />
+                )}
+                {(c.type === 'word' || c.type === 'ppt') && (
+                  <iframe
+                    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(c.contenu)}`}
+                    style={{ width:'100%', border:'none', ...(c.type === 'ppt' ? { aspectRatio:'16/9' } : { height:'600px' }) }}
+                    title={c.titre} allowFullScreen />
                 )}
               </div>
-            </div>
-          ) : null}
+            ))}
+
+            {/* Bandeau succès */}
+            {isPassed(selNiveau.id) && (
+              <div style={NS.successBanner}>
+                ✅ Tu as déjà réussi ce niveau ! Score : {getProgForNiveau(selNiveau.id)?.score}%
+              </div>
+            )}
+
+            {/* Bouton QCM */}
+            {questions.length > 0 && !isPassed(selNiveau.id) && (
+              <button style={NS.qcmCTA} onClick={() => { setShowQCM(true); setAnswers({}); setQcmPage(0); }}>
+                🎯 Passer le QCM · {questions.length} question{questions.length > 1 ? 's' : ''}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

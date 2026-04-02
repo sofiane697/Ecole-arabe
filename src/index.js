@@ -10,6 +10,12 @@ import Messages from './admin/Messages';
 import Cours from './admin/Cours';
 import Classes from './admin/Classes';
 import Eleves from './admin/Eleves';
+import Enseignants from './admin/Enseignants';
+import EnseignantLogin      from './enseignant/EnseignantLogin';
+import EnseignantApp        from './enseignant/EnseignantApp';
+import EnseignantDashboard  from './enseignant/EnseignantDashboard';
+import EnseignantMesClasses from './enseignant/EnseignantMesClasses';
+import EnseignantClasse     from './enseignant/EnseignantClasse';
 import PortailLogin from './portail/PortailLogin';
 import PortailApp from './portail/PortailApp';
 import PortailDashboard from './portail/PortailDashboard';
@@ -34,6 +40,15 @@ root.render(
         <Route path="cours" element={<Cours />} />
         <Route path="classes" element={<Classes />} />
         <Route path="eleves" element={<Eleves />} />
+        <Route path="enseignants" element={<Enseignants />} />
+      </Route>
+
+      {/* Portail enseignant */}
+      <Route path="/enseignant/login" element={<EnseignantLogin />} />
+      <Route path="/enseignant" element={<EnseignantApp />}>
+        <Route index element={<EnseignantDashboard />} />
+        <Route path="classes" element={<EnseignantMesClasses />} />
+        <Route path="classe/:id" element={<EnseignantClasse />} />
       </Route>
 
       {/* Portail élève */}
@@ -42,6 +57,7 @@ root.render(
         <Route index element={<PortailDashboard />} />
         <Route path="module/:id" element={<PortailModule />} />
         <Route path="module/:moduleId/thematique/:thId" element={<PortailModule />} />
+        <Route path="module/:moduleId/thematique/:thId/lecon/:leconId" element={<PortailModule />} />
         <Route path="devoirs" element={<PortailDevoirs />} />
         <Route path="resultats" element={<PortailResultats />} />
         <Route path="observations" element={<PortailObservations />} />

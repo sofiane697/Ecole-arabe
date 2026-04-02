@@ -3,7 +3,8 @@ import RichTextEditor from './RichTextEditor';
 import {
   fetchModules, createModule, updateModule, deleteModule,
   fetchThematiques, createThematique, updateThematique, deleteThematique,
-  fetchNiveaux, fetchNiveauxByThematique, createNiveau, updateNiveau, deleteNiveau,
+  fetchLecons, createLecon, updateLecon, deleteLecon,
+  fetchNiveaux, fetchNiveauxByThematique, fetchNiveauxByLecon, createNiveau, updateNiveau, deleteNiveau,
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
   uploadFile, toSlug, deleteStorageFolder, deleteOldCover,
@@ -125,14 +126,16 @@ function parseQCMCsv(text) {
 
 // ─── Composant principal ─────────────────────────────────────────────────────
 export default function Cours() {
-  const [view, setView]   = useState('modules'); // 'modules' | 'thematiques' | 'niveaux' | 'niveau-detail'
+  const [view, setView]   = useState('modules'); // 'modules' | 'thematiques' | 'lecons' | 'niveaux' | 'niveau-detail'
   const [modules, setModules]       = useState([]);
   const [thematiques, setThematiques] = useState([]);
+  const [lecons, setLecons]         = useState([]);
   const [niveaux, setNiveaux]       = useState([]);
   const [contenus, setContenus]     = useState([]);
   const [questions, setQuestions]   = useState([]);
   const [selModule, setSelModule]   = useState(null);
   const [selThematique, setSelThematique] = useState(null);
+  const [selLecon, setSelLecon]     = useState(null);
   const [selNiveau, setSelNiveau]   = useState(null);
   const [modal, setModal] = useState(null); // { type, data? }
   const [confirm, setConfirm] = useState(null); // { title, message, onConfirm }
@@ -155,8 +158,16 @@ export default function Cours() {
     try { setNiveaux(await fetchNiveaux(modId)); } catch(e) { console.error(e); }
   }, []);
 
+  const loadLecons = useCallback(async (thId) => {
+    try { setLecons(await fetchLecons(thId)); } catch(e) { console.error(e); }
+  }, []);
+
   const loadNiveauxByThematique = useCallback(async (thId) => {
     try { setNiveaux(await fetchNiveauxByThematique(thId)); } catch(e) { console.error(e); }
+  }, []);
+
+  const loadNiveauxByLecon = useCallback(async (leconId) => {
+    try { setNiveaux(await fetchNiveauxByLecon(leconId)); } catch(e) { console.error(e); }
   }, []);
 
   const loadContenus = useCallback(async (nivId) => {
@@ -176,8 +187,27 @@ export default function Cours() {
 
   const openThematique = (th) => {
     setSelThematique(th);
-    setView('niveaux');
-    loadNiveauxByThematique(th.id);
+    setView('lecons');
+    loadLecons(th.id);
+  };
+
+  const openLecon = async (lec) => {
+    setSelLecon(lec);
+    setLoading(true);
+    try {
+      let nivs = await fetchNiveauxByLecon(lec.id);
+      if (nivs.length === 0) {
+        await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, lecon_id: lec.id, titre: lec.titre, ordre: 1, score_requis: 80 });
+        nivs = await fetchNiveauxByLecon(lec.id);
+      }
+      const niv = nivs[0];
+      setSelNiveau(niv);
+      setView('niveau-detail');
+      setTab('contenus');
+      loadContenus(niv.id);
+      loadQuestions(niv.id);
+    } catch(e) { alert(e.message); }
+    setLoading(false);
   };
 
   const openNiveau = (niv) => {
@@ -189,8 +219,12 @@ export default function Cours() {
   };
 
   const goBack = () => {
-    if (view === 'niveau-detail') { setView('niveaux'); setSelNiveau(null); }
+    if (view === 'niveau-detail') {
+      if (selLecon) { setView('lecons'); setSelNiveau(null); loadLecons(selThematique.id); }
+      else { setView('niveaux'); setSelNiveau(null); }
+    }
     else if (view === 'niveaux') { setView('thematiques'); setSelNiveau(null); loadThematiques(selModule.id); }
+    else if (view === 'lecons') { setView('thematiques'); setSelLecon(null); loadThematiques(selModule.id); }
     else if (view === 'thematiques') { setView('modules'); setSelModule(null); setSelThematique(null); }
   };
 
@@ -198,8 +232,8 @@ export default function Cours() {
   const handleSaveModule = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateModule(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, actif: data.actif }); }
-      else { await createModule({ titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || modules.length + 1, actif: true }); }
+      if (data.id) { await updateModule(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, actif: data.actif, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
+      else { await createModule({ titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || modules.length + 1, actif: true, niveaux_scolaires_ids: data.niveaux_scolaires_ids || [] }); }
       await loadModules();
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -251,8 +285,9 @@ export default function Cours() {
     setLoading(true);
     try {
       if (data.id) { await updateNiveau(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, score_requis: data.score_requis }); }
-      else { await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
-      if (selThematique) { await loadNiveauxByThematique(selThematique.id); }
+      else { await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, lecon_id: selLecon?.id || null, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
+      if (selLecon) { await loadNiveauxByLecon(selLecon.id); }
+      else if (selThematique) { await loadNiveauxByThematique(selThematique.id); }
       else { await loadNiveaux(selModule.id); }
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -268,7 +303,34 @@ export default function Cours() {
         try {
           await deleteNiveau(id);
           await deleteStorageFolder(`${toSlug(selModule.titre)}/${toSlug(titre)}`).catch(() => {});
-          await loadNiveaux(selModule.id);
+          if (selLecon) { await loadNiveauxByLecon(selLecon.id); }
+          else if (selThematique) { await loadNiveauxByThematique(selThematique.id); }
+          else { await loadNiveaux(selModule.id); }
+        } catch(e) { alert(e.message); }
+      },
+    });
+  };
+
+  const handleSaveLecon = async (data) => {
+    setLoading(true);
+    try {
+      if (data.id) { await updateLecon(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre }); }
+      else { await createLecon({ thematique_id: selThematique.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || lecons.length + 1 }); }
+      await loadLecons(selThematique.id);
+      setModal(null);
+    } catch(e) { alert(e.message); }
+    setLoading(false);
+  };
+
+  const handleDeleteLecon = (id, titre) => {
+    setConfirm({
+      title: 'Supprimer cette leçon ?',
+      message: <span>La leçon <strong>"{titre}"</strong> et tous ses niveaux (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await deleteLecon(id);
+          await loadLecons(selThematique.id);
         } catch(e) { alert(e.message); }
       },
     });
@@ -353,6 +415,13 @@ export default function Cours() {
                 <div style={S.cardFooter}>
                   <span style={S.badge('var(--a-gold)')}>Ordre : {m.ordre}</span>
                   <span style={S.badge(m.actif ? 'var(--a-green)' : 'var(--a-red)')}>{m.actif ? 'Actif' : 'Inactif'}</span>
+                  {m.niveaux_scolaires_ids?.length > 0
+                    ? m.niveaux_scolaires_ids.map(nsId => {
+                        const ns = niveauxScolaires.find(n => n.id === nsId);
+                        return ns ? <span key={nsId} style={S.badge('var(--a-blue)')}>{ns.nom}</span> : null;
+                      })
+                    : <span style={S.badge('var(--a-red)')}>Non visible</span>
+                  }
                 </div>
               </div>
             </div>
@@ -433,13 +502,67 @@ export default function Cours() {
     );
   }
 
-  // ─── VUE NIVEAUX ───────────────────────────────────────────────────
-  if (view === 'niveaux') {
+  // ─── VUE LEÇONS ────────────────────────────────────────────────────
+  if (view === 'lecons') {
     return (
       <div style={S.page}>
         <div style={S.breadcrumb} onClick={goBack}>
           <IconBack /> <span style={S.breadcrumbText}>Retour aux thématiques</span>
           <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre}</span>
+        </div>
+
+        <div style={S.grid}>
+          {lecons.map(lec => (
+            <div key={lec.id} style={{ ...S.card, padding:0, overflow:'hidden' }} onClick={() => openLecon(lec)}
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
+              {lec.image_url ? (
+                <div style={{ width:'100%', height:140, overflow:'hidden', position:'relative', background:'var(--a-bg)' }}>
+                  <img src={lec.image_url} alt={lec.titre} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
+                </div>
+              ) : (
+                <div style={{ width:'100%', height:80, background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>
+                  📖
+                </div>
+              )}
+              <div style={{ padding:16 }}>
+                <div style={S.cardHeader}>
+                  <h3 style={S.cardTitle}>{lec.titre}</h3>
+                  <div style={S.actions}>
+                    <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'lecon', data:lec }); }}><IconEdit /></button>
+                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteLecon(lec.id, lec.titre); }}><IconTrash /></button>
+                  </div>
+                </div>
+                {lec.description && <p style={S.cardDesc}>{lec.description}</p>}
+                <div style={S.cardFooter}>
+                  <span style={S.badge('var(--a-gold)')}>Ordre : {lec.ordre}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div style={S.addCard} onClick={() => setModal({ type:'lecon' })}
+            onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
+            <IconPlus /> Ajouter une leçon
+          </div>
+        </div>
+
+        {modal?.type === 'lecon' && (
+          <LeconModal data={modal.data} onSave={handleSaveLecon} onClose={() => setModal(null)} loading={loading} moduleTitre={selModule?.titre} thematiqueTitre={selThematique?.titre} />
+        )}
+        {confirm && <ConfirmModal {...confirm} onCancel={() => setConfirm(null)} />}
+      </div>
+    );
+  }
+
+  // ─── VUE NIVEAUX ───────────────────────────────────────────────────
+  if (view === 'niveaux') {
+    return (
+      <div style={S.page}>
+        <div style={S.breadcrumb} onClick={goBack}>
+          <IconBack /> <span style={S.breadcrumbText}>Retour aux leçons</span>
+          <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre} → {selLecon?.titre}</span>
         </div>
 
         {niveaux.map(n => (
@@ -476,7 +599,11 @@ export default function Cours() {
     <div style={S.page}>
       <div style={S.breadcrumb} onClick={goBack}>
         <IconBack /> <span style={S.breadcrumbText}>Retour aux niveaux</span>
-        <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre} → {selNiveau?.titre}</span>
+        <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>
+          {selLecon
+            ? `${selModule?.titre} → ${selThematique?.titre} → ${selLecon?.titre}`
+            : `${selModule?.titre} → ${selThematique?.titre} → ${selNiveau?.titre}`}
+        </span>
       </div>
 
       <div style={S.tabs}>
@@ -577,6 +704,18 @@ function ModuleModal({ data, onSave, onClose, loading }) {
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState('');
+  const [niveauxScolairesList, setNiveauxScolairesList] = useState([]);
+  const [selectedNsIds, setSelectedNsIds] = useState(data?.niveaux_scolaires_ids || []);
+
+  useEffect(() => {
+    fetchNiveauxScolaires().then(setNiveauxScolairesList).catch(() => {});
+  }, []);
+
+  const toggleNs = (id) => {
+    setSelectedNsIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
 
   const handleImageFile = async (file) => {
     if (!file) return;
@@ -630,6 +769,29 @@ function ModuleModal({ data, onSave, onClose, loading }) {
         )}
       </div>
 
+      {/* Niveaux scolaires autorisés */}
+      <div style={S.field}>
+        <label style={S.label}>Niveaux scolaires autorisés</label>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4 }}>
+          {niveauxScolairesList.map(ns => (
+            <label key={ns.id} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer',
+                background: selectedNsIds.includes(ns.id) ? 'rgba(191,138,48,.13)' : 'var(--a-bg)',
+                border:`1px solid ${selectedNsIds.includes(ns.id) ? 'var(--a-gold)' : 'var(--a-border)'}`,
+                borderRadius:'var(--a-radius-sm)', padding:'4px 10px', fontSize:13, transition:'all .15s',
+                userSelect:'none' }}>
+              <input type="checkbox" checked={selectedNsIds.includes(ns.id)} onChange={() => toggleNs(ns.id)} style={{ accentColor:'var(--a-gold)', cursor:'pointer' }} />
+              {ns.nom}
+            </label>
+          ))}
+          {niveauxScolairesList.length === 0 && (
+            <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>Chargement…</span>
+          )}
+        </div>
+        {selectedNsIds.length === 0 && niveauxScolairesList.length > 0 && (
+          <div style={{ color:'var(--a-red)', fontSize:12, marginTop:6 }}>⚠ Aucun niveau sélectionné → module invisible pour tous les élèves (obligatoire)</div>
+        )}
+      </div>
+
       <div style={{ display:'flex', gap:12 }}>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Actif</label>
@@ -640,7 +802,7 @@ function ModuleModal({ data, onSave, onClose, loading }) {
       </div>
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, actif })}>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, actif, niveaux_scolaires_ids: selectedNsIds })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -748,6 +910,77 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
         <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, niveaux_scolaires_ids: selectedNsIds })}>
+          {loading ? '...' : 'Enregistrer'}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+function LeconModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTitre }) {
+  const [titre, setTitre] = useState(data?.titre || '');
+  const [description, setDescription] = useState(data?.description || '');
+  const [image_url, setImageUrl] = useState(data?.image_url || '');
+  const [ordre, setOrdre] = useState(data?.ordre || 1);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+
+  const handleImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setUploadErr('Fichier non valide (JPG, PNG, WebP uniquement)'); return; }
+    if (file.size > 5 * 1024 * 1024) { setUploadErr('Image trop lourde (max 5 Mo)'); return; }
+    setUploadErr('');
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const folder = `${toSlug(moduleTitre)}/${toSlug(thematiqueTitre)}/${toSlug(titre)}`;
+      await deleteOldCover(folder).catch(() => {});
+      const url = await uploadFile(file, `${folder}/cover.${ext}`);
+      setImageUrl(url);
+    } catch(e) { setUploadErr(e.message); }
+    setUploading(false);
+  };
+
+  return (
+    <Modal title={data ? 'Modifier la leçon' : 'Nouvelle leçon'} onClose={onClose}>
+      <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Leçon 1 - Les voyelles" /></div>
+      <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la leçon..." /></div>
+
+      <div style={S.field}>
+        <label style={S.label}>Image de couverture</label>
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
+          onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent', position:'relative', overflow:'hidden' }}>
+          {image_url ? (
+            <div style={{ position:'relative' }}>
+              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
+              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
+                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            </div>
+          )}
+        </div>
+        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {image_url && (
+          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
+            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          </div>
+        )}
+      </div>
+
+      <div style={S.field}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
+      <div style={S.btnRow}>
+        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -892,8 +1125,8 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
       </div>
 
       <div style={S.field}>
-        <label style={S.label}>Titre *</label>
-        <input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Titre du contenu" />
+        <label style={S.label}>Titre</label>
+        <input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Titre du contenu (optionnel)" />
       </div>
 
       {/* ─── Zone fichier : PDF / Word / PowerPoint — drag & drop + URL ─── */}
@@ -988,7 +1221,7 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
 
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim() || !contenu.replace(/<[^>]*>/g, '').trim()} onClick={() => onSave({ id: data?.id, type, titre, contenu, ordre })}>
+        <button style={S.btnSave} disabled={loading || uploading || !contenu.replace(/<[^>]*>/g, '').trim()} onClick={() => onSave({ id: data?.id, type, titre, contenu, ordre })}>
           {loading ? 'Enregistrement...' : 'Enregistrer'}
         </button>
       </div>

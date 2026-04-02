@@ -81,6 +81,15 @@ export async function fetchQCMEleve(niveauId) {
   return res.json();
 }
 
+/** Retourne un Set des niveau_ids qui ont au moins une question QCM — 1 seul appel batch */
+export async function fetchQCMExistenceForNiveaux(niveauIds) {
+  if (!niveauIds.length) return new Set();
+  const ids = niveauIds.join(',');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=in.(${ids})&select=niveau_id`, { headers: ANON_HEADERS });
+  const data = await res.json();
+  return new Set((data || []).map(q => q.niveau_id));
+}
+
 /** Toutes les thématiques d'un module (sans filtre) — pour détecter si le module est structuré en thématiques */
 export async function fetchAllThematiquesEleve(moduleId) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`, { headers: ANON_HEADERS });
@@ -113,6 +122,18 @@ export async function fetchEleveNiveauScolaireId(eleveId) {
 
 export async function fetchNiveauxByThematiqueEleve(thId) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?thematique_id=eq.${thId}&order=ordre`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function fetchLeconsEleve(thId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${thId}&order=ordre`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function fetchNiveauxByLeconEleve(leconId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?lecon_id=eq.${leconId}&order=ordre`, { headers: ANON_HEADERS });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }

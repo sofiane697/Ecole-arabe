@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchModulesEleve, fetchNiveauxEleve, fetchProgression } from './supabasePortail';
+import { fetchModulesEleve, fetchNiveauxEleve, fetchProgression, fetchQCMExistenceForNiveaux, fetchEleveNiveauScolaireId } from './supabasePortail';
 
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
@@ -175,14 +175,37 @@ export default function PortailDashboard() {
   const [modules, setModules] = useState([]);
   const [niveauxMap, setNiveauxMap] = useState({});
   const [progression, setProgression] = useState([]);
+  const [qcmNiveauxIds, setQcmNiveauxIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        let eleveId;
-        try { eleveId = JSON.parse(sessionStorage.getItem('eleve_user'))?.id; } catch {}
-        const [mods, prog] = await Promise.all([fetchModulesEleve(), fetchProgression(eleveId)]);
+        let eleveId, niveauScolaireId;
+        try {
+          const user = JSON.parse(sessionStorage.getItem('eleve_user'));
+          eleveId = user?.id;
+          niveauScolaireId = user?.niveau_scolaire_id ?? null;
+        } catch {}
+        // Rafraîchir niveau_scolaire_id depuis la DB au cas où il a changé
+        if (eleveId) {
+          const freshId = await fetchEleveNiveauScolaireId(eleveId).catch(() => niveauScolaireId);
+          if (freshId !== niveauScolaireId) {
+            niveauScolaireId = freshId;
+            try {
+              const user = JSON.parse(sessionStorage.getItem('eleve_user'));
+              if (user) { user.niveau_scolaire_id = freshId; sessionStorage.setItem('eleve_user', JSON.stringify(user)); }
+            } catch {}
+          }
+        }
+        const [allMods, prog] = await Promise.all([fetchModulesEleve(), fetchProgression(eleveId)]);
+        // Filtrage client : garder les modules dont niveaux_scolaires_ids contient le niveau de l'élève
+        // Si niveaux_scolaires_ids est vide ou absent → visible par tous
+        const mods = allMods.filter(m => {
+          if (!Array.isArray(m.niveaux_scolaires_ids) || m.niveaux_scolaires_ids.length === 0) return false;
+          if (!niveauScolaireId) return false;
+          return m.niveaux_scolaires_ids.includes(niveauScolaireId);
+        });
         setModules(mods);
         setProgression(prog);
         // Charger niveaux pour chaque module
@@ -191,6 +214,11 @@ export default function PortailDashboard() {
           try { nivMap[m.id] = await fetchNiveauxEleve(m.id); } catch { nivMap[m.id] = []; }
         }));
         setNiveauxMap(nivMap);
+        const allNivIds = Object.values(nivMap).flat().map(n => n.id);
+        if (allNivIds.length > 0) {
+          const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
+          setQcmNiveauxIds(qcmIds);
+        }
       } catch(e) { console.error(e); }
       setLoading(false);
     })();
@@ -220,13 +248,14 @@ export default function PortailDashboard() {
           {modules.map((m, index) => {
             const palette = CARD_PASTELS[index % CARD_PASTELS.length];
             const nivs = niveauxMap[m.id] || [];
-            const total = nivs.length;
-            const reussis = nivs.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
-            const pct = total > 0 ? Math.round((reussis / total) * 100) : 0;
-            const completed = pct >= 100;
+            const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
+            const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+            const completed = nivsAvecQCM.length > 0 && reussis === nivsAvecQCM.length;
+            const started = reussis > 0;
 
             return (
-              <div key={m.id} style={S.card(palette)}
+              <div key={m.id}
+                style={S.card(palette)}
                 onClick={() => navigate(`/portail/module/${m.id}`)}
                 onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; }}
                 onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
@@ -240,17 +269,8 @@ export default function PortailDashboard() {
                 <div style={S.cardBody}>
                   <h3 style={S.cardTitle}>{m.titre}</h3>
                   {m.description && <p style={S.cardDesc}>{m.description}</p>}
-                  {total > 0 && (
-                    <>
-                      <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
-                      <div style={S.progressText}>
-                        <span>{reussis} / {total} niveaux</span>
-                        <span style={{ fontWeight:600, color:'var(--p-fg-mid)' }}>{pct}%</span>
-                      </div>
-                    </>
-                  )}
                   <button style={completed ? S.btnCompleted(palette) : S.btn(palette)}>
-                    {completed ? '✓ Terminé' : reussis > 0 ? 'Continuer' : 'Commencer'}
+                    {completed ? '✓ Terminé' : started ? 'Continuer' : 'Commencer'}
                   </button>
                 </div>
               </div>

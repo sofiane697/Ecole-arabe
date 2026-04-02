@@ -16,28 +16,37 @@ Ecole-arabe/
     ├── data.js            # Données statiques (nav, cours, valeurs, contact)
     ├── hooks.js           # 3 hooks custom React
     ├── styles.js          # CSS complet injecté dynamiquement dans <head>
-    ├── index.js           # Point d'entrée React + React Router (routes publiques, admin, portail)
+    ├── index.js           # Point d'entrée React + React Router (routes publiques, admin, portail, enseignant)
     ├── admin/
     │   ├── AdminApp.jsx      # Layout admin — sidebar, topbar, Outlet (route protégée)
-    │   ├── AdminLogin.jsx    # Page de connexion admin (Supabase Auth)
+    │   ├── AdminLogin.jsx    # Page de connexion admin
     │   ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés
     │   ├── Inscriptions.jsx  # Pré-inscriptions — liste + panneau détail + statut
     │   ├── Messages.jsx      # Messages — liste + panneau de lecture
     │   ├── Eleves.jsx        # Gestion élèves — liste, création, fiche détail, progression
-    │   ├── Cours.jsx         # Gestion cours — modules → niveaux → contenus + QCM
+    │   ├── Classes.jsx       # Gestion classes — niveaux scolaires → classes → élèves
+    │   ├── Enseignants.jsx   # Gestion enseignants — CRUD, assignation classes, génération identifiants
+    │   ├── Cours.jsx         # Gestion cours — modules → thématiques → leçons → niveaux → contenus + QCM
     │   ├── supabaseAdmin.js  # Fonctions API Supabase (auth, CRUD, storage, progression)
     │   ├── mockData.js       # Données fictives (backup)
     │   └── adminStyles.js    # CSS complet interface admin (thème sombre + clair)
-    └── portail/
-        ├── portailStyles.js        # CSS du portail élève
-        ├── supabasePortail.js      # API Supabase côté élève (auth custom, progression)
-        ├── PortailLogin.jsx        # /portail/login — connexion + changement mot de passe 1ère connexion
-        ├── PortailApp.jsx          # Layout portail : sidebar + topbar + Outlet
-        ├── PortailDashboard.jsx    # Grille de modules avec barres de progression
-        ├── PortailModule.jsx       # Vue module : stepper niveaux + contenu + QCM
-        ├── PortailDevoirs.jsx      # /portail/devoirs — page devoirs (vide, à alimenter)
-        ├── PortailResultats.jsx    # /portail/resultats — page résultats (vide, à alimenter)
-        └── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
+    ├── portail/
+    │   ├── portailStyles.js        # CSS du portail élève
+    │   ├── supabasePortail.js      # API Supabase côté élève (auth custom, progression)
+    │   ├── PortailLogin.jsx        # /portail/login — connexion + changement mot de passe 1ère connexion
+    │   ├── PortailApp.jsx          # Layout portail : sidebar + topbar + Outlet
+    │   ├── PortailDashboard.jsx    # Grille de modules filtrés par niveau scolaire
+    │   ├── PortailModule.jsx       # Vue module : thématiques → leçons (chaîne) → niveaux + contenu + QCM
+    │   ├── PortailDevoirs.jsx      # /portail/devoirs — page devoirs (vide, à alimenter)
+    │   ├── PortailResultats.jsx    # /portail/resultats — page résultats (vide, à alimenter)
+    │   └── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
+    └── enseignant/
+        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves)
+        ├── EnseignantLogin.jsx     # /enseignant/login — connexion + changement mot de passe 1ère connexion
+        ├── EnseignantApp.jsx       # Layout portail enseignant (style admin, sidebar, topbar)
+        ├── EnseignantDashboard.jsx # /enseignant — grille des classes assignées
+        ├── EnseignantMesClasses.jsx# /enseignant/classes — liste complète des classes
+        └── EnseignantClasse.jsx    # /enseignant/classe/:id — liste des élèves d'une classe
 ```
 
 ## Sections du site public (dans l'ordre)
@@ -63,7 +72,8 @@ Ecole-arabe/
 | `/admin/inscriptions` | Inscriptions | Liste + panneau détail — stats, progression, changement de statut |
 | `/admin/messages` | Messages | Liste + panneau de lecture — onglets filtres, marquer lu/non lu |
 | `/admin/eleves` | Eleves | Liste élèves + création + fiche détail + progression par module |
-| `/admin/cours` | Cours | CRUD drill-down : Modules → Thématiques → Niveaux → Contenus + QCM |
+| `/admin/enseignants` | Enseignants | CRUD enseignants + assignation classes + génération identifiant/MDP |
+| `/admin/cours` | Cours | CRUD drill-down : Modules → Thématiques → Leçons → Niveaux → Contenus + QCM |
 
 ### Identifiants admin
 
@@ -81,6 +91,33 @@ Ecole-arabe/
 
 ---
 
+## Portail Enseignant ✅ COMPLET
+
+### Routes
+
+| URL | Page | Description |
+|-----|------|-------------|
+| `/enseignant/login` | EnseignantLogin | Connexion identifiant + mot de passe (+ changement MDP 1ère connexion) |
+| `/enseignant` | EnseignantDashboard | Grille des classes assignées + nombre d'élèves |
+| `/enseignant/classes` | EnseignantMesClasses | Liste complète des classes assignées |
+| `/enseignant/classe/:id` | EnseignantClasse | Tableau des élèves de la classe (nom, identifiant, statut, date) |
+
+### Authentification enseignant (auth custom bcrypt — même pattern que élèves)
+
+- Session stockée dans `sessionStorage.enseignant_user` = `{ id, nom, prenom, identifiant, must_change_password }`
+- Identifiant enseignant = même formule que les élèves : `{1ère lettre prénom}{2e lettre nom}{1ère lettre nom}{4 chiffres}` ex: `SoD1234`
+- 1ère connexion → changement de mot de passe forcé
+- Style visuel = identique à l'interface admin (`adminStyles.js`, thème dark/light)
+- `supabaseEnseignant.js` : `loginEnseignant`, `logoutEnseignant`, `getEnseignantUser`, `changeEnseignantPassword`, `fetchMesClasses`, `fetchElevesDeClasse`
+
+### Création d'un compte enseignant (côté admin)
+
+1. Admin → Gestion des enseignants → Ajouter un enseignant
+2. Après création : identifiant généré automatiquement + mot de passe provisoire affiché (modal avec boutons Copier + WhatsApp)
+3. Bouton "Reset MDP" sur chaque carte enseignant pour régénérer un mot de passe provisoire
+
+---
+
 ## Portail Élève (LMS) ✅ COMPLET
 
 ### Routes
@@ -90,7 +127,8 @@ Ecole-arabe/
 | `/portail/login` | PortailLogin | Connexion identifiant + mot de passe |
 | `/portail` | PortailDashboard | Grille des modules avec barre de progression |
 | `/portail/module/:id` | PortailModule | Smart router : si thématiques → grille thématiques ; sinon → niveaux |
-| `/portail/module/:moduleId/thematique/:thId` | PortailModule | Niveaux d'une thématique + contenu + QCM |
+| `/portail/module/:moduleId/thematique/:thId` | PortailModule | Leçons d'une thématique (si existantes) ou niveaux directement |
+| `/portail/module/:moduleId/thematique/:thId/lecon/:leconId` | PortailModule | Niveaux d'une leçon + contenu + QCM |
 | `/portail/devoirs` | PortailDevoirs | Devoirs assignés par le professeur (page prête, contenu à venir) |
 | `/portail/resultats` | PortailResultats | Notes et résultats d'évaluations (page prête, contenu à venir) |
 | `/portail/observations` | PortailObservations | Observations et commentaires du professeur (page prête, contenu à venir) |
@@ -137,12 +175,17 @@ Ecole-arabe/
 | `messages` | Formulaire contact | INSERT | ALL |
 | `profils_eleves` | Comptes élèves (auth custom, bcrypt) | — | ALL |
 | `profils_admins` | Comptes admins (auth custom, bcrypt) | — | ALL |
-| `modules` | Catégories de cours | SELECT (actif=true) | ALL |
-| `thematiques` | Sous-modules intermédiaires (module → thématique → niveau) | SELECT | ALL |
+| `enseignants` | Comptes enseignants (auth custom, bcrypt) | ALL (anon_all) | ALL |
+| `enseignant_classes` | Jointure enseignant ↔ classes (many-to-many) | ALL (anon_all) | ALL |
+| `modules` | Catégories de cours — `niveaux_scolaires_ids UUID[]` | SELECT (actif=true) | ALL |
+| `thematiques` | Sous-modules — `niveaux_scolaires_ids UUID[]` | SELECT | ALL |
+| `lecons` | Leçons intermédiaires (thématique → leçon → niveau) | ALL (anon_all) | ALL |
 | `niveaux` | Niveaux dans chaque thématique (thematique_id FK) | SELECT | ALL |
 | `contenus` | Contenu par niveau (video/pdf/texte/word/ppt) | SELECT | ALL |
 | `qcm_questions` | Questions QCM (choix JSONB, reponse_correcte JSONB array) | SELECT | ALL |
 | `eleve_progression` | Suivi progression élève | — | ALL |
+| `niveaux_scolaires` | Niveaux scolaires (N1, N2…) | ALL (anon_all) | ALL |
+| `classes` | Classes (ex: N1-1, N1-2) liées à un niveau scolaire | ALL (anon_all) | ALL |
 
 ### Schéma `profils_eleves`
 
@@ -164,10 +207,14 @@ Ecole-arabe/
 | `login_admin_custom(p_identifiant, p_password)` | Vérifie identifiant+bcrypt admin, retourne JSON | Admin (anon) |
 | `admin_create_user(p_identifiant, p_password, p_nom, p_prenom)` | Crée un élève avec bcrypt | Admin (anon) |
 | `admin_reset_eleve_password(p_id, p_new_password)` | Réinitialise le mot de passe élève | Admin (anon) |
-| `login_eleve(p_identifiant, p_password)` | Vérifie les identifiants, retourne JSON user | Portail (anon) |
-| `change_eleve_password(p_id, p_old, p_new)` | Change le mot de passe | Portail (anon) |
-| `save_progression(p_eleve_id, p_niveau_id, p_score, p_reussi)` | Upsert progression | Portail (anon) |
-| `get_progression(p_eleve_id)` | Retourne progression élève | Portail (anon) |
+| `login_eleve(p_identifiant, p_password)` | Vérifie les identifiants, retourne JSON user | Portail élève (anon) |
+| `change_eleve_password(p_id, p_old, p_new)` | Change le mot de passe élève | Portail élève (anon) |
+| `save_progression(p_eleve_id, p_niveau_id, p_score, p_reussi)` | Upsert progression | Portail élève (anon) |
+| `get_progression(p_eleve_id)` | Retourne progression élève | Portail élève (anon) |
+| `login_enseignant(p_identifiant, p_password)` | Vérifie identifiant+bcrypt enseignant, retourne JSON | Portail enseignant (anon) |
+| `change_enseignant_password(p_id, p_old, p_new)` | Change le mot de passe enseignant | Portail enseignant (anon) |
+| `admin_create_enseignant(p_id, p_identifiant, p_password)` | Crée le compte auth d'un enseignant existant | Admin (anon) |
+| `admin_reset_enseignant_password(p_id, p_new_password)` | Réinitialise le mot de passe enseignant | Admin (anon) |
 
 ### Storage Supabase
 
@@ -256,17 +303,13 @@ npm run build # build de production
 | R3 | Breakpoints 1024px + 600px (padding, topbar, login card) | ✅ |
 | R4 | Grid dashboard `minmax(260px)` adaptatif | ✅ |
 
-### Système Professeurs + Classes — ⏳ À planifier (révoqué le 27/03/2026)
-> ⚠️ Une première implémentation a été entièrement annulée (code + DB). À reprendre proprement.
+### Système Enseignants + Classes — ✅ Implémenté (02/04/2026)
 
-Fonctionnalités souhaitées :
-- Comptes **professeurs** (auth bcrypt, connexion sur `/admin/login`)
-- Accès admin restreint : professeurs voient uniquement "Gestion des cours" (leurs propres modules)
-- **Classes** (ex: N1, N1-1, N1-2) avec arborescence parent/enfant
-- Assignation élève → classe depuis la fiche élève (dropdown)
-- Assignation professeur → classe depuis la fiche professeur
-- Portail élève : affiche les modules du professeur de sa classe + modules admin globaux
-- "Gestion des classes" dans la sidebar admin entre Cours et Élèves
+- **Gestion des enseignants** (`/admin/enseignants`) : CRUD, assignation classes (many-to-many via `enseignant_classes`), génération identifiant automatique, mot de passe provisoire, reset MDP, modal résultat avec Copier + WhatsApp
+- **Portail enseignant** (`/enseignant/login`, `/enseignant`, `/enseignant/classes`, `/enseignant/classe/:id`) : auth bcrypt custom, style admin, tableau de bord avec classes, liste élèves par classe
+- **Restriction modules par niveau scolaire** : `modules.niveaux_scolaires_ids UUID[]` — module invisible si tableau vide ou si l'élève n'est pas dans un des niveaux assignés
+- **Cadenas leçons en chaîne** : leçon N verrouillée jusqu'à ce que leçon N-1 ait un QCM ET que l'élève l'ait réussi. Modules et thématiques restent toujours accessibles.
+- **Barre de progression** : conservée uniquement sur les thématiques, ne compte que les niveaux qui ont un QCM
 
 ### Améliorations futures (non planifiées)
 - D5 — Aperçu miniature YouTube dans la modal contenu
@@ -294,6 +337,8 @@ Fonctionnalités souhaitées :
 ---
 
 ## Historique des modifications
+
+- **Portail + Admin — Couche "Mes Leçons"** : nouvelle couche intermédiaire entre Thématiques et Mon Cours. Hiérarchie finale : Modules → Thématiques → **Leçons** → Niveaux. Table `lecons` (`id BIGINT`, `thematique_id BIGINT`, `titre`, `description`, `image_url`, `ordre`). Colonne `lecon_id BIGINT` ajoutée sur `niveaux` (FK nullable). Portail : `LeconsEntryView` dans `PortailModule.jsx` (grille de cartes identique aux thématiques, progression, smart router : si 0 leçons → NiveauxView directement). Route `/portail/module/:moduleId/thematique/:thId/lecon/:leconId`. Admin : `Cours.jsx` — drill-down Modules → Thématiques → **Leçons** (vue cartes, CRUD, `LeconModal`) → Niveaux → Contenus+QCM. `supabaseAdmin.js` : `fetchLecons`, `createLecon`, `updateLecon`, `deleteLecon`, `fetchNiveauxByLecon`. `supabasePortail.js` : `fetchLeconsEleve`, `fetchNiveauxByLeconEleve`. SQL requis dans Supabase : `CREATE TABLE lecons (...)` + `ALTER TABLE niveaux ADD COLUMN lecon_id ...` + RLS.
 
 - **Portail — Titres animés en topbar** : suppression des titres noirs (`portail-topbar-title`) et des composants `FunTitle`/`FunModuleTitle` dans le contenu. Nouveau composant `TopbarFunTitle` dans `PortailApp.jsx` : lettres colorées lettre par lettre (palette `#7EC8E3/#7DCFA0/#F4A896/#F7D070`), animation bounce en entrée (`topbarLetterIn`) + flottement infini décalé (`topbarLetterFloat`), emoji gauche par page (`PAGE_EMOJIS`), étoile ⭐ et étincelle ✨ animées à droite. Taille 40px. Topbar hauteur 60px → 80px. Padding `.portail-content` ajusté à 40px.
 
