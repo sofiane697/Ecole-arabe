@@ -311,7 +311,7 @@ npm run build # build de production
 - **Cadenas leçons en chaîne** : leçon N verrouillée jusqu'à ce que leçon N-1 ait un QCM ET que l'élève l'ait réussi. Modules et thématiques restent toujours accessibles.
 - **Barre de progression** : conservée uniquement sur les thématiques, ne compte que les niveaux qui ont un QCM
 
-### Audit sécurité & qualité — ✅ Corrigé (03/04/2026)
+### Audit sécurité & qualité — batch 1 ✅ Corrigé (03/04/2026)
 
 **Critiques (3/3 corrigés) :**
 - Clés API Supabase déplacées vers `.env.local` (variables `process.env.REACT_APP_*`) dans les 3 fichiers supabase
@@ -322,6 +322,15 @@ npm run build # build de production
 - Memory leak corrigé dans `PortailDashboard.jsx` — flag `cancelled` dans useEffect pour éviter setState sur composant démonté
 - 26 `console.error` supprimés dans 12 fichiers (évite l'exposition de messages Supabase dans les DevTools en prod)
 - Accessibilité ARIA ajoutée : `htmlFor`/`id` sur labels+inputs des modals (`Eleves.jsx`, `Enseignants.jsx`, `Cours.jsx`), `aria-label` sur boutons icônes
+
+### Audit sécurité & qualité — batch 2 ✅ Corrigé (03/04/2026)
+
+- `App.jsx` : clé anon déplacée vers `process.env.REACT_APP_SUPABASE_ANON` (était encore en dur)
+- `App.jsx` : formulaire contact — validation email (regex) + message (min 10 car.) + cooldown 30s anti-spam + données tronquées avant envoi Supabase
+- `AdminLogin.jsx`, `PortailLogin.jsx`, `EnseignantLogin.jsx` : icône œil pour afficher/masquer le mot de passe (tous les champs, y compris changement de MDP)
+- `Messages.jsx` : suppression de messages avec ConfirmModal (bouton sur chaque ligne + bouton dans le panneau de lecture)
+- `Cours.jsx` : suppression individuelle et globale des questions QCM directement dans la liste
+- `PortailModule.jsx` (4 bugs) : barre de progression, chips et bandeau succès prennent uniquement en compte les niveaux qui ont un QCM actif
 
 ### Améliorations futures (non planifiées)
 - D5 — Aperçu miniature YouTube dans la modal contenu
