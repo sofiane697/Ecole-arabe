@@ -1,6 +1,6 @@
 // ─── Configuration Supabase pour l'admin ────────────────────────────────────
-const SUPABASE_URL  = 'https://nsdnzqdbpdncrksgxtar.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL';
+const SUPABASE_URL  = process.env.REACT_APP_SUPABASE_URL;
+const SUPABASE_ANON = process.env.REACT_APP_SUPABASE_ANON;
 
 /** Requête avec la clé anon (RLS ouvert pour anon sur les tables admin) */
 async function authFetch(url, options = {}) {

@@ -53,6 +53,13 @@ const PAGE_EMOJIS = {
   '/portail/resultats':    '📊',
   '/portail/observations': '👁️',
 };
+function getPageEmoji(pathname) {
+  if (PAGE_EMOJIS[pathname]) return PAGE_EMOJIS[pathname];
+  if (pathname.includes('/lecon/')) return '📖';
+  if (pathname.includes('/thematique/')) return '📂';
+  if (pathname.startsWith('/portail/module/')) return '🗂️';
+  return '📖';
+}
 
 function TopbarFunTitle({ title, emoji }) {
   let ci = 0;
@@ -144,7 +151,8 @@ export default function PortailApp() {
 
   // Titre dynamique
   const currentTitle = PAGE_TITLES[location.pathname] ||
-    (location.pathname.includes('/thematique/') ? 'Mon cours' :
+    (location.pathname.includes('/lecon/') ? 'Mon cours' :
+     location.pathname.includes('/thematique/') ? 'Mes Leçons' :
      location.pathname.startsWith('/portail/module/') ? 'Mes Thématiques' :
      'Mon cours');
 
@@ -255,7 +263,7 @@ export default function PortailApp() {
             <button className="portail-hamburger" onClick={() => setSidebarOpen(o => !o)}>
               ☰
             </button>
-            <TopbarFunTitle key={currentTitle} title={currentTitle} emoji={PAGE_EMOJIS[location.pathname] || '📖'} />
+            <TopbarFunTitle key={currentTitle} title={currentTitle} emoji={getPageEmoji(location.pathname)} />
           </div>
           <div className="portail-topbar-right">
             <button className="portail-theme-toggle" onClick={() => setDarkMode(d => !d)}>

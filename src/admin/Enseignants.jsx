@@ -92,6 +92,10 @@ export default function Enseignants() {
   const [loading, setLoading]         = useState(false);
   const [result, setResult]           = useState(null); // { prenom, nom, identifiant, tempPassword }
   const [resetResult, setResetResult] = useState(null);
+  const [pwdVisible, setPwdVisible]         = useState(true);
+  const [countdown, setCountdown]           = useState(30);
+  const [resetPwdVisible, setResetPwdVisible] = useState(true);
+  const [resetCountdown, setResetCountdown]   = useState(30);
 
   const load = useCallback(async () => {
     try {
@@ -109,6 +113,32 @@ export default function Enseignants() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!result) return;
+    setPwdVisible(true);
+    setCountdown(30);
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(interval); setPwdVisible(false); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [result]);
+
+  useEffect(() => {
+    if (!resetResult) return;
+    setResetPwdVisible(true);
+    setResetCountdown(30);
+    const interval = setInterval(() => {
+      setResetCountdown(prev => {
+        if (prev <= 1) { clearInterval(interval); setResetPwdVisible(false); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resetResult]);
 
   const handleSave = async (data, selectedClasseIds) => {
     setLoading(true);
@@ -256,8 +286,14 @@ export default function Enseignants() {
                 <div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{result.identifiant}</div>
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Mot de passe provisoire</div>
-                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1 }}>{result.tempPassword}</div>
+                <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>
+                  Mot de passe provisoire
+                  {pwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {countdown}s</span>}
+                </div>
+                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1, cursor: pwdVisible ? 'default' : 'pointer' }}
+                  onClick={() => { if (!pwdVisible) { setPwdVisible(true); setCountdown(10); } }}>
+                  {pwdVisible ? result.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>●●●●●●●● (cliquer pour afficher)</span>}
+                </div>
               </div>
             </div>
             <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:16 }}>
@@ -296,8 +332,14 @@ export default function Enseignants() {
                 <div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{resetResult.identifiant}</div>
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Nouveau mot de passe provisoire</div>
-                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1 }}>{resetResult.tempPassword}</div>
+                <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>
+                  Nouveau mot de passe provisoire
+                  {resetPwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {resetCountdown}s</span>}
+                </div>
+                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1, cursor: resetPwdVisible ? 'default' : 'pointer' }}
+                  onClick={() => { if (!resetPwdVisible) { setResetPwdVisible(true); setResetCountdown(10); } }}>
+                  {resetPwdVisible ? resetResult.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>●●●●●●●● (cliquer pour afficher)</span>}
+                </div>
               </div>
             </div>
             <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>

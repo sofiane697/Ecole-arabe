@@ -543,6 +543,12 @@ function generateTempPassword() {
   return pwd.split('').sort(() => Math.random() - 0.5).join('');
 }
 
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = String(text || '');
+  return div.innerHTML;
+}
+
 // ─── Modal création élève ────────────────────────────────────────────────────
 function CreateEleveModal({ onClose, onCreated }) {
   const [nom, setNom] = useState('');
@@ -553,12 +559,27 @@ function CreateEleveModal({ onClose, onCreated }) {
   const [result, setResult] = useState(null);
   const [allClasses, setAllClasses] = useState([]);
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
+  const [pwdVisible, setPwdVisible] = useState(true);
+  const [countdown, setCountdown] = useState(30);
 
   useEffect(() => {
     Promise.all([fetchAllClasses(), fetchNiveauxScolaires()])
       .then(([cs, ns]) => { setAllClasses(cs); setNiveauxScolaires(ns); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!result) return;
+    setPwdVisible(true);
+    setCountdown(30);
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(interval); setPwdVisible(false); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [result]);
 
   const identifiant = nom.trim() && prenom.trim() ? generateIdentifiant(prenom, nom) : '';
 
@@ -599,8 +620,14 @@ function CreateEleveModal({ onClose, onCreated }) {
               <div style={{ fontSize:18, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{result.identifiant}</div>
             </div>
             <div>
-              <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Mot de passe provisoire</div>
-              <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1 }}>{result.tempPassword}</div>
+              <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>
+                Mot de passe provisoire
+                {pwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {countdown}s</span>}
+              </div>
+              <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1, cursor: pwdVisible ? 'default' : 'pointer' }}
+                onClick={() => { if (!pwdVisible) { setPwdVisible(true); setCountdown(10); } }}>
+                {pwdVisible ? result.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>●●●●●●●● (cliquer pour afficher)</span>}
+              </div>
             </div>
           </div>
           <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:16, padding:'0 4px' }}>
@@ -650,14 +677,14 @@ function CreateEleveModal({ onClose, onCreated }) {
                 <div class="card">
                   <h1>رقيب — RAQIB</h1>
                   <h2>Portail Élève</h2>
-                  <div class="name">${prenom} ${nom}</div>
+                  <div class="name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
                   <div class="field">
                     <div class="label">Identifiant</div>
-                    <div class="value gold">${result.identifiant}</div>
+                    <div class="value gold">${escapeHtml(result.identifiant)}</div>
                   </div>
                   <div class="field">
                     <div class="label">Mot de passe provisoire</div>
-                    <div class="value red">${result.tempPassword}</div>
+                    <div class="value red">${escapeHtml(result.tempPassword)}</div>
                   </div>
                   <div class="note">⚠️ Changez votre mot de passe à la première connexion.<br>Min. 8 caractères, 1 chiffre, 1 caractère spécial.</div>
                   <div class="url">${window.location.origin}/portail/login</div>
