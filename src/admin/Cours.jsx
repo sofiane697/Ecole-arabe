@@ -367,6 +367,31 @@ export default function Cours() {
     setModal({ type: 'qcm-carousel', startIndex: 0, overrideQuestions: merged });
   };
 
+  const handleDeleteQuestion = (id, questionText) => {
+    setConfirm({
+      title: 'Supprimer cette question ?',
+      message: <span>La question <strong>"{questionText}"</strong> sera supprimée définitivement.</span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try { await deleteQuestion(id); await loadQuestions(selNiveau.id); } catch(e) { alert(e.message); }
+      },
+    });
+  };
+
+  const handleDeleteAllQuestions = () => {
+    setConfirm({
+      title: 'Supprimer tout le QCM ?',
+      message: <span>Toutes les questions de ce QCM seront supprimées définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await Promise.all(questions.map(q => deleteQuestion(q.id)));
+          await loadQuestions(selNiveau.id);
+        } catch(e) { alert(e.message); }
+      },
+    });
+  };
+
   const handleSaveAllQuestions = async (updatedQuestions, deletedIds) => {
     setLoading(true);
     try {
@@ -638,8 +663,8 @@ export default function Cours() {
           {questions.map((q, i) => {
             const corrects = Array.isArray(q.reponse_correcte) ? q.reponse_correcte : [q.reponse_correcte];
             return (
-              <div key={q.id} style={{ ...S.listItem, cursor:'pointer' }} onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}>
-                <div style={S.listLeft}>
+              <div key={q.id} style={S.listItem}>
+                <div style={{ ...S.listLeft, cursor:'pointer', flex:1 }} onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}>
                   <div style={S.listNum}>{i + 1}</div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontWeight:500, color:'var(--a-fg)', fontSize:14 }}>{q.question}</div>
@@ -652,7 +677,10 @@ export default function Cours() {
                     </div>
                   </div>
                 </div>
-                <button style={S.actionBtn} aria-label="Modifier"><IconEdit /></button>
+                <div style={{ display:'flex', gap:6, flexShrink:0 }}>
+                  <button style={S.actionBtn} aria-label="Modifier" onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}><IconEdit /></button>
+                  <button style={{ ...S.actionBtn, color:'var(--a-red)', borderColor:'rgba(255,69,58,.2)', background:'rgba(255,69,58,.08)' }} aria-label="Supprimer" onClick={() => handleDeleteQuestion(q.id, q.question)}><IconTrash /></button>
+                </div>
               </div>
             );
           })}
@@ -664,6 +692,12 @@ export default function Cours() {
               onClick={() => setModal({ type:'import-qcm' })}>
               ⬆ Importer CSV
             </div>
+            {questions.length > 0 && (
+              <div style={{ ...S.addCard, minHeight:50, flex:'0 0 auto', paddingLeft:20, paddingRight:20, color:'var(--a-red)', borderColor:'var(--a-red)' }}
+                onClick={handleDeleteAllQuestions}>
+                🗑 Tout supprimer
+              </div>
+            )}
           </div>
         </>
       )}

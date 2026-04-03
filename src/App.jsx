@@ -309,8 +309,8 @@ function CarouselCards({ onInscribe }) {
 /* ══════════════════════════════════════════════════════
    MODAL PRÉ-INSCRIPTION
 ══════════════════════════════════════════════════════ */
-const SUPABASE_URL  = 'https://nsdnzqdbpdncrksgxtar.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL';
+const SUPABASE_URL  = process.env.REACT_APP_SUPABASE_URL;
+const SUPABASE_ANON = process.env.REACT_APP_SUPABASE_ANON;
 
 function PreInscriptionModal({ cours, onClose }) {
   const [data, setData]     = useState({ nom: '', prenom: '', age: '', annees: '' });
@@ -402,6 +402,8 @@ export default function App() {
   const [menuOpen, setMenuOpen]     = useState(false);
   const [formData, setFormData]     = useState({ prenom: '', nom: '', email: '', cours: '', message: '' });
   const [formStatus, setFormStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
+  const [cooldown, setCooldown]     = useState(0); // secondes restantes avant prochain envoi
+  const cooldownRef                 = useRef(null);
   const [modalCours, setModalCours] = useState(null); // null | string (nom du cours)
   const [darkMode, setDarkMode]     = useState(() => localStorage.getItem('theme') === 'dark');
   const [themeId, setThemeId]       = useState(() => parseInt(localStorage.getItem('site_palette') || '1'));
@@ -445,6 +447,9 @@ export default function App() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
+  /* — Nettoyer le timer cooldown au démontage — */
+  useEffect(() => () => clearInterval(cooldownRef.current), []);
+
   /* — Scroll fluide vers une section (avec offset du header) — */
   const goTo = useCallback((id) => {
     setMenuOpen(false);
@@ -462,8 +467,14 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormStatus('loading');
+    if (cooldown > 0) return;
 
+    // Validation
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim());
+    if (!emailOk) { setFormStatus('invalid-email'); return; }
+    if (formData.message.trim().length < 10) { setFormStatus('invalid-msg'); return; }
+
+    setFormStatus('loading');
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
         method: 'POST',
@@ -473,14 +484,27 @@ export default function App() {
           'Authorization': `Bearer ${SUPABASE_ANON}`,
           'Prefer':        'return=minimal',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          prenom:  formData.prenom.trim().slice(0, 100),
+          nom:     formData.nom.trim().slice(0, 100),
+          email:   formData.email.trim().slice(0, 200),
+          cours:   formData.cours,
+          message: formData.message.trim().slice(0, 2000),
+        }),
       });
       if (!res.ok) throw new Error(res.status);
       setFormStatus('ok');
       setFormData({ prenom: '', nom: '', email: '', cours: '', message: '' });
       setTimeout(() => setFormStatus(null), 5000);
-    } catch (err) {
-      console.error(err);
+      // Cooldown 30s
+      setCooldown(30);
+      cooldownRef.current = setInterval(() => {
+        setCooldown(prev => {
+          if (prev <= 1) { clearInterval(cooldownRef.current); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch {
       setFormStatus('err');
     }
   };
@@ -900,9 +924,13 @@ export default function App() {
             <button
               type="submit"
               className="form-submit"
-              disabled={formStatus === 'loading'}
+              disabled={formStatus === 'loading' || cooldown > 0}
             >
-              {formStatus === 'loading' ? 'Envoi en cours…' : 'Envoyer le message'}
+              {formStatus === 'loading'
+                ? 'Envoi en cours…'
+                : cooldown > 0
+                  ? `Patienter ${cooldown}s avant un nouvel envoi`
+                  : 'Envoyer le message'}
             </button>
 
             {formStatus === 'ok'  && (
@@ -913,6 +941,16 @@ export default function App() {
             {formStatus === 'err' && (
               <div className="form-msg err">
                 ✕ &nbsp; Erreur lors de l'envoi. Réessayez ou contactez-nous par email.
+              </div>
+            )}
+            {formStatus === 'invalid-email' && (
+              <div className="form-msg err">
+                ✕ &nbsp; Adresse email invalide.
+              </div>
+            )}
+            {formStatus === 'invalid-msg' && (
+              <div className="form-msg err">
+                ✕ &nbsp; Le message doit contenir au moins 10 caractères.
               </div>
             )}
 

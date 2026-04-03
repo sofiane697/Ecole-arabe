@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchNiveaux, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
 // ─── Formatage des noms ──────────────────────────────────────────────────────
@@ -65,6 +65,7 @@ export default function Eleves() {
   const [progression, setProgression] = useState([]);
   const [modules, setModules] = useState([]);
   const [niveauxMap, setNiveauxMap] = useState({});
+  const [qcmNiveauxIds, setQcmNiveauxIds] = useState(new Set());
   const [resetResult, setResetResult] = useState(null);   // { identifiant, tempPassword }
   const [search, setSearch]       = useState('');
   const [filterActif, setFilterActif] = useState('tous'); // 'tous' | 'actif' | 'inactif'
@@ -95,17 +96,22 @@ export default function Eleves() {
     setModules([]);
     setProgression([]);
     setNiveauxMap({});
+    setQcmNiveauxIds(new Set());
     try {
       const mods = await fetchModules();
       setModules(mods);
       const [prog, nivMap] = await Promise.all([
         fetchEleveProgression(eleve.id).catch(() => []),
         Promise.all(mods.map(async (m) => {
-          try { return [m.id, await fetchNiveaux(m.id)]; } catch { return [m.id, []]; }
+          try { return [m.id, await fetchAllNiveauxForModule(m.id)]; } catch { return [m.id, []]; }
         })).then(entries => Object.fromEntries(entries)),
       ]);
       setProgression(prog);
       setNiveauxMap(nivMap);
+      // Charger quels niveaux ont un QCM (même logique que le portail élève)
+      const allNiveauIds = Object.values(nivMap).flat().map(n => n.id);
+      const qcmIds = await fetchQCMNiveauxIds(allNiveauIds).catch(() => new Set());
+      setQcmNiveauxIds(qcmIds);
     } catch(e) {}
   };
 
@@ -384,29 +390,36 @@ export default function Eleves() {
         {modules.length === 0 && <div style={S.empty}>Aucun module disponible.</div>}
         {modules.map(m => {
           const nivs = niveauxMap[m.id] || [];
-          const totalNiveaux = nivs.length;
-          const reussis = nivs.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+          const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
+          const totalNiveaux = nivsAvecQCM.length;
+          const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
           const pct = totalNiveaux > 0 ? Math.round((reussis / totalNiveaux) * 100) : 0;
 
           return (
             <div key={m.id} style={S.progressCard}>
               <div style={S.progressTitle}>{m.titre}</div>
-              <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
-              <div style={S.progressText}>
-                <span>{reussis} / {totalNiveaux} niveaux réussis</span>
-                <span style={{ fontWeight:600, color: pct >= 100 ? 'var(--a-green)' : 'var(--a-gold)' }}>{pct}%</span>
-              </div>
-              {nivs.map(n => {
-                const prog = progression.find(p => p.niveau_id === n.id);
-                return (
-                  <div key={n.id} style={{ display:'flex', alignItems:'center', gap:10, marginTop:8, fontSize:13, color:'var(--a-fg-mid)' }}>
-                    <span style={{ fontSize:14 }}>{prog?.reussi ? '✅' : prog?.score != null ? '❌' : '⬜'}</span>
-                    <span style={{ flex:1 }}>{n.titre}</span>
-                    {prog?.score != null && <span style={{ fontWeight:600, color: prog.reussi ? 'var(--a-green)' : 'var(--a-red)' }}>{prog.score}%</span>}
-                    {prog?.tentatives > 0 && <span style={{ fontSize:11 }}>({prog.tentatives} tentative{prog.tentatives > 1 ? 's' : ''})</span>}
+              {totalNiveaux === 0 ? (
+                <div style={{ fontSize:12, color:'var(--a-fg-light)', fontStyle:'italic', marginTop:6 }}>Aucun QCM configuré</div>
+              ) : (
+                <>
+                  <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
+                  <div style={S.progressText}>
+                    <span>{reussis} / {totalNiveaux} niveaux réussis</span>
+                    <span style={{ fontWeight:600, color: pct >= 100 ? 'var(--a-green)' : 'var(--a-gold)' }}>{pct}%</span>
                   </div>
-                );
-              })}
+                  {nivsAvecQCM.map(n => {
+                    const prog = progression.find(p => p.niveau_id === n.id);
+                    return (
+                      <div key={n.id} style={{ display:'flex', alignItems:'center', gap:10, marginTop:8, fontSize:13, color:'var(--a-fg-mid)' }}>
+                        <span style={{ fontSize:14 }}>{prog?.reussi ? '✅' : prog?.score != null ? '❌' : '⬜'}</span>
+                        <span style={{ flex:1 }}>{n.titre}</span>
+                        {prog?.score != null && <span style={{ fontWeight:600, color: prog.reussi ? 'var(--a-green)' : 'var(--a-red)' }}>{prog.score}%</span>}
+                        {prog?.tentatives > 0 && <span style={{ fontSize:11 }}>({prog.tentatives} tentative{prog.tentatives > 1 ? 's' : ''})</span>}
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           );
         })}

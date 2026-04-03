@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import ADMIN_STYLES from '../admin/adminStyles';
 import { loginEnseignant, changeEnseignantPassword } from './supabaseEnseignant';
 
+const EyeIcon = ({ open }) => open
+  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>;
+
 function validatePassword(pwd) {
   const errors = [];
   if (pwd.length < 8) errors.push('Minimum 8 caractères');
@@ -25,6 +29,9 @@ export default function EnseignantLogin() {
   const [changeError, setChangeError] = useState('');
   const [changeLoading, setChangeLoading] = useState(false);
   const [pwdErrors, setPwdErrors]     = useState([]);
+  const [showPwd, setShowPwd]         = useState(false);
+  const [showNewPwd, setShowNewPwd]   = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   useLayoutEffect(() => {
     const id = 'admin-styles';
@@ -110,7 +117,13 @@ export default function EnseignantLogin() {
           </p>
           <div style={S.field}>
             <label style={S.label}>Nouveau mot de passe</label>
-            <input style={S.input} type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Min. 8 caractères" autoComplete="new-password" />
+            <div style={{ position:'relative' }}>
+              <input style={{ ...S.input, paddingRight:42 }} type={showNewPwd ? 'text' : 'password'} value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Min. 8 caractères" autoComplete="new-password" />
+              <button type="button" onClick={() => setShowNewPwd(v => !v)} aria-label={showNewPwd ? 'Masquer' : 'Afficher'}
+                style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#6e6e73', padding:4, display:'flex', alignItems:'center' }}>
+                <EyeIcon open={showNewPwd} />
+              </button>
+            </div>
           </div>
           <div style={{ marginBottom:16 }}>
             {[
@@ -125,7 +138,13 @@ export default function EnseignantLogin() {
           </div>
           <div style={S.field}>
             <label style={S.label}>Confirmer le mot de passe</label>
-            <input style={S.input} type="password" value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="Retapez votre mot de passe" autoComplete="new-password" />
+            <div style={{ position:'relative' }}>
+              <input style={{ ...S.input, paddingRight:42 }} type={showConfirmPwd ? 'text' : 'password'} value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="Retapez votre mot de passe" autoComplete="new-password" />
+              <button type="button" onClick={() => setShowConfirmPwd(v => !v)} aria-label={showConfirmPwd ? 'Masquer' : 'Afficher'}
+                style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#6e6e73', padding:4, display:'flex', alignItems:'center' }}>
+                <EyeIcon open={showConfirmPwd} />
+              </button>
+            </div>
             {confirmPwd && newPwd !== confirmPwd && (
               <div style={{ fontSize:11, color:'#ff453a', marginTop:4 }}>Les mots de passe ne correspondent pas</div>
             )}
@@ -153,7 +172,13 @@ export default function EnseignantLogin() {
           </div>
           <div style={S.field}>
             <label style={S.label}>Mot de passe</label>
-            <input style={S.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" required />
+            <div style={{ position:'relative' }}>
+              <input style={{ ...S.input, paddingRight:42 }} type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" required />
+              <button type="button" onClick={() => setShowPwd(v => !v)} aria-label={showPwd ? 'Masquer' : 'Afficher'}
+                style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#6e6e73', padding:4, display:'flex', alignItems:'center' }}>
+                <EyeIcon open={showPwd} />
+              </button>
+            </div>
           </div>
           <button style={S.btn(loading)} type="submit" disabled={loading}>
             {loading ? 'Connexion...' : 'Se connecter'}

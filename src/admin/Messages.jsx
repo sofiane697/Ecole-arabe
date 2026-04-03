@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { fetchMessages, updateMessageLu } from './supabaseAdmin';
+import { fetchMessages, updateMessageLu, deleteMessage } from './supabaseAdmin';
+import ConfirmModal from './ConfirmModal';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 
@@ -28,12 +29,19 @@ const IconBook = () => (
   </svg>
 );
 
+const IconTrash = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  </svg>
+);
+
 export default function Messages() {
   const [data,        setData]        = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [filtreLu,    setFiltreLu]    = useState('tous');
   const [filtreCours, setFiltreCours] = useState('tous');
   const [selected,    setSelected]    = useState(null);
+  const [confirm,     setConfirm]     = useState(null);
 
   useEffect(() => {
     fetchMessages()
@@ -71,6 +79,21 @@ export default function Messages() {
       } catch (err) {
       }
     }
+  };
+
+  const handleDelete = (msg) => {
+    setConfirm({
+      title: 'Supprimer ce message ?',
+      message: <span>Le message de <strong>{msg.prenom} {msg.nom}</strong> sera supprimé définitivement.</span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await deleteMessage(msg.id);
+          setData(prev => prev.filter(m => m.id !== msg.id));
+          if (selected?.id === msg.id) setSelected(null);
+        } catch(e) { alert(e.message); }
+      },
+    });
   };
 
   const nonLus = data.filter(m => !m.lu).length;
@@ -172,6 +195,15 @@ export default function Messages() {
                 <div className="msg-item-course">{(m.cours || 'Renseignement').split('—')[0].trim()}</div>
                 <div className="msg-item-preview">{(m.message || '').slice(0, 80)}{(m.message || '').length > 80 ? '...' : ''}</div>
               </div>
+              <button
+                onClick={e => { e.stopPropagation(); handleDelete(m); }}
+                aria-label="Supprimer"
+                style={{ flexShrink:0, background:'none', border:'none', cursor:'pointer', color:'var(--a-fg-light)', padding:'4px 6px', borderRadius:6, opacity:0.6, transition:'opacity .15s, color .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.color='var(--a-red)'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity='0.6'; e.currentTarget.style.color='var(--a-fg-light)'; }}
+              >
+                <IconTrash />
+              </button>
             </div>
           ))}
         </div>
@@ -235,11 +267,27 @@ export default function Messages() {
                 >
                   {selected.lu ? 'Marquer non lu' : 'Marquer comme lu'}
                 </button>
+                <button
+                  className="msg-action-secondary"
+                  onClick={() => handleDelete(selected)}
+                  style={{ color:'var(--a-red)', borderColor:'rgba(255,69,58,.3)' }}
+                >
+                  <IconTrash /> Supprimer
+                </button>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {confirm && (
+        <ConfirmModal
+          title={confirm.title}
+          message={confirm.message}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </>
   );
 }

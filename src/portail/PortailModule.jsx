@@ -664,8 +664,9 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
 
   if (loading) return <div style={NS.empty}>Chargement...</div>;
 
-  const passedCount = niveaux.filter(n => isPassed(n.id)).length;
-  const totalPct    = niveaux.length > 0 ? Math.round((passedCount / niveaux.length) * 100) : 0;
+  const nivsAvecQCM = niveaux.filter(n => niveauxWithQCM.has(n.id));
+  const passedCount = nivsAvecQCM.filter(n => isPassed(n.id)).length;
+  const totalPct    = nivsAvecQCM.length > 0 ? Math.round((passedCount / nivsAvecQCM.length) * 100) : 0;
   const selIdx      = selNiveau ? niveaux.indexOf(selNiveau) : -1;
   const isLocked    = selNiveau && selIdx >= 0 && !isUnlocked(selNiveau, selIdx);
 
@@ -674,12 +675,12 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       <ModuleBgLetters />
       <button style={NS.backBtn} onClick={onBack}><IconBack /> Retour</button>
 
-      {/* Zone 1 — Barre de progression globale */}
-      {niveaux.length > 0 && (
+      {/* Zone 1 — Barre de progression globale (masquée si aucun niveau n'a de QCM) */}
+      {nivsAvecQCM.length > 0 && (
         <div style={NS.progressHeader}>
           <div style={NS.progressLeft}>
             <span style={NS.progressTitle}>{stepperTitle || 'Mon cours'}</span>
-            <span style={NS.progressBadge}>{passedCount} / {niveaux.length} niveau{niveaux.length > 1 ? 'x' : ''}</span>
+            <span style={NS.progressBadge}>{passedCount} / {nivsAvecQCM.length} niveau{nivsAvecQCM.length > 1 ? 'x' : ''}</span>
           </div>
           <div style={NS.progressBarWrap}>
             <div style={NS.progressBarFill(totalPct)} />
@@ -692,7 +693,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       <div style={NS.chipsRow}>
         {niveaux.map((n, i) => {
           const unlocked = isUnlocked(n, i);
-          const passed   = isPassed(n.id);
+          const passed   = niveauxWithQCM.has(n.id) && isPassed(n.id);
           const active   = selNiveau?.id === n.id;
           return (
             <button key={n.id} style={NS.chip(active, passed, !unlocked)}
@@ -867,7 +868,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
             ))}
 
             {/* Bandeau succès */}
-            {isPassed(selNiveau.id) && (
+            {niveauxWithQCM.has(selNiveau.id) && isPassed(selNiveau.id) && (
               <div style={NS.successBanner}>
                 ✅ Tu as déjà réussi ce niveau ! Score : {getProgForNiveau(selNiveau.id)?.score}%
               </div>

@@ -45,6 +45,12 @@ export async function updateMessageLu(id, lu) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
+/** Supprimer un message */
+export async function deleteMessage(id) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
 /** Connexion admin via identifiant + mot de passe (bcrypt, table profils_admins) */
 export async function loginAdmin(identifiant, password) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_admin_custom`, {
@@ -151,6 +157,35 @@ export async function deleteContenu(id) {
 }
 
 // ─── QCM QUESTIONS ───────────────────────────────────────────────────────────
+
+/** Récupère tous les niveaux d'un module en traversant la hiérarchie réelle :
+ *  Module → Thématiques → (Leçons →) Niveaux
+ *  Remplace fetchNiveaux(moduleId) qui utilisait l'ancienne colonne module_id. */
+export async function fetchAllNiveauxForModule(moduleId) {
+  const thematiques = await fetchThematiques(moduleId).catch(() => []);
+  const niveaux = [];
+  await Promise.all(thematiques.map(async (th) => {
+    const lecons = await fetchLecons(th.id).catch(() => []);
+    if (lecons.length > 0) {
+      await Promise.all(lecons.map(async (l) => {
+        const nivs = await fetchNiveauxByLecon(l.id).catch(() => []);
+        niveaux.push(...nivs);
+      }));
+    } else {
+      const nivs = await fetchNiveauxByThematique(th.id).catch(() => []);
+      niveaux.push(...nivs);
+    }
+  }));
+  return niveaux;
+}
+
+export async function fetchQCMNiveauxIds(niveauIds) {
+  if (!niveauIds.length) return new Set();
+  const ids = niveauIds.join(',');
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=in.(${ids})&select=niveau_id`);
+  const data = await res.json();
+  return new Set((data || []).map(q => q.niveau_id));
+}
 
 export async function fetchQCM(niveauId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=eq.${niveauId}&order=ordre`);
