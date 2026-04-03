@@ -39,7 +39,7 @@ export default function EnseignantDashboard() {
           } catch { map[c.id] = 0; }
         }));
         setNbEleves(map);
-      } catch(e) { console.error(e); }
+      } catch(e) {}
       setLoading(false);
     })();
   }, [user?.id]);

@@ -311,6 +311,18 @@ npm run build # build de production
 - **Cadenas leçons en chaîne** : leçon N verrouillée jusqu'à ce que leçon N-1 ait un QCM ET que l'élève l'ait réussi. Modules et thématiques restent toujours accessibles.
 - **Barre de progression** : conservée uniquement sur les thématiques, ne compte que les niveaux qui ont un QCM
 
+### Audit sécurité & qualité — ✅ Corrigé (03/04/2026)
+
+**Critiques (3/3 corrigés) :**
+- Clés API Supabase déplacées vers `.env.local` (variables `process.env.REACT_APP_*`) dans les 3 fichiers supabase
+- Injection HTML corrigée dans la fenêtre d'impression (`Eleves.jsx`) — `escapeHtml()` sur toutes les valeurs interpolées
+- Masquage automatique des mots de passe provisoires après 30s dans `Eleves.jsx` et `Enseignants.jsx` (réaffichage au clic)
+
+**Importants (3/3 corrigés) :**
+- Memory leak corrigé dans `PortailDashboard.jsx` — flag `cancelled` dans useEffect pour éviter setState sur composant démonté
+- 26 `console.error` supprimés dans 12 fichiers (évite l'exposition de messages Supabase dans les DevTools en prod)
+- Accessibilité ARIA ajoutée : `htmlFor`/`id` sur labels+inputs des modals (`Eleves.jsx`, `Enseignants.jsx`, `Cours.jsx`), `aria-label` sur boutons icônes
+
 ### Améliorations futures (non planifiées)
 - D5 — Aperçu miniature YouTube dans la modal contenu
 - D3 — Mini-barre de progression dans la carte élève

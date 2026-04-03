@@ -292,7 +292,7 @@ function ModuleEntryView({ moduleId }) {
           setQcmNiveauxIds(qcmIds);
         }
       }
-    })().catch(console.error);
+    })().catch(() => {});
   }, [moduleId, eleveId]);
 
   if (thematiques === null) return <div style={S.empty}>Chargement...</div>;
@@ -421,7 +421,7 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
             setQcmNiveauxIds(qcmIds);
           }
         }
-      } catch(e) { console.error(e); setLecons([]); }
+      } catch(e) { setLecons([]); }
     })();
   }, [thId, eleveId]);
 
@@ -616,7 +616,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       };
       const firstTarget = nivs.find((n, i) => isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi));
       setSelNiveau(firstTarget || nivs[0] || null);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
     setLoading(false);
   }, [fetchId, byThematique, byLecon, eleveId]);
 
@@ -629,7 +629,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       try {
         const [c, q] = await Promise.all([fetchContenusEleve(selNiveau.id), fetchQCMEleve(selNiveau.id)]);
         setContenus(c); setQuestions(q);
-      } catch(e) { console.error(e); }
+      } catch(e) {}
     })();
   }, [selNiveau]);
 
@@ -654,7 +654,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
     try {
       await saveProgression(eleveId, selNiveau.id, pct, passed);
       setProgressionState(await fetchProgression(eleveId));
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   };
 
   const handleNextLevel = () => {

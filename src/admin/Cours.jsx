@@ -145,37 +145,37 @@ export default function Cours() {
 
   // ─── Chargement des modules ─────────────────────────────────────────
   const loadModules = useCallback(async () => {
-    try { setModules(await fetchModules()); } catch(e) { console.error(e); }
+    try { setModules(await fetchModules()); } catch(e) {}
   }, []);
   useEffect(() => { loadModules(); }, [loadModules]);
   useEffect(() => { fetchNiveauxScolaires().then(setNiveauxScolaires).catch(() => {}); }, []);
 
   const loadThematiques = useCallback(async (modId) => {
-    try { setThematiques(await fetchThematiques(modId)); } catch(e) { console.error(e); }
+    try { setThematiques(await fetchThematiques(modId)); } catch(e) {}
   }, []);
 
   const loadNiveaux = useCallback(async (modId) => {
-    try { setNiveaux(await fetchNiveaux(modId)); } catch(e) { console.error(e); }
+    try { setNiveaux(await fetchNiveaux(modId)); } catch(e) {}
   }, []);
 
   const loadLecons = useCallback(async (thId) => {
-    try { setLecons(await fetchLecons(thId)); } catch(e) { console.error(e); }
+    try { setLecons(await fetchLecons(thId)); } catch(e) {}
   }, []);
 
   const loadNiveauxByThematique = useCallback(async (thId) => {
-    try { setNiveaux(await fetchNiveauxByThematique(thId)); } catch(e) { console.error(e); }
+    try { setNiveaux(await fetchNiveauxByThematique(thId)); } catch(e) {}
   }, []);
 
   const loadNiveauxByLecon = useCallback(async (leconId) => {
-    try { setNiveaux(await fetchNiveauxByLecon(leconId)); } catch(e) { console.error(e); }
+    try { setNiveaux(await fetchNiveauxByLecon(leconId)); } catch(e) {}
   }, []);
 
   const loadContenus = useCallback(async (nivId) => {
-    try { setContenus(await fetchContenus(nivId)); } catch(e) { console.error(e); }
+    try { setContenus(await fetchContenus(nivId)); } catch(e) {}
   }, []);
 
   const loadQuestions = useCallback(async (nivId) => {
-    try { setQuestions(await fetchQCM(nivId)); } catch(e) { console.error(e); }
+    try { setQuestions(await fetchQCM(nivId)); } catch(e) {}
   }, []);
 
   // ─── Navigation ─────────────────────────────────────────────────────
@@ -407,8 +407,8 @@ export default function Cours() {
                 <div style={S.cardHeader}>
                   <h3 style={S.cardTitle}>{m.titre}</h3>
                   <div style={S.actions}>
-                    <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id, m.titre); }}><IconTrash /></button>
+                    <button style={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
+                    <button style={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id, m.titre); }}><IconTrash /></button>
                   </div>
                 </div>
                 {m.description && <p style={S.cardDesc}>{m.description}</p>}
@@ -469,8 +469,8 @@ export default function Cours() {
                 <div style={S.cardHeader}>
                   <h3 style={S.cardTitle}>{th.titre}</h3>
                   <div style={S.actions}>
-                    <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'thematique', data:th }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteThematique(th.id, th.titre); }}><IconTrash /></button>
+                    <button style={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'thematique', data:th }); }}><IconEdit /></button>
+                    <button style={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteThematique(th.id, th.titre); }}><IconTrash /></button>
                   </div>
                 </div>
                 {th.description && <p style={S.cardDesc}>{th.description}</p>}
@@ -530,8 +530,8 @@ export default function Cours() {
                 <div style={S.cardHeader}>
                   <h3 style={S.cardTitle}>{lec.titre}</h3>
                   <div style={S.actions}>
-                    <button style={S.actionBtn} title="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'lecon', data:lec }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteLecon(lec.id, lec.titre); }}><IconTrash /></button>
+                    <button style={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'lecon', data:lec }); }}><IconEdit /></button>
+                    <button style={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteLecon(lec.id, lec.titre); }}><IconTrash /></button>
                   </div>
                 </div>
                 {lec.description && <p style={S.cardDesc}>{lec.description}</p>}
@@ -576,8 +576,8 @@ export default function Cours() {
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <span style={S.badge('var(--a-blue)')}>Score requis : {n.score_requis}%</span>
-              <button style={S.actionBtn} onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}><IconEdit /></button>
-              <button style={S.actionBtn} onClick={e => { e.stopPropagation(); handleDeleteNiveau(n.id, n.titre); }}><IconTrash /></button>
+              <button style={S.actionBtn} aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}><IconEdit /></button>
+              <button style={S.actionBtn} aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteNiveau(n.id, n.titre); }}><IconTrash /></button>
             </div>
           </div>
         ))}
@@ -621,8 +621,8 @@ export default function Cours() {
                 <span style={{ fontWeight:500, color:'var(--a-fg)', fontSize:14, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.titre}</span>
               </div>
               <div style={S.actions}>
-                <button style={S.actionBtn} onClick={() => setModal({ type:'contenu', data:c })}><IconEdit /></button>
-                <button style={S.actionBtn} onClick={() => handleDeleteContenu(c.id)}><IconTrash /></button>
+                <button style={S.actionBtn} aria-label="Modifier" onClick={() => setModal({ type:'contenu', data:c })}><IconEdit /></button>
+                <button style={S.actionBtn} aria-label="Supprimer" onClick={() => handleDeleteContenu(c.id)}><IconTrash /></button>
               </div>
             </div>
           ))}
@@ -652,7 +652,7 @@ export default function Cours() {
                     </div>
                   </div>
                 </div>
-                <button style={S.actionBtn}><IconEdit /></button>
+                <button style={S.actionBtn} aria-label="Modifier"><IconEdit /></button>
               </div>
             );
           })}
@@ -735,8 +735,8 @@ function ModuleModal({ data, onSave, onClose, loading }) {
 
   return (
     <Modal title={data ? 'Modifier le module' : 'Nouveau module'} onClose={onClose}>
-      <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Cours de Coran" /></div>
-      <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description du module..." /></div>
+      <div style={S.field}><label htmlFor="mod_titre" style={S.label}>Titre *</label><input id="mod_titre" style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Cours de Coran" /></div>
+      <div style={S.field}><label htmlFor="mod_description" style={S.label}>Description</label><textarea id="mod_description" style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description du module..." /></div>
 
       {/* Zone upload image */}
       <div style={S.field}>
@@ -1016,8 +1016,8 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
 
   return (
     <Modal title={data ? 'Modifier le niveau' : 'Nouveau niveau'} onClose={onClose}>
-      <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Niveau 1 - Introduction" /></div>
-      <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} /></div>
+      <div style={S.field}><label htmlFor="niv_titre" style={S.label}>Titre *</label><input id="niv_titre" style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Niveau 1 - Introduction" /></div>
+      <div style={S.field}><label htmlFor="niv_description" style={S.label}>Description</label><textarea id="niv_description" style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} /></div>
 
       {/* Zone upload image */}
       <div style={S.field}>
@@ -1052,7 +1052,7 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
 
       <div style={{ display:'flex', gap:12 }}>
         <div style={{ ...S.field, flex:1 }}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
-        <div style={{ ...S.field, flex:1 }}><label style={S.label}>Score requis (%)</label><input style={S.input} type="number" min="0" max="100" value={score_requis} onChange={e => setScoreRequis(+e.target.value)} /></div>
+        <div style={{ ...S.field, flex:1 }}><label htmlFor="niv_score_requis" style={S.label}>Score requis (%)</label><input id="niv_score_requis" style={S.input} type="number" min="0" max="100" value={score_requis} onChange={e => setScoreRequis(+e.target.value)} /></div>
       </div>
       <div style={S.btnRow}>
         <button style={S.btnCancel} onClick={onClose}>Annuler</button>

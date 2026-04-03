@@ -38,7 +38,7 @@ export default function Messages() {
   useEffect(() => {
     fetchMessages()
       .then(setData)
-      .catch(err => console.error('Erreur:', err))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -57,7 +57,6 @@ export default function Messages() {
     try {
       await updateMessageLu(id, newLu);
     } catch (err) {
-      console.error('Erreur:', err);
       setData(prev => prev.map(m => m.id === id ? { ...m, lu: !newLu } : m));
     }
   };
@@ -70,7 +69,6 @@ export default function Messages() {
       try {
         await updateMessageLu(msg.id, true);
       } catch (err) {
-        console.error('Erreur:', err);
       }
     }
   };

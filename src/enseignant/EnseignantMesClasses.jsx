@@ -33,7 +33,7 @@ export default function EnseignantMesClasses() {
           try { const e = await fetchElevesDeClasse(c.id); map[c.id] = e.length; } catch { map[c.id] = 0; }
         }));
         setNbEleves(map);
-      } catch(e) { console.error(e); }
+      } catch(e) {}
       setLoading(false);
     })();
   }, [user?.id]);

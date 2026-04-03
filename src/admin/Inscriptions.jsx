@@ -41,7 +41,7 @@ export default function Inscriptions() {
   useEffect(() => {
     fetchInscriptions()
       .then(setData)
-      .catch(err => console.error('Erreur:', err))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -58,7 +58,6 @@ export default function Inscriptions() {
     try {
       await updateInscriptionStatut(id, next);
     } catch (err) {
-      console.error('Erreur mise à jour:', err);
       setData(prev => prev.map(i => i.id === id ? { ...i, statut: currentStatut } : i));
     }
   };

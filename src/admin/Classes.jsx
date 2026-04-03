@@ -89,11 +89,11 @@ export default function Classes() {
       const [ns, es] = await Promise.all([fetchNiveauxScolaires(), fetchEleves()]);
       setNiveaux(ns);
       setEleves(es);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   }, []);
 
   const loadClasses = useCallback(async (niveauId) => {
-    try { setClasses(await fetchClasses(niveauId)); } catch(e) { console.error(e); }
+    try { setClasses(await fetchClasses(niveauId)); } catch(e) {}
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);

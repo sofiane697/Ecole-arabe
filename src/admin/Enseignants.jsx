@@ -109,7 +109,7 @@ export default function Enseignants() {
         try { map[e.id] = await fetchEnseignantClasses(e.id); } catch { map[e.id] = []; }
       }));
       setClassesMap(map);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -388,29 +388,29 @@ function EnseignantModal({ data, allClasses, niveaux, initialClasseIds, loading,
 
         <div style={{ display:'flex', gap:12 }}>
           <div style={{ ...S.field, flex:1 }}>
-            <label style={S.label}>Prénom *</label>
-            <input style={S.input} value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Ex: Sofiane" autoFocus />
+            <label htmlFor="ens_prenom" style={S.label}>Prénom *</label>
+            <input id="ens_prenom" style={S.input} value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Ex: Sofiane" autoFocus />
           </div>
           <div style={{ ...S.field, flex:1 }}>
-            <label style={S.label}>Nom *</label>
-            <input style={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Ex: Dupont" />
+            <label htmlFor="ens_nom" style={S.label}>Nom *</label>
+            <input id="ens_nom" style={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Ex: Dupont" />
           </div>
         </div>
 
         <div style={S.field}>
-          <label style={S.label}>Email</label>
-          <input style={S.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@exemple.fr" />
+          <label htmlFor="ens_email" style={S.label}>Email</label>
+          <input id="ens_email" style={S.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@exemple.fr" />
         </div>
 
         <div style={{ display:'flex', gap:12 }}>
           <div style={{ ...S.field, flex:1 }}>
-            <label style={S.label}>Téléphone</label>
-            <input style={S.input} value={telephone} onChange={e => setTel(e.target.value)} placeholder="06 12 34 56 78" />
+            <label htmlFor="ens_telephone" style={S.label}>Téléphone</label>
+            <input id="ens_telephone" style={S.input} value={telephone} onChange={e => setTel(e.target.value)} placeholder="06 12 34 56 78" />
           </div>
           {data && (
             <div style={{ ...S.field, flex:1 }}>
-              <label style={S.label}>Statut</label>
-              <select style={S.select} value={actif ? 'true' : 'false'} onChange={e => setActif(e.target.value === 'true')}>
+              <label htmlFor="ens_statut" style={S.label}>Statut</label>
+              <select id="ens_statut" style={S.select} value={actif ? 'true' : 'false'} onChange={e => setActif(e.target.value === 'true')}>
                 <option value="true">Actif</option>
                 <option value="false">Inactif</option>
               </select>

@@ -46,7 +46,7 @@ export default function EnseignantClasse() {
         const c = cls.find(c => String(c.id) === String(id));
         setClasse(c || null);
         setEleves(elvs);
-      } catch(e) { console.error(e); }
+      } catch(e) {}
       setLoading(false);
     })();
   }, [id, user?.id]);

@@ -17,7 +17,7 @@ export default function Dashboard() {
   useEffect(() => {
     Promise.all([fetchInscriptions(), fetchMessages()])
       .then(([insc, msgs]) => { setInscriptions(insc); setMessages(msgs); })
-      .catch(err => console.error('Erreur chargement:', err))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

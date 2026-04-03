@@ -78,7 +78,7 @@ export default function Eleves() {
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
 
   const loadEleves = useCallback(async () => {
-    try { setEleves(await fetchEleves()); } catch(e) { console.error(e); }
+    try { setEleves(await fetchEleves()); } catch(e) {}
   }, []);
 
   useEffect(() => { loadEleves(); }, [loadEleves]);
@@ -106,7 +106,7 @@ export default function Eleves() {
       ]);
       setProgression(prog);
       setNiveauxMap(nivMap);
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   };
 
   const handleToggleActif = async (eleve) => {
@@ -711,8 +711,8 @@ function CreateEleveModal({ onClose, onCreated }) {
       <div style={S.modal} onClick={e => e.stopPropagation()}>
         <div style={S.modalTitle}>Ajouter un élève</div>
         <div style={{ display:'flex', gap:12 }}>
-          <div style={{ ...S.field, flex:1 }}><label style={S.label}>Prénom *</label><input style={S.input} value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Prénom" /></div>
-          <div style={{ ...S.field, flex:1 }}><label style={S.label}>Nom *</label><input style={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Nom" /></div>
+          <div style={{ ...S.field, flex:1 }}><label htmlFor="eleve_prenom" style={S.label}>Prénom *</label><input id="eleve_prenom" style={S.input} value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Prénom" /></div>
+          <div style={{ ...S.field, flex:1 }}><label htmlFor="eleve_nom" style={S.label}>Nom *</label><input id="eleve_nom" style={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Nom" /></div>
         </div>
         {identifiant && (
           <div style={{ ...S.field, background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px' }}>
@@ -725,8 +725,8 @@ function CreateEleveModal({ onClose, onCreated }) {
         )}
         {niveauxScolaires.length > 0 && (
           <div style={S.field}>
-            <label style={S.label}>Classe (optionnel)</label>
-            <select style={{ ...S.input, cursor:'pointer' }} value={classeId} onChange={e => setClasseId(e.target.value)}>
+            <label htmlFor="eleve_classe" style={S.label}>Classe (optionnel)</label>
+            <select id="eleve_classe" style={{ ...S.input, cursor:'pointer' }} value={classeId} onChange={e => setClasseId(e.target.value)}>
               <option value="">— Aucune classe —</option>
               {niveauxScolaires.map(n => {
                 const cs = allClasses.filter(c => c.niveau_id === n.id);

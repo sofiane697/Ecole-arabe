@@ -179,6 +179,7 @@ export default function PortailDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         let eleveId, niveauScolaireId;
@@ -187,7 +188,6 @@ export default function PortailDashboard() {
           eleveId = user?.id;
           niveauScolaireId = user?.niveau_scolaire_id ?? null;
         } catch {}
-        // Rafraîchir niveau_scolaire_id depuis la DB au cas où il a changé
         if (eleveId) {
           const freshId = await fetchEleveNiveauScolaireId(eleveId).catch(() => niveauScolaireId);
           if (freshId !== niveauScolaireId) {
@@ -199,29 +199,30 @@ export default function PortailDashboard() {
           }
         }
         const [allMods, prog] = await Promise.all([fetchModulesEleve(), fetchProgression(eleveId)]);
-        // Filtrage client : garder les modules dont niveaux_scolaires_ids contient le niveau de l'élève
-        // Si niveaux_scolaires_ids est vide ou absent → visible par tous
         const mods = allMods.filter(m => {
           if (!Array.isArray(m.niveaux_scolaires_ids) || m.niveaux_scolaires_ids.length === 0) return false;
           if (!niveauScolaireId) return false;
           return m.niveaux_scolaires_ids.includes(niveauScolaireId);
         });
+        if (cancelled) return;
         setModules(mods);
         setProgression(prog);
-        // Charger niveaux pour chaque module
         const nivMap = {};
         await Promise.all(mods.map(async (m) => {
           try { nivMap[m.id] = await fetchNiveauxEleve(m.id); } catch { nivMap[m.id] = []; }
         }));
+        if (cancelled) return;
         setNiveauxMap(nivMap);
         const allNivIds = Object.values(nivMap).flat().map(n => n.id);
         if (allNivIds.length > 0) {
           const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
+          if (cancelled) return;
           setQcmNiveauxIds(qcmIds);
         }
-      } catch(e) { console.error(e); }
-      setLoading(false);
+      } catch(e) {}
+      if (!cancelled) setLoading(false);
     })();
+    return () => { cancelled = true; };
   }, []);
 
   if (loading) return <div style={S.loading}>Chargement de vos cours...</div>;
