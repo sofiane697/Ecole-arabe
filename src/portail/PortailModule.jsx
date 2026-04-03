@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
-  fetchModulesEleve, fetchNiveauxEleve, fetchNiveauxByThematiqueEleve,
+  fetchModulesEleve, fetchNiveauxByThematiqueEleve,
   fetchThematiquesEleve, fetchAllThematiquesEleve, fetchEleveNiveauScolaireId, fetchContenusEleve, fetchQCMEleve,
   fetchProgression, saveProgression, fetchLeconsEleve, fetchNiveauxByLeconEleve, fetchQCMExistenceForNiveaux,
+  fetchAllNiveauxForModuleEleve,
 } from './supabasePortail';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -600,7 +601,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
           ? fetchNiveauxByLeconEleve(fetchId)
           : byThematique
             ? fetchNiveauxByThematiqueEleve(fetchId)
-            : fetchNiveauxEleve(fetchId),
+            : fetchAllNiveauxForModuleEleve(fetchId),
         fetchProgression(eleveId),
       ]);
       const qcmResults = await Promise.all(nivs.map(n => fetchQCMEleve(n.id)));

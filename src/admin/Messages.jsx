@@ -35,11 +35,39 @@ const IconTrash = () => (
   </svg>
 );
 
+const IconSearch = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+
+const COURSE_COLORS = {
+  'Débutant':     { bg: 'rgba(48,209,88,.12)',  color: '#30d158' },
+  'Intermédiaire':{ bg: 'rgba(10,132,255,.12)', color: '#0a84ff' },
+  'Avancé':       { bg: 'rgba(191,138,48,.12)', color: '#bf8a30' },
+  'Lecture':      { bg: 'rgba(94,92,230,.12)',  color: '#5e5ce6' },
+  'Renseignement':{ bg: 'rgba(152,152,157,.12)',color: '#98989d' },
+};
+
+function getCourseStyle(cours) {
+  if (!cours) return COURSE_COLORS['Renseignement'];
+  for (const [key, style] of Object.entries(COURSE_COLORS)) {
+    if (cours.includes(key)) return style;
+  }
+  return COURSE_COLORS['Renseignement'];
+}
+
+function getCoursLabel(cours) {
+  if (!cours) return 'Renseignement';
+  return cours.split('—')[0].trim();
+}
+
 export default function Messages() {
   const [data,        setData]        = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [filtreLu,    setFiltreLu]    = useState('tous');
   const [filtreCours, setFiltreCours] = useState('tous');
+  const [search,      setSearch]      = useState('');
   const [selected,    setSelected]    = useState(null);
   const [confirm,     setConfirm]     = useState(null);
 
@@ -50,10 +78,20 @@ export default function Messages() {
       .finally(() => setLoading(false));
   }, []);
 
+  const todayCount = data.filter(m => {
+    const d = new Date(m.created_at);
+    const now = new Date();
+    return d.toDateString() === now.toDateString();
+  }).length;
+
+  const nonLus = data.filter(m => !m.lu).length;
+
   const filtered = data.filter(m => {
-    const okLu    = filtreLu    === 'tous'  || (filtreLu === 'nonlu' ? !m.lu : m.lu);
-    const okCours = filtreCours === 'tous'  || m.cours === filtreCours;
-    return okLu && okCours;
+    const okLu    = filtreLu    === 'tous' || (filtreLu === 'nonlu' ? !m.lu : m.lu);
+    const okCours = filtreCours === 'tous' || m.cours === filtreCours;
+    const q = search.toLowerCase();
+    const okSearch = !q || `${m.prenom} ${m.nom}`.toLowerCase().includes(q) || (m.email || '').toLowerCase().includes(q);
+    return okLu && okCours && okSearch;
   });
 
   const toggleLu = async (id) => {
@@ -64,7 +102,7 @@ export default function Messages() {
     if (selected?.id === id) setSelected(prev => ({ ...prev, lu: newLu }));
     try {
       await updateMessageLu(id, newLu);
-    } catch (err) {
+    } catch {
       setData(prev => prev.map(m => m.id === id ? { ...m, lu: !newLu } : m));
     }
   };
@@ -74,10 +112,7 @@ export default function Messages() {
     if (!msg.lu) {
       setData(prev => prev.map(m => m.id === msg.id ? { ...m, lu: true } : m));
       setSelected({ ...msg, lu: true });
-      try {
-        await updateMessageLu(msg.id, true);
-      } catch (err) {
-      }
+      try { await updateMessageLu(msg.id, true); } catch {}
     }
   };
 
@@ -95,8 +130,6 @@ export default function Messages() {
       },
     });
   };
-
-  const nonLus = data.filter(m => !m.lu).length;
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
@@ -118,9 +151,8 @@ export default function Messages() {
     });
   };
 
-  const getInitials = (prenom, nom) => {
-    return `${(prenom || '')[0] || ''}${(nom || '')[0] || ''}`.toUpperCase();
-  };
+  const getInitials = (prenom, nom) =>
+    `${(prenom || '')[0] || ''}${(nom || '')[0] || ''}`.toUpperCase();
 
   if (loading) {
     return (
@@ -143,28 +175,68 @@ export default function Messages() {
         </div>
       </div>
 
+      {/* Stats */}
+      <div style={{ display:'flex', gap:10, marginBottom:'1.25rem', flexWrap:'wrap' }}>
+        {[
+          { label:'Total',    value: data.length,  color:'var(--a-fg-mid)' },
+          { label:'Non lus',  value: nonLus,        color: nonLus > 0 ? 'var(--a-red)' : 'var(--a-fg-mid)' },
+          { label:"Aujourd'hui", value: todayCount, color: todayCount > 0 ? 'var(--a-gold)' : 'var(--a-fg-mid)' },
+        ].map(s => (
+          <div key={s.label} style={{
+            display:'flex', alignItems:'center', gap:8,
+            padding:'8px 16px', borderRadius:980,
+            background:'var(--a-bg-card)', border:'1px solid var(--a-border)',
+            fontSize:12,
+          }}>
+            <span style={{ fontSize:18, fontWeight:700, color:s.color, lineHeight:1 }}>{s.value}</span>
+            <span style={{ color:'var(--a-fg-light)', fontWeight:500 }}>{s.label}</span>
+          </div>
+        ))}
+      </div>
+
       {/* Filtres */}
       <div className="msg-filters">
-        <div className="msg-filter-tabs">
-          {[
-            { key: 'tous', label: 'Tous', count: data.length },
-            { key: 'nonlu', label: 'Non lus', count: nonLus },
-            { key: 'lu', label: 'Lus', count: data.length - nonLus },
-          ].map(f => (
-            <button
-              key={f.key}
-              className={`msg-filter-tab ${filtreLu === f.key ? 'active' : ''}`}
-              onClick={() => setFiltreLu(f.key)}
-            >
-              {f.label}
-              <span className="msg-filter-tab-count">{f.count}</span>
-            </button>
-          ))}
+        <div style={{ display:'flex', gap:8, alignItems:'center', flexWrap:'wrap', flex:1 }}>
+          <div className="msg-filter-tabs">
+            {[
+              { key: 'tous',  label: 'Tous',     count: data.length },
+              { key: 'nonlu', label: 'Non lus',  count: nonLus },
+              { key: 'lu',    label: 'Lus',      count: data.length - nonLus },
+            ].map(f => (
+              <button
+                key={f.key}
+                className={`msg-filter-tab ${filtreLu === f.key ? 'active' : ''}`}
+                onClick={() => setFiltreLu(f.key)}
+              >
+                {f.label}
+                <span className="msg-filter-tab-count">{f.count}</span>
+              </button>
+            ))}
+          </div>
+          <select className="admin-filter-select" value={filtreCours} onChange={e => setFiltreCours(e.target.value)}
+            style={{ maxWidth:220 }}>
+            <option value="tous">Tous les cours</option>
+            {COURS.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
-        <select className="admin-filter-select" value={filtreCours} onChange={e => setFiltreCours(e.target.value)}>
-          <option value="tous">Tous les cours</option>
-          {COURS.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+        {/* Recherche */}
+        <div style={{ position:'relative', flexShrink:0 }}>
+          <span style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)', color:'var(--a-fg-light)', pointerEvents:'none', display:'flex' }}>
+            <IconSearch />
+          </span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher…"
+            style={{
+              paddingLeft:32, paddingRight:12, paddingTop:7, paddingBottom:7,
+              border:'1px solid var(--a-border)', borderRadius:980,
+              background:'var(--a-bg-card)', color:'var(--a-fg)',
+              fontSize:12, outline:'none', width:180, boxSizing:'border-box',
+              fontFamily:'inherit',
+            }}
+          />
+        </div>
       </div>
 
       {/* Layout liste + panneau */}
@@ -175,37 +247,48 @@ export default function Messages() {
           {filtered.length === 0 ? (
             <div className="msg-empty">
               <IconMail />
-              <p>Aucun message trouvé</p>
+              <p>{search ? `Aucun résultat pour « ${search} »` : 'Aucun message trouvé'}</p>
             </div>
-          ) : filtered.map(m => (
-            <div
-              key={m.id}
-              className={`msg-item ${!m.lu ? 'unread' : ''} ${selected?.id === m.id ? 'selected' : ''}`}
-              onClick={() => handleSelect(m)}
-            >
-              <div className="msg-item-avatar">
-                {getInitials(m.prenom, m.nom)}
-                {!m.lu && <span className="msg-item-dot" />}
-              </div>
-              <div className="msg-item-content">
-                <div className="msg-item-top">
-                  <span className="msg-item-name">{m.prenom} {m.nom}</span>
-                  <span className="msg-item-time">{formatDate(m.created_at)}</span>
-                </div>
-                <div className="msg-item-course">{(m.cours || 'Renseignement').split('—')[0].trim()}</div>
-                <div className="msg-item-preview">{(m.message || '').slice(0, 80)}{(m.message || '').length > 80 ? '...' : ''}</div>
-              </div>
-              <button
-                onClick={e => { e.stopPropagation(); handleDelete(m); }}
-                aria-label="Supprimer"
-                style={{ flexShrink:0, background:'none', border:'none', cursor:'pointer', color:'var(--a-fg-light)', padding:'4px 6px', borderRadius:6, opacity:0.6, transition:'opacity .15s, color .15s' }}
-                onMouseEnter={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.color='var(--a-red)'; }}
-                onMouseLeave={e => { e.currentTarget.style.opacity='0.6'; e.currentTarget.style.color='var(--a-fg-light)'; }}
+          ) : filtered.map(m => {
+            const cStyle = getCourseStyle(m.cours);
+            return (
+              <div
+                key={m.id}
+                className={`msg-item ${!m.lu ? 'unread' : ''} ${selected?.id === m.id ? 'selected' : ''}`}
+                onClick={() => handleSelect(m)}
               >
-                <IconTrash />
-              </button>
-            </div>
-          ))}
+                <div className="msg-item-avatar">
+                  {getInitials(m.prenom, m.nom)}
+                  {!m.lu && <span className="msg-item-dot" />}
+                </div>
+                <div className="msg-item-content">
+                  <div className="msg-item-top">
+                    <span className="msg-item-name">{m.prenom} {m.nom}</span>
+                    <span className="msg-item-time" title={formatFullDate(m.created_at)}>{formatDate(m.created_at)}</span>
+                  </div>
+                  <div style={{ marginBottom:'0.25rem' }}>
+                    <span style={{
+                      display:'inline-block', fontSize:'0.68rem', fontWeight:600,
+                      padding:'2px 8px', borderRadius:980,
+                      background: cStyle.bg, color: cStyle.color,
+                    }}>
+                      {getCoursLabel(m.cours)}
+                    </span>
+                  </div>
+                  <div className="msg-item-preview">{(m.message || '').slice(0, 90)}{(m.message || '').length > 90 ? '…' : ''}</div>
+                </div>
+                <button
+                  onClick={e => { e.stopPropagation(); handleDelete(m); }}
+                  aria-label="Supprimer"
+                  style={{ flexShrink:0, background:'none', border:'none', cursor:'pointer', color:'var(--a-fg-light)', padding:'4px 6px', borderRadius:6, opacity:0.6, transition:'opacity .15s, color .15s', alignSelf:'center' }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.color='var(--a-red)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity='0.6'; e.currentTarget.style.color='var(--a-fg-light)'; }}
+                >
+                  <IconTrash />
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         {/* Panneau de lecture */}
@@ -219,7 +302,7 @@ export default function Messages() {
               <p className="msg-reader-empty-sub">Cliquez sur un message pour le lire</p>
             </div>
           ) : (
-            <div className="msg-reader-content">
+            <div className="msg-reader-content" style={{ maxHeight:'calc(100vh - 220px)', overflowY:'auto' }}>
               {/* Header */}
               <div className="msg-reader-header">
                 <div className="msg-reader-avatar">
@@ -229,7 +312,12 @@ export default function Messages() {
                   <span className="msg-reader-name">{selected.prenom} {selected.nom}</span>
                   <span className="msg-reader-email">{selected.email}</span>
                 </div>
-                <span className={`badge ${selected.lu ? 'badge-lu' : 'badge-nonlu'}`}>
+                <span style={{
+                  fontSize:'0.7rem', fontWeight:600, padding:'3px 10px', borderRadius:980,
+                  background: selected.lu ? 'rgba(48,209,88,.12)' : 'rgba(255,69,58,.12)',
+                  color: selected.lu ? 'var(--a-green)' : 'var(--a-red)',
+                  flexShrink:0,
+                }}>
                   {selected.lu ? '✓ Lu' : '● Non lu'}
                 </span>
               </div>
@@ -240,16 +328,37 @@ export default function Messages() {
               <div className="msg-reader-metas">
                 <div className="msg-reader-meta">
                   <IconClock />
-                  <span>{formatFullDate(selected.created_at)}</span>
+                  <span title={formatFullDate(selected.created_at)}>{formatDate(selected.created_at)}</span>
                 </div>
                 <div className="msg-reader-meta">
                   <IconBook />
-                  <span>{selected.cours || 'Renseignement'}</span>
+                  {(() => {
+                    const cStyle = getCourseStyle(selected.cours);
+                    return (
+                      <span style={{
+                        fontSize:'0.7rem', fontWeight:600, padding:'2px 8px', borderRadius:980,
+                        background: cStyle.bg, color: cStyle.color,
+                      }}>
+                        {selected.cours || 'Renseignement'}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 
               {/* Corps du message */}
-              <div className="msg-reader-body">
+              <div style={{
+                background:'var(--a-bg)',
+                border:'1px solid var(--a-border)',
+                borderLeft:'3px solid var(--a-gold)',
+                borderRadius:'0 var(--a-radius-sm) var(--a-radius-sm) 0',
+                padding:'1.3rem 1.4rem',
+                fontSize:'0.92rem',
+                lineHeight:1.8,
+                color:'var(--a-fg)',
+                marginBottom:'1.5rem',
+                whiteSpace:'pre-wrap',
+              }}>
                 {selected.message}
               </div>
 

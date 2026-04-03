@@ -138,6 +138,92 @@ export async function fetchNiveauxByLeconEleve(leconId) {
   return res.json();
 }
 
+// ─── CHAT ────────────────────────────────────────────────────────────────────
+
+/** Récupère les enseignants de la classe de l'élève */
+export async function fetchEnseignantsDeLEleve(eleveId) {
+  const r1 = await fetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=classe_id`, { headers: ANON_HEADERS });
+  const [eleve] = await r1.json();
+  if (!eleve?.classe_id) return [];
+  const r2 = await fetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?classe_id=eq.${eleve.classe_id}&select=enseignant_id`, { headers: ANON_HEADERS });
+  const rows = await r2.json();
+  if (!rows.length) return [];
+  const ids = rows.map(r => r.enseignant_id).join(',');
+  const r3 = await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids})&select=id,nom,prenom`, { headers: ANON_HEADERS });
+  return r3.json();
+}
+
+/** Récupère tous les messages d'une conversation élève↔enseignant */
+export async function fetchChatMessages(eleveId, enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&order=created_at.asc`,
+    { headers: ANON_HEADERS }
+  );
+  return res.json();
+}
+
+/** Envoie un message */
+export async function sendChatMessage(eleveId, enseignantId, contenu, senderRole) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ eleve_id: eleveId, enseignant_id: enseignantId, contenu, sender_role: senderRole }),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Marque comme lus les messages reçus par l'élève */
+export async function markMessagesReadEleve(eleveId, enseignantId) {
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&lu=eq.false`,
+    { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
+  );
+}
+
+/** Compte les messages non lus reçus par l'élève (tous enseignants) */
+export async function fetchUnreadCountEleve(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&sender_role=eq.enseignant&lu=eq.false&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  const data = await res.json();
+  return Array.isArray(data) ? data.length : 0;
+}
+
+/** Compte les messages non lus d'un enseignant précis pour l'élève */
+export async function fetchUnreadCountParEnseignant(eleveId, enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&lu=eq.false&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  const data = await res.json();
+  return Array.isArray(data) ? data.length : 0;
+}
+
+/** Traverse la vraie hiérarchie Module→Thématiques→(Leçons→)Niveaux.
+ *  Remplace fetchNiveauxEleve(moduleId) qui utilisait l'ancienne colonne module_id. */
+export async function fetchAllNiveauxForModuleEleve(moduleId) {
+  const thRes = await fetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`, { headers: ANON_HEADERS });
+  const thematiques = thRes.ok ? await thRes.json() : [];
+  const niveaux = [];
+  await Promise.all(thematiques.map(async (th) => {
+    const lRes = await fetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${th.id}&order=ordre`, { headers: ANON_HEADERS });
+    const lecons = lRes.ok ? await lRes.json() : [];
+    if (lecons.length > 0) {
+      await Promise.all(lecons.map(async (l) => {
+        const nRes = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?lecon_id=eq.${l.id}&order=ordre`, { headers: ANON_HEADERS });
+        const nivs = nRes.ok ? await nRes.json() : [];
+        niveaux.push(...nivs);
+      }));
+    } else {
+      const nRes = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?thematique_id=eq.${th.id}&order=ordre`, { headers: ANON_HEADERS });
+      const nivs = nRes.ok ? await nRes.json() : [];
+      niveaux.push(...nivs);
+    }
+  }));
+  return niveaux;
+}
+
 // ─── PROGRESSION ──────────────────────────────────────────────────────────────
 
 export async function fetchProgression(eleveId) {

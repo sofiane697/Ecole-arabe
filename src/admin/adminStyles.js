@@ -134,6 +134,8 @@ const ADMIN_STYLES = `
     padding: 3rem 2.5rem;
     width: 100%;
     max-width: 400px;
+    box-sizing: border-box;
+    overflow: hidden;
     box-shadow: 0 30px 80px rgba(0,0,0,0.5);
     position: relative;
     z-index: 1;
@@ -179,6 +181,7 @@ const ADMIN_STYLES = `
   }
   .admin-field input {
     width: 100%;
+    box-sizing: border-box;
     padding: 0.75rem 1rem;
     background: var(--a-bg);
     border: 1px solid var(--a-border);

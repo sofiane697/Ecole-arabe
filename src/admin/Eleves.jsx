@@ -77,6 +77,7 @@ export default function Eleves() {
   const [editLoading, setEditLoading] = useState(false);
   const [allClasses, setAllClasses] = useState([]);
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
+  const [detailModule, setDetailModule] = useState(null); // module ouvert dans le panneau latéral
 
   const loadEleves = useCallback(async () => {
     try { setEleves(await fetchEleves()); } catch(e) {}
@@ -385,44 +386,148 @@ export default function Eleves() {
           </div>
         )}
 
-        <h3 style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)', marginBottom:16 }}>Progression par module</h3>
-
-        {modules.length === 0 && <div style={S.empty}>Aucun module disponible.</div>}
-        {modules.map(m => {
-          const nivs = niveauxMap[m.id] || [];
-          const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
-          const totalNiveaux = nivsAvecQCM.length;
-          const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
-          const pct = totalNiveaux > 0 ? Math.round((reussis / totalNiveaux) * 100) : 0;
-
+        {/* ─── Résumé global ─── */}
+        {(() => {
+          const totalQCM = modules.reduce((acc, m) => {
+            const nivsAvecQCM = (niveauxMap[m.id] || []).filter(n => qcmNiveauxIds.has(n.id));
+            return acc + nivsAvecQCM.length;
+          }, 0);
+          const totalReussis = modules.reduce((acc, m) => {
+            const nivsAvecQCM = (niveauxMap[m.id] || []).filter(n => qcmNiveauxIds.has(n.id));
+            return acc + nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+          }, 0);
+          const pctGlobal = totalQCM > 0 ? Math.round((totalReussis / totalQCM) * 100) : 0;
           return (
-            <div key={m.id} style={S.progressCard}>
-              <div style={S.progressTitle}>{m.titre}</div>
-              {totalNiveaux === 0 ? (
-                <div style={{ fontSize:12, color:'var(--a-fg-light)', fontStyle:'italic', marginTop:6 }}>Aucun QCM configuré</div>
-              ) : (
-                <>
-                  <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
-                  <div style={S.progressText}>
-                    <span>{reussis} / {totalNiveaux} niveaux réussis</span>
-                    <span style={{ fontWeight:600, color: pct >= 100 ? 'var(--a-green)' : 'var(--a-gold)' }}>{pct}%</span>
-                  </div>
-                  {nivsAvecQCM.map(n => {
-                    const prog = progression.find(p => p.niveau_id === n.id);
-                    return (
-                      <div key={n.id} style={{ display:'flex', alignItems:'center', gap:10, marginTop:8, fontSize:13, color:'var(--a-fg-mid)' }}>
-                        <span style={{ fontSize:14 }}>{prog?.reussi ? '✅' : prog?.score != null ? '❌' : '⬜'}</span>
-                        <span style={{ flex:1 }}>{n.titre}</span>
-                        {prog?.score != null && <span style={{ fontWeight:600, color: prog.reussi ? 'var(--a-green)' : 'var(--a-red)' }}>{prog.score}%</span>}
-                        {prog?.tentatives > 0 && <span style={{ fontSize:11 }}>({prog.tentatives} tentative{prog.tentatives > 1 ? 's' : ''})</span>}
-                      </div>
-                    );
-                  })}
-                </>
-              )}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:20 }}>
+              {[
+                { label:'Modules', value: modules.length },
+                { label:'Niveaux réussis', value: totalQCM > 0 ? `${totalReussis} / ${totalQCM}` : '—' },
+                { label:'Progression globale', value: totalQCM > 0 ? `${pctGlobal}%` : '—', color: pctGlobal >= 100 ? 'var(--a-green)' : pctGlobal > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' },
+              ].map(s => (
+                <div key={s.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px', textAlign:'center' }}>
+                  <div style={{ fontSize:20, fontWeight:700, color: s.color || 'var(--a-fg)' }}>{s.value}</div>
+                  <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2, textTransform:'uppercase', letterSpacing:'.5px' }}>{s.label}</div>
+                </div>
+              ))}
             </div>
           );
-        })}
+        })()}
+
+        {/* ─── Tableau récapitulatif ─── */}
+        <h3 style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)', marginBottom:12 }}>Progression par module</h3>
+
+        <div style={{ display:'flex', gap:16, alignItems:'flex-start' }}>
+
+          {/* Tableau */}
+          <div style={{ flex:1, minWidth:0 }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+              <thead>
+                <tr style={{ borderBottom:'1px solid var(--a-border)' }}>
+                  {['Module','Niveaux QCM','Réussis','Moy. score','Statut',''].map(h => (
+                    <th key={h} style={{ padding:'8px 10px', textAlign:'left', fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', whiteSpace:'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {modules.length === 0 && (
+                  <tr><td colSpan={6} style={{ padding:'24px', textAlign:'center', color:'var(--a-fg-light)' }}>Aucun module disponible.</td></tr>
+                )}
+                {modules.map(m => {
+                  const nivs = niveauxMap[m.id] || [];
+                  const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
+                  const totalN = nivsAvecQCM.length;
+                  const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+                  const scores = nivsAvecQCM.map(n => progression.find(p => p.niveau_id === n.id)?.score).filter(s => s != null);
+                  const moyScore = scores.length > 0 ? Math.round(scores.reduce((a,b) => a+b, 0) / scores.length) : null;
+                  const pct = totalN > 0 ? Math.round((reussis / totalN) * 100) : null;
+                  const isOpen = detailModule?.id === m.id;
+
+                  let statutLabel, statutColor, statutBg;
+                  if (totalN === 0) { statutLabel = 'Sans QCM'; statutColor = 'var(--a-fg-light)'; statutBg = 'rgba(255,255,255,.05)'; }
+                  else if (pct === 100) { statutLabel = 'Terminé'; statutColor = 'var(--a-green)'; statutBg = 'rgba(48,209,88,.12)'; }
+                  else if (reussis > 0) { statutLabel = 'En cours'; statutColor = 'var(--a-gold)'; statutBg = 'rgba(191,138,48,.12)'; }
+                  else { statutLabel = 'Non commencé'; statutColor = 'var(--a-fg-light)'; statutBg = 'rgba(255,255,255,.05)'; }
+
+                  return (
+                    <tr key={m.id} style={{ borderBottom:'1px solid var(--a-border)', background: isOpen ? 'rgba(191,138,48,.06)' : 'transparent', transition:'background .15s' }}>
+                      <td style={{ padding:'10px 10px', fontWeight:600, color:'var(--a-fg)' }}>{m.titre}</td>
+                      <td style={{ padding:'10px 10px', color:'var(--a-fg-mid)', textAlign:'center' }}>{totalN > 0 ? totalN : '—'}</td>
+                      <td style={{ padding:'10px 10px', textAlign:'center' }}>
+                        {totalN > 0 ? (
+                          <span style={{ fontWeight:600, color: pct === 100 ? 'var(--a-green)' : pct > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' }}>
+                            {reussis} / {totalN}
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td style={{ padding:'10px 10px', textAlign:'center' }}>
+                        {moyScore != null ? (
+                          <span style={{ fontWeight:600, color: moyScore >= 80 ? 'var(--a-green)' : moyScore >= 60 ? 'var(--a-gold)' : 'var(--a-red)' }}>{moyScore}%</span>
+                        ) : '—'}
+                      </td>
+                      <td style={{ padding:'10px 10px' }}>
+                        <span style={{ display:'inline-block', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, background: statutBg, color: statutColor }}>
+                          {statutLabel}
+                        </span>
+                      </td>
+                      <td style={{ padding:'10px 10px' }}>
+                        {totalN > 0 && (
+                          <button
+                            onClick={() => setDetailModule(isOpen ? null : { id: m.id, titre: m.titre, nivsAvecQCM })}
+                            style={{ padding:'5px 12px', borderRadius:980, border:`1px solid ${isOpen ? 'var(--a-gold)' : 'var(--a-border)'}`, background: isOpen ? 'rgba(191,138,48,.12)' : 'transparent', color: isOpen ? 'var(--a-gold)' : 'var(--a-fg-mid)', fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}
+                          >
+                            {isOpen ? 'Fermer' : 'Détail'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Panneau latéral détail */}
+          {detailModule && (
+            <div style={{ width:300, flexShrink:0, background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:16 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                <div style={{ fontWeight:600, color:'var(--a-fg)', fontSize:13 }}>{detailModule.titre}</div>
+                <button onClick={() => setDetailModule(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--a-fg-light)', fontSize:18, lineHeight:1, padding:2 }}>×</button>
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                {detailModule.nivsAvecQCM.map(n => {
+                  const prog = progression.find(p => p.niveau_id === n.id);
+                  const score = prog?.score ?? null;
+                  const reussi = prog?.reussi ?? false;
+                  const tentatives = prog?.tentatives ?? 0;
+                  let statusColor, statusLabel;
+                  if (reussi)            { statusColor = 'var(--a-green)'; statusLabel = 'Réussi'; }
+                  else if (score != null) { statusColor = 'var(--a-red)';   statusLabel = 'Échoué'; }
+                  else                   { statusColor = 'var(--a-fg-light)'; statusLabel = 'Non commencé'; }
+
+                  return (
+                    <div key={n.id} style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'10px 12px', border:'1px solid var(--a-border)' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: score != null ? 8 : 0 }}>
+                        <span style={{ fontSize:12, fontWeight:600, color:'var(--a-fg)', flex:1, marginRight:8 }}>{n.titre}</span>
+                        <span style={{ fontSize:11, fontWeight:600, color: statusColor, whiteSpace:'nowrap' }}>{statusLabel}</span>
+                      </div>
+                      {score != null && (
+                        <>
+                          <div style={{ height:4, borderRadius:2, background:'var(--a-border)', overflow:'hidden', marginBottom:6 }}>
+                            <div style={{ height:'100%', borderRadius:2, background: reussi ? 'var(--a-green)' : score >= 60 ? 'var(--a-gold)' : 'var(--a-red)', width:`${score}%`, transition:'width .3s' }} />
+                          </div>
+                          <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--a-fg-light)' }}>
+                            <span>{tentatives} tentative{tentatives > 1 ? 's' : ''}</span>
+                            <span style={{ fontWeight:700, color: reussi ? 'var(--a-green)' : score >= 60 ? 'var(--a-gold)' : 'var(--a-red)' }}>{score}%</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

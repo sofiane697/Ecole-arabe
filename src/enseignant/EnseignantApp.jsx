@@ -1,20 +1,19 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from '../admin/adminStyles';
-import { logoutEnseignant, getEnseignantUser } from './supabaseEnseignant';
+import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant } from './supabaseEnseignant';
 
-const IconDashboard = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-  </svg>
-);
 const IconClasses = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
     <circle cx="9" cy="7" r="4"/>
     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const IconMessages = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
 );
 const IconLogout = () => (
@@ -26,8 +25,8 @@ const IconLogout = () => (
 );
 
 const PAGE_TITLES = {
-  '/enseignant':         'Tableau de bord',
-  '/enseignant/classes': 'Mes classes',
+  '/enseignant/classes':  'Mes classes',
+  '/enseignant/messages': 'Messages',
 };
 
 export default function EnseignantApp() {
@@ -38,6 +37,7 @@ export default function EnseignantApp() {
     return saved ? saved === 'dark' : true;
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useLayoutEffect(() => {
     const id = 'admin-styles';
@@ -64,6 +64,16 @@ export default function EnseignantApp() {
     if (!sessionStorage.getItem('enseignant_user')) navigate('/enseignant/login');
   }, [navigate]);
 
+  // Badge non-lus — poll toutes les 30s
+  useEffect(() => {
+    const u = getEnseignantUser();
+    if (!u?.id) return;
+    const refresh = () => fetchUnreadCountEnseignant(u.id).then(setUnreadCount).catch(() => {});
+    refresh();
+    const t = setInterval(refresh, 30000);
+    return () => clearInterval(t);
+  }, []);
+
   const handleLogout = () => {
     logoutEnseignant();
     navigate('/enseignant/login');
@@ -74,8 +84,7 @@ export default function EnseignantApp() {
 
   // Trouver le titre de la page courante (gère /enseignant/classe/:id)
   let currentTitle = 'Portail Enseignant';
-  if (location.pathname === '/enseignant') currentTitle = 'Tableau de bord';
-  else if (location.pathname.startsWith('/enseignant/classe/')) currentTitle = 'Ma classe';
+  if (location.pathname.startsWith('/enseignant/classe/')) currentTitle = 'Ma classe';
   else if (PAGE_TITLES[location.pathname]) currentTitle = PAGE_TITLES[location.pathname];
 
   const today = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
@@ -93,16 +102,22 @@ export default function EnseignantApp() {
         <nav className="admin-nav">
           <div className="admin-nav-section">Navigation</div>
 
-          <NavLink to="/enseignant" end
-            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
-            onClick={() => setSidebarOpen(false)}>
-            <IconDashboard /> Tableau de bord
-          </NavLink>
-
           <NavLink to="/enseignant/classes"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}>
             <IconClasses /> Mes classes
+          </NavLink>
+
+          <NavLink to="/enseignant/messages"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}
+            style={{ position:'relative' }}>
+            <IconMessages /> Messages
+            {unreadCount > 0 && (
+              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--a-red)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
+                {unreadCount}
+              </span>
+            )}
           </NavLink>
         </nav>
 

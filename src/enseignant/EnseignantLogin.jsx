@@ -90,7 +90,7 @@ export default function EnseignantLogin() {
 
   const S = {
     page: { minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#000', padding:20 },
-    card: { background:'#1c1c1e', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'40px 36px', width:'100%', maxWidth:400 },
+    card: { background:'#1c1c1e', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'40px 36px', width:'100%', maxWidth:400, boxSizing:'border-box', overflow:'hidden' },
     brand: { textAlign:'center', marginBottom:32 },
     brandArabic: { display:'block', fontFamily:"'Scheherazade New', serif", fontSize:28, color:'#bf8a30', direction:'rtl', lineHeight:1.3 },
     brandLabel: { display:'block', fontSize:12, color:'#6e6e73', marginTop:6, letterSpacing:1, textTransform:'uppercase' },

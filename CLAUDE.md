@@ -22,8 +22,8 @@ Ecole-arabe/
     │   ├── AdminLogin.jsx    # Page de connexion admin
     │   ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés
     │   ├── Inscriptions.jsx  # Pré-inscriptions — liste + panneau détail + statut
-    │   ├── Messages.jsx      # Messages — liste + panneau de lecture
-    │   ├── Eleves.jsx        # Gestion élèves — liste, création, fiche détail, progression
+    │   ├── Messages.jsx      # Messages — liste + panneau de lecture + recherche + stats + badges colorés par cours
+    │   ├── Eleves.jsx        # Gestion élèves — liste, création, fiche détail, progression (vue tableau par module + panneau détail par niveau)
     │   ├── Classes.jsx       # Gestion classes — niveaux scolaires → classes → élèves
     │   ├── Enseignants.jsx   # Gestion enseignants — CRUD, assignation classes, génération identifiants
     │   ├── Cours.jsx         # Gestion cours — modules → thématiques → leçons → niveaux → contenus + QCM
@@ -39,14 +39,16 @@ Ecole-arabe/
     │   ├── PortailModule.jsx       # Vue module : thématiques → leçons (chaîne) → niveaux + contenu + QCM
     │   ├── PortailDevoirs.jsx      # /portail/devoirs — page devoirs (vide, à alimenter)
     │   ├── PortailResultats.jsx    # /portail/resultats — page résultats (vide, à alimenter)
-    │   └── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
+    │   ├── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
+    │   └── PortailMessages.jsx     # /portail/messages — chat élève ↔ enseignant (polling 5s, badges non-lus, séparateurs de date)
     └── enseignant/
-        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves)
+        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves, chat)
         ├── EnseignantLogin.jsx     # /enseignant/login — connexion + changement mot de passe 1ère connexion
-        ├── EnseignantApp.jsx       # Layout portail enseignant (style admin, sidebar, topbar)
-        ├── EnseignantDashboard.jsx # /enseignant — grille des classes assignées
+        ├── EnseignantApp.jsx       # Layout portail enseignant (style admin, sidebar, topbar, badge non-lus messages)
+        ├── EnseignantDashboard.jsx # (inutilisé — redirect vers /enseignant/classes)
         ├── EnseignantMesClasses.jsx# /enseignant/classes — liste complète des classes
-        └── EnseignantClasse.jsx    # /enseignant/classe/:id — liste des élèves d'une classe
+        ├── EnseignantClasse.jsx    # /enseignant/classe/:id — liste des élèves d'une classe
+        └── EnseignantMessages.jsx  # /enseignant/messages — chat enseignant ↔ élèves (recherche, badges, suppression conv.)
 ```
 
 ## Sections du site public (dans l'ordre)
@@ -98,9 +100,10 @@ Ecole-arabe/
 | URL | Page | Description |
 |-----|------|-------------|
 | `/enseignant/login` | EnseignantLogin | Connexion identifiant + mot de passe (+ changement MDP 1ère connexion) |
-| `/enseignant` | EnseignantDashboard | Grille des classes assignées + nombre d'élèves |
+| `/enseignant` | — | Redirige vers `/enseignant/classes` |
 | `/enseignant/classes` | EnseignantMesClasses | Liste complète des classes assignées |
 | `/enseignant/classe/:id` | EnseignantClasse | Tableau des élèves de la classe (nom, identifiant, statut, date) |
+| `/enseignant/messages` | EnseignantMessages | Chat avec les élèves — liste élèves searchable + bulles + suppression conversation |
 
 ### Authentification enseignant (auth custom bcrypt — même pattern que élèves)
 
@@ -108,7 +111,7 @@ Ecole-arabe/
 - Identifiant enseignant = même formule que les élèves : `{1ère lettre prénom}{2e lettre nom}{1ère lettre nom}{4 chiffres}` ex: `SoD1234`
 - 1ère connexion → changement de mot de passe forcé
 - Style visuel = identique à l'interface admin (`adminStyles.js`, thème dark/light)
-- `supabaseEnseignant.js` : `loginEnseignant`, `logoutEnseignant`, `getEnseignantUser`, `changeEnseignantPassword`, `fetchMesClasses`, `fetchElevesDeClasse`
+- `supabaseEnseignant.js` : `loginEnseignant`, `logoutEnseignant`, `getEnseignantUser`, `changeEnseignantPassword`, `fetchMesClasses`, `fetchElevesDeClasse`, `fetchTousLesElevesEnseignant`, `fetchChatMessages`, `sendChatMessage`, `markMessagesReadEnseignant`, `fetchUnreadCountEnseignant`, `fetchUnreadCountParEleve`, `deleteConversation`
 
 ### Création d'un compte enseignant (côté admin)
 
@@ -358,6 +361,16 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Admin Messages — UI/UX redesign (04/04/2026)** : stats bar (Total / Non lus / Aujourd'hui) avec pills colorées contextuelles. Champ de recherche par nom/email intégré dans la barre de filtres. Cours affichés en badges colorés (vert débutant, bleu intermédiaire, or avancé, violet coran, gris renseignement). Panneau de lecture scrollable (`maxHeight: calc(100vh - 220px)`). Corps du message avec bordure gauche dorée (style citation). Badge lu/non-lu en pill verte/rouge. Tooltip date complète au survol des dates relatives.
+
+- **Portail Messages — Chat élève ↔ enseignant (04/04/2026)** : `PortailMessages.jsx` créé — colonne gauche avec liste des enseignants de la classe (avatars colorés hash, badges non-lus or), zone chat avec séparateurs de date, bulles (or gradient = élève, blanc/gris = prof), avatars par message, indicateur "En ligne", zone de saisie intégrée avec bouton send circulaire gradient. Hauteur corrigée : `calc(100vh - 160px)` (topbar 80px + padding-top 40px + padding-bottom 40px). Polling 5s. Badges non-lus par enseignant chargés à l'init.
+
+- **Portail enseignant — Chat + améliorations (04/04/2026)** : suppression section "Tableau de bord" (redirect `/enseignant` → `/enseignant/classes`). `EnseignantMessages.jsx` créé — liste élèves searchable (tous élèves de toutes les classes), chat bulles (or = enseignant, gris = élève), badge non-lus rouge par élève, suppression conversation avec confirm inline. `EnseignantApp.jsx` : badge non-lus messages dans sidebar, poll 30s. Table Supabase `chat_messages` : `eleve_id`, `enseignant_id`, `sender_role` ('eleve'|'enseignant'), `contenu`, `lu`, `created_at`.
+
+- **Admin — Progression élèves : vue tableau (04/04/2026)** : remplacement des cartes module par un tableau récapitulatif (Module | Niveaux QCM | Réussis | Moy. score | Statut) + panneau latéral détail par niveau (barres de progression, scores, tentatives, statuts). 3 stat cards globales en haut (modules, niveaux réussis, progression globale %).
+
+- **Login — icône œil / fix overflow (04/04/2026)** : ajout `box-sizing: border-box` sur `.admin-field input` et `overflow: hidden` sur les cartes de connexion (`AdminLogin`, `PortailLogin`, `EnseignantLogin`) pour corriger l'icône œil qui débordait des bordures.
 
 - **Portail + Admin — Couche "Mes Leçons"** : nouvelle couche intermédiaire entre Thématiques et Mon Cours. Hiérarchie finale : Modules → Thématiques → **Leçons** → Niveaux. Table `lecons` (`id BIGINT`, `thematique_id BIGINT`, `titre`, `description`, `image_url`, `ordre`). Colonne `lecon_id BIGINT` ajoutée sur `niveaux` (FK nullable). Portail : `LeconsEntryView` dans `PortailModule.jsx` (grille de cartes identique aux thématiques, progression, smart router : si 0 leçons → NiveauxView directement). Route `/portail/module/:moduleId/thematique/:thId/lecon/:leconId`. Admin : `Cours.jsx` — drill-down Modules → Thématiques → **Leçons** (vue cartes, CRUD, `LeconModal`) → Niveaux → Contenus+QCM. `supabaseAdmin.js` : `fetchLecons`, `createLecon`, `updateLecon`, `deleteLecon`, `fetchNiveauxByLecon`. `supabasePortail.js` : `fetchLeconsEleve`, `fetchNiveauxByLeconEleve`. SQL requis dans Supabase : `CREATE TABLE lecons (...)` + `ALTER TABLE niveaux ADD COLUMN lecon_id ...` + RLS.
 

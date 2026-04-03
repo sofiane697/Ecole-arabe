@@ -224,6 +224,8 @@ const PORTAIL_STYLES = `
     padding: 40px;
     width: 100%;
     max-width: 400px;
+    box-sizing: border-box;
+    overflow: hidden;
   }
   .portail-login-brand {
     text-align: center;

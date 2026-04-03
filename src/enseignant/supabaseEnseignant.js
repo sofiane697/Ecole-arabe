@@ -77,3 +77,70 @@ export async function fetchElevesDeClasse(classeId) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
+
+// ─── CHAT ─────────────────────────────────────────────────────────────────────
+
+/** Récupère tous les élèves de toutes les classes de l'enseignant */
+export async function fetchTousLesElevesEnseignant(enseignantId) {
+  const classes = await fetchMesClasses(enseignantId);
+  if (!classes.length) return [];
+  const lists = await Promise.all(classes.map(c => fetchElevesDeClasse(c.id)));
+  const seen = new Set();
+  return lists.flat().filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
+}
+
+/** Récupère tous les messages d'une conversation élève↔enseignant */
+export async function fetchChatMessages(eleveId, enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&order=created_at.asc`,
+    { headers: ANON_HEADERS }
+  );
+  return res.json();
+}
+
+/** Envoie un message */
+export async function sendChatMessage(eleveId, enseignantId, contenu, senderRole) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ eleve_id: eleveId, enseignant_id: enseignantId, contenu, sender_role: senderRole }),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Marque comme lus les messages reçus par l'enseignant */
+export async function markMessagesReadEnseignant(eleveId, enseignantId) {
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.eleve&lu=eq.false`,
+    { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
+  );
+}
+
+/** Compte les messages non lus reçus par l'enseignant (tous élèves) */
+export async function fetchUnreadCountEnseignant(enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?enseignant_id=eq.${enseignantId}&sender_role=eq.eleve&lu=eq.false&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  const data = await res.json();
+  return Array.isArray(data) ? data.length : 0;
+}
+
+/** Supprime tous les messages d'une conversation élève↔enseignant */
+export async function deleteConversation(eleveId, enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}`,
+    { method: 'DELETE', headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Compte les non-lus pour un élève précis */
+export async function fetchUnreadCountParEleve(eleveId, enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.eleve&lu=eq.false&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  const data = await res.json();
+  return Array.isArray(data) ? data.length : 0;
+}

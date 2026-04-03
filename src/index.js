@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import App from './App';
 import AdminLogin from './admin/AdminLogin';
 import AdminApp from './admin/AdminApp';
@@ -13,9 +13,9 @@ import Eleves from './admin/Eleves';
 import Enseignants from './admin/Enseignants';
 import EnseignantLogin      from './enseignant/EnseignantLogin';
 import EnseignantApp        from './enseignant/EnseignantApp';
-import EnseignantDashboard  from './enseignant/EnseignantDashboard';
 import EnseignantMesClasses from './enseignant/EnseignantMesClasses';
 import EnseignantClasse     from './enseignant/EnseignantClasse';
+import EnseignantMessages   from './enseignant/EnseignantMessages';
 import PortailLogin from './portail/PortailLogin';
 import PortailApp from './portail/PortailApp';
 import PortailDashboard from './portail/PortailDashboard';
@@ -23,6 +23,7 @@ import PortailModule from './portail/PortailModule';
 import PortailDevoirs from './portail/PortailDevoirs';
 import PortailResultats from './portail/PortailResultats';
 import PortailObservations from './portail/PortailObservations';
+import PortailMessages     from './portail/PortailMessages';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -46,9 +47,10 @@ root.render(
       {/* Portail enseignant */}
       <Route path="/enseignant/login" element={<EnseignantLogin />} />
       <Route path="/enseignant" element={<EnseignantApp />}>
-        <Route index element={<EnseignantDashboard />} />
+        <Route index element={<Navigate to="classes" replace />} />
         <Route path="classes" element={<EnseignantMesClasses />} />
         <Route path="classe/:id" element={<EnseignantClasse />} />
+        <Route path="messages" element={<EnseignantMessages />} />
       </Route>
 
       {/* Portail élève */}
@@ -61,6 +63,7 @@ root.render(
         <Route path="devoirs" element={<PortailDevoirs />} />
         <Route path="resultats" element={<PortailResultats />} />
         <Route path="observations" element={<PortailObservations />} />
+        <Route path="messages" element={<PortailMessages />} />
       </Route>
     </Routes>
   </BrowserRouter>

@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
-import { logoutEleve, getEleveUser } from './supabasePortail';
+import { logoutEleve, getEleveUser, fetchUnreadCountEleve } from './supabasePortail';
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -52,6 +52,7 @@ const PAGE_EMOJIS = {
   '/portail/devoirs':      '📝',
   '/portail/resultats':    '📊',
   '/portail/observations': '👁️',
+  '/portail/messages':     '💬',
 };
 function getPageEmoji(pathname) {
   if (PAGE_EMOJIS[pathname]) return PAGE_EMOJIS[pathname];
@@ -104,6 +105,7 @@ const PAGE_TITLES = {
   '/portail/devoirs':          'Mes devoirs',
   '/portail/resultats':        'Mes résultats',
   '/portail/observations':     'Mes observations',
+  '/portail/messages':         'Messages',
 };
 
 export default function PortailApp() {
@@ -114,6 +116,7 @@ export default function PortailApp() {
     return saved ? saved === 'dark' : false;
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useLayoutEffect(() => {
     const id = 'portail-styles';
@@ -137,6 +140,16 @@ export default function PortailApp() {
       navigate('/portail/login');
     }
   }, [navigate]);
+
+  // Badge non-lus — poll toutes les 30s
+  useEffect(() => {
+    const user = getEleveUser();
+    if (!user?.id) return;
+    const refresh = () => fetchUnreadCountEleve(user.id).then(setUnreadCount).catch(() => {});
+    refresh();
+    const t = setInterval(refresh, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   const handleLogout = () => {
     logoutEleve();
@@ -222,6 +235,20 @@ export default function PortailApp() {
             onClick={() => setSidebarOpen(false)}
           >
             <span style={{fontSize:18}}>👁️</span> Mes observations
+          </NavLink>
+
+          <NavLink
+            to="/portail/messages"
+            className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}
+            style={{ position:'relative' }}
+          >
+            <span style={{fontSize:18}}>💬</span> Messages
+            {unreadCount > 0 && (
+              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
+                {unreadCount}
+              </span>
+            )}
           </NavLink>
 
           <div className="portail-nav-section" style={{ marginTop: '1.5rem' }}>Ressources</div>
