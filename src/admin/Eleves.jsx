@@ -566,7 +566,7 @@ export default function Eleves() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `eleves-alnour-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `eleves-raqib-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -686,7 +686,7 @@ function CreateEleveModal({ onClose, onCreated }) {
         await Promise.all([
           updateEleve(eleve.id, { classe_id: classeId }),
           updateEleveNiveauScolaire(eleve.id, niveauScolaireId),
-        ]).catch(() => {});
+        ]);
       }
       setResult({ identifiant, tempPassword: tempPwd });
     } catch(e) {

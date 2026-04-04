@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchModulesEleve, fetchNiveauxEleve, fetchProgression, fetchQCMExistenceForNiveaux, fetchEleveNiveauScolaireId } from './supabasePortail';
+import { fetchModulesEleve, fetchAllNiveauxForModuleEleve, fetchProgression, fetchQCMExistenceForNiveaux, fetchEleveNiveauScolaireId } from './supabasePortail';
 
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
@@ -209,7 +209,7 @@ export default function PortailDashboard() {
         setProgression(prog);
         const nivMap = {};
         await Promise.all(mods.map(async (m) => {
-          try { nivMap[m.id] = await fetchNiveauxEleve(m.id); } catch { nivMap[m.id] = []; }
+          try { nivMap[m.id] = await fetchAllNiveauxForModuleEleve(m.id); } catch { nivMap[m.id] = []; }
         }));
         if (cancelled) return;
         setNiveauxMap(nivMap);
@@ -239,11 +239,28 @@ export default function PortailDashboard() {
       </div>
 
       {modules.length === 0 ? (
-        <div style={S.empty}>
-          <div style={{ fontSize:48, marginBottom:16 }}>📚</div>
-          <div style={S.emptyTitle}>Aucun cours disponible</div>
-          <p style={{ color:'var(--p-fg-mid)', fontSize:14 }}>Les cours seront bientôt disponibles. Revenez plus tard !</p>
-        </div>
+        (() => {
+          let _niveauScolaireId = null;
+          try { _niveauScolaireId = JSON.parse(sessionStorage.getItem('eleve_user'))?.niveau_scolaire_id; } catch {}
+          if (!_niveauScolaireId) {
+            return (
+              <div style={S.empty}>
+                <div style={{ fontSize:48, marginBottom:16 }}>⚙️</div>
+                <div style={S.emptyTitle}>Profil en cours de configuration</div>
+                <p style={{ color:'var(--p-fg-mid)', fontSize:14, maxWidth:340, margin:'0 auto' }}>
+                  Ton niveau scolaire n'a pas encore été assigné. Contacte ton enseignant pour qu'il configure ton profil.
+                </p>
+              </div>
+            );
+          }
+          return (
+            <div style={S.empty}>
+              <div style={{ fontSize:48, marginBottom:16 }}>📚</div>
+              <div style={S.emptyTitle}>Aucun cours disponible</div>
+              <p style={{ color:'var(--p-fg-mid)', fontSize:14 }}>Les cours seront bientôt disponibles. Revenez plus tard !</p>
+            </div>
+          );
+        })()
       ) : (
         <div style={S.grid(modules.length)}>
           {modules.map((m, index) => {
