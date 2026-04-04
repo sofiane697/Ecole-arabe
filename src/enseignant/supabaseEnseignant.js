@@ -95,7 +95,8 @@ export async function fetchChatMessages(eleveId, enseignantId) {
     `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&order=created_at.asc`,
     { headers: ANON_HEADERS }
   );
-  return res.json();
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return await res.json();
 }
 
 /** Envoie un message */
@@ -110,10 +111,11 @@ export async function sendChatMessage(eleveId, enseignantId, contenu, senderRole
 
 /** Marque comme lus les messages reçus par l'enseignant */
 export async function markMessagesReadEnseignant(eleveId, enseignantId) {
-  await fetch(
+  const res = await fetch(
     `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.eleve&lu=eq.false`,
     { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
   );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
 /** Compte les messages non lus reçus par l'enseignant (tous élèves) */

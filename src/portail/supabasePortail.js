@@ -86,6 +86,7 @@ export async function fetchQCMExistenceForNiveaux(niveauIds) {
   if (!niveauIds.length) return new Set();
   const ids = niveauIds.join(',');
   const res = await fetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=in.(${ids})&select=niveau_id`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
   const data = await res.json();
   return new Set((data || []).map(q => q.niveau_id));
 }
@@ -143,14 +144,17 @@ export async function fetchNiveauxByLeconEleve(leconId) {
 /** Récupère les enseignants de la classe de l'élève */
 export async function fetchEnseignantsDeLEleve(eleveId) {
   const r1 = await fetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=classe_id`, { headers: ANON_HEADERS });
+  if (!r1.ok) throw new Error(`Erreur ${r1.status}`);
   const [eleve] = await r1.json();
   if (!eleve?.classe_id) return [];
   const r2 = await fetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?classe_id=eq.${eleve.classe_id}&select=enseignant_id`, { headers: ANON_HEADERS });
+  if (!r2.ok) throw new Error(`Erreur ${r2.status}`);
   const rows = await r2.json();
   if (!rows.length) return [];
   const ids = rows.map(r => r.enseignant_id).join(',');
   const r3 = await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids})&select=id,nom,prenom`, { headers: ANON_HEADERS });
-  return r3.json();
+  if (!r3.ok) throw new Error(`Erreur ${r3.status}`);
+  return await r3.json();
 }
 
 /** Récupère tous les messages d'une conversation élève↔enseignant */
@@ -159,7 +163,8 @@ export async function fetchChatMessages(eleveId, enseignantId) {
     `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&order=created_at.asc`,
     { headers: ANON_HEADERS }
   );
-  return res.json();
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return await res.json();
 }
 
 /** Envoie un message */

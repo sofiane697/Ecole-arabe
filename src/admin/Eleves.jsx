@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
+import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
 // ─── Formatage des noms ──────────────────────────────────────────────────────
 const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
@@ -632,33 +633,6 @@ export default function Eleves() {
       {showModal && <CreateEleveModal onClose={() => setShowModal(false)} onCreated={() => { setShowModal(false); loadEleves(); }} />}
     </div>
   );
-}
-
-// ─── Génération identifiant : 1ère lettre prénom + 2ème lettre nom + 1ère lettre nom + 4 chiffres
-function generateIdentifiant(prenom, nom) {
-  const p = prenom.trim().replace(/\s/g, '');
-  const n = nom.trim().replace(/\s/g, '');
-  const part1 = (p[0] || 'X').toUpperCase();
-  const part2 = (n[1] || n[0] || 'X').toLowerCase();
-  const part3 = (n[0] || 'X').toUpperCase();
-  const digits = String(Math.floor(1000 + Math.random() * 9000)); // 4 chiffres
-  return `${part1}${part2}${part3}${digits}`;
-}
-
-// ─── Génération mot de passe provisoire (10 chars, 1 majuscule, 1 chiffre, 1 spécial)
-function generateTempPassword() {
-  const chars = 'abcdefghijkmnpqrstuvwxyz';
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const digits = '23456789';
-  const specials = '!@#$%&*?';
-  let pwd = '';
-  pwd += upper[Math.floor(Math.random() * upper.length)];
-  pwd += chars[Math.floor(Math.random() * chars.length)];
-  pwd += digits[Math.floor(Math.random() * digits.length)];
-  pwd += specials[Math.floor(Math.random() * specials.length)];
-  for (let i = 0; i < 4; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
-  // Mélanger
-  return pwd.split('').sort(() => Math.random() - 0.5).join('');
 }
 
 function escapeHtml(text) {

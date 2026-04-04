@@ -197,8 +197,9 @@ export default function Cours() {
     try {
       let nivs = await fetchNiveauxByLecon(lec.id);
       if (nivs.length === 0) {
-        await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, lecon_id: lec.id, titre: lec.titre, ordre: 1, score_requis: 80 });
-        nivs = await fetchNiveauxByLecon(lec.id);
+        alert('Cette leçon n\'a pas encore de niveau. Créez-en un depuis le bouton "Ajouter un niveau".');
+        setLoading(false);
+        return;
       }
       const niv = nivs[0];
       setSelNiveau(niv);

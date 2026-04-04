@@ -104,11 +104,6 @@ export default function Classes() {
   const goToClasses = () => setSelClasse(null);
 
   const elevesDeClasse = (classeId) => eleves.filter(e => e.classe_id === classeId);
-  const nbElevesNiveau = (niveauId) => {
-    // On compte les élèves dont la classe appartient à ce niveau
-    const classesIds = classes.map(c => c.id);
-    return eleves.filter(e => classesIds.includes(e.classe_id)).length;
-  };
 
   // ─── VUE 1 : Liste des niveaux scolaires ────────────────────────────────────
   if (!selNiveau) {

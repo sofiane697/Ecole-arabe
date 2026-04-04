@@ -22,9 +22,3 @@ export const MOCK_MESSAGES = [
   { id: 6, nom: 'Bernard',  prenom: 'Sofiane', email: 's.bernard@mail.fr',       cours: 'Intermédiaire — Lecture',      message: 'Bonjour, est-ce qu\'il est possible de faire un cours d\'essai avant de s\'engager sur un mois complet ?', lu: true,  date: '2026-03-19' },
   { id: 7, nom: 'Petit',    prenom: 'Leïla',  email: 'leila.petit@hotmail.fr',  cours: 'Avancé — Expression',          message: 'Salam alaykoum, j\'ai passé mon bac arabe en Algérie. Je cherche à perfectionner mon niveau. Quels sont les objectifs du cours avancé ?', lu: false, date: '2026-03-18' },
 ];
-
-// Identifiants admin fictifs (remplacés plus tard par Supabase Auth)
-export const ADMIN_CREDENTIALS = {
-  email: 'admin@alnour.fr',
-  password: 'admin123',
-};

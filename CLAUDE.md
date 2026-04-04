@@ -27,6 +27,7 @@ Ecole-arabe/
     │   ├── Classes.jsx       # Gestion classes — niveaux scolaires → classes → élèves
     │   ├── Enseignants.jsx   # Gestion enseignants — CRUD, assignation classes, génération identifiants
     │   ├── Cours.jsx         # Gestion cours — modules → thématiques → leçons → niveaux → contenus + QCM
+    │   ├── adminUtils.js     # Fonctions utilitaires partagées — generateIdentifiant, generateTempPassword
     │   ├── supabaseAdmin.js  # Fonctions API Supabase (auth, CRUD, storage, progression)
     │   ├── mockData.js       # Données fictives (backup)
     │   └── adminStyles.js    # CSS complet interface admin (thème sombre + clair)
@@ -361,6 +362,8 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Audit qualité — corrections critiques batch 3 (04/04/2026)** : 14 bugs critiques corrigés sur les 3 portails suite à audit complet. **Admin** : `Messages.jsx` sujet mailto "Al-Nour" → "Raqib" ; `mockData.js` suppression `ADMIN_CREDENTIALS` (identifiants en clair de l'ancien système) ; `Classes.jsx` suppression de `nbElevesNiveau` (ignorait son paramètre, jamais appelée) ; `Cours.jsx` remplacement de la création silencieuse de niveau par un `alert()` explicite ; `generateIdentifiant` + `generateTempPassword` extraites dans `adminUtils.js` (supprime la duplication entre `Eleves.jsx` et `Enseignants.jsx`). **Portail élève** : `supabasePortail.js` — `await` manquant sur `r3.json()` dans `fetchEnseignantsDeLEleve` (chat cassé), `res.ok` ajouté dans `fetchQCMExistenceForNiveaux` et `fetchChatMessages` ; `PortailModule.jsx` — flag `cancelled` ajouté dans les `useEffect` de `ModuleEntryView` et `LeconsEntryView` (setState après unmount). **Portail enseignant** : `supabaseEnseignant.js` — `res.ok` + `await` ajoutés dans `fetchChatMessages` et `markMessagesReadEnseignant` ; `EnseignantLogin.jsx` — double `setLoading(false)` supprimé (finally suffit) ; `EnseignantDashboard.jsx` supprimé (fichier mort, jamais importé).
 
 - **Admin Messages — UI/UX redesign (04/04/2026)** : stats bar (Total / Non lus / Aujourd'hui) avec pills colorées contextuelles. Champ de recherche par nom/email intégré dans la barre de filtres. Cours affichés en badges colorés (vert débutant, bleu intermédiaire, or avancé, violet coran, gris renseignement). Panneau de lecture scrollable (`maxHeight: calc(100vh - 220px)`). Corps du message avec bordure gauche dorée (style citation). Badge lu/non-lu en pill verte/rouge. Tooltip date complète au survol des dates relatives.
 

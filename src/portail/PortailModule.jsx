@@ -255,6 +255,7 @@ function ModuleEntryView({ moduleId }) {
   const eleveId = getEleveId();
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       // Toujours vérifier en DB pour détecter un changement de classe depuis l'admin
       let niveauScolaireId = getEleveNiveauScolaireId();
@@ -275,25 +276,26 @@ function ModuleEntryView({ moduleId }) {
         fetchThematiquesEleve(moduleId, niveauScolaireId),
         fetchModulesEleve(),
       ]);
-      setModule_(mods.find(m => String(m.id) === String(moduleId)) || null);
-      setModuleHasThematiques(allThs.length > 0);
-      setThematiques(filteredThs);
+      if (!cancelled) setModule_(mods.find(m => String(m.id) === String(moduleId)) || null);
+      if (!cancelled) setModuleHasThematiques(allThs.length > 0);
+      if (!cancelled) setThematiques(filteredThs);
       if (filteredThs.length > 0) {
         const [prog, ...nivArrays] = await Promise.all([
           fetchProgression(eleveId),
           ...filteredThs.map(th => fetchNiveauxByThematiqueEleve(th.id)),
         ]);
-        setProgression(prog);
+        if (!cancelled) setProgression(prog);
         const map = {};
         filteredThs.forEach((th, i) => { map[th.id] = nivArrays[i]; });
-        setNiveauxMap(map);
+        if (!cancelled) setNiveauxMap(map);
         const allNivIds = nivArrays.flat().map(n => n.id);
         if (allNivIds.length > 0) {
           const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
-          setQcmNiveauxIds(qcmIds);
+          if (!cancelled) setQcmNiveauxIds(qcmIds);
         }
       }
     })().catch(() => {});
+    return () => { cancelled = true; };
   }, [moduleId, eleveId]);
 
   if (thematiques === null) return <div style={S.empty}>Chargement...</div>;
@@ -402,28 +404,30 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
   const eleveId = getEleveId();
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const [lecs, prog] = await Promise.all([
           fetchLeconsEleve(thId),
           fetchProgression(eleveId),
         ]);
-        setLecons(lecs);
-        setProgression(prog);
+        if (!cancelled) setLecons(lecs);
+        if (!cancelled) setProgression(prog);
         if (lecs.length > 0) {
           const map = {};
           await Promise.all(lecs.map(async (l) => {
             try { map[l.id] = await fetchNiveauxByLeconEleve(l.id); } catch { map[l.id] = []; }
           }));
-          setNiveauxMap(map);
+          if (!cancelled) setNiveauxMap(map);
           const allNivIds = Object.values(map).flat().map(n => n.id);
           if (allNivIds.length > 0) {
             const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
-            setQcmNiveauxIds(qcmIds);
+            if (!cancelled) setQcmNiveauxIds(qcmIds);
           }
         }
-      } catch(e) { setLecons([]); }
+      } catch(e) { if (!cancelled) setLecons([]); }
     })();
+    return () => { cancelled = true; };
   }, [thId, eleveId]);
 
   if (lecons === null) return <div style={S.empty}>Chargement...</div>;
@@ -458,7 +462,7 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
           // la précédente est elle-même débloquée ET complétée (avec QCM validé)
           const leconCompleted = (l) => {
             const withQCM = (niveauxMap[l.id] || []).filter(nv => qcmNiveauxIds.has(nv.id));
-            if (withQCM.length === 0) return false;
+            if (withQCM.length === 0) return true; // Leçon sans QCM = automatiquement complétée
             return withQCM.every(nv => progression.some(p => p.niveau_id === nv.id && p.reussi));
           };
           const unlocked = lecons.reduce((acc, lec, i) => {

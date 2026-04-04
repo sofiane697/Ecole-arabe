@@ -63,7 +63,6 @@ export default function EnseignantLogin() {
       if (data.must_change_password) {
         setEnsData(data);
         setMustChange(true);
-        setLoading(false);
         return;
       }
       navigate('/enseignant');
