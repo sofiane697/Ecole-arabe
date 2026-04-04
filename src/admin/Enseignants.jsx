@@ -8,6 +8,10 @@ import {
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
+// ─── Formatage des noms ──────────────────────────────────────────────────────
+const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
+const fmtNom    = (s) => s.trim().toUpperCase();
+
 // ─── Icônes ───────────────────────────────────────────────────────────────────
 const IconPlus  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const IconEdit  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
@@ -118,18 +122,20 @@ export default function Enseignants() {
   const handleSave = async (data, selectedClasseIds) => {
     setLoading(true);
     try {
+      const cleanPrenom = fmtPrenom(data.prenom);
+      const cleanNom    = fmtNom(data.nom);
       let ensId;
       if (data.id) {
-        await updateEnseignant(data.id, { nom: data.nom, prenom: data.prenom, email: data.email, telephone: data.telephone, actif: data.actif });
+        await updateEnseignant(data.id, { nom: cleanNom, prenom: cleanPrenom, email: data.email, telephone: data.telephone, actif: data.actif });
         ensId = data.id;
       } else {
-        const created = await createEnseignant({ nom: data.nom, prenom: data.prenom, email: data.email || null, telephone: data.telephone || null, actif: true });
+        const created = await createEnseignant({ nom: cleanNom, prenom: cleanPrenom, email: data.email || null, telephone: data.telephone || null, actif: true });
         ensId = created.id;
         // Créer le compte auth avec identifiant + mot de passe provisoire
-        const identifiant = generateIdentifiant(data.prenom, data.nom);
+        const identifiant = generateIdentifiant(cleanPrenom, cleanNom);
         const tempPassword = generateTempPassword();
         await adminCreateEnseignantAccount(ensId, identifiant, tempPassword);
-        setResult({ prenom: data.prenom, nom: data.nom, identifiant: identifiant.toUpperCase(), tempPassword });
+        setResult({ prenom: cleanPrenom, nom: cleanNom, identifiant: identifiant.toUpperCase(), tempPassword });
       }
       await setEnseignantClasses(ensId, selectedClasseIds);
       await load();
@@ -180,7 +186,7 @@ export default function Enseignants() {
       ) : (
         <div style={S.grid}>
           {enseignants.map(ens => {
-            const initiales = (ens.prenom?.[0] || '') + (ens.nom?.[0] || '');
+            const initiales = (fmtPrenom(ens.prenom || '')?.[0] || '') + (fmtNom(ens.nom || '')?.[0] || '');
             const classeIds = classesMap[ens.id] || [];
             const classeObjs = allClasses.filter(c => classeIds.includes(c.id));
             return (
@@ -190,7 +196,7 @@ export default function Enseignants() {
                 <div style={S.cardTop}>
                   <div style={S.avatar}>{initiales}</div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={S.name}>{ens.prenom} {ens.nom}</div>
+                    <div style={S.name}>{fmtPrenom(ens.prenom || '')} {fmtNom(ens.nom || '')}</div>
                     <div style={S.sub}>{ens.email || ens.telephone || '—'}</div>
                     <span style={S.badge(ens.actif)}>{ens.actif ? 'Actif' : 'Inactif'}</span>
                   </div>
