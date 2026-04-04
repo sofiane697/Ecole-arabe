@@ -99,7 +99,6 @@ export default function PortailDevoirs() {
 
   if (loading) return (
     <div style={S.page}>
-      <div style={S.header}><h1 style={S.title}>Mes devoirs</h1></div>
       <div style={{ ...S.empty, padding:'40px 0' }}>
         <div style={{ color:'var(--p-fg-mid)', fontSize:14 }}>Chargement...</div>
       </div>
@@ -108,7 +107,6 @@ export default function PortailDevoirs() {
 
   if (!classeId) return (
     <div style={S.page}>
-      <div style={S.header}><h1 style={S.title}>Mes devoirs</h1></div>
       <div style={S.empty}>
         <div style={S.emptyIcon}>⚙️</div>
         <div style={S.emptyTitle}>Classe non configurée</div>
@@ -125,7 +123,6 @@ export default function PortailDevoirs() {
   return (
     <div style={S.page}>
       <div style={S.header}>
-        <h1 style={S.title}>Mes devoirs</h1>
         <p style={S.sub}>
           {avenir.length === 0
             ? 'Aucun devoir à venir pour le moment.'

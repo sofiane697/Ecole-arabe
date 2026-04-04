@@ -15,7 +15,6 @@ export default function PortailResultats() {
   return (
     <div style={S.page}>
       <div style={S.header}>
-        <h1 style={S.title}>Mes résultats</h1>
         <p style={S.sub}>Consultez vos notes et votre progression dans les évaluations.</p>
       </div>
 

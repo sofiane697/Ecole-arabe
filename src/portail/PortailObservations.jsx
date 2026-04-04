@@ -15,7 +15,6 @@ export default function PortailObservations() {
   return (
     <div style={S.page}>
       <div style={S.header}>
-        <h1 style={S.title}>Mes observations</h1>
         <p style={S.sub}>Les remarques et commentaires de votre professeur.</p>
       </div>
 
