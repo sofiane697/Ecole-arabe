@@ -249,3 +249,16 @@ export async function saveProgression(eleveId, niveauId, score, reussi) {
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
+
+// ─── DEVOIRS ─────────────────────────────────────────────────────────────────
+
+/** Devoirs de la classe de l'élève à venir */
+export async function fetchDevoirsEleve(classeId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/devoirs?classe_id=eq.${classeId}&order=date_limite.asc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}

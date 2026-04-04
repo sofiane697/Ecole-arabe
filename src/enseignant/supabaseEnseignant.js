@@ -146,3 +146,43 @@ export async function fetchUnreadCountParEleve(eleveId, enseignantId) {
   const data = await res.json();
   return Array.isArray(data) ? data.length : 0;
 }
+
+// ─── DEVOIRS ─────────────────────────────────────────────────────────────────
+
+/** Récupère tous les devoirs de l'enseignant */
+export async function fetchDevoirsEnseignant(enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?enseignant_id=eq.${enseignantId}&order=date_limite.asc`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Crée un devoir */
+export async function createDevoir(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const arr = await res.json();
+  return arr[0];
+}
+
+/** Modifie un devoir */
+export async function updateDevoir(id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Supprime un devoir */
+export async function deleteDevoir(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: ANON_HEADERS,
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
