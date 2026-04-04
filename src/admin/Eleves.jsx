@@ -682,7 +682,11 @@ function CreateEleveModal({ onClose, onCreated }) {
       const tempPwd = generateTempPassword();
       const eleve = await createEleve(fmtNom(nom), fmtPrenom(prenom), identifiant.toLowerCase(), tempPwd);
       if (classeId && eleve?.id) {
-        await updateEleve(eleve.id, { classe_id: classeId }).catch(() => {});
+        const niveauScolaireId = allClasses.find(c => c.id === classeId)?.niveau_id || null;
+        await Promise.all([
+          updateEleve(eleve.id, { classe_id: classeId }),
+          updateEleveNiveauScolaire(eleve.id, niveauScolaireId),
+        ]).catch(() => {});
       }
       setResult({ identifiant, tempPassword: tempPwd });
     } catch(e) {
