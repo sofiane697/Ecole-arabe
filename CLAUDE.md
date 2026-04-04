@@ -33,22 +33,22 @@ Ecole-arabe/
     │   └── adminStyles.js    # CSS complet interface admin (thème sombre + clair)
     ├── portail/
     │   ├── portailStyles.js        # CSS du portail élève
-    │   ├── supabasePortail.js      # API Supabase côté élève (auth custom, progression)
+    │   ├── supabasePortail.js      # API Supabase côté élève (auth custom, progression, devoirs)
     │   ├── PortailLogin.jsx        # /portail/login — connexion + changement mot de passe 1ère connexion
-    │   ├── PortailApp.jsx          # Layout portail : sidebar + topbar + Outlet
+    │   ├── PortailApp.jsx          # Layout portail : sidebar + topbar + Outlet + badges non-lus (messages + devoirs)
     │   ├── PortailDashboard.jsx    # Grille de modules filtrés par niveau scolaire
     │   ├── PortailModule.jsx       # Vue module : thématiques → leçons (chaîne) → niveaux + contenu + QCM
-    │   ├── PortailDevoirs.jsx      # /portail/devoirs — page devoirs (vide, à alimenter)
+    │   ├── PortailDevoirs.jsx      # /portail/devoirs — devoirs groupés par semaine, badges urgence, section passés repliable
     │   ├── PortailResultats.jsx    # /portail/resultats — page résultats (vide, à alimenter)
     │   ├── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
     │   └── PortailMessages.jsx     # /portail/messages — chat élève ↔ enseignant (polling 5s, badges non-lus, séparateurs de date)
     └── enseignant/
-        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves, chat)
+        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves, chat, devoirs CRUD)
         ├── EnseignantLogin.jsx     # /enseignant/login — connexion + changement mot de passe 1ère connexion
         ├── EnseignantApp.jsx       # Layout portail enseignant (style admin, sidebar, topbar, badge non-lus messages)
-        ├── EnseignantDashboard.jsx # (inutilisé — redirect vers /enseignant/classes)
         ├── EnseignantMesClasses.jsx# /enseignant/classes — liste complète des classes
         ├── EnseignantClasse.jsx    # /enseignant/classe/:id — liste des élèves d'une classe
+        ├── EnseignantDevoirs.jsx   # /enseignant/devoirs — calendrier mensuel + CRUD devoirs (créer, modifier, supprimer)
         └── EnseignantMessages.jsx  # /enseignant/messages — chat enseignant ↔ élèves (recherche, badges, suppression conv.)
 ```
 
@@ -104,6 +104,7 @@ Ecole-arabe/
 | `/enseignant` | — | Redirige vers `/enseignant/classes` |
 | `/enseignant/classes` | EnseignantMesClasses | Liste complète des classes assignées |
 | `/enseignant/classe/:id` | EnseignantClasse | Tableau des élèves de la classe (nom, identifiant, statut, date) |
+| `/enseignant/devoirs` | EnseignantDevoirs | Calendrier mensuel des devoirs + CRUD (créer, modifier, supprimer) |
 | `/enseignant/messages` | EnseignantMessages | Chat avec les élèves — liste élèves searchable + bulles + suppression conversation |
 
 ### Authentification enseignant (auth custom bcrypt — même pattern que élèves)
@@ -190,6 +191,7 @@ Ecole-arabe/
 | `eleve_progression` | Suivi progression élève | — | ALL |
 | `niveaux_scolaires` | Niveaux scolaires (N1, N2…) | ALL (anon_all) | ALL |
 | `classes` | Classes (ex: N1-1, N1-2) liées à un niveau scolaire | ALL (anon_all) | ALL |
+| `devoirs` | Devoirs assignés par enseignant à une classe | ALL (anon_all) | ALL |
 
 ### Schéma `profils_eleves`
 
@@ -362,6 +364,8 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Section Devoirs — portail enseignant + portail élève (04/04/2026)** : nouvelle table `devoirs` (UUID `enseignant_id`, UUID `classe_id`, `titre`, `description`, `date_limite DATE`). `EnseignantDevoirs.jsx` créé : calendrier mensuel avec navigation mois, sélecteur de classes en tabs, cases cliquables, pills dorées sur les jours avec devoirs, panneau latéral droit sur clic d'un jour, modal création/édition (titre, description, classe, date), confirmation suppression. Portail élève `PortailDevoirs.jsx` : fetch `classe_id` depuis `profils_eleves` si absent de la session (`login_eleve` ne le retourne pas), devoirs groupés par semaine avec badges urgence colorés (rouge ≤2j, orange ≤6j, vert sinon), section "devoirs passés" repliable. Badge notification or sur "Mes devoirs" dans la sidebar élève : poll 30s via `fetchNewDevoirsCount` (compte devoirs créés après `devoirs_seen_at_{userId}` en localStorage), remis à 0 au clic.
 
 - **Audit qualité — corrections critiques batch 3 (04/04/2026)** : 14 bugs critiques corrigés sur les 3 portails suite à audit complet. **Admin** : `Messages.jsx` sujet mailto "Al-Nour" → "Raqib" ; `mockData.js` suppression `ADMIN_CREDENTIALS` (identifiants en clair de l'ancien système) ; `Classes.jsx` suppression de `nbElevesNiveau` (ignorait son paramètre, jamais appelée) ; `Cours.jsx` remplacement de la création silencieuse de niveau par un `alert()` explicite ; `generateIdentifiant` + `generateTempPassword` extraites dans `adminUtils.js` (supprime la duplication entre `Eleves.jsx` et `Enseignants.jsx`). **Portail élève** : `supabasePortail.js` — `await` manquant sur `r3.json()` dans `fetchEnseignantsDeLEleve` (chat cassé), `res.ok` ajouté dans `fetchQCMExistenceForNiveaux` et `fetchChatMessages` ; `PortailModule.jsx` — flag `cancelled` ajouté dans les `useEffect` de `ModuleEntryView` et `LeconsEntryView` (setState après unmount). **Portail enseignant** : `supabaseEnseignant.js` — `res.ok` + `await` ajoutés dans `fetchChatMessages` et `markMessagesReadEnseignant` ; `EnseignantLogin.jsx` — double `setLoading(false)` supprimé (finally suffit) ; `EnseignantDashboard.jsx` supprimé (fichier mort, jamais importé).
 
