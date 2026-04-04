@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   fetchNiveauxScolaires, createNiveauScolaire, updateNiveauScolaire, deleteNiveauScolaire,
   fetchClasses, createClasse, updateClasse, deleteClasse, fetchEleves,
+  updateEleve, updateEleveNiveauScolaire,
 } from './supabaseAdmin';
 
 const IconBack  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
@@ -171,8 +172,21 @@ export default function Classes() {
             message={`Supprimer le niveau « ${modal.data.nom} » ? Toutes ses classes seront supprimées.`}
             onClose={() => setModal(null)}
             onConfirm={async () => {
-              try { await deleteNiveauScolaire(modal.data.id); await loadAll(); setModal(null); }
-              catch(e) { alert(e.message); }
+              try {
+                // Récupère toutes les classes de ce niveau depuis Supabase pour avoir les IDs exacts
+                const classesNiveau = await fetchClasses(modal.data.id);
+                const classesNiveauIds = new Set(classesNiveau.map(c => c.id));
+                const elevesAssignes = eleves.filter(e => classesNiveauIds.has(e.classe_id));
+                if (elevesAssignes.length > 0) {
+                  await Promise.all(elevesAssignes.map(e => Promise.all([
+                    updateEleve(e.id, { classe_id: null }),
+                    updateEleveNiveauScolaire(e.id, null),
+                  ])));
+                }
+                await deleteNiveauScolaire(modal.data.id);
+                await loadAll();
+                setModal(null);
+              } catch(e) { alert(e.message); }
             }} />
         )}
       </div>
@@ -259,8 +273,19 @@ export default function Classes() {
             message={`Supprimer la classe « ${modal.data.nom} » ? Les élèves assignés seront désassignés.`}
             onClose={() => setModal(null)}
             onConfirm={async () => {
-              try { await deleteClasse(modal.data.id); await loadClasses(selNiveau.id); await loadAll(); setModal(null); }
-              catch(e) { alert(e.message); }
+              try {
+                const elevesAssignes = eleves.filter(e => e.classe_id === modal.data.id);
+                if (elevesAssignes.length > 0) {
+                  await Promise.all(elevesAssignes.map(e => Promise.all([
+                    updateEleve(e.id, { classe_id: null }),
+                    updateEleveNiveauScolaire(e.id, null),
+                  ])));
+                }
+                await deleteClasse(modal.data.id);
+                await loadClasses(selNiveau.id);
+                await loadAll();
+                setModal(null);
+              } catch(e) { alert(e.message); }
             }} />
         )}
       </div>

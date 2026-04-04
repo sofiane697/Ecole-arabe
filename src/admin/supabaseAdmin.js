@@ -328,11 +328,13 @@ export async function resetElevePassword(id, newPassword) {
   }
 }
 
-/** Supprimer un élève (progression + profil) */
+/** Supprimer un élève (messages + progression + profil) */
 export async function deleteEleve(id) {
-  // 1. Supprimer la progression de l'élève
+  // 1. Supprimer les messages de l'élève
+  await authFetch(`${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${id}`, { method: 'DELETE' });
+  // 2. Supprimer la progression de l'élève
   await authFetch(`${SUPABASE_URL}/rest/v1/eleve_progression?eleve_id=eq.${id}`, { method: 'DELETE' });
-  // 2. Supprimer le profil
+  // 3. Supprimer le profil
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
