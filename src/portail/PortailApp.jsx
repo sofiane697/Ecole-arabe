@@ -1,7 +1,7 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
-import { logoutEleve, getEleveUser, fetchUnreadCountEleve } from './supabasePortail';
+import { logoutEleve, getEleveUser, fetchUnreadCountEleve, fetchClasseIdEleve, fetchNewDevoirsCount } from './supabasePortail';
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -117,6 +117,8 @@ export default function PortailApp() {
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [newDevoirsCount, setNewDevoirsCount] = useState(0);
+  const classeIdRef = useRef(null);
 
   useLayoutEffect(() => {
     const id = 'portail-styles';
@@ -141,13 +143,38 @@ export default function PortailApp() {
     }
   }, [navigate]);
 
-  // Badge non-lus — poll toutes les 30s
+  // Badge messages non-lus — poll toutes les 30s
   useEffect(() => {
     const user = getEleveUser();
     if (!user?.id) return;
     const refresh = () => fetchUnreadCountEleve(user.id).then(setUnreadCount).catch(() => {});
     refresh();
     const t = setInterval(refresh, 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Badge devoirs non-vus — poll toutes les 30s
+  useEffect(() => {
+    const user = getEleveUser();
+    if (!user?.id) return;
+    const seenKey = `devoirs_seen_at_${user.id}`;
+
+    const refreshDevoirs = async () => {
+      try {
+        let cid = classeIdRef.current;
+        if (!cid) {
+          cid = user.classe_id || await fetchClasseIdEleve(user.id);
+          classeIdRef.current = cid;
+        }
+        if (!cid) return;
+        const seenAt = localStorage.getItem(seenKey) || new Date(0).toISOString();
+        const count = await fetchNewDevoirsCount(cid, seenAt);
+        setNewDevoirsCount(count);
+      } catch {}
+    };
+
+    refreshDevoirs();
+    const t = setInterval(refreshDevoirs, 30000);
     return () => clearInterval(t);
   }, []);
 
@@ -216,9 +243,21 @@ export default function PortailApp() {
           <NavLink
             to="/portail/devoirs"
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => {
+              setSidebarOpen(false);
+              // Marquer comme vus
+              const user = getEleveUser();
+              if (user?.id) localStorage.setItem(`devoirs_seen_at_${user.id}`, new Date().toISOString());
+              setNewDevoirsCount(0);
+            }}
+            style={{ position:'relative' }}
           >
             <span style={{fontSize:18}}>📝</span> Mes devoirs
+            {newDevoirsCount > 0 && (
+              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
+                {newDevoirsCount}
+              </span>
+            )}
           </NavLink>
 
           <NavLink

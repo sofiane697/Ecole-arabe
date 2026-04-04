@@ -252,13 +252,34 @@ export async function saveProgression(eleveId, niveauId, score, reussi) {
 
 // ─── DEVOIRS ─────────────────────────────────────────────────────────────────
 
+/** Récupère classe_id de l'élève depuis la DB (quand absent de la session) */
+export async function fetchClasseIdEleve(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=classe_id`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const rows = await res.json();
+  return rows[0]?.classe_id || null;
+}
+
 /** Devoirs de la classe de l'élève à venir */
 export async function fetchDevoirsEleve(classeId) {
-  const today = new Date().toISOString().slice(0, 10);
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/devoirs?classe_id=eq.${classeId}&order=date_limite.asc`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
+}
+
+/** Nombre de devoirs créés après seenAt (pour badge non-vus) */
+export async function fetchNewDevoirsCount(classeId, seenAt) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/devoirs?classe_id=eq.${classeId}&created_at=gt.${encodeURIComponent(seenAt)}&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return data.length;
 }

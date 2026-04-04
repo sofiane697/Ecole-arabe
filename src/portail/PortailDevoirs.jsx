@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDevoirsEleve } from './supabasePortail';
+import { fetchDevoirsEleve, fetchClasseIdEleve } from './supabasePortail';
 
 function getEleveUser() {
   try { return JSON.parse(sessionStorage.getItem('eleve_user')); } catch { return null; }
@@ -73,18 +73,29 @@ const S = {
 
 export default function PortailDevoirs() {
   const user    = getEleveUser();
-  const classeId = user?.classe_id || null;
+  const [classeId, setClasseId] = useState(user?.classe_id || null);
   const [devoirs,  setDevoirs]  = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [showPass, setShowPass] = useState(false);
 
   useEffect(() => {
-    if (!classeId) { setLoading(false); return; }
-    fetchDevoirsEleve(classeId)
-      .then(setDevoirs)
-      .catch(() => setDevoirs([]))
-      .finally(() => setLoading(false));
-  }, [classeId]);
+    if (!user?.id) { setLoading(false); return; }
+    const run = async () => {
+      try {
+        let cid = user?.classe_id || null;
+        // classe_id absent de la session (login_eleve ne le retourne pas) → on le fetch
+        if (!cid) cid = await fetchClasseIdEleve(user.id);
+        setClasseId(cid);
+        if (!cid) { setLoading(false); return; }
+        const dvs = await fetchDevoirsEleve(cid);
+        setDevoirs(dvs);
+      } catch {
+        setDevoirs([]);
+      }
+      setLoading(false);
+    };
+    run();
+  }, [user?.id]);
 
   if (loading) return (
     <div style={S.page}>
