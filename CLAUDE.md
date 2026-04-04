@@ -23,14 +23,16 @@ Ecole-arabe/
     │   ├── Dashboard.jsx     # Tableau de bord — 4 stats + 2 tableaux résumés
     │   ├── Inscriptions.jsx  # Pré-inscriptions — liste + panneau détail + statut
     │   ├── Messages.jsx      # Messages — liste + panneau de lecture + recherche + stats + badges colorés par cours
-    │   ├── Eleves.jsx        # Gestion élèves — liste, création, fiche détail, progression (vue tableau par module + panneau détail par niveau)
+    │   ├── Eleves.jsx        # Gestion élèves — liste, création (+ email contact + envoi auto identifiants), fiche détail, progression
     │   ├── Classes.jsx       # Gestion classes — niveaux scolaires → classes → élèves
     │   ├── Enseignants.jsx   # Gestion enseignants — CRUD, assignation classes, génération identifiants
     │   ├── Cours.jsx         # Gestion cours — modules → thématiques → leçons → niveaux → contenus + QCM
     │   ├── adminUtils.js     # Fonctions utilitaires partagées — generateIdentifiant, generateTempPassword
-    │   ├── supabaseAdmin.js  # Fonctions API Supabase (auth, CRUD, storage, progression)
+    │   ├── supabaseAdmin.js  # Fonctions API Supabase (auth, CRUD, storage, progression, sendWelcomeEmail)
     │   ├── mockData.js       # Données fictives (backup)
     │   └── adminStyles.js    # CSS complet interface admin (thème sombre + clair)
+    └── (racine projet)
+        └── supabase/functions/send-welcome-email/index.ts  # Edge Function Deno — envoi email Resend (identifiants élève)
     ├── portail/
     │   ├── portailStyles.js        # CSS du portail élève
     │   ├── supabasePortail.js      # API Supabase côté élève (auth custom, progression, devoirs)
@@ -364,6 +366,12 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Email de bienvenue automatique à la création d'un élève (05/04/2026)** : envoi automatique des identifiants par email lors de la création d'un élève via Resend + Supabase Edge Function. `Eleves.jsx` : nouveau champ "Email de contact" (facultatif) dans le formulaire de création, appel `sendWelcomeEmail` non-bloquant après création (l'élève est créé même si l'email échoue). `supabaseAdmin.js` : fonction `sendWelcomeEmail()` — appelle `/functions/v1/send-welcome-email` avec la clé anon. Edge Function Deno `supabase/functions/send-welcome-email/index.ts` : appelle l'API Resend avec un template HTML (en-tête or, bloc identifiant + mot de passe, avertissement changement MDP). Déployée dans Supabase avec JWT verification désactivée (clé `sb_publishable_*` incompatible avec le legacy JWT check). Secret `RESEND_API_KEY` ajouté dans Supabase Secrets. Adresse d'envoi : `onboarding@resend.dev` (test sans domaine vérifié, remplacer par domaine propre quand disponible).
+
+- **Correction badge devoirs + fix classe_id absent de session (05/04/2026)** : `PortailDevoirs.jsx` — fetch `classe_id` depuis `profils_eleves` si absent de la session (`login_eleve` ne retourne pas `classe_id`). `supabasePortail.js` : ajout `fetchClasseIdEleve(eleveId)` + `fetchNewDevoirsCount(classeId, seenAt)`. `PortailApp.jsx` : badge or sur "Mes devoirs" (poll 30s), reset au clic + `localStorage devoirs_seen_at_{userId}`.
+
+- **Suppression titres h1 dupliqués dans le portail élève (05/04/2026)** : les titres de page (Mes devoirs, Mes résultats, Mes observations) apparaissaient deux fois — une fois dans la topbar animée et une fois en noir dans le contenu. Suppression des `h1` redondants dans `PortailDevoirs.jsx`, `PortailResultats.jsx`, `PortailObservations.jsx`.
 
 - **Section Devoirs — portail enseignant + portail élève (04/04/2026)** : nouvelle table `devoirs` (UUID `enseignant_id`, UUID `classe_id`, `titre`, `description`, `date_limite DATE`). `EnseignantDevoirs.jsx` créé : calendrier mensuel avec navigation mois, sélecteur de classes en tabs, cases cliquables, pills dorées sur les jours avec devoirs, panneau latéral droit sur clic d'un jour, modal création/édition (titre, description, classe, date), confirmation suppression. Portail élève `PortailDevoirs.jsx` : fetch `classe_id` depuis `profils_eleves` si absent de la session (`login_eleve` ne le retourne pas), devoirs groupés par semaine avec badges urgence colorés (rouge ≤2j, orange ≤6j, vert sinon), section "devoirs passés" repliable. Badge notification or sur "Mes devoirs" dans la sidebar élève : poll 30s via `fetchNewDevoirsCount` (compte devoirs créés après `devoirs_seen_at_{userId}` en localStorage), remis à 0 au clic.
 
