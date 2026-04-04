@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
@@ -646,6 +646,7 @@ function CreateEleveModal({ onClose, onCreated }) {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [classeId, setClasseId] = useState('');
+  const [emailContact, setEmailContact] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
@@ -687,6 +688,18 @@ function CreateEleveModal({ onClose, onCreated }) {
           updateEleve(eleve.id, { classe_id: classeId }),
           updateEleveNiveauScolaire(eleve.id, niveauScolaireId),
         ]);
+      }
+      // Envoi email de bienvenue (non-bloquant)
+      if (emailContact.trim()) {
+        const classeNom = allClasses.find(c => c.id === classeId)?.nom || null;
+        sendWelcomeEmail({
+          email: emailContact.trim(),
+          prenom: fmtPrenom(prenom),
+          nom: fmtNom(nom),
+          identifiant: identifiant.toLowerCase(),
+          tempPassword: tempPwd,
+          classeNom,
+        }).catch(() => {});
       }
       setResult({ identifiant, tempPassword: tempPwd });
     } catch(e) {
@@ -836,6 +849,16 @@ function CreateEleveModal({ onClose, onCreated }) {
             </select>
           </div>
         )}
+        <div style={S.field}>
+          <label style={S.label}>Email de contact <span style={{ color:'var(--a-fg-light)', fontWeight:400, textTransform:'none' }}>(facultatif — pour envoi des identifiants)</span></label>
+          <input
+            style={S.input}
+            type="email"
+            value={emailContact}
+            onChange={e => setEmailContact(e.target.value)}
+            placeholder="parent@email.com"
+          />
+        </div>
         <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.5, marginBottom:8 }}>
           Un mot de passe provisoire sera généré automatiquement. L'élève devra le modifier à sa première connexion.
         </div>

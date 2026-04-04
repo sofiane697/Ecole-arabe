@@ -551,3 +551,19 @@ export async function updateEleveActif(id, actif) {
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
+
+// ─── EMAIL ───────────────────────────────────────────────────────────────────
+
+/** Envoie l'email de bienvenue via Supabase Edge Function (Resend) */
+export async function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword, classeNom }) {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+    },
+    body: JSON.stringify({ email, prenom, nom, identifiant, tempPassword, classeNom }),
+  });
+  if (!res.ok) throw new Error(`Erreur envoi email ${res.status}`);
+  return res.json();
+}
