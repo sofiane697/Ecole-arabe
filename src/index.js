@@ -16,7 +16,9 @@ import EnseignantApp        from './enseignant/EnseignantApp';
 import EnseignantMesClasses from './enseignant/EnseignantMesClasses';
 import EnseignantClasse     from './enseignant/EnseignantClasse';
 import EnseignantMessages   from './enseignant/EnseignantMessages';
-import EnseignantDevoirs    from './enseignant/EnseignantDevoirs';
+import EnseignantDevoirs      from './enseignant/EnseignantDevoirs';
+import EnseignantNotes        from './enseignant/EnseignantNotes';
+import EnseignantObservations from './enseignant/EnseignantObservations';
 import PortailLogin from './portail/PortailLogin';
 import PortailApp from './portail/PortailApp';
 import PortailDashboard from './portail/PortailDashboard';
@@ -51,8 +53,10 @@ root.render(
         <Route index element={<Navigate to="classes" replace />} />
         <Route path="classes" element={<EnseignantMesClasses />} />
         <Route path="classe/:id" element={<EnseignantClasse />} />
-        <Route path="devoirs" element={<EnseignantDevoirs />} />
-        <Route path="messages" element={<EnseignantMessages />} />
+        <Route path="devoirs"      element={<EnseignantDevoirs />} />
+        <Route path="notes"        element={<EnseignantNotes />} />
+        <Route path="observations" element={<EnseignantObservations />} />
+        <Route path="messages"     element={<EnseignantMessages />} />
       </Route>
 
       {/* Portail élève */}

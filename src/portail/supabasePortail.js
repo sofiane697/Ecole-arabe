@@ -283,3 +283,63 @@ export async function fetchNewDevoirsCount(classeId, seenAt) {
   const data = await res.json();
   return data.length;
 }
+
+/** Nombre de nouvelles notes ajoutées pour l'élève après seenAt */
+export async function fetchNewNotesCount(eleveId, seenAt) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&created_at=gt.${encodeURIComponent(seenAt)}&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return data.length;
+}
+
+/** Nombre de nouvelles observations ajoutées pour l'élève après seenAt */
+export async function fetchNewObsCount(eleveId, seenAt) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${eleveId}&created_at=gt.${encodeURIComponent(seenAt)}&select=id`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return data.length;
+}
+
+// ─── NOTES ───────────────────────────────────────────────────────────────────
+
+/** Récupère les notes de l'élève avec les détails de chaque évaluation */
+export async function fetchMesNotes(eleveId) {
+  // 1. Notes de l'élève
+  const r1 = await fetch(
+    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&select=score,absent,evaluation_id`,
+    { headers: ANON_HEADERS }
+  );
+  if (!r1.ok) return [];
+  const notes = await r1.json();
+  if (!notes.length) return [];
+
+  // 2. Détails des évaluations correspondantes
+  const evalIds = [...new Set(notes.map(n => n.evaluation_id))].join(',');
+  const r2 = await fetch(
+    `${SUPABASE_URL}/rest/v1/evaluations?id=in.(${evalIds})&select=id,titre,date_evaluation,score_max`,
+    { headers: ANON_HEADERS }
+  );
+  if (!r2.ok) return notes;
+  const evals = await r2.json();
+  const evalMap = Object.fromEntries(evals.map(e => [e.id, e]));
+
+  return notes.map(n => ({ ...n, evaluation: evalMap[n.evaluation_id] || null }));
+}
+
+// ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
+
+/** Récupère les observations de l'élève */
+export async function fetchMesObservations(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${eleveId}&order=created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return [];
+  return res.json();
+}

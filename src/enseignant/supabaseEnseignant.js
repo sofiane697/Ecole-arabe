@@ -186,3 +186,113 @@ export async function deleteDevoir(id) {
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
+
+// ─── NOTES ───────────────────────────────────────────────────────────────────
+
+/** Récupère les évaluations d'une classe */
+export async function fetchEvaluationsClasse(classeId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/evaluations?classe_id=eq.${classeId}&order=date_evaluation.asc,created_at.asc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Crée une évaluation */
+export async function createEvaluation(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const arr = await res.json();
+  return arr[0];
+}
+
+/** Modifie une évaluation */
+export async function updateEvaluation(id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Supprime une évaluation (cascade sur les notes) */
+export async function deleteEvaluation(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: ANON_HEADERS,
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Récupère toutes les notes d'une évaluation */
+export async function fetchNotesEvaluation(evaluationId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/notes?evaluation_id=eq.${evaluationId}`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Upsert note via contrainte UNIQUE (evaluation_id, eleve_id) */
+export async function upsertNote(evaluationId, eleveId, score, absent) {
+  // on_conflict= indique à PostgREST quelle contrainte utiliser pour le ON CONFLICT DO UPDATE.
+  // Sans ce paramètre, il tente un INSERT sur la PK (id UUID auto) qui échoue
+  // silencieusement dès qu'une ligne existe déjà → la note n'est jamais mise à jour.
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/notes?on_conflict=evaluation_id,eleve_id`,
+    {
+      method: 'POST',
+      headers: {
+        ...ANON_HEADERS,
+        'Prefer': 'resolution=merge-duplicates,return=representation',
+      },
+      body: JSON.stringify({ evaluation_id: evaluationId, eleve_id: eleveId, score, absent }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`Erreur ${res.status} — ${err}`);
+  }
+  const arr = await res.json();
+  return arr[0] ?? { evaluation_id: evaluationId, eleve_id: eleveId, score, absent };
+}
+
+// ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
+
+/** Récupère toutes les observations d'une classe par un enseignant */
+export async function fetchObservationsClasse(classeId, enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/observations?classe_id=eq.${classeId}&enseignant_id=eq.${enseignantId}&order=created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Crée une observation */
+export async function createObservation(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/observations`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const arr = await res.json();
+  return arr[0];
+}
+
+/** Supprime une observation */
+export async function deleteObservation(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/observations?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: ANON_HEADERS,
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}

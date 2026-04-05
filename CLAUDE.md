@@ -41,16 +41,18 @@ Ecole-arabe/
     │   ├── PortailDashboard.jsx    # Grille de modules filtrés par niveau scolaire
     │   ├── PortailModule.jsx       # Vue module : thématiques → leçons (chaîne) → niveaux + contenu + QCM
     │   ├── PortailDevoirs.jsx      # /portail/devoirs — devoirs groupés par semaine, badges urgence, section passés repliable
-    │   ├── PortailResultats.jsx    # /portail/resultats — page résultats (vide, à alimenter)
-    │   ├── PortailObservations.jsx # /portail/observations — page observations (vide, à alimenter)
+    │   ├── PortailResultats.jsx    # /portail/resultats — notes reçues (tableau éval/note/date, couleurs /20 équivalent)
+    │   ├── PortailObservations.jsx # /portail/observations — timeline des appréciations (type badge + barre colorée)
     │   └── PortailMessages.jsx     # /portail/messages — chat élève ↔ enseignant (polling 5s, badges non-lus, séparateurs de date)
     └── enseignant/
-        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves, chat, devoirs CRUD)
+        ├── supabaseEnseignant.js   # API Supabase côté enseignant (auth custom, classes, élèves, chat, devoirs, notes, observations CRUD)
         ├── EnseignantLogin.jsx     # /enseignant/login — connexion + changement mot de passe 1ère connexion
         ├── EnseignantApp.jsx       # Layout portail enseignant (style admin, sidebar, topbar, badge non-lus messages)
         ├── EnseignantMesClasses.jsx# /enseignant/classes — liste complète des classes
         ├── EnseignantClasse.jsx    # /enseignant/classe/:id — liste des élèves d'une classe
         ├── EnseignantDevoirs.jsx   # /enseignant/devoirs — calendrier mensuel + CRUD devoirs (créer, modifier, supprimer)
+        ├── EnseignantNotes.jsx     # /enseignant/notes — carnet de notes (layout 2 panneaux : évaluations + saisie par élève, couleurs /20 équivalent)
+        ├── EnseignantObservations.jsx # /enseignant/observations — appréciations par élève (3 types, historique, suppression)
         └── EnseignantMessages.jsx  # /enseignant/messages — chat enseignant ↔ élèves (recherche, badges, suppression conv.)
 ```
 
@@ -366,6 +368,8 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Notes et Observations — portail enseignant + portail élève (05/04/2026)** : 3 nouvelles tables Supabase (`evaluations`, `notes` avec contrainte UNIQUE `evaluation_id+eleve_id`, `observations`) + RLS anon. **Portail enseignant** : `EnseignantNotes.jsx` — layout 2 panneaux (cartes d'évaluations à gauche avec barre de progression et moyenne, saisie à droite avec inputs toujours visibles, toggle Absent, feedback visuel coche verte, moyenne de classe en pied) ; `EnseignantObservations.jsx` — liste d'élèves + panneau latéral (3 types : Général/Comportement/Progression, historique avec suppression) ; sidebar + routes mis à jour. **Portail élève** : `PortailResultats.jsx` — tableau des notes avec couleurs proportionnelles /20 (rouge <10, orange 10–13.5, vert ≥14) ; `PortailObservations.jsx` — timeline des appréciations avec barre colorée par type. Badges non-lus (poll 30s) sur "Mes résultats" et "Mes observations" via `fetchNewNotesCount` + `fetchNewObsCount` (localStorage `notes_seen_at_{userId}`, `obs_seen_at_{userId}`). Upsert notes via `?on_conflict=evaluation_id,eleve_id` (correction bug critique : sans ce paramètre PostgREST tentait un INSERT sur la PK et ignorait silencieusement les mises à jour). Système de couleurs identique portail enseignant et élève.
 
 - **Email de bienvenue automatique à la création d'un élève (05/04/2026)** : envoi automatique des identifiants par email lors de la création d'un élève via Resend + Supabase Edge Function. `Eleves.jsx` : nouveau champ "Email de contact" (facultatif) dans le formulaire de création, appel `sendWelcomeEmail` non-bloquant après création (l'élève est créé même si l'email échoue). `supabaseAdmin.js` : fonction `sendWelcomeEmail()` — appelle `/functions/v1/send-welcome-email` avec la clé anon. Edge Function Deno `supabase/functions/send-welcome-email/index.ts` : appelle l'API Resend avec un template HTML (en-tête or, bloc identifiant + mot de passe, avertissement changement MDP). Déployée dans Supabase avec JWT verification désactivée (clé `sb_publishable_*` incompatible avec le legacy JWT check). Secret `RESEND_API_KEY` ajouté dans Supabase Secrets. Adresse d'envoi : `onboarding@resend.dev` (test sans domaine vérifié, remplacer par domaine propre quand disponible).
 
