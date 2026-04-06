@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react
 import STYLES from './styles';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
+import CinematicIntro from './CinematicIntro';
 
 // ─── Palettes de couleurs ─────────────────────────────────────────────────────
 const THEMES = [
@@ -398,6 +399,9 @@ function PreInscriptionModal({ cours, onClose }) {
    APP
 ══════════════════════════════════════════════════════ */
 export default function App() {
+  /* — Intro cinématique — */
+  const [introPlayed, setIntroPlayed] = useState(false);
+
   /* — État global — */
   const [menuOpen, setMenuOpen]     = useState(false);
   const [formData, setFormData]     = useState({ prenom: '', nom: '', email: '', cours: '', message: '' });
@@ -514,6 +518,8 @@ export default function App() {
   ════════════════════════════════════════════════ */
   return (
     <>
+      {/* ── Intro cinématique ── */}
+      {!introPlayed && <CinematicIntro onComplete={() => setIntroPlayed(true)} />}
 
       {/* ─────────────────────────────
           NAVIGATION

@@ -462,7 +462,7 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
           // la précédente est elle-même débloquée ET complétée (avec QCM validé)
           const leconCompleted = (l) => {
             const withQCM = (niveauxMap[l.id] || []).filter(nv => qcmNiveauxIds.has(nv.id));
-            if (withQCM.length === 0) return true; // Leçon sans QCM = automatiquement complétée
+            if (withQCM.length === 0) return false; // Leçon sans QCM = non validée (reste verrouillée pour la suivante)
             return withQCM.every(nv => progression.some(p => p.niveau_id === nv.id && p.reussi));
           };
           const unlocked = lecons.reduce((acc, lec, i) => {
@@ -616,7 +616,6 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       const isUnlockedLocal = (index) => {
         if (index === 0) return true;
         const prevId = nivs[index - 1].id;
-        if (!withQCM.has(prevId)) return true;
         return prog.some(p => p.niveau_id === prevId && p.reussi);
       };
       const firstTarget = nivs.find((n, i) => isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi));
@@ -641,7 +640,6 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
   const isUnlocked = (niv, index) => {
     if (index === 0) return true;
     const prevId = niveaux[index - 1].id;
-    if (!niveauxWithQCM.has(prevId)) return true;
     return progression.some(p => p.niveau_id === prevId && p.reussi);
   };
   const isPassed    = (nivId) => progression.some(p => p.niveau_id === nivId && p.reussi);

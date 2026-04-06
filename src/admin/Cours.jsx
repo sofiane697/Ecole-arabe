@@ -195,18 +195,20 @@ export default function Cours() {
     setSelLecon(lec);
     setLoading(true);
     try {
-      let nivs = await fetchNiveauxByLecon(lec.id);
+      const nivs = await fetchNiveauxByLecon(lec.id);
+      setNiveaux(nivs);
       if (nivs.length === 0) {
-        alert('Cette leçon n\'a pas encore de niveau. Créez-en un depuis le bouton "Ajouter un niveau".');
-        setLoading(false);
-        return;
+        // Aucun niveau : affiche la vue niveaux avec liste vide + bouton "Ajouter un niveau"
+        setSelNiveau(null);
+        setView('niveaux');
+      } else {
+        const niv = nivs[0];
+        setSelNiveau(niv);
+        setView('niveau-detail');
+        setTab('contenus');
+        loadContenus(niv.id);
+        loadQuestions(niv.id);
       }
-      const niv = nivs[0];
-      setSelNiveau(niv);
-      setView('niveau-detail');
-      setTab('contenus');
-      loadContenus(niv.id);
-      loadQuestions(niv.id);
     } catch(e) { alert(e.message); }
     setLoading(false);
   };

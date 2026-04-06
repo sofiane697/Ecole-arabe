@@ -163,7 +163,7 @@ Ecole-arabe/
 5. Score < score_requis → possibilité de réessayer (tentatives comptées)
 
 **Règle de déblocage des niveaux :**
-- Niveau précédent **sans QCM** → niveau suivant débloqué automatiquement (accès libre)
+- Niveau précédent **sans QCM** → niveau suivant **verrouillé** (un niveau sans QCM ne peut pas être validé, la progression s'arrête là)
 - Niveau précédent **avec QCM** → niveau suivant débloqué uniquement si score ≥ score_requis
 
 ---
