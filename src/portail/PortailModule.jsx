@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import {
   fetchModulesEleve, fetchNiveauxByThematiqueEleve,
   fetchThematiquesEleve, fetchAllThematiquesEleve, fetchEleveNiveauScolaireId, fetchContenusEleve, fetchQCMEleve,
@@ -867,7 +868,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
                 {c.type === 'texte' && (
                   <div className="portail-rich-text" style={NS.textContent}
                     {...(c.contenu?.startsWith('<')
-                      ? { dangerouslySetInnerHTML: { __html: c.contenu } }
+                      ? { dangerouslySetInnerHTML: { __html: DOMPurify.sanitize(c.contenu) } }
                       : { children: c.contenu }
                     )} />
                 )}

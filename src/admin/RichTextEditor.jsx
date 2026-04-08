@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { uploadFile, toSlug } from './supabaseAdmin';
 
 // ─── Icônes SVG ───────────────────────────────────────────────────────────────
@@ -582,7 +583,7 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
       {tab === 'preview' && (<>
         <div style={S.previewNote}>Rendu tel qu'il apparaîtra aux élèves</div>
         {html && html.replace(/<[^>]*>/g,'').trim() ? (
-          <div className="rte-editor" style={S.preview} dangerouslySetInnerHTML={{ __html: html }} />
+          <div className="rte-editor" style={S.preview} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />
         ) : (
           <div style={{ ...S.preview, color:'var(--a-fg-light)', fontStyle:'italic' }}>Aucun contenu à prévisualiser.</div>
         )}

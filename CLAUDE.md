@@ -3,7 +3,7 @@
 ## Présentation du projet
 
 Site vitrine one-page pour une école d'arabe **"Raqib" (رقيب)**.
-Stack : **React 18** (Create React App), **React Router v6**, CSS-in-JS, aucune librairie UI externe.
+Stack : **React 18** (Create React App), **React Router v6**, CSS-in-JS, **DOMPurify** (sanitisation HTML).
 
 ## Structure des fichiers
 
@@ -368,6 +368,8 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Audit sécurité — batch 3 (08/04/2026)** : suppression du fichier `.env.local` racine contenant la `REACT_APP_SUPABASE_SERVICE_KEY` orpheline (clé non utilisée dans le code depuis le batch 1, mais fichier laissé par erreur hors du dossier React). Installation de **DOMPurify** (`npm install dompurify`) — sanitisation HTML appliquée dans `PortailModule.jsx` (affichage contenus texte élèves) et `RichTextEditor.jsx` (aperçu admin) : `DOMPurify.sanitize()` retire les balises et attributs dangereux (`<script>`, `onerror`, etc.) avant tout rendu `dangerouslySetInnerHTML`. Le contenu légitime (titres, gras, listes, images, couleurs) n'est pas affecté.
 
 - **Notes et Observations — portail enseignant + portail élève (05/04/2026)** : 3 nouvelles tables Supabase (`evaluations`, `notes` avec contrainte UNIQUE `evaluation_id+eleve_id`, `observations`) + RLS anon. **Portail enseignant** : `EnseignantNotes.jsx` — layout 2 panneaux (cartes d'évaluations à gauche avec barre de progression et moyenne, saisie à droite avec inputs toujours visibles, toggle Absent, feedback visuel coche verte, moyenne de classe en pied) ; `EnseignantObservations.jsx` — liste d'élèves + panneau latéral (3 types : Général/Comportement/Progression, historique avec suppression) ; sidebar + routes mis à jour. **Portail élève** : `PortailResultats.jsx` — tableau des notes avec couleurs proportionnelles /20 (rouge <10, orange 10–13.5, vert ≥14) ; `PortailObservations.jsx` — timeline des appréciations avec barre colorée par type. Badges non-lus (poll 30s) sur "Mes résultats" et "Mes observations" via `fetchNewNotesCount` + `fetchNewObsCount` (localStorage `notes_seen_at_{userId}`, `obs_seen_at_{userId}`). Upsert notes via `?on_conflict=evaluation_id,eleve_id` (correction bug critique : sans ce paramètre PostgREST tentait un INSERT sur la PK et ignorait silencieusement les mises à jour). Système de couleurs identique portail enseignant et élève.
 
