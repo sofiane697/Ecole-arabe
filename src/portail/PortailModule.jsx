@@ -601,6 +601,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
   const [score, setScore]                   = useState(0);
   const [loading, setLoading]               = useState(true);
   const [niveauxWithQCM, setNiveauxWithQCM] = useState(new Set());
+  const [submitting, setSubmitting]         = useState(false); // garde anti double-soumission
   const eleveId = getEleveId();
 
   const loadData = useCallback(async () => {
@@ -618,13 +619,17 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       setNiveaux(nivs);
       setProgressionState(prog);
       setNiveauxWithQCM(withQCM);
+      // isUnlockedLocal utilise les variables locales (pas le state) — pas de race condition
       const isUnlockedLocal = (index) => {
         if (index === 0) return true;
         const prevId = nivs[index - 1].id;
-        if (!withQCM.has(prevId)) return false; // sans QCM = jamais réussi → chaîne bloquée
-        return prog.some(p => p.niveau_id === prevId && p.reussi);
+        if (!withQCM.has(prevId)) return false; // sans QCM = ne peut jamais être validé → bloqué
+        return prog.some(p => p.niveau_id === prevId && p.reussi === true);
       };
-      const firstTarget = nivs.find((n, i) => isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi));
+      // Sélection automatique : 1er niveau débloqué et non encore réussi
+      const firstTarget = nivs.find((n, i) =>
+        isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi === true)
+      );
       setSelNiveau(firstTarget || nivs[0] || null);
     } catch(e) {}
     setLoading(false);
@@ -632,48 +637,94 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // Changement de niveau : réinitialisation IMMÉDIATE de tout l'état QCM
+  // puis chargement async du contenu et des questions
   useEffect(() => {
     if (!selNiveau) return;
-    setShowQCM(false); setShowResult(false); setAnswers({}); setQcmPage(0);
+    // Réinitialisation synchrone — évite tout état stale inter-niveaux
+    setShowQCM(false);
+    setShowResult(false);
+    setAnswers({});
+    setQcmPage(0);
+    setSubmitting(false);
+    setContenus([]);    // vide immédiatement pour éviter l'affichage du contenu précédent
+    setQuestions([]);   // vide immédiatement — CRITIQUE : empêche le QCM stale d'apparaître
+    // Chargement du nouveau contenu
+    let active = true;
     (async () => {
       try {
         const [c, q] = await Promise.all([fetchContenusEleve(selNiveau.id), fetchQCMEleve(selNiveau.id)]);
-        setContenus(c); setQuestions(q);
+        if (active) { setContenus(c); setQuestions(q); }
       } catch(e) {}
     })();
+    return () => { active = false; };
   }, [selNiveau]);
 
+  // Un niveau est débloqué ssi :
+  // — c'est le premier (index 0), OU
+  // — le niveau précédent a un QCM ET ce QCM a été réussi (reussi === true)
+  // Un niveau SANS QCM ne peut jamais débloquer le suivant.
   const isUnlocked = (niv, index) => {
     if (index === 0) return true;
     const prevId = niveaux[index - 1].id;
-    if (!niveauxWithQCM.has(prevId)) return false; // niveau sans QCM = jamais passable → bloqué
-    return progression.some(p => p.niveau_id === prevId && p.reussi);
+    if (!niveauxWithQCM.has(prevId)) return false; // sans QCM → jamais passable → bloqué
+    return progression.some(p => p.niveau_id === prevId && p.reussi === true);
   };
-  const isPassed    = (nivId) => progression.some(p => p.niveau_id === nivId && p.reussi);
+
+  // Un niveau est "réussi" ssi :
+  // — il appartient à niveauxWithQCM (a un QCM actuellement en base), ET
+  // — il existe un enregistrement progression avec reussi === true
+  // Cette double condition filtre les données stales issues d'anciennes versions du code.
+  const isPassed = (nivId) =>
+    niveauxWithQCM.has(nivId) &&
+    progression.some(p => p.niveau_id === nivId && p.reussi === true);
+
   const getProgForNiveau = (nivId) => progression.find(p => p.niveau_id === nivId);
 
   const handleSubmitQCM = async () => {
-    if (questions.length === 0) return;                        // pas de questions (race async)
-    if (isPassed(selNiveau?.id)) return;                      // déjà réussi → pas de double-save
+    // ── Guards stricts — aucune soumission automatique possible ──────────────
+    if (submitting) return;                              // anti double-clic
+    if (!selNiveau) return;                              // pas de niveau sélectionné
+    if (questions.length === 0) return;                  // QCM pas encore chargé
+    if (isPassed(selNiveau.id)) return;                  // déjà réussi → pas de double-save
     const currentIdx = niveaux.indexOf(selNiveau);
-    if (currentIdx > 0 && !isUnlocked(selNiveau, currentIdx)) return; // niveau verrouillé
+    if (!isUnlocked(selNiveau, currentIdx)) return;      // niveau verrouillé
+    // Vérification côté JS que toutes les questions ont une réponse sélectionnée
+    const allAnswered = questions.every((_, qi) => (answers[qi] || []).length > 0);
+    if (!allAnswered) return;                            // réponses manquantes
+    // ── Calcul du score ───────────────────────────────────────────────────────
     const correct = questions.filter((q, i) => {
-      const correctSet = Array.isArray(q.reponse_correcte) ? q.reponse_correcte : [q.reponse_correcte];
+      const correctSet = Array.isArray(q.reponse_correcte)
+        ? q.reponse_correcte
+        : (q.reponse_correcte != null ? [q.reponse_correcte] : []);
       const selected = answers[i] || [];
+      if (correctSet.length === 0 || selected.length === 0) return false; // question sans réponse correcte définie → jamais correcte
       return correctSet.length === selected.length && correctSet.every(v => selected.includes(v));
     }).length;
     const pct = Math.round((correct / questions.length) * 100);
     const passed = pct >= (selNiveau.score_requis || 80);
-    setScore(pct); setShowResult(true);
+    // ── Sauvegarde ────────────────────────────────────────────────────────────
+    setSubmitting(true);
+    setScore(pct);
+    setShowResult(true);
     try {
       await saveProgression(eleveId, selNiveau.id, pct, passed);
       setProgressionState(await fetchProgression(eleveId));
     } catch(e) {}
+    setSubmitting(false);
   };
 
+  // Navigation vers le niveau suivant — vérifie le verrou avant de naviguer
   const handleNextLevel = () => {
     const idx = niveaux.findIndex(n => n.id === selNiveau.id);
-    if (idx < niveaux.length - 1) setSelNiveau(niveaux[idx + 1]);
+    if (idx < niveaux.length - 1) {
+      const next = niveaux[idx + 1];
+      // isUnlocked se met à jour avec la progression fraîchement chargée
+      // après handleSubmitQCM → le niveau suivant est déverrouillé si le QCM vient d'être réussi
+      if (isUnlocked(next, idx + 1)) {
+        setSelNiveau(next);
+      }
+    }
   };
 
   if (loading) return <div style={NS.empty}>Chargement...</div>;
