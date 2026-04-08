@@ -84,23 +84,6 @@ const CARD_PASTELS = [
 ];
 
 const S = {
-  grid: (n) => ({
-    display: 'grid',
-    gridTemplateColumns: `repeat(${Math.min(n, 4)}, 1fr)`,
-    gap: 20,
-  }),
-  card: (palette) => ({ background: palette ? palette.bg : 'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', overflow:'hidden', cursor:'pointer', transition:'transform .2s var(--p-ease-out), box-shadow .2s' }),
-  cardImg: { width:'100%', height:140, objectFit:'cover', display:'block' },
-  cardImgContainer: (bg) => ({ width:'100%', height:140, background: bg || 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' }),
-  cardImgPlaceholder: { fontSize:40, opacity:.4 },
-  cardBody: { padding:20 },
-  cardTitle: { fontSize:17, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
-  cardDesc: { fontSize:13, color:'var(--p-fg-mid)', margin:'0 0 16px', lineHeight:1.5 },
-  progressBar: { height:8, borderRadius:4, background:'rgba(0,0,0,0.12)', overflow:'hidden' },
-  progressFill: (pct) => ({ height:'100%', borderRadius:4, background:'#ffffff', boxShadow:'0 1px 3px rgba(0,0,0,0.2)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
-  progressText: { display:'flex', justifyContent:'space-between', marginTop:8, fontSize:12, color:'var(--p-fg-mid)' },
-  btn: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-gold)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s, transform .15s' }),
-  btnCompleted: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-green)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, opacity:0.75 }),
   empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)' },
   emptyTitle: { fontSize:20, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
   loading: { textAlign:'center', padding:'60px', color:'var(--p-fg-mid)', fontSize:14 },
@@ -262,7 +245,7 @@ export default function PortailDashboard() {
           );
         })()
       ) : (
-        <div style={S.grid(modules.length)}>
+        <div className="portail-modules-grid">
           {modules.map((m, index) => {
             const palette = CARD_PASTELS[index % CARD_PASTELS.length];
             const nivs = niveauxMap[m.id] || [];
@@ -270,25 +253,38 @@ export default function PortailDashboard() {
             const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
             const completed = nivsAvecQCM.length > 0 && reussis === nivsAvecQCM.length;
             const started = reussis > 0;
+            const pct = nivsAvecQCM.length > 0 ? Math.round((reussis / nivsAvecQCM.length) * 100) : 0;
 
             return (
               <div key={m.id}
-                style={S.card(palette)}
-                onClick={() => navigate(`/portail/module/${m.id}`)}
-                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
+                className="portail-module-card"
+                style={{ background: palette.bg, boxShadow: started ? `0 4px 20px ${palette.btnShadow}` : 'none' }}
+                onClick={() => navigate(`/portail/module/${m.id}`)}>
                 {m.image_url ? (
-                  <img src={m.image_url} alt={m.titre} style={S.cardImg} />
+                  <img src={m.image_url} alt={m.titre} className="portail-module-card-img" />
                 ) : (
-                  <div style={S.cardImgContainer(palette.bg)}>
-                    <span style={S.cardImgPlaceholder}>📖</span>
+                  <div className="portail-module-card-img-placeholder" style={{ background: palette.bg }}>
+                    📖
                   </div>
                 )}
-                <div style={S.cardBody}>
-                  <h3 style={S.cardTitle}>{m.titre}</h3>
-                  {m.description && <p style={S.cardDesc}>{m.description}</p>}
-                  <button style={completed ? S.btnCompleted(palette) : S.btn(palette)}>
-                    {completed ? '✓ Terminé' : started ? 'Continuer' : 'Commencer'}
+                <div className="portail-module-card-body">
+                  <h3 className="portail-module-card-title">{m.titre}</h3>
+                  {m.description && <p className="portail-module-card-desc">{m.description}</p>}
+                  {nivsAvecQCM.length > 0 && (
+                    <>
+                      <div className="portail-module-card-progress">
+                        <div className="portail-module-card-progress-fill" style={{ width:`${pct}%`, background: palette.btnGrad }} />
+                      </div>
+                      <div className="portail-module-card-progress-label">
+                        <span>{completed ? '✓ Terminé !' : started ? `${reussis}/${nivsAvecQCM.length} niveaux` : 'Pas encore commencé'}</span>
+                        <span>{pct}%</span>
+                      </div>
+                    </>
+                  )}
+                  <button
+                    className="portail-module-card-btn"
+                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}`, opacity: completed ? 0.8 : 1 }}>
+                    {completed ? '✓ Terminé' : started ? '→ Continuer' : 'Commencer'}
                   </button>
                 </div>
               </div>

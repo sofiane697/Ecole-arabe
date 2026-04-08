@@ -212,11 +212,147 @@ const PORTAIL_STYLES = `
   .portail-login-page {
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
     background: var(--p-bg);
     font-family: 'Inter', -apple-system, sans-serif;
   }
+
+  /* ─── Split layout (deux colonnes) ─── */
+  .portail-login-split {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* ─── Panneau gauche — marque ─── */
+  .portail-login-panel-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 60px 64px;
+    background: #0a0a0a;
+    border-right: 1px solid var(--p-border);
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .portail-login-panel-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 20% 50%, rgba(191,138,48,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .portail-panel-logo {
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+  }
+  .portail-panel-logo .arabic {
+    font-family: 'Scheherazade New', serif;
+    font-size: 52px;
+    color: var(--p-gold);
+    display: block;
+    direction: rtl;
+    line-height: 1.1;
+  }
+  .portail-panel-logo .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--p-fg-light);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-top: 8px;
+    display: block;
+  }
+
+  .portail-panel-heading {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--p-fg);
+    margin: 0 0 12px;
+    line-height: 1.25;
+    position: relative;
+    z-index: 1;
+  }
+  .portail-panel-heading span { color: var(--p-gold); }
+
+  .portail-panel-desc {
+    font-size: 14px;
+    color: var(--p-fg-mid);
+    line-height: 1.7;
+    margin: 0 0 48px;
+    max-width: 380px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .portail-panel-features {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .portail-panel-feature {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .portail-panel-feature-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(191,138,48,0.10);
+    border: 1px solid rgba(191,138,48,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--p-gold);
+  }
+  .portail-panel-feature-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .portail-panel-feature-text strong { font-size: 13px; font-weight: 600; color: var(--p-fg); }
+  .portail-panel-feature-text span   { font-size: 12px; color: var(--p-fg-light); }
+
+  .portail-panel-deco {
+    position: absolute;
+    font-family: 'Scheherazade New', serif;
+    font-size: 240px;
+    font-weight: 700;
+    color: rgba(191,138,48,0.035);
+    right: -20px;
+    bottom: -30px;
+    user-select: none;
+    pointer-events: none;
+    line-height: 1;
+    z-index: 0;
+  }
+
+  /* ─── Panneau droit — formulaire ─── */
+  .portail-login-panel-right {
+    width: 480px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 48px;
+    background: var(--p-bg);
+    box-sizing: border-box;
+  }
+  .portail-login-panel-right > .portail-login-card {
+    width: 100%;
+    max-width: 380px;
+  }
+
   .portail-login-card {
     background: var(--p-bg-card);
     border: 1px solid var(--p-border);
@@ -229,7 +365,7 @@ const PORTAIL_STYLES = `
   }
   .portail-login-brand {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 8px;
   }
   .portail-login-brand .arabic {
     font-family: 'Scheherazade New', serif;
@@ -246,9 +382,14 @@ const PORTAIL_STYLES = `
     letter-spacing: 1.5px;
     margin-top: 6px;
   }
-  .portail-login-field {
-    margin-bottom: 16px;
+  .portail-login-subtitle {
+    font-size: 12px;
+    color: var(--p-fg-light);
+    text-align: center;
+    margin: 0 0 28px;
+    line-height: 1.5;
   }
+  .portail-login-field { margin-bottom: 16px; }
   .portail-login-field label {
     display: block;
     font-size: 12px;
@@ -291,6 +432,16 @@ const PORTAIL_STYLES = `
     font-size: 13px;
     text-align: center;
     margin-top: 12px;
+  }
+
+  /* ─── Responsive — login split (≤ 768px) ─── */
+  @media (max-width: 768px) {
+    .portail-login-panel-left { display: none; }
+    .portail-login-panel-right {
+      width: 100%;
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
   }
 
   /* ─── Topbar left group ─── */
@@ -388,19 +539,126 @@ const PORTAIL_STYLES = `
   @media (max-width: 600px) {
     .portail-content { padding: 16px; }
 
-    .portail-topbar { padding: 0 16px; }
+    .portail-topbar { padding: 0 12px; height: 64px; }
     .portail-topbar-date { display: none; }
     .portail-topbar-title { font-size: 15px; }
 
+    .portail-topbar-fun-title { font-size: 22px !important; gap: 4px !important; }
+    .portail-topbar-fun-stars { display: none !important; }
+
+    .portail-login-panel-right { padding: 32px 16px; }
     .portail-login-card {
       padding: 28px 20px;
-      margin: 0 12px;
-      max-width: calc(100vw - 24px);
       border-radius: var(--p-radius-sm);
     }
     .portail-login-brand .arabic { font-size: 22px; }
 
     .portail-module-main { padding: 14px; }
+  }
+
+  /* ─── Grille modules dashboard ─── */
+  .portail-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  @media (max-width: 1024px) {
+    .portail-modules-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+  }
+  @media (max-width: 600px) {
+    .portail-modules-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  /* ─── Cartes modules ─── */
+  .portail-module-card {
+    border-radius: var(--p-radius);
+    border: 1px solid var(--p-border);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s var(--p-ease-out), box-shadow .2s;
+  }
+  .portail-module-card:hover {
+    transform: translateY(-4px);
+  }
+  .portail-module-card-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+  .portail-module-card-img-placeholder {
+    width: 100%;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+  }
+  .portail-module-card-body {
+    padding: 20px;
+  }
+  .portail-module-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0 0 6px;
+  }
+  .portail-module-card-desc {
+    font-size: 13px;
+    color: #555;
+    margin: 0 0 16px;
+    line-height: 1.5;
+  }
+  .portail-module-card-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.10);
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .portail-module-card-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.25);
+    transition: width .6s var(--p-ease-out);
+  }
+  .portail-module-card-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #777;
+    margin-bottom: 14px;
+  }
+  .portail-module-card-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: 980px;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .portail-module-card-btn:hover { opacity: .88; }
+  @media (max-width: 600px) {
+    .portail-module-card-img,
+    .portail-module-card-img-placeholder {
+      height: 200px;
+    }
+    .portail-module-card-title { font-size: 18px; }
+    .portail-module-card-body  { padding: 18px; }
   }
 
   /* ─── Rendu texte riche portail ─── */

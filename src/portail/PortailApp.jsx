@@ -67,7 +67,7 @@ function TopbarFunTitle({ title, emoji }) {
   return (
     <>
       <style>{TOPBAR_KEYFRAMES}</style>
-      <span style={{
+      <span className="portail-topbar-fun-title" style={{
         display:'inline-flex', alignItems:'center', gap:8,
         fontFamily:"'Nunito','Inter',sans-serif",
         fontSize:40, fontWeight:900,
@@ -93,8 +93,8 @@ function TopbarFunTitle({ title, emoji }) {
           </span>
         ))}
         {/* Étoiles droite */}
-        <span style={{ fontSize:22, display:'inline-block', animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
-        <span style={{ fontSize:18, display:'inline-block', animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
+        <span className="portail-topbar-fun-stars" style={{ fontSize:22, display:'inline-block', animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
+        <span className="portail-topbar-fun-stars" style={{ fontSize:18, display:'inline-block', animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
       </span>
     </>
   );

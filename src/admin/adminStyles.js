@@ -223,6 +223,240 @@ const ADMIN_STYLES = `
     box-shadow: 0 6px 20px rgba(191,138,48,0.3);
   }
 
+  /* ─── Login — Layout deux colonnes ─── */
+  .admin-login-split {
+    display: flex;
+    width: 100%;
+    max-width: 960px;
+    min-height: 580px;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.55);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Colonne gauche : panneau de marque */
+  .admin-login-brand {
+    flex: 1;
+    background: linear-gradient(160deg, #0d0d0d 0%, #111111 60%, #0a0a08 100%);
+    border-right: 1px solid rgba(191,138,48,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Halo décoratif doré en arrière-plan */
+  .admin-login-brand::before {
+    content: '';
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(191,138,48,0.07) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  /* Ligne décorative en haut */
+  .admin-login-brand::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(191,138,48,0.5), transparent);
+  }
+
+  .admin-login-brand-inner {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Grand logo arabe */
+  .admin-login-brand-logo {
+    font-family: 'Scheherazade New', serif;
+    font-size: 3.6rem;
+    color: var(--a-gold);
+    line-height: 1;
+    display: block;
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 40px rgba(191,138,48,0.25);
+  }
+
+  .admin-login-brand-name {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(191,138,48,0.55);
+    display: block;
+    margin-bottom: 1.6rem;
+  }
+
+  /* Séparateur doré */
+  .admin-login-brand-divider {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--a-gold), transparent);
+    margin: 0 auto 1.6rem;
+  }
+
+  .admin-login-brand-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e8e8ea;
+    margin-bottom: 0.7rem;
+    letter-spacing: -0.01em;
+  }
+
+  .admin-login-brand-desc {
+    font-size: 0.85rem;
+    color: #606065;
+    line-height: 1.65;
+    max-width: 240px;
+    margin: 0 auto 2.5rem;
+  }
+
+  /* Icônes fonctionnalités */
+  .admin-login-brand-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .admin-login-brand-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(191,138,48,0.05);
+    border: 1px solid rgba(191,138,48,0.1);
+    border-radius: 10px;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+  .admin-login-brand-feature:hover {
+    background: rgba(191,138,48,0.09);
+    border-color: rgba(191,138,48,0.2);
+  }
+
+  .admin-login-brand-feature-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(191,138,48,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--a-gold);
+    flex-shrink: 0;
+  }
+
+  .admin-login-brand-feature-label {
+    font-size: 0.8rem;
+    color: #909096;
+    font-weight: 500;
+    text-align: left;
+  }
+
+  /* Colonne droite : formulaire */
+  .admin-login-form-col {
+    width: 380px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--a-bg-card);
+  }
+
+  /* Adapter la card dans le layout deux colonnes */
+  .admin-login-split .admin-login-card {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    width: 100%;
+    padding: 3rem 2.5rem;
+    background: transparent;
+  }
+
+  /* Titre connexion plus visible dans le split */
+  .admin-login-split .admin-login-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.02em;
+  }
+
+  /* Sous-titre */
+  .admin-login-subtitle {
+    font-size: 0.8rem;
+    color: var(--a-fg-mid);
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* Mode light — ajustements panneau gauche */
+  .admin-root.admin-light .admin-login-brand {
+    background: linear-gradient(160deg, #f0f0f2 0%, #ebebed 60%, #e8e8ea 100%);
+    border-right-color: rgba(191,138,48,0.15);
+  }
+  .admin-root.admin-light .admin-login-brand-title {
+    color: #1d1d1f;
+  }
+  .admin-root.admin-light .admin-login-brand-desc {
+    color: #86868b;
+  }
+  .admin-root.admin-light .admin-login-brand-feature-label {
+    color: #6e6e73;
+  }
+  .admin-root.admin-light .admin-login-brand-feature {
+    background: rgba(191,138,48,0.06);
+    border-color: rgba(191,138,48,0.12);
+  }
+  .admin-root.admin-light .admin-login-brand-logo {
+    text-shadow: none;
+  }
+  .admin-root.admin-light .admin-login-split {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  /* Mobile : une seule colonne, panneau gauche masqué */
+  @media (max-width: 767px) {
+    .admin-login-page {
+      padding: 1rem;
+      align-items: center;
+    }
+    .admin-login-split {
+      flex-direction: column;
+      max-width: 400px;
+      min-height: unset;
+      border-radius: 24px;
+    }
+    .admin-login-brand {
+      display: none;
+    }
+    .admin-login-form-col {
+      width: 100%;
+    }
+    .admin-login-split .admin-login-card {
+      padding: 2.5rem 1.8rem;
+    }
+    .admin-theme-toggle {
+      top: 1rem !important;
+      right: 1rem !important;
+    }
+  }
+
   /* ─── Layout Admin ─── */
   .admin-layout {
     display: flex;
