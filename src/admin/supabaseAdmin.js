@@ -243,6 +243,17 @@ export async function fetchEleveProgression(eleveId) {
   return res.json();
 }
 
+/** Réinitialiser la progression de TOUS les élèves pour un niveau donné.
+ *  À appeler quand les questions QCM d'un niveau sont supprimées / remplacées,
+ *  pour éviter que d'anciens records reussi=true ressurgissent. */
+export async function resetProgressionNiveau(niveauId) {
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/eleve_progression?niveau_id=eq.${niveauId}`,
+    { method: 'DELETE' }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 
 /** Convertit un titre en chemin URL-safe (ex: "Les 5 piliers" → "Les-5-piliers") */

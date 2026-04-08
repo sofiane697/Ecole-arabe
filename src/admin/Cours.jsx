@@ -8,7 +8,7 @@ import {
   fetchContenus, createContenu, updateContenu, deleteContenu,
   fetchQCM, createQuestion, updateQuestion, deleteQuestion,
   uploadFile, toSlug, deleteStorageFolder, deleteOldCover,
-  fetchNiveauxScolaires,
+  fetchNiveauxScolaires, resetProgressionNiveau,
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
@@ -384,13 +384,25 @@ export default function Cours() {
   const handleDeleteAllQuestions = () => {
     setConfirm({
       title: 'Supprimer tout le QCM ?',
-      message: <span>Toutes les questions de ce QCM seront supprimées définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>Toutes les questions de ce QCM seront supprimées définitivement.<br/><br/>La progression des élèves pour ce niveau sera <strong>automatiquement réinitialisée</strong> pour éviter les faux "réussis".<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try {
           await Promise.all(questions.map(q => deleteQuestion(q.id)));
+          await resetProgressionNiveau(selNiveau.id);
           await loadQuestions(selNiveau.id);
         } catch(e) { alert(e.message); }
+      },
+    });
+  };
+
+  const handleResetProgression = () => {
+    setConfirm({
+      title: 'Réinitialiser la progression ?',
+      message: <span>La progression de <strong>tous les élèves</strong> pour le niveau <strong>"{selNiveau?.titre}"</strong> sera réinitialisée (records QCM supprimés).<br/><br/>Les élèves devront repasser le QCM depuis zéro.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      onConfirm: async () => {
+        setConfirm(null);
+        try { await resetProgressionNiveau(selNiveau.id); } catch(e) { alert(e.message); }
       },
     });
   };
@@ -701,6 +713,11 @@ export default function Cours() {
                 🗑 Tout supprimer
               </div>
             )}
+            <div style={{ ...S.addCard, minHeight:50, flex:'0 0 auto', paddingLeft:20, paddingRight:20, color:'var(--a-fg-mid)', borderColor:'var(--a-border)', fontSize:12 }}
+              onClick={handleResetProgression}
+              title="Supprime les records de progression des élèves pour ce niveau (utile après remplacement du QCM)">
+              🔄 Réinitialiser progression élèves
+            </div>
           </div>
         </>
       )}
