@@ -559,7 +559,7 @@ const PORTAIL_STYLES = `
   /* ─── Grille modules dashboard ─── */
   .portail-modules-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
     gap: 24px;
   }
   @media (max-width: 1024px) {

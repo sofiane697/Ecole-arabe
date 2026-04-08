@@ -16,6 +16,8 @@ import EnseignantApp        from './enseignant/EnseignantApp';
 import EnseignantMesClasses from './enseignant/EnseignantMesClasses';
 import EnseignantClasse     from './enseignant/EnseignantClasse';
 import EnseignantMessages   from './enseignant/EnseignantMessages';
+import EnseignantAbsences     from './enseignant/EnseignantAbsences';
+import EnseignantEleveProfile from './enseignant/EnseignantEleveProfile';
 import EnseignantDevoirs      from './enseignant/EnseignantDevoirs';
 import EnseignantNotes        from './enseignant/EnseignantNotes';
 import EnseignantObservations from './enseignant/EnseignantObservations';
@@ -53,6 +55,8 @@ root.render(
         <Route index element={<Navigate to="classes" replace />} />
         <Route path="classes" element={<EnseignantMesClasses />} />
         <Route path="classe/:id" element={<EnseignantClasse />} />
+        <Route path="absences"     element={<EnseignantAbsences />} />
+        <Route path="eleve/:eleveId" element={<EnseignantEleveProfile />} />
         <Route path="devoirs"      element={<EnseignantDevoirs />} />
         <Route path="notes"        element={<EnseignantNotes />} />
         <Route path="observations" element={<EnseignantObservations />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchModulesEleve, fetchAllNiveauxForModuleEleve, fetchProgression, fetchQCMExistenceForNiveaux, fetchEleveNiveauScolaireId } from './supabasePortail';
+import { fetchModulesEleve, fetchEleveNiveauScolaireId } from './supabasePortail';
 
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
@@ -156,9 +156,6 @@ function SalamGreeting({ prenom }) {
 export default function PortailDashboard() {
   const navigate = useNavigate();
   const [modules, setModules] = useState([]);
-  const [niveauxMap, setNiveauxMap] = useState({});
-  const [progression, setProgression] = useState([]);
-  const [qcmNiveauxIds, setQcmNiveauxIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -181,7 +178,7 @@ export default function PortailDashboard() {
             } catch {}
           }
         }
-        const [allMods, prog] = await Promise.all([fetchModulesEleve(), fetchProgression(eleveId)]);
+        const allMods = await fetchModulesEleve();
         const mods = allMods.filter(m => {
           if (!Array.isArray(m.niveaux_scolaires_ids) || m.niveaux_scolaires_ids.length === 0) return false;
           if (!niveauScolaireId) return false;
@@ -189,19 +186,6 @@ export default function PortailDashboard() {
         });
         if (cancelled) return;
         setModules(mods);
-        setProgression(prog);
-        const nivMap = {};
-        await Promise.all(mods.map(async (m) => {
-          try { nivMap[m.id] = await fetchAllNiveauxForModuleEleve(m.id); } catch { nivMap[m.id] = []; }
-        }));
-        if (cancelled) return;
-        setNiveauxMap(nivMap);
-        const allNivIds = Object.values(nivMap).flat().map(n => n.id);
-        if (allNivIds.length > 0) {
-          const qcmIds = await fetchQCMExistenceForNiveaux(allNivIds);
-          if (cancelled) return;
-          setQcmNiveauxIds(qcmIds);
-        }
       } catch(e) {}
       if (!cancelled) setLoading(false);
     })();
@@ -245,20 +229,14 @@ export default function PortailDashboard() {
           );
         })()
       ) : (
-        <div className="portail-modules-grid">
+        <div className="portail-modules-grid" style={{ '--grid-cols': Math.min(modules.length, 4) }}>
           {modules.map((m, index) => {
             const palette = CARD_PASTELS[index % CARD_PASTELS.length];
-            const nivs = niveauxMap[m.id] || [];
-            const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
-            const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
-            const completed = nivsAvecQCM.length > 0 && reussis === nivsAvecQCM.length;
-            const started = reussis > 0;
-            const pct = nivsAvecQCM.length > 0 ? Math.round((reussis / nivsAvecQCM.length) * 100) : 0;
 
             return (
               <div key={m.id}
                 className="portail-module-card"
-                style={{ background: palette.bg, boxShadow: started ? `0 4px 20px ${palette.btnShadow}` : 'none' }}
+                style={{ background: palette.bg }}
                 onClick={() => navigate(`/portail/module/${m.id}`)}>
                 {m.image_url ? (
                   <img src={m.image_url} alt={m.titre} className="portail-module-card-img" />
@@ -270,21 +248,10 @@ export default function PortailDashboard() {
                 <div className="portail-module-card-body">
                   <h3 className="portail-module-card-title">{m.titre}</h3>
                   {m.description && <p className="portail-module-card-desc">{m.description}</p>}
-                  {nivsAvecQCM.length > 0 && (
-                    <>
-                      <div className="portail-module-card-progress">
-                        <div className="portail-module-card-progress-fill" style={{ width:`${pct}%`, background: palette.btnGrad }} />
-                      </div>
-                      <div className="portail-module-card-progress-label">
-                        <span>{completed ? '✓ Terminé !' : started ? `${reussis}/${nivsAvecQCM.length} niveaux` : 'Pas encore commencé'}</span>
-                        <span>{pct}%</span>
-                      </div>
-                    </>
-                  )}
                   <button
                     className="portail-module-card-btn"
-                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}`, opacity: completed ? 0.8 : 1 }}>
-                    {completed ? '✓ Terminé' : started ? '→ Continuer' : 'Commencer'}
+                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}` }}>
+                    Commencer
                   </button>
                 </div>
               </div>

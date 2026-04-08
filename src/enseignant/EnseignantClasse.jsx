@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getEnseignantUser, fetchMesClasses, fetchElevesDeClasse } from './supabaseEnseignant';
 
 const IconBack = () => (
@@ -30,6 +30,7 @@ const S = {
 export default function EnseignantClasse() {
   const { id }    = useParams();
   const navigate  = useNavigate();
+  const location  = useLocation();
   const user      = getEnseignantUser();
   const [classe, setClasse]   = useState(null);
   const [eleves, setEleves]   = useState([]);
@@ -94,7 +95,8 @@ export default function EnseignantClasse() {
                   ? new Date(e.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' })
                   : '—';
                 return (
-                  <tr key={e.id} style={S.tr}
+                  <tr key={e.id} style={{ ...S.tr, cursor: 'pointer' }}
+                    onClick={() => navigate(`/enseignant/eleve/${e.id}`, { state: { classeId: id, classe, eleve: e } })}
                     onMouseEnter={ev => ev.currentTarget.style.background='var(--a-bg-hover)'}
                     onMouseLeave={ev => ev.currentTarget.style.background=''}>
                     <td style={S.td}>

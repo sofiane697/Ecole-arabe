@@ -296,3 +296,126 @@ export async function deleteObservation(id) {
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
+
+// ─── RETARDS / ABSENCES ───────────────────────────────────────────────────────
+
+/** Récupère tous les retards/absences d'une classe, triés par date desc */
+export async function fetchRetardsAbsences(classeId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/retards_absences?classe_id=eq.${classeId}&order=date.desc,created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Crée une entrée retard/absence */
+export async function createRetardAbsence(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const arr = await res.json();
+  return arr[0];
+}
+
+/** Modifie une entrée */
+export async function updateRetardAbsence(id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Supprime une entrée */
+export async function deleteRetardAbsence(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: ANON_HEADERS,
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+// ─── FICHE ÉLÈVE — données pour le profil détaillé ───────────────────────────
+
+/** Progression d'un élève (via RPC SECURITY DEFINER — même que portail élève) */
+export async function fetchProgressionEleve(eleveId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_progression`, {
+    method: 'POST',
+    headers: ANON_HEADERS,
+    body: JSON.stringify({ p_eleve_id: eleveId }),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Tous les modules actifs */
+export async function fetchModulesEnseignant() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/modules?actif=eq.true&order=ordre`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Hiérarchie complète Module → Thématiques → (Leçons →) Niveaux */
+export async function fetchAllNiveauxForModuleEns(moduleId) {
+  const thRes = await fetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`, { headers: ANON_HEADERS });
+  const thematiques = thRes.ok ? await thRes.json() : [];
+  const niveaux = [];
+  await Promise.all(thematiques.map(async (th) => {
+    const lRes = await fetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${th.id}&order=ordre`, { headers: ANON_HEADERS });
+    const lecons = lRes.ok ? await lRes.json() : [];
+    if (lecons.length > 0) {
+      await Promise.all(lecons.map(async (l) => {
+        const nRes = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?lecon_id=eq.${l.id}&order=ordre`, { headers: ANON_HEADERS });
+        const nivs = nRes.ok ? await nRes.json() : [];
+        niveaux.push(...nivs);
+      }));
+    } else {
+      const nRes = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?thematique_id=eq.${th.id}&order=ordre`, { headers: ANON_HEADERS });
+      const nivs = nRes.ok ? await nRes.json() : [];
+      niveaux.push(...nivs);
+    }
+  }));
+  return niveaux;
+}
+
+/** IDs des niveaux qui ont au moins une question QCM */
+export async function fetchQCMExistenceEns(niveauIds) {
+  if (!niveauIds.length) return new Set();
+  const ids = niveauIds.join(',');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=in.(${ids})&select=niveau_id`, { headers: ANON_HEADERS });
+  if (!res.ok) return new Set();
+  const data = await res.json();
+  return new Set((data || []).map(q => q.niveau_id));
+}
+
+/** Notes d'un élève (toutes évaluations confondues) */
+export async function fetchNotesEleve(eleveId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}`, { headers: ANON_HEADERS });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Observations d'un élève (tous enseignants, ordre anti-chronologique) */
+export async function fetchObservationsEleve(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${eleveId}&order=created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Retards/absences d'un élève (ordre anti-chronologique) */
+export async function fetchRetardsAbsencesEleve(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/retards_absences?eleve_id=eq.${eleveId}&order=date.desc,created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}

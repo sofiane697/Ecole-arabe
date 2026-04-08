@@ -49,9 +49,17 @@ const IconLogout = () => (
     <line x1="21" y1="12" x2="9" y2="12"/>
   </svg>
 );
+const IconAbsences = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="12" x2="15" y2="14"/>
+  </svg>
+);
 
 const PAGE_TITLES = {
   '/enseignant/classes':      'Mes classes',
+  '/enseignant/absences':     'Retard / Absence',
   '/enseignant/devoirs':      'Devoirs',
   '/enseignant/notes':        'Notes',
   '/enseignant/observations': 'Observations',
@@ -113,7 +121,8 @@ export default function EnseignantApp() {
 
   // Trouver le titre de la page courante (gère /enseignant/classe/:id)
   let currentTitle = 'Portail Enseignant';
-  if (location.pathname.startsWith('/enseignant/classe/')) currentTitle = 'Ma classe';
+  if (location.pathname.startsWith('/enseignant/eleve/')) currentTitle = 'Fiche élève';
+  else if (location.pathname.startsWith('/enseignant/classe/')) currentTitle = 'Ma classe';
   else if (PAGE_TITLES[location.pathname]) currentTitle = PAGE_TITLES[location.pathname];
 
   const today = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
@@ -135,6 +144,12 @@ export default function EnseignantApp() {
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}>
             <IconClasses /> Mes classes
+          </NavLink>
+
+          <NavLink to="/enseignant/absences"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}>
+            <IconAbsences /> Retard / Absence
           </NavLink>
 
           <NavLink to="/enseignant/devoirs"
