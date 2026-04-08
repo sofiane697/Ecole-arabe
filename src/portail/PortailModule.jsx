@@ -461,9 +461,13 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
           // Précompute la chaîne de déblocage : une leçon est débloquée seulement si
           // la précédente est elle-même débloquée ET complétée (avec QCM validé)
           const leconCompleted = (l) => {
-            const withQCM = (niveauxMap[l.id] || []).filter(nv => qcmNiveauxIds.has(nv.id));
-            if (withQCM.length === 0) return false; // Leçon sans QCM = non validée (reste verrouillée pour la suivante)
-            return withQCM.every(nv => progression.some(p => p.niveau_id === nv.id && p.reussi));
+            const nivs = niveauxMap[l.id] || [];
+            if (nivs.length === 0) return false;
+            for (const nv of nivs) {
+              if (!qcmNiveauxIds.has(nv.id)) return false; // un niveau sans QCM brise la chaîne
+              if (!progression.some(p => p.niveau_id === nv.id && p.reussi)) return false;
+            }
+            return true;
           };
           const unlocked = lecons.reduce((acc, lec, i) => {
             acc.push(i === 0 ? true : acc[i - 1] && leconCompleted(lecons[i - 1]));
@@ -475,7 +479,7 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
           const nivs = niveauxMap[lec.id] || [];
           const nivsAvecQCM = nivs.filter(n => qcmNiveauxIds.has(n.id));
           const reussis = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
-          const completed = nivsAvecQCM.length > 0 && reussis === nivsAvecQCM.length;
+          const completed = leconCompleted(lec); // source de vérité unique
           const started = reussis > 0;
           const locked = !unlocked[index];
 
@@ -616,6 +620,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       const isUnlockedLocal = (index) => {
         if (index === 0) return true;
         const prevId = nivs[index - 1].id;
+        if (!withQCM.has(prevId)) return false; // sans QCM = jamais réussi → chaîne bloquée
         return prog.some(p => p.niveau_id === prevId && p.reussi);
       };
       const firstTarget = nivs.find((n, i) => isUnlockedLocal(i) && !prog.some(p => p.niveau_id === n.id && p.reussi));
@@ -640,12 +645,17 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
   const isUnlocked = (niv, index) => {
     if (index === 0) return true;
     const prevId = niveaux[index - 1].id;
+    if (!niveauxWithQCM.has(prevId)) return false; // niveau sans QCM = jamais passable → bloqué
     return progression.some(p => p.niveau_id === prevId && p.reussi);
   };
   const isPassed    = (nivId) => progression.some(p => p.niveau_id === nivId && p.reussi);
   const getProgForNiveau = (nivId) => progression.find(p => p.niveau_id === nivId);
 
   const handleSubmitQCM = async () => {
+    if (questions.length === 0) return;                        // pas de questions (race async)
+    if (isPassed(selNiveau?.id)) return;                      // déjà réussi → pas de double-save
+    const currentIdx = niveaux.indexOf(selNiveau);
+    if (currentIdx > 0 && !isUnlocked(selNiveau, currentIdx)) return; // niveau verrouillé
     const correct = questions.filter((q, i) => {
       const correctSet = Array.isArray(q.reponse_correcte) ? q.reponse_correcte : [q.reponse_correcte];
       const selected = answers[i] || [];
