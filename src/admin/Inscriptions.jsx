@@ -8,6 +8,7 @@ const STATUT_CFG  = {
   nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau',  icon: '●', color: 'var(--a-yellow)' },
   contacté: { label: 'Contacté', cls: 'badge-contacte', icon: '◐', color: 'var(--a-blue)' },
   inscrit:  { label: 'Inscrit',  cls: 'badge-inscrit',  icon: '✓', color: 'var(--a-green)' },
+  refusé:   { label: 'Refusé',   cls: 'badge-refuse',   icon: '✕', color: 'var(--a-red)' },
 };
 
 const IconUsers = () => (
@@ -62,6 +63,28 @@ export default function Inscriptions() {
     }
   };
 
+  const refuserInscription = async (id, currentStatut) => {
+    setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refusé' } : i));
+    if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refusé' }));
+    try {
+      await updateInscriptionStatut(id, 'refusé');
+    } catch (err) {
+      setData(prev => prev.map(i => i.id === id ? { ...i, statut: currentStatut } : i));
+      if (selected?.id === id) setSelected(prev => ({ ...prev, statut: currentStatut }));
+    }
+  };
+
+  const reinitialiserInscription = async (id) => {
+    setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'nouveau' } : i));
+    if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'nouveau' }));
+    try {
+      await updateInscriptionStatut(id, 'nouveau');
+    } catch (err) {
+      setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refusé' } : i));
+      if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refusé' }));
+    }
+  };
+
   const countByStatut = (s) => data.filter(i => i.statut === s).length;
 
   const getInitials = (prenom, nom) => {
@@ -110,6 +133,7 @@ export default function Inscriptions() {
           { key: 'nouveau',  label: 'Nouveaux',   count: countByStatut('nouveau'),  color: 'var(--a-yellow)' },
           { key: 'contacté', label: 'Contactés',  count: countByStatut('contacté'), color: 'var(--a-blue)' },
           { key: 'inscrit',  label: 'Inscrits',   count: countByStatut('inscrit'),  color: 'var(--a-green)' },
+          { key: 'refusé',   label: 'Refusés',    count: countByStatut('refusé'),   color: 'var(--a-red)' },
         ].map(s => (
           <button
             key={s.key}
@@ -226,37 +250,61 @@ export default function Inscriptions() {
 
                 {/* Progression statut */}
                 <p className="insc-detail-section-title">Progression</p>
-                <div className="insc-progress">
-                  {['nouveau', 'contacté', 'inscrit'].map((step, idx) => {
-                    const stepCfg = STATUT_CFG[step];
-                    const steps = ['nouveau', 'contacté', 'inscrit'];
-                    const currentIdx = steps.indexOf(selected.statut);
-                    const isDone = idx <= currentIdx;
-                    const isCurrent = idx === currentIdx;
-                    return (
-                      <React.Fragment key={step}>
-                        <div className={`insc-progress-step ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`}>
-                          <div className="insc-progress-dot" style={{ borderColor: isDone ? stepCfg.color : 'var(--a-border)', background: isDone ? stepCfg.color : 'transparent' }}>
-                            {isDone && <span style={{ color: '#fff', fontSize: '0.6rem' }}>✓</span>}
+                {selected.statut === 'refusé' ? (
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background:'rgba(255,69,58,0.08)', borderRadius:10, border:'1px solid rgba(255,69,58,0.2)' }}>
+                    <span style={{ color:'var(--a-red)', fontSize:16 }}>✕</span>
+                    <span style={{ color:'var(--a-red)', fontWeight:600, fontSize:14 }}>Inscription refusée</span>
+                  </div>
+                ) : (
+                  <div className="insc-progress">
+                    {['nouveau', 'contacté', 'inscrit'].map((step, idx) => {
+                      const stepCfg = STATUT_CFG[step];
+                      const steps = ['nouveau', 'contacté', 'inscrit'];
+                      const currentIdx = steps.indexOf(selected.statut);
+                      const isDone = idx <= currentIdx;
+                      const isCurrent = idx === currentIdx;
+                      return (
+                        <React.Fragment key={step}>
+                          <div className={`insc-progress-step ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`}>
+                            <div className="insc-progress-dot" style={{ borderColor: isDone ? stepCfg.color : 'var(--a-border)', background: isDone ? stepCfg.color : 'transparent' }}>
+                              {isDone && <span style={{ color: '#fff', fontSize: '0.6rem' }}>✓</span>}
+                            </div>
+                            <span className="insc-progress-label" style={{ color: isDone ? stepCfg.color : 'var(--a-fg-light)' }}>{stepCfg.label}</span>
                           </div>
-                          <span className="insc-progress-label" style={{ color: isDone ? stepCfg.color : 'var(--a-fg-light)' }}>{stepCfg.label}</span>
-                        </div>
-                        {idx < 2 && (
-                          <div className="insc-progress-line" style={{ background: idx < currentIdx ? stepCfg.color : 'var(--a-border)' }} />
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+                          {idx < 2 && (
+                            <div className="insc-progress-line" style={{ background: idx < currentIdx ? stepCfg.color : 'var(--a-border)' }} />
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="insc-detail-actions">
-                  <button
-                    className="msg-action-primary"
-                    onClick={() => avancerStatut(selected.id, selected.statut)}
-                  >
-                    Passer à : {nextCfg.label} <IconArrow />
-                  </button>
+                  {selected.statut === 'refusé' ? (
+                    <button
+                      className="msg-action-primary"
+                      onClick={() => reinitialiserInscription(selected.id)}
+                    >
+                      Remettre en traitement <IconArrow />
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="msg-action-primary"
+                        onClick={() => avancerStatut(selected.id, selected.statut)}
+                      >
+                        Passer à : {nextCfg.label} <IconArrow />
+                      </button>
+                      <button
+                        style={{ marginTop:8, width:'100%', padding:'9px 16px', borderRadius:980, border:'1px solid var(--a-red)', background:'transparent', color:'var(--a-red)', fontSize:13, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
+                        onClick={() => refuserInscription(selected.id, selected.statut)}
+                      >
+                        ✕ Refuser l'inscription
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );

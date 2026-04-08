@@ -82,6 +82,7 @@ const ADMIN_STYLES = `
   .admin-root.admin-light .badge-nouveau  { background: rgba(178,80,0,0.08);  color: var(--a-yellow); }
   .admin-root.admin-light .badge-contacte { background: rgba(0,113,227,0.08); color: var(--a-blue); }
   .admin-root.admin-light .badge-inscrit  { background: rgba(36,138,61,0.08); color: var(--a-green); }
+  .admin-root.admin-light .badge-refuse   { background: rgba(215,0,21,0.08);  color: var(--a-red); }
   .admin-root.admin-light .badge-nonlu    { background: rgba(215,0,21,0.08);  color: var(--a-red); }
   .admin-root.admin-light .badge-lu       { background: rgba(36,138,61,0.08); color: var(--a-green); }
 
@@ -731,6 +732,7 @@ const ADMIN_STYLES = `
   .badge-nouveau  { background: rgba(255,214,10,0.1);  color: var(--a-yellow); }
   .badge-contacte { background: rgba(10,132,255,0.1);  color: var(--a-blue); }
   .badge-inscrit  { background: rgba(48,209,88,0.1);   color: var(--a-green); }
+  .badge-refuse   { background: rgba(255,69,58,0.1);   color: var(--a-red); }
   .badge-nonlu    { background: rgba(255,69,58,0.1);   color: var(--a-red); }
   .badge-lu       { background: rgba(48,209,88,0.1);   color: var(--a-green); }
 
