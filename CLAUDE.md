@@ -1,8 +1,8 @@
-# CLAUDE.md — Raqib (رقيب)
+# CLAUDE.md — Institut As-Safaa (الصفاء)
 
 ## Présentation du projet
 
-Site vitrine one-page pour une école d'arabe **"Raqib" (رقيب)**.
+Site vitrine one-page pour une école d'arabe **"Institut As-Safaa" (الصفاء)**.
 Stack : **React 18** (Create React App), **React Router v6**, CSS-in-JS, **DOMPurify** (sanitisation HTML).
 
 ## Structure des fichiers
@@ -368,6 +368,10 @@ npm run build # build de production
 ---
 
 ## Historique des modifications
+
+- **Système de notes par lettres + camembert (09/04/2026)** : remplacement des notes numériques (/20) par un système de mentions : **A+** (Excellent), **A** (Acquis), **ECA** (En cours d'acquisition), **NA** (Non acquis). Les valeurs sont stockées comme entiers dans la colonne `score` existante (A+=4, A=3, ECA=2, NA=1) — aucun changement de schéma DB. `EnseignantNotes.jsx` : nouveau composant `NoteLetterInput` (4 boutons cliquables par élève) + `GradeBadge` + distribution des mentions en pied de page à la place de la moyenne de classe. `PortailResultats.jsx` : colonne "Note"+"Barème" remplacées par colonne "Appréciation" (badge coloré + libellé) + **camembert SVG** récapitulatif en bas de page (secteurs colorés par mention, pourcentages dans les secteurs, légende avec compteurs). `EnseignantEleveProfile.jsx` (tab Notes) : même système de badges + stat cards par mention présente + camembert SVG identique.
+
+- **Rebranding Institut As-Safaa + palettes + logo (09/04/2026)** : renommage complet "Raqib/رقيب" → **"Institut As-Safaa/الصفاء"** dans tous les fichiers. Affichage dans les portails : "Institut As-Safaa" ligne 1, "الصفاء" aligné à droite ligne 2. Hero : même structure avec "Institut As-Safaa" + "الصفاء" en `inline-flex` colonne. Logo navbar remplacé par `public/aa.png` (aussi utilisé comme favicon `public/favicon.png`). Ajout de 3 nouvelles palettes : **Couleur n°4** (bleu profond #1E3A5F + bleu clair #4DA8DA + beige #E0C097, fond #EEF4F9, décorations islamiques SVG), **Couleur n°5** (Style Apple : #0071e3, fond blanc, police SF Pro system-font), **Couleur n°6** (logo neutralisé : terracotta #B8805E, fond crème #FAF5F0). Police globale SF Pro system-font (`-apple-system, BlinkMacSystemFont`). `.hero-title-fr-name` : `white-space: nowrap`, taille réduite pour tenir sur une ligne. `.hero-title-ar` : `align-self: flex-end` sur container `inline-flex` pour aligner le bord droit arabe avec le bord droit français.
 
 - **Audit sécurité — batch 3 (08/04/2026)** : suppression du fichier `.env.local` racine contenant la `REACT_APP_SUPABASE_SERVICE_KEY` orpheline (clé non utilisée dans le code depuis le batch 1, mais fichier laissé par erreur hors du dossier React). Installation de **DOMPurify** (`npm install dompurify`) — sanitisation HTML appliquée dans `PortailModule.jsx` (affichage contenus texte élèves) et `RichTextEditor.jsx` (aperçu admin) : `DOMPurify.sanitize()` retire les balises et attributs dangereux (`<script>`, `onerror`, etc.) avant tout rendu `dangerouslySetInnerHTML`. Le contenu légitime (titres, gras, listes, images, couleurs) n'est pas affecté.
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   getEnseignantUser, fetchMesClasses, fetchElevesDeClasse,
   fetchEvaluationsClasse, createEvaluation, updateEvaluation, deleteEvaluation,
@@ -33,137 +33,122 @@ const IconCheck = () => (
   </svg>
 );
 
+// ─── Système de notation par lettres ─────────────────────────────────────────
+const GRADES = [
+  { value: 4, label: 'A+',  libelle: 'Excellent',              color: '#30d158' },
+  { value: 3, label: 'A',   libelle: 'Acquis',                 color: '#0a84ff' },
+  { value: 2, label: 'ECA', libelle: "En cours d'acquisition", color: '#f7963a' },
+  { value: 1, label: 'NA',  libelle: 'Non acquis',             color: '#ff453a' },
+];
+
+const gradeFromScore = (score) => GRADES.find(g => g.value === score) || null;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const noteKey = (evalId, eleveId) => `${evalId}_${eleveId}`;
-
 const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : null;
-
-function scoreColor(score, max) {
-  if (score === null || score === undefined) return null;
-  const sur20 = max > 0 ? (score / max) * 20 : 0;
-  if (sur20 >= 14) return '#30d158';  // vert  : ≥ 14/20
-  if (sur20 >= 10) return '#f7963a';  // orange: 10–13.5/20
-  return '#ff453a';                   // rouge : < 10/20
-}
 
 function initials(e) {
   return `${(e.prenom||'')[0]||''}${(e.nom||'')[0]||''}`.toUpperCase();
 }
 
-// ─── Composant saisie note ────────────────────────────────────────────────────
-function NoteInput({ note, scoreMax, onSave, onAbsent }) {
-  const [isAbsent, setIsAbsent] = useState(!!note?.absent);
-  const [val,      setVal]      = useState(!note?.absent && note?.score != null ? String(note.score) : '');
-  const [saving,   setSaving]   = useState(false);
-  const [saved,    setSaved]    = useState(false);
-  const inputRef = useRef(null);
-  // "dirty" = l'utilisateur a tapé quelque chose qui n'est pas encore sauvegardé.
-  // Tant que dirty=true, on bloque la sync depuis le prop parent pour ne pas
-  // écraser ce que l'utilisateur est en train de saisir.
-  const dirtyRef = useRef(false);
+// ─── Composant saisie note par lettres ────────────────────────────────────────
+function NoteLetterInput({ note, onSave, onAbsent }) {
+  const [saving, setSaving] = useState(false);
+  const [saved,  setSaved]  = useState(false);
 
-  useEffect(() => {
-    if (dirtyRef.current) return;
-    setIsAbsent(!!note?.absent);
-    setVal(!note?.absent && note?.score != null ? String(note.score) : '');
-    setSaved(false);
-  }, [note?.absent, note?.score]); // eslint-disable-line
-
-  const handleRetirer = () => {
-    dirtyRef.current = false;
-    setIsAbsent(false);
-    setVal('');
-    onAbsent();
-    setTimeout(() => inputRef.current?.focus(), 0);
-  };
-
-  const commit = async () => {
-    if (isAbsent) return;
-    const score = val === '' ? null : Math.min(Math.max(0, parseFloat(val)), parseFloat(scoreMax));
-    if (val !== '' && isNaN(score)) return;
+  const handleSelect = async (grade) => {
+    // Déselectionner si on reclique sur la note déjà sélectionnée
+    const newScore = note?.score === grade.value ? null : grade.value;
     setSaving(true);
-    await onSave(score);
-    dirtyRef.current = false; // sync autorisée à nouveau après la sauvegarde
+    await onSave(newScore);
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+    if (newScore !== null) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    }
   };
 
-  if (isAbsent) {
+  if (note?.absent) {
     return (
-      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
         <div style={{
-          flex:1, height:44, borderRadius:12,
+          flex:1, height:40, borderRadius:10,
           background:'rgba(255,69,58,.1)', border:'1.5px solid rgba(255,69,58,.25)',
           display:'flex', alignItems:'center', justifyContent:'center',
-          color:'#ff453a', fontWeight:700, fontSize:13, letterSpacing:.5,
-        }}>
-          ABSENT
-        </div>
-        <button onClick={handleRetirer} style={{
-          padding:'0 14px', height:44, borderRadius:12, border:'1px solid var(--a-border)',
-          background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:12,
-          whiteSpace:'nowrap', flexShrink:0,
-        }}>
-          Retirer
-        </button>
+          color:'#ff453a', fontWeight:700, fontSize:12, letterSpacing:.5,
+        }}>ABSENT</div>
+        <button onClick={onAbsent} style={{
+          padding:'0 12px', height:40, borderRadius:10, border:'1px solid var(--a-border)',
+          background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer',
+          fontSize:11, whiteSpace:'nowrap', flexShrink:0,
+        }}>Retirer</button>
       </div>
     );
   }
 
-  const color = val !== '' && !isNaN(parseFloat(val))
-    ? scoreColor(parseFloat(val), parseFloat(scoreMax))
-    : null;
-
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-      <div style={{ position:'relative', flex:1 }}>
-        <input
-          ref={inputRef}
-          type="number" min="0" max={scoreMax} step="0.5"
-          placeholder="—"
-          value={val}
-          onChange={e => { dirtyRef.current = true; setVal(e.target.value); setSaved(false); }}
-          onBlur={commit}
-          onKeyDown={e => { if (e.key === 'Enter') { e.target.blur(); } if (e.key === 'Escape') { setVal(note?.score != null ? String(note.score) : ''); e.target.blur(); } }}
-          style={{
-            width:'100%', height:44, borderRadius:12,
-            background: color ? `${color}12` : 'var(--a-bg)',
-            border: `1.5px solid ${color || 'var(--a-border)'}`,
-            color: color || 'var(--a-fg)',
-            fontSize:20, fontWeight:700, textAlign:'center',
-            outline:'none', boxSizing:'border-box',
-            transition:'border-color .15s, background .15s, color .15s',
-            paddingRight:28,
-          }}
-        />
-        {/* /max badge */}
-        <span style={{
-          position:'absolute', right:10, top:'50%', transform:'translateY(-50%)',
-          fontSize:11, color:'var(--a-fg-light)', fontWeight:500, pointerEvents:'none',
-        }}>/{scoreMax}</span>
-      </div>
+    <div style={{ display:'flex', gap:5, alignItems:'center' }}>
+      {GRADES.map(g => {
+        const isSelected = note?.score === g.value;
+        return (
+          <button
+            key={g.label}
+            onClick={() => handleSelect(g)}
+            disabled={saving}
+            title={g.libelle}
+            style={{
+              flex:1, height:40, borderRadius:10,
+              border: `1.5px solid ${isSelected ? g.color : 'var(--a-border)'}`,
+              background: isSelected ? `${g.color}20` : 'var(--a-bg)',
+              color: isSelected ? g.color : 'var(--a-fg-mid)',
+              fontWeight: isSelected ? 800 : 600,
+              fontSize: g.label === 'ECA' ? 10 : 12,
+              cursor: saving ? 'wait' : 'pointer',
+              transition: 'all .15s',
+              letterSpacing: .3,
+            }}
+            onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = g.color; e.currentTarget.style.color = g.color; }}}
+            onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'var(--a-border)'; e.currentTarget.style.color = 'var(--a-fg-mid)'; }}}
+          >
+            {g.label}
+          </button>
+        );
+      })}
 
-      {/* Status / absent btn */}
-      {saved ? (
-        <div style={{ width:44, height:44, borderRadius:12, background:'rgba(48,209,88,.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'#30d158', flexShrink:0 }}>
+      {/* Bouton absent */}
+      <button onClick={onAbsent} title="Marquer absent" style={{
+        width:40, height:40, borderRadius:10, border:'1px solid var(--a-border)',
+        background:'transparent', color:'var(--a-fg-light)', cursor:'pointer',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        fontSize:10, fontWeight:600, letterSpacing:.2, flexShrink:0,
+      }}>Abs</button>
+
+      {/* Feedback sauvegarde */}
+      {saved && (
+        <div style={{ width:36, height:40, borderRadius:10, background:'rgba(48,209,88,.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'#30d158', flexShrink:0 }}>
           <IconCheck/>
         </div>
-      ) : saving ? (
-        <div style={{ width:44, height:44, borderRadius:12, background:'var(--a-bg)', border:'1px solid var(--a-border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-          <div style={{ width:14, height:14, borderRadius:'50%', border:'2px solid var(--a-gold)', borderTopColor:'transparent', animation:'spin .6s linear infinite' }}/>
-        </div>
-      ) : (
-        <button onClick={onAbsent} title="Marquer absent" style={{
-          width:44, height:44, borderRadius:12, border:'1px solid var(--a-border)',
-          background:'transparent', color:'var(--a-fg-light)', cursor:'pointer',
-          display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
-          fontSize:11, fontWeight:600, letterSpacing:.3,
-        }}>
-          Abs
-        </button>
       )}
     </div>
+  );
+}
+
+// ─── Badge note ───────────────────────────────────────────────────────────────
+function GradeBadge({ score, size = 'md' }) {
+  const g = gradeFromScore(score);
+  if (!g) return <span style={{ color:'var(--a-fg-light)', fontSize:12 }}>—</span>;
+  const fs = size === 'lg' ? 15 : 12;
+  return (
+    <span style={{
+      display:'inline-flex', alignItems:'center', gap:5,
+      padding: size === 'lg' ? '4px 12px' : '2px 8px',
+      borderRadius:8, fontSize:fs, fontWeight:800,
+      background:`${g.color}18`, color: g.color,
+      border:`1px solid ${g.color}35`,
+    }}>
+      {g.label}
+      <span style={{ fontSize:fs-2, fontWeight:400, opacity:.8 }}>{g.libelle}</span>
+    </span>
   );
 }
 
@@ -181,7 +166,6 @@ export default function EnseignantNotes() {
   const [modal,       setModal]       = useState(null);
   const [fTitre,      setFTitre]      = useState('');
   const [fDate,       setFDate]       = useState('');
-  const [fMax,        setFMax]        = useState('20');
   const [saving,      setSaving]      = useState(false);
   const [confirmDel,  setConfirmDel]  = useState(null);
 
@@ -233,7 +217,6 @@ export default function EnseignantNotes() {
     const key = noteKey(evalId, eleveId);
     const current = notesMap[key];
     const newAbsent = !current?.absent;
-    // Mise à jour optimiste immédiate — sans rollback pour ne pas bloquer l'UI
     setNotesMap(prev => ({
       ...prev,
       [key]: { ...prev[key], evaluation_id: evalId, eleve_id: eleveId, score: null, absent: newAbsent },
@@ -241,35 +224,35 @@ export default function EnseignantNotes() {
     try {
       const result = await upsertNote(evalId, eleveId, null, newAbsent);
       setNotesMap(prev => ({ ...prev, [key]: result }));
-    } catch {
-      // Pas de rollback : l'UI reste dans l'état voulu, la DB se resynchronisera
-    }
+    } catch {}
   }, [notesMap]);
 
-  // Stats per eval
+  // Stats par évaluation
   const evalStats = (ev) => {
     const noted  = eleves.filter(e => { const n = notesMap[noteKey(ev.id, e.id)]; return n && (n.absent || n.score != null); }).length;
     const absent = eleves.filter(e => notesMap[noteKey(ev.id, e.id)]?.absent).length;
-    const scores = eleves.map(e => notesMap[noteKey(ev.id, e.id)]).filter(n => n && !n.absent && n.score != null).map(n => parseFloat(n.score));
-    const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : null;
-    return { noted, absent, avg, total: eleves.length };
+    const dist   = {};
+    GRADES.forEach(g => {
+      dist[g.label] = eleves.filter(e => notesMap[noteKey(ev.id, e.id)]?.score === g.value).length;
+    });
+    return { noted, absent, dist, total: eleves.length };
   };
 
-  // Modal eval
-  const openCreate = () => { setFTitre(''); setFDate(''); setFMax('20'); setModal({ mode:'create' }); };
-  const openEdit   = (ev, e) => { e.stopPropagation(); setFTitre(ev.titre); setFDate(ev.date_evaluation || ''); setFMax(String(ev.score_max)); setModal({ mode:'edit', eval:ev }); };
+  // Modal éval
+  const openCreate = () => { setFTitre(''); setFDate(''); setModal({ mode:'create' }); };
+  const openEdit   = (ev, e) => { e.stopPropagation(); setFTitre(ev.titre); setFDate(ev.date_evaluation || ''); setModal({ mode:'edit', eval:ev }); };
 
   const handleSaveEval = async () => {
     if (!fTitre.trim()) return;
     setSaving(true);
     try {
-      const data = { titre:fTitre.trim(), classe_id:selClasse, enseignant_id:user.id, date_evaluation:fDate||null, score_max:parseFloat(fMax)||20 };
+      const data = { titre:fTitre.trim(), classe_id:selClasse, enseignant_id:user.id, date_evaluation:fDate||null, score_max:4 };
       if (modal.mode === 'create') {
         const created = await createEvaluation(data);
         setEvaluations(prev => [...prev, created]);
         setSelEval(created);
       } else {
-        await updateEvaluation(modal.eval.id, { titre:data.titre, date_evaluation:data.date_evaluation, score_max:data.score_max });
+        await updateEvaluation(modal.eval.id, { titre:data.titre, date_evaluation:data.date_evaluation, score_max:4 });
         setEvaluations(prev => prev.map(e => e.id === modal.eval.id ? { ...e, ...data } : e));
         setSelEval(prev => prev?.id === modal.eval.id ? { ...prev, ...data } : prev);
       }
@@ -300,7 +283,6 @@ export default function EnseignantNotes() {
         .eval-card:hover { background: rgba(201,150,58,.06) !important; }
         .eval-card-active { background: rgba(201,150,58,.1) !important; border-color: rgba(201,150,58,.5) !important; }
         .note-row:hover { background: rgba(255,255,255,.02) !important; }
-        .abs-toggle:hover { border-color: rgba(255,69,58,.4) !important; color: #ff453a !important; }
       `}</style>
 
       {/* ── Tabs classes ── */}
@@ -324,11 +306,22 @@ export default function EnseignantNotes() {
           {/* ══ COLONNE GAUCHE — liste évaluations ══ */}
           <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
 
-            {/* Header section */}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
               <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:1 }}>
                 Évaluations — {className}
               </span>
+            </div>
+
+            {/* Légende des notes */}
+            <div style={{ display:'flex', flexWrap:'wrap', gap:4, marginBottom:4 }}>
+              {GRADES.map(g => (
+                <span key={g.label} style={{
+                  fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:6,
+                  background:`${g.color}18`, color:g.color, border:`1px solid ${g.color}30`,
+                }}>
+                  {g.label} = {g.libelle}
+                </span>
+              ))}
             </div>
 
             {/* Eval cards */}
@@ -340,7 +333,6 @@ export default function EnseignantNotes() {
               const s = evalStats(ev);
               const pct = s.total > 0 ? s.noted / s.total : 0;
               const isActive = selEval?.id === ev.id;
-              const avgColor = s.avg ? scoreColor(parseFloat(s.avg), parseFloat(ev.score_max)) : null;
               return (
                 <div key={ev.id}
                   className={`eval-card${isActive ? ' eval-card-active' : ''}`}
@@ -351,7 +343,6 @@ export default function EnseignantNotes() {
                     background:'var(--a-bg-card)', position:'relative',
                   }}
                 >
-                  {/* Active indicator */}
                   {isActive && (
                     <div style={{ position:'absolute', left:0, top:14, bottom:14, width:3, borderRadius:'0 3px 3px 0', background:'var(--a-gold)' }}/>
                   )}
@@ -361,10 +352,11 @@ export default function EnseignantNotes() {
                       <div style={{ fontSize:14, fontWeight:700, color:'var(--a-fg)', marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                         {ev.titre}
                       </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
-                        <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>/{ev.score_max}</span>
-                        {ev.date_evaluation && <span style={{ fontSize:11, color:'var(--a-fg-light)', background:'var(--a-bg)', padding:'1px 8px', borderRadius:10 }}>{fmt(ev.date_evaluation)}</span>}
-                      </div>
+                      {ev.date_evaluation && (
+                        <span style={{ fontSize:11, color:'var(--a-fg-light)', background:'var(--a-bg)', padding:'1px 8px', borderRadius:10 }}>
+                          {fmt(ev.date_evaluation)}
+                        </span>
+                      )}
                     </div>
                     <div style={{ display:'flex', gap:4, flexShrink:0 }}>
                       <button onClick={e => openEdit(ev, e)} style={{ width:28, height:28, borderRadius:8, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -376,15 +368,24 @@ export default function EnseignantNotes() {
                     </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div style={{ marginTop:10, paddingLeft: isActive ? 10 : 0 }}>
+                  {/* Distribution des notes */}
+                  <div style={{ display:'flex', gap:4, marginTop:8, paddingLeft: isActive ? 10 : 0 }}>
+                    {GRADES.map(g => s.dist[g.label] > 0 && (
+                      <span key={g.label} style={{
+                        fontSize:10, fontWeight:700, padding:'1px 6px', borderRadius:5,
+                        background:`${g.color}18`, color:g.color,
+                      }}>{g.label}×{s.dist[g.label]}</span>
+                    ))}
+                    {s.absent > 0 && <span style={{ fontSize:10, fontWeight:700, padding:'1px 6px', borderRadius:5, background:'rgba(255,69,58,.12)', color:'#ff453a' }}>Abs×{s.absent}</span>}
+                  </div>
+
+                  {/* Barre de progression */}
+                  <div style={{ marginTop:8, paddingLeft: isActive ? 10 : 0 }}>
                     <div style={{ height:4, borderRadius:4, background:'var(--a-bg)', overflow:'hidden' }}>
                       <div style={{ height:'100%', width:`${pct*100}%`, borderRadius:4, background: pct===1 ? '#30d158' : 'var(--a-gold)', transition:'width .3s' }}/>
                     </div>
-                    <div style={{ display:'flex', justifyContent:'space-between', marginTop:5 }}>
-                      <span style={{ fontSize:11, color:'var(--a-fg-mid)' }}>{s.noted}/{s.total} élèves</span>
-                      {s.avg && <span style={{ fontSize:11, fontWeight:700, color: avgColor || 'var(--a-fg-mid)' }}>moy. {s.avg}</span>}
-                      {s.absent > 0 && <span style={{ fontSize:11, color:'rgba(255,69,58,.7)' }}>{s.absent} abs.</span>}
+                    <div style={{ marginTop:5 }}>
+                      <span style={{ fontSize:11, color:'var(--a-fg-mid)' }}>{s.noted}/{s.total} élèves saisis</span>
                     </div>
                   </div>
 
@@ -397,7 +398,7 @@ export default function EnseignantNotes() {
               );
             })}
 
-            {/* Add button */}
+            {/* Bouton ajouter */}
             <button onClick={openCreate} style={{
               display:'flex', alignItems:'center', justifyContent:'center', gap:8,
               padding:'13px', borderRadius:14, border:'1.5px dashed rgba(201,150,58,.4)',
@@ -420,19 +421,27 @@ export default function EnseignantNotes() {
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                   <div style={{ flex:1 }}>
                     <h3 style={{ margin:0, fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>{selEval.titre}</h3>
-                    <div style={{ display:'flex', gap:12, marginTop:5 }}>
-                      <span style={{ fontSize:13, color:'var(--a-fg-mid)' }}>Barème : <strong style={{color:'var(--a-gold)'}}>{selEval.score_max} pts</strong></span>
+                    <div style={{ display:'flex', gap:12, marginTop:5, flexWrap:'wrap' }}>
                       {selEval.date_evaluation && <span style={{ fontSize:13, color:'var(--a-fg-mid)' }}>{fmt(selEval.date_evaluation)}</span>}
+                      <div style={{ display:'flex', gap:6 }}>
+                        {GRADES.map(g => (
+                          <span key={g.label} style={{ fontSize:11, fontWeight:700, padding:'1px 7px', borderRadius:6, background:`${g.color}18`, color:g.color }}>
+                            {g.label} = {g.libelle}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  {/* Mini stats */}
-                  {(() => { const s = evalStats(selEval); return (
-                    <div style={{ display:'flex', gap:16, textAlign:'center' }}>
-                      <div><div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)' }}>{s.noted}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>saisis</div></div>
-                      {s.avg && <div><div style={{ fontSize:20, fontWeight:700, color: scoreColor(parseFloat(s.avg), parseFloat(selEval.score_max)) }}>{s.avg}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>moyenne</div></div>}
-                      {s.absent > 0 && <div><div style={{ fontSize:20, fontWeight:700, color:'#ff453a' }}>{s.absent}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>absents</div></div>}
-                    </div>
-                  ); })()}
+                  {/* Distribution rapide */}
+                  {(() => {
+                    const s = evalStats(selEval);
+                    return (
+                      <div style={{ display:'flex', gap:12, textAlign:'center', flexShrink:0 }}>
+                        <div><div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)' }}>{s.noted}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>saisis</div></div>
+                        {s.absent > 0 && <div><div style={{ fontSize:20, fontWeight:700, color:'#ff453a' }}>{s.absent}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>absents</div></div>}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -443,18 +452,18 @@ export default function EnseignantNotes() {
                 </div>
               ) : (
                 <div>
-                  {/* Légende */}
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 200px', gap:16, padding:'12px 24px', borderBottom:'1px solid var(--a-border)', background:'rgba(0,0,0,.15)' }}>
+                  {/* Légende colonnes */}
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 260px', gap:16, padding:'12px 24px', borderBottom:'1px solid var(--a-border)', background:'rgba(0,0,0,.15)' }}>
                     <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:1 }}>Élève</span>
-                    <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:1, textAlign:'center' }}>Note</span>
+                    <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:1, textAlign:'center' }}>Appréciation</span>
                   </div>
 
                   {eleves.map((eleve, idx) => {
                     const note  = notesMap[noteKey(selEval.id, eleve.id)];
-                    const color = (note && !note.absent && note.score != null) ? scoreColor(note.score, selEval.score_max) : null;
+                    const grade = (note && !note.absent && note.score != null) ? gradeFromScore(note.score) : null;
                     return (
                       <div key={eleve.id} className="note-row" style={{
-                        display:'grid', gridTemplateColumns:'1fr 200px', gap:16,
+                        display:'grid', gridTemplateColumns:'1fr 260px', gap:16,
                         padding:'14px 24px', alignItems:'center',
                         borderBottom: idx < eleves.length-1 ? '1px solid var(--a-border)' : 'none',
                         transition:'background .1s',
@@ -463,11 +472,11 @@ export default function EnseignantNotes() {
                         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                           <div style={{
                             width:38, height:38, borderRadius:'50%', flexShrink:0,
-                            background: color ? `${color}18` : 'rgba(255,255,255,.05)',
-                            border: `2px solid ${color || 'var(--a-border)'}`,
+                            background: grade ? `${grade.color}18` : 'rgba(255,255,255,.05)',
+                            border: `2px solid ${grade ? grade.color : 'var(--a-border)'}`,
                             display:'flex', alignItems:'center', justifyContent:'center',
                             fontSize:12, fontWeight:700,
-                            color: color || 'var(--a-fg-mid)',
+                            color: grade ? grade.color : 'var(--a-fg-mid)',
                             transition:'all .2s',
                           }}>
                             {initials(eleve)}
@@ -476,19 +485,18 @@ export default function EnseignantNotes() {
                             <div style={{ fontSize:14, fontWeight:600, color:'var(--a-fg)' }}>{eleve.prenom} {eleve.nom}</div>
                             {note?.absent
                               ? <div style={{ fontSize:12, color:'#ff453a', marginTop:1 }}>Absent(e)</div>
-                              : note?.score != null
-                                ? <div style={{ fontSize:12, color: color, marginTop:1 }}>
-                                    {note.score}/{selEval.score_max} pts · {Math.round(note.score/selEval.score_max*100)}%
+                              : grade
+                                ? <div style={{ fontSize:12, color: grade.color, marginTop:1, fontWeight:600 }}>
+                                    {grade.label} — {grade.libelle}
                                   </div>
-                                : <div style={{ fontSize:12, color:'var(--a-fg-light)', marginTop:1 }}>Note non saisie</div>
+                                : <div style={{ fontSize:12, color:'var(--a-fg-light)', marginTop:1 }}>Appréciation non saisie</div>
                             }
                           </div>
                         </div>
 
-                        {/* Input note */}
-                        <NoteInput
+                        {/* Saisie note */}
+                        <NoteLetterInput
                           note={note}
-                          scoreMax={selEval.score_max}
                           onSave={(score) => saveNote(selEval.id, eleve.id, score)}
                           onAbsent={() => toggleAbsent(selEval.id, eleve.id)}
                         />
@@ -496,14 +504,28 @@ export default function EnseignantNotes() {
                     );
                   })}
 
-                  {/* Pied — moyenne globale */}
+                  {/* Pied — distribution globale */}
                   {(() => {
                     const s = evalStats(selEval);
-                    if (!s.avg) return null;
+                    const hasNotes = GRADES.some(g => s.dist[g.label] > 0);
+                    if (!hasNotes) return null;
                     return (
-                      <div style={{ padding:'16px 24px', borderTop:'2px solid rgba(201,150,58,.2)', background:'rgba(201,150,58,.04)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                        <span style={{ fontSize:13, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:.5 }}>Moyenne de classe</span>
-                        <span style={{ fontSize:22, fontWeight:700, color: scoreColor(parseFloat(s.avg), parseFloat(selEval.score_max)) }}>{s.avg}<span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>/{selEval.score_max}</span></span>
+                      <div style={{ padding:'16px 24px', borderTop:'2px solid rgba(201,150,58,.2)', background:'rgba(201,150,58,.04)', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
+                        <span style={{ fontSize:13, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:.5 }}>Résultats de classe</span>
+                        <div style={{ display:'flex', gap:8 }}>
+                          {GRADES.map(g => s.dist[g.label] > 0 && (
+                            <div key={g.label} style={{ textAlign:'center' }}>
+                              <div style={{ fontSize:18, fontWeight:800, color:g.color }}>{s.dist[g.label]}</div>
+                              <div style={{ fontSize:10, fontWeight:700, color:g.color, opacity:.8 }}>{g.label}</div>
+                            </div>
+                          ))}
+                          {s.absent > 0 && (
+                            <div style={{ textAlign:'center' }}>
+                              <div style={{ fontSize:18, fontWeight:800, color:'#ff453a' }}>{s.absent}</div>
+                              <div style={{ fontSize:10, fontWeight:700, color:'#ff453a', opacity:.8 }}>Abs.</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })()}
@@ -526,8 +548,18 @@ export default function EnseignantNotes() {
           onClick={e => { if (e.target===e.currentTarget) setModal(null); }}>
           <div style={{ background:'var(--a-bg-card)', borderRadius:20, padding:32, width:'100%', maxWidth:420, boxShadow:'0 24px 80px rgba(0,0,0,.6)' }}>
             <h3 style={{ margin:'0 0 24px', fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>
-              {modal.mode==='create' ? 'Nouvelle évaluation' : 'Modifier'}
+              {modal.mode==='create' ? 'Nouvelle évaluation' : 'Modifier l\'évaluation'}
             </h3>
+
+            {/* Rappel du système de notation */}
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:20, padding:'10px 14px', borderRadius:12, background:'var(--a-bg)', border:'1px solid var(--a-border)' }}>
+              {GRADES.map(g => (
+                <span key={g.label} style={{ fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:6, background:`${g.color}18`, color:g.color }}>
+                  {g.label} = {g.libelle}
+                </span>
+              ))}
+            </div>
+
             <div style={{ marginBottom:18 }}>
               <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Titre de l'évaluation</label>
               <input autoFocus style={{ width:'100%', background:'var(--a-bg)', border:'1.5px solid var(--a-border)', color:'var(--a-fg)', borderRadius:12, padding:'12px 16px', fontSize:14, outline:'none', boxSizing:'border-box' }}
@@ -535,18 +567,13 @@ export default function EnseignantNotes() {
                 onKeyDown={e => { if (e.key==='Enter' && fTitre.trim()) handleSaveEval(); }}
               />
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:28 }}>
-              <div>
-                <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Note maximale</label>
-                <input type="number" min="1" max="100" style={{ width:'100%', background:'var(--a-bg)', border:'1.5px solid var(--a-border)', color:'var(--a-fg)', borderRadius:12, padding:'12px 16px', fontSize:14, outline:'none', boxSizing:'border-box' }}
-                  value={fMax} onChange={e=>setFMax(e.target.value)} placeholder="20"/>
-              </div>
-              <div>
-                <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Date (facultatif)</label>
-                <input type="date" style={{ width:'100%', background:'var(--a-bg)', border:'1.5px solid var(--a-border)', color:'var(--a-fg)', borderRadius:12, padding:'12px 16px', fontSize:14, outline:'none', boxSizing:'border-box' }}
-                  value={fDate} onChange={e=>setFDate(e.target.value)}/>
-              </div>
+
+            <div style={{ marginBottom:28 }}>
+              <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Date (facultatif)</label>
+              <input type="date" style={{ width:'100%', background:'var(--a-bg)', border:'1.5px solid var(--a-border)', color:'var(--a-fg)', borderRadius:12, padding:'12px 16px', fontSize:14, outline:'none', boxSizing:'border-box' }}
+                value={fDate} onChange={e=>setFDate(e.target.value)}/>
             </div>
+
             <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
               <button onClick={()=>setModal(null)} style={{ padding:'10px 22px', borderRadius:24, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:13 }}>
                 Annuler
@@ -565,7 +592,7 @@ export default function EnseignantNotes() {
           <div style={{ background:'var(--a-bg-card)', borderRadius:16, padding:28, maxWidth:380, width:'100%', boxShadow:'0 20px 60px rgba(0,0,0,.5)' }}>
             <div style={{ fontSize:16, fontWeight:700, color:'var(--a-fg)', marginBottom:10 }}>Supprimer cette évaluation ?</div>
             <div style={{ fontSize:13, color:'var(--a-fg-mid)', marginBottom:24, lineHeight:1.6 }}>
-              <strong style={{color:'var(--a-fg)'}}>{confirmDel.titre}</strong> et toutes les notes associées seront supprimées définitivement.
+              <strong style={{color:'var(--a-fg)'}}>{confirmDel.titre}</strong> et toutes les appréciations associées seront supprimées définitivement.
             </div>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
               <button onClick={()=>setConfirmDel(null)} style={{ padding:'9px 20px', borderRadius:24, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:13 }}>Annuler</button>

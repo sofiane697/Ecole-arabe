@@ -377,7 +377,7 @@ export default function Eleves() {
                 }}>📋 Copier</button>
                 <button style={{ padding:'9px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }} onClick={() => {
                   const msg = encodeURIComponent(
-                    `🕌 École Raqib — Portail Élève\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/portail/login\n\n⚠️ Changez votre mot de passe à la connexion.`
+                    `🕌 Institut As-Safaa — Portail Élève\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/portail/login\n\n⚠️ Changez votre mot de passe à la connexion.`
                   );
                   window.open(`https://wa.me/?text=${msg}`, '_blank');
                 }}>💬 WhatsApp</button>
@@ -752,7 +752,7 @@ function CreateEleveModal({ onClose, onCreated }) {
             </button>
             <button style={{ padding:'10px 18px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }} onClick={() => {
               const msg = encodeURIComponent(
-                `🕌 École Raqib — Portail Élève\n\n` +
+                `🕌 Institut As-Safaa — Portail Élève\n\n` +
                 `Bonjour ${prenom},\n\n` +
                 `Voici vos identifiants de connexion :\n\n` +
                 `👤 Identifiant : ${result.identifiant}\n` +
@@ -784,7 +784,7 @@ function CreateEleveModal({ onClose, onCreated }) {
                   .url { font-size: 11px; color: #666; margin-top: 12px; word-break: break-all; }
                 </style></head><body>
                 <div class="card">
-                  <h1>رقيب — RAQIB</h1>
+                  <h1>الصفاء — Institut As-Safaa</h1>
                   <h2>Portail Élève</h2>
                   <div class="name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
                   <div class="field">

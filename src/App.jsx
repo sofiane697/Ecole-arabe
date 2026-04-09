@@ -53,7 +53,56 @@ const THEMES = [
     fgLight:     '#D4C2A1',                      // beige → labels discrets
     border:      'rgba(173,156,146,0.20)',
   },
-  // ➕ Ajouter ici les prochaines palettes (id: 4, id: 5, ...)
+  {
+    id: 4,
+    cls:         'theme-4',
+    name:        'Couleur n°4',
+    // 🔵 #1E3A5F · 🩵 #4DA8DA · 🤍 #FFFFFF · 🌙 #F2E9E4 · ✨ #E0C097
+    accent:      '#1E3A5F',                      // bleu profond → boutons, accents principaux
+    accentLight: '#4DA8DA',                      // bleu clair → survol, interactif
+    accentSoft:  'rgba(77,168,218,0.10)',         // bleu clair léger → fonds subtils
+    bg:          '#EEF4F9',                      // blanc-bleu doux → fond principal
+    bgAlt:       '#FFFFFF',                      // blanc → sections alternées (aération)
+    bgCard:      '#FFFFFF',                      // blanc → fond des cartes
+    fg:          '#1E3A5F',                      // bleu profond → texte principal
+    fgMid:       'rgba(30,58,95,0.65)',           // bleu profond doux → texte secondaire
+    fgLight:     '#E0C097',                      // doré doux → labels, détails élégants
+    border:      'rgba(30,58,95,0.09)',           // bleu profond discret → bordures
+  },
+  {
+    id: 5,
+    cls:         'theme-5',
+    name:        'Style Apple',
+    // Couleurs officielles Apple — apple.com
+    accent:      '#0071e3',                      // Bleu Apple → boutons, liens, CTA
+    accentLight: '#0077ed',                      // Bleu Apple survol
+    accentSoft:  'rgba(0,113,227,0.08)',          // Bleu Apple très léger → fonds subtils
+    bg:          '#ffffff',                      // Blanc → fond principal
+    bgAlt:       '#f5f5f7',                      // Gris clair Apple → sections alternées
+    bgCard:      '#ffffff',                      // Blanc → fond des cartes
+    fg:          '#1d1d1f',                      // Noir Apple → texte principal
+    fgMid:       '#6e6e73',                      // Gris moyen Apple → texte secondaire
+    fgLight:     '#86868b',                      // Gris clair Apple → labels discrets
+    border:      'rgba(0,0,0,0.06)',             // Bordure Apple subtile
+  },
+  {
+    id: 6,
+    cls:         'theme-6',
+    name:        'Couleur n°6',
+    // Inspiré du logo — orangé #E8825A · pêche #F5B08A · mauve #9B6B7A · brun-mauve #7A4F5A
+    // Neutralisés et désaturés pour une palette sobre et universelle
+    accent:      '#B8805E',                      // Terracotta neutre → boutons, accents
+    accentLight: '#CC9A74',                      // Sable chaud → survol
+    accentSoft:  'rgba(184,128,94,0.09)',         // Terracotta très léger → fonds subtils
+    bg:          '#FAF5F0',                      // Blanc chaud → fond principal
+    bgAlt:       '#F0E8E0',                      // Crème → sections alternées
+    bgCard:      '#FFFFFF',                      // Blanc pur → cartes
+    fg:          '#2E2420',                      // Brun très foncé → texte principal
+    fgMid:       '#7A5E56',                      // Brun-mauve moyen → texte secondaire
+    fgLight:     '#A08888',                      // Mauve grisé → labels discrets
+    border:      'rgba(122,94,86,0.10)',          // Brun neutre discret → bordures
+  },
+  // ➕ Ajouter ici les prochaines palettes (id: 7, id: 8, ...)
 ];
 
 const ALL_THEME_CLASSES = THEMES.map(t => t.cls);
@@ -528,10 +577,10 @@ export default function App() {
 
         {/* Logo */}
         <button className="logo" onClick={() => goTo('accueil')}>
-          <img src="/Logo.png" alt="Raqib" className="logo-img" />
+          <img src="/aa.png" alt="Institut As-Safaa" className="logo-img" />
           <div className="logo-text">
-            <span className="logo-ar">رقيب</span>
-            <span className="logo-fr">RAQIB</span>
+            <span className="logo-ar">الصفاء</span>
+            <span className="logo-fr">Institut As-Safaa</span>
           </div>
         </button>
 
@@ -603,10 +652,10 @@ export default function App() {
         <HeroDeco />
 
         <div className="hero-inner">
-          <div className="hero-eyebrow">Bienvenue à l'école Raqib</div>
+          <div className="hero-eyebrow">Bienvenue à l'Institut As-Safaa</div>
           <div className="hero-title-row">
-            <span className="hero-title-fr-name">RAQIB</span>
-            <h1 className="hero-title-ar">رقيب</h1>
+            <span className="hero-title-fr-name">Institut As-Safaa</span>
+            <h1 className="hero-title-ar">الصفاء</h1>
           </div>
           <p  className="hero-title-fr">Transmettre le savoir, éclairer les cœurs</p>
           <p  className="hero-desc">
@@ -641,7 +690,7 @@ export default function App() {
             <p className="s-title-ar">التعليم نور يضيء العقول</p>
             <p className="s-body">
               Fondée avec la conviction que la langue arabe est un pont entre les
-              cultures et les générations, l'École Raqib propose un enseignement
+              cultures et les générations, l'Institut As-Safaa propose un enseignement
               structuré, progressif et adapté à chaque apprenant.
             </p>
             <p className="s-body" style={{ marginTop: '1rem' }}>
@@ -970,8 +1019,8 @@ export default function App() {
           FOOTER
       ───────────────────────────── */}
       <footer className="footer">
-        <div className="footer-logo">رقيب — RAQIB</div>
-        <span className="footer-copy">© 2025 Raqib — Tous droits réservés</span>
+        <div className="footer-logo">الصفاء — Institut As-Safaa</div>
+        <span className="footer-copy">© 2025 Institut As-Safaa — Tous droits réservés</span>
         <ul className="footer-nav">
           <li><a href="#">Mentions légales</a></li>
           <li><a href="#">Confidentialité</a></li>

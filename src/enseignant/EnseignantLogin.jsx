@@ -91,7 +91,7 @@ function BrandPanel({ subtitle }) {
           letterSpacing: 1,
           textShadow: '0 0 40px rgba(191,138,48,0.30)',
         }}>
-          رقيب
+          الصفاء
         </span>
         <span style={{
           display: 'block',
@@ -101,7 +101,7 @@ function BrandPanel({ subtitle }) {
           textTransform: 'uppercase',
           marginTop: 6,
         }}>
-          RAQIB
+          Institut As-Safaa
         </span>
         {/* Séparateur */}
         <div style={{
@@ -293,7 +293,10 @@ export default function EnseignantLogin() {
         >
           <div style={S.card}>
             <div style={S.brand}>
-              <span style={S.brandArabic}>رقيب — RAQIB</span>
+              <span style={{...S.brandArabic, display:'flex', flexDirection:'column', lineHeight:1.4}}>
+                <span>Institut As-Safaa</span>
+                <span>الصفاء</span>
+              </span>
               <span style={S.brandLabel}>Première connexion</span>
             </div>
             <p style={{ fontSize:13, color:'#a1a1a6', textAlign:'center', marginBottom:22, lineHeight:1.6 }}>
@@ -353,7 +356,10 @@ export default function EnseignantLogin() {
       >
         <div style={S.card}>
           <div style={S.brand}>
-            <span style={S.brandArabic}>رقيب — RAQIB</span>
+            <span style={{...S.brandArabic, display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+              <span>Institut As-Safaa</span>
+              <span style={{textAlign:'right'}}>الصفاء</span>
+            </span>
             <span style={S.brandLabel}>Portail Enseignant</span>
           </div>
           <form onSubmit={handleSubmit}>

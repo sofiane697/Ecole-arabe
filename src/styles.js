@@ -59,7 +59,7 @@ const STYLES = `
   /* ─── Base ─── */
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 400;
     background: var(--bg);
     color: var(--fg);
@@ -198,7 +198,7 @@ const STYLES = `
     line-height: 1.1;
   }
   .logo-fr {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-weight: 700;
     font-size: 0.72rem;
     letter-spacing: 0.28em;
@@ -214,7 +214,7 @@ const STYLES = `
     list-style: none;
   }
   .nav-btn {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.8rem;
     font-weight: 400;
     letter-spacing: 0.01em;
@@ -242,7 +242,7 @@ const STYLES = `
 
   /* CTA nav */
   .nav-cta {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.78rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -328,7 +328,7 @@ const STYLES = `
   html.dark .mobile-menu { background: var(--bg); }
 
   .mobile-link {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 1.6rem;
     font-weight: 300;
     letter-spacing: -0.02em;
@@ -456,7 +456,7 @@ const STYLES = `
     display: inline-flex;
     align-items: center;
     gap: 0.8rem;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.72rem;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -477,29 +477,32 @@ const STYLES = `
     flex-shrink: 0;
   }
   .hero-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
     margin-bottom: 0.4rem;
     animation: fadeUp 1s 0.15s var(--ease-out) both;
   }
   .hero-title-fr-name {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(2rem, 5vw, 4.2rem);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+    font-size: clamp(1.4rem, 3.2vw, 2.6rem);
     font-weight: 700;
     color: #d4c2a1;
-    letter-spacing: 0.08em;
-    line-height: 1.1;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    white-space: nowrap;
   }
   .hero-title-ar {
     font-family: 'Scheherazade New', serif;
-    font-size: clamp(3rem, 7vw, 6rem);
+    font-size: clamp(2.4rem, 6vw, 5rem);
     font-weight: 700;
     color: #d4c2a1;
     direction: rtl;
     line-height: 1.1;
     margin-bottom: 0;
     animation: none;
+    align-self: flex-end;
   }
   html.dark .hero-title-ar { color: #d4c2a1; }
   .hero-title-fr {
@@ -556,7 +559,7 @@ const STYLES = `
      BOUTONS GLOBAUX
   ═══════════════════════════════ */
   .btn-fill {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -576,7 +579,7 @@ const STYLES = `
   html.dark .btn-fill:hover { box-shadow: 0 8px 25px rgba(191,138,48,0.25); }
 
   .btn-outline {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -604,7 +607,7 @@ const STYLES = `
   .wrap    { max-width: 1200px; margin-inline: auto; }
 
   .s-eyebrow {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.14em;
@@ -677,7 +680,7 @@ const STYLES = `
   }
   .stat-n {
     display: block;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 3rem;
     font-weight: 700;
     color: var(--gold);
@@ -728,7 +731,7 @@ const STYLES = `
     flex-shrink: 0;
   }
   .value-name {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.92rem;
     font-weight: 600;
     color: var(--fg-title);
@@ -810,7 +813,7 @@ const STYLES = `
   .card-badge {
     position: absolute;
     top: 1.2rem; right: 1.2rem;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -821,7 +824,7 @@ const STYLES = `
     border-radius: 980px;
   }
   .card-lvl {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -842,7 +845,7 @@ const STYLES = `
   html.dark .card-ar { color: var(--fg-title); }
 
   .card-fr {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 1rem;
     font-weight: 500;
     color: var(--fg);
@@ -854,7 +857,7 @@ const STYLES = `
 
   .card-price  { display: flex; align-items: baseline; gap: 0.2rem; margin-bottom: 0.3rem; }
   .card-amount {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 3rem;
     font-weight: 700;
     line-height: 1;
@@ -902,7 +905,7 @@ const STYLES = `
   .feat .card-dot { background: var(--gold-light); }
 
   .card-cta {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.82rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -1047,7 +1050,7 @@ const STYLES = `
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -1055,7 +1058,7 @@ const STYLES = `
   }
 
   .temoig-name {
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--fg);
@@ -1157,7 +1160,7 @@ const STYLES = `
     border: 1px solid rgba(255,255,255,0.1);
     color: #f5f5f7;
     padding: 0.9rem 1.1rem;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.9rem;
     font-weight: 400;
     outline: none;
@@ -1179,7 +1182,7 @@ const STYLES = `
 
   .form-submit {
     align-self: flex-start;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -1317,7 +1320,7 @@ const STYLES = `
     color: #f5f5f7; font-size: 0.9rem;
     outline: none;
     transition: all 0.3s var(--ease);
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     -moz-appearance: textfield;
   }
   .modal-field input::-webkit-inner-spin-button,
@@ -1336,7 +1339,7 @@ const STYLES = `
     border: none;
     border-radius: 980px;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.01em;
@@ -1456,7 +1459,8 @@ const STYLES = `
 
     .hero-inner          { padding: 3.5rem 1.5rem 3rem; text-align: center; max-width: 100%; }
     .hero-eyebrow        { justify-content: center; }
-    .hero-title-ar       { font-size: clamp(2.4rem, 10vw, 3.8rem); }
+    .hero-title-fr-name  { white-space: normal; font-size: clamp(1.2rem, 5vw, 1.8rem); }
+    .hero-title-ar       { font-size: clamp(2rem, 9vw, 3.4rem); }
     .hero-title-fr       { font-size: clamp(1.2rem, 4.5vw, 1.8rem); }
     .hero-desc           { font-size: 0.95rem; max-width: 100%; margin-inline: auto; }
     .hero-actions        { justify-content: center; flex-direction: column; align-items: center; }
@@ -1759,6 +1763,514 @@ const STYLES = `
     color: #FBF0E9;
   }
   html.theme-3 footer a { color: #D4C2A1; }
+
+
+  /* ══════════════════════════════════════════════════════
+     THÈME 4 — Institut As-Safaa
+     Bleu profond & Beige sable — Inspiration islamique moderne
+     #1E3A5F · #4DA8DA · #FFFFFF · #EEF4F9 · #E0C097
+  ══════════════════════════════════════════════════════ */
+
+  @keyframes t4-shimmer {
+    0%, 100% { opacity: 0.06; }
+    50%       { opacity: 0.14; }
+  }
+  @keyframes t4-slow-rotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* ── Hero ── */
+  html.theme-4 .hero {
+    background: linear-gradient(160deg, #EEF4F9 0%, #ede3dc 55%, #EEF4F9 100%);
+  }
+
+  /* Étoile géométrique islamique — déco hero droite */
+  html.theme-4 .hero-deco-wrap::before {
+    content: '';
+    position: absolute;
+    top: 8%; right: 4%;
+    width: 340px; height: 340px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpolygon points='100,8 118,72 184,72 132,112 152,176 100,136 48,176 68,112 16,72 82,72' fill='none' stroke='%234DA8DA' stroke-width='1.2' opacity='0.22'/%3E%3Ccircle cx='100' cy='100' r='88' fill='none' stroke='%231E3A5F' stroke-width='0.6' opacity='0.10'/%3E%3Ccircle cx='100' cy='100' r='58' fill='none' stroke='%23E0C097' stroke-width='0.6' opacity='0.14'/%3E%3C/svg%3E") no-repeat center/contain;
+    pointer-events: none;
+    animation: t4-shimmer 9s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  /* Croissant — déco bas gauche */
+  html.theme-4 .hero-deco-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 10%; left: 8%;
+    width: 120px; height: 120px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M65,50 A30,30 0 1,1 65,50.1 A20,20 0 1,0 65,50Z' fill='%234DA8DA' opacity='0.12'/%3E%3C/svg%3E") no-repeat center/contain;
+    pointer-events: none;
+    animation: t4-shimmer 12s ease-in-out infinite 2s;
+  }
+
+  html.theme-4 .hero-glow {
+    background:
+      radial-gradient(ellipse 70% 60% at 78% 32%, rgba(77,168,218,0.13) 0%, transparent 70%),
+      radial-gradient(ellipse 45% 65% at 5%  80%, rgba(30,58,95,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 35% 35% at 50% 55%, rgba(224,192,151,0.06) 0%, transparent 55%);
+  }
+  html.theme-4 .hero-orb-1 {
+    background: radial-gradient(circle, rgba(77,168,218,0.26) 0%, rgba(77,168,218,0) 70%);
+  }
+  html.theme-4 .hero-orb-2 {
+    background: radial-gradient(circle, rgba(30,58,95,0.17) 0%, rgba(30,58,95,0) 70%);
+  }
+  html.theme-4 .hero-letter        { color: #1E3A5F; }
+  html.theme-4 .hero-title-fr-name { color: #4DA8DA; word-spacing: 0.55em; letter-spacing: 0.12em; }
+  html.theme-4 .hero-title-ar      { color: #4DA8DA; word-spacing: 0.4em; }
+
+  /* ── Nav & Logo ── */
+  html.theme-4 .logo-ar { color: #4DA8DA; word-spacing: 0.4em; }
+  html.theme-4 .logo-fr { color: #4DA8DA; word-spacing: 0.5em; }
+  html.theme-4 .nav {
+    background: rgba(238,244,249,0.90);
+    border-bottom: 1.5px solid rgba(30,58,95,0.09);
+  }
+
+  /* ── Boutons ── */
+  html.theme-4 .btn-fill:hover {
+    box-shadow: 0 8px 28px rgba(30,58,95,0.28);
+  }
+  html.theme-4 .nav-cta:hover {
+    box-shadow: 0 4px 16px rgba(30,58,95,0.26);
+  }
+
+  /* ── Section Présentation ── */
+  html.theme-4 .pres {
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+
+  /* Motif géométrique discret — coin haut droit */
+  html.theme-4 .pres::after {
+    content: '';
+    position: absolute;
+    top: -70px; right: -70px;
+    width: 260px; height: 260px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpolygon points='100,10 116,70 176,70 128,108 146,168 100,130 54,168 72,108 24,70 84,70' fill='none' stroke='%234DA8DA' stroke-width='1.4' opacity='0.18'/%3E%3C/svg%3E") no-repeat center/contain;
+    pointer-events: none;
+    opacity: 0.65;
+  }
+
+  /* Cartes valeurs */
+  html.theme-4 .value {
+    background: #FFFFFF;
+    border: 1px solid rgba(30,58,95,0.07);
+    border-left: 3px solid #4DA8DA;
+  }
+  html.theme-4 .value:hover {
+    border-left-color: #1E3A5F;
+    box-shadow: 0 8px 30px rgba(30,58,95,0.11);
+  }
+
+  /* ── Tarifs — cartes ── */
+  html.theme-4 .card {
+    background: #FFFFFF;
+    border-color: rgba(30,58,95,0.07);
+  }
+  html.theme-4 .card:hover {
+    box-shadow: 0 20px 50px rgba(30,58,95,0.13);
+    border-color: rgba(77,168,218,0.22);
+  }
+  html.theme-4 .card-fr,
+  html.theme-4 .card-ar       { color: #1E3A5F; }
+  html.theme-4 .card-feats li  { color: rgba(30,58,95,0.62); }
+  html.theme-4 .card-unit,
+  html.theme-4 .card-freq      { color: #E0C097; }
+
+  /* Carte vedette — bleu profond */
+  html.theme-4 .card.feat {
+    background: linear-gradient(145deg, #1E3A5F 0%, #274f78 100%);
+    border-color: rgba(224,192,151,0.28);
+    box-shadow: 0 12px 40px rgba(30,58,95,0.38);
+  }
+  html.theme-4 .card.feat:hover {
+    transform: translateY(-10px) scale(1.01);
+    box-shadow: 0 24px 56px rgba(30,58,95,0.45);
+  }
+  html.theme-4 .feat .card-lvl        { color: #4DA8DA; }
+  html.theme-4 .feat .card-ar         { color: rgba(255,255,255,0.68); }
+  html.theme-4 .feat .card-fr         { color: #FFFFFF; }
+  html.theme-4 .feat .card-amount     { color: #E0C097; }
+  html.theme-4 .feat .card-unit       { color: rgba(255,255,255,0.55); }
+  html.theme-4 .feat .card-freq       { color: rgba(255,255,255,0.50); }
+  html.theme-4 .feat .card-sep        { background: rgba(255,255,255,0.10); }
+  html.theme-4 .feat .card-feats li   { color: rgba(255,255,255,0.82); }
+  html.theme-4 .feat .card-dot        { background: #4DA8DA; }
+  html.theme-4 .feat .card-cta        { background: #4DA8DA; color: #FFFFFF; }
+  html.theme-4 .feat .card-cta:hover  { background: #5bb4e2; color: #FFFFFF; box-shadow: 0 4px 16px rgba(77,168,218,0.38); }
+  html.theme-4 .card-badge            { background: #E0C097; color: #1E3A5F; }
+  html.theme-4 .card-cta:hover        { box-shadow: 0 4px 16px rgba(30,58,95,0.20); }
+
+  /* ── Séparateur ornemental ── */
+  html.theme-4 .orn { background: #EEF4F9; }
+  html.theme-4 .orn-line {
+    background: linear-gradient(to right, transparent, rgba(77,168,218,0.50), transparent);
+    height: 1px;
+  }
+  html.theme-4 .orn-glyph { color: #1E3A5F; opacity: 0.40; }
+
+  /* ── Témoignages — bleu profond ── */
+  html.theme-4 .temoignages {
+    background: #1E3A5F;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Cercle flou décoratif */
+  html.theme-4 .temoignages::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(77,168,218,0.14) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  html.theme-4 .temoignages::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(224,192,151,0.09) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  html.theme-4 .temoignages .s-eyebrow  { color: #E0C097; }
+  html.theme-4 .temoignages .s-title    { color: #FFFFFF; }
+  html.theme-4 .temoignages .s-title-ar { color: rgba(224,192,151,0.50); }
+  html.theme-4 .temoignages .s-body     { color: rgba(238,244,249,0.55); }
+  html.theme-4 .temoig-deco             { color: #4DA8DA; opacity: 0.05; }
+
+  html.theme-4 .temoig-card {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(77,168,218,0.16);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  html.theme-4 .temoig-card::before {
+    background: linear-gradient(90deg, #4DA8DA, #E0C097);
+  }
+  html.theme-4 .temoig-card:hover {
+    background: rgba(255,255,255,0.11);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+    border-color: rgba(77,168,218,0.28);
+  }
+  html.theme-4 .temoig-quote   { color: rgba(238,244,249,0.88); }
+  html.theme-4 .temoig-name    { color: #FFFFFF; }
+  html.theme-4 .temoig-role    { color: #4DA8DA; }
+  html.theme-4 .temoig-stars   { color: #E0C097; }
+  html.theme-4 .temoig-avatar  { background: linear-gradient(135deg, #4DA8DA, #1E3A5F); }
+  html.theme-4 .temoig-footer  { border-top-color: rgba(255,255,255,0.09); }
+
+  /* ── Section Contact ── */
+  html.theme-4 .contact {
+    background: #EEF4F9;
+    color: #1E3A5F;
+  }
+  html.theme-4 .contact .contact-deco { color: rgba(30,58,95,0.04); }
+  html.theme-4 .contact .s-eyebrow    { color: #4DA8DA; }
+  html.theme-4 .contact .s-title      { color: #1E3A5F; }
+  html.theme-4 .contact .s-title-ar   { color: rgba(77,168,218,0.42); }
+  html.theme-4 .contact .s-body       { color: rgba(30,58,95,0.58); }
+  html.theme-4 .info-row              { border-bottom-color: rgba(30,58,95,0.08); }
+  html.theme-4 .info-icon             { color: #4DA8DA; background: rgba(77,168,218,0.10); }
+  html.theme-4 .info-label            { color: #1E3A5F; }
+  html.theme-4 .info-val,
+  html.theme-4 .info-val a            { color: rgba(30,58,95,0.58); }
+  html.theme-4 .info-val a:hover      { color: #4DA8DA; }
+  html.theme-4 .field label           { color: #1E3A5F; }
+  html.theme-4 .field input,
+  html.theme-4 .field select,
+  html.theme-4 .field textarea {
+    background: rgba(255,255,255,0.80);
+    border: 1px solid rgba(30,58,95,0.12);
+    color: #1E3A5F;
+  }
+  html.theme-4 .field input::placeholder,
+  html.theme-4 .field textarea::placeholder { color: rgba(30,58,95,0.28); }
+  html.theme-4 .field input:focus,
+  html.theme-4 .field select:focus,
+  html.theme-4 .field textarea:focus {
+    border-color: #4DA8DA;
+    background: rgba(255,255,255,0.96);
+    box-shadow: 0 0 0 3px rgba(77,168,218,0.13);
+  }
+  html.theme-4 .form-submit:hover {
+    box-shadow: 0 8px 25px rgba(30,58,95,0.28);
+  }
+  html.theme-4 .form-msg.ok {
+    background: rgba(77,168,218,0.12);
+    color: #1E3A5F;
+  }
+
+  /* ── Footer — bleu profond ── */
+  html.theme-4 .footer           { background: #1E3A5F; }
+  html.theme-4 .footer-logo      { color: #E0C097; }
+  html.theme-4 .footer-copy      { color: rgba(238,244,249,0.38); }
+  html.theme-4 .footer-nav a     { color: rgba(238,244,249,0.38); }
+  html.theme-4 .footer-nav a:hover { color: #E0C097; }
+
+  /* ── Scrollbar ── */
+  html.theme-4 ::-webkit-scrollbar-thumb {
+    background: rgba(30,58,95,0.20);
+  }
+
+
+  /* ══════════════════════════════════════════════════════
+     THÈME 5 — Style Apple
+     Police : SF Pro (système) / Inter (fallback)
+     Couleurs : apple.com — #0071e3 · #1d1d1f · #6e6e73 · #f5f5f7 · #ffffff
+  ══════════════════════════════════════════════════════ */
+
+  /* ── Titres : abandon du serif, SF Pro à la place ── */
+  html.theme-5 .s-title,
+  html.theme-5 .hero-title-fr {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
+  }
+  html.theme-5 .hero-title-fr-name {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #1d1d1f;
+  }
+
+  /* ── Hero ── */
+  html.theme-5 .hero         { background: #ffffff; }
+  html.theme-5 .hero-glow {
+    background:
+      radial-gradient(ellipse 60% 50% at 65% 45%, rgba(0,113,227,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 55% at 10% 75%, rgba(0,113,227,0.03) 0%, transparent 65%);
+  }
+  html.theme-5 .hero-orb-1 { background: radial-gradient(circle, rgba(0,113,227,0.18) 0%, rgba(0,113,227,0) 70%); }
+  html.theme-5 .hero-orb-2 { background: radial-gradient(circle, rgba(0,113,227,0.10) 0%, rgba(0,113,227,0) 70%); }
+  html.theme-5 .hero-letter { color: #0071e3; }
+  html.theme-5 .hero-title-ar { color: #1d1d1f; }
+
+  /* ── Nav ── */
+  html.theme-5 .nav {
+    background: rgba(255,255,255,0.78);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+
+  /* ── Boutons — style Apple ── */
+  html.theme-5 .btn-fill:hover    { box-shadow: 0 6px 20px rgba(0,113,227,0.32); }
+  html.theme-5 .nav-cta:hover     { box-shadow: 0 4px 14px rgba(0,113,227,0.30); }
+
+  /* ── Présentation ── */
+  html.theme-5 .pres { background: #f5f5f7; }
+  html.theme-5 .value {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-left: 3px solid #0071e3;
+  }
+  html.theme-5 .value:hover {
+    border-left-color: #0077ed;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  }
+
+  /* ── Cartes tarifs ── */
+  html.theme-5 .card          { background: #ffffff; border-color: rgba(0,0,0,0.06); }
+  html.theme-5 .card:hover    { box-shadow: 0 20px 50px rgba(0,0,0,0.10); border-color: rgba(0,113,227,0.18); }
+  html.theme-5 .card-fr,
+  html.theme-5 .card-ar       { color: #1d1d1f; }
+  html.theme-5 .card-feats li  { color: #6e6e73; }
+  html.theme-5 .card-unit,
+  html.theme-5 .card-freq      { color: #86868b; }
+
+  /* Carte vedette — noir Apple */
+  html.theme-5 .card.feat {
+    background: linear-gradient(145deg, #1d1d1f 0%, #2c2c2e 100%);
+    border-color: rgba(255,255,255,0.10);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  html.theme-5 .card.feat:hover { box-shadow: 0 24px 56px rgba(0,0,0,0.42); }
+  html.theme-5 .feat .card-lvl        { color: #0071e3; }
+  html.theme-5 .feat .card-ar         { color: rgba(255,255,255,0.65); }
+  html.theme-5 .feat .card-fr         { color: #ffffff; }
+  html.theme-5 .feat .card-amount     { color: #ffffff; }
+  html.theme-5 .feat .card-unit       { color: rgba(255,255,255,0.45); }
+  html.theme-5 .feat .card-freq       { color: rgba(255,255,255,0.40); }
+  html.theme-5 .feat .card-sep        { background: rgba(255,255,255,0.10); }
+  html.theme-5 .feat .card-feats li   { color: rgba(255,255,255,0.80); }
+  html.theme-5 .feat .card-dot        { background: #0071e3; }
+  html.theme-5 .feat .card-cta        { background: #0071e3; color: #ffffff; }
+  html.theme-5 .feat .card-cta:hover  { background: #0077ed; box-shadow: 0 4px 14px rgba(0,113,227,0.38); }
+  html.theme-5 .card-badge            { background: #0071e3; color: #ffffff; }
+  html.theme-5 .card-cta:hover        { box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+
+  /* ── Séparateur ── */
+  html.theme-5 .orn      { background: #f5f5f7; }
+  html.theme-5 .orn-line { background: linear-gradient(to right, transparent, rgba(0,0,0,0.12), transparent); height: 1px; }
+  html.theme-5 .orn-glyph { color: #1d1d1f; opacity: 0.25; }
+
+  /* ── Témoignages ── */
+  html.theme-5 .temoignages { background: #f5f5f7; }
+  html.theme-5 .temoig-card {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  html.theme-5 .temoig-card::before  { background: linear-gradient(90deg, #0071e3, #34aadc); }
+  html.theme-5 .temoig-card:hover    { box-shadow: 0 16px 40px rgba(0,0,0,0.10); }
+  html.theme-5 .temoig-quote   { color: #1d1d1f; }
+  html.theme-5 .temoig-name    { color: #1d1d1f; }
+  html.theme-5 .temoig-role    { color: #0071e3; }
+  html.theme-5 .temoig-stars   { color: #0071e3; }
+  html.theme-5 .temoig-avatar  { background: linear-gradient(135deg, #0071e3, #34aadc); }
+  html.theme-5 .temoig-deco    { color: #0071e3; }
+
+  /* ── Contact — gris foncé Apple ── */
+  html.theme-5 .contact { background: #1d1d1f; }
+  html.theme-5 .field input:focus,
+  html.theme-5 .field select:focus,
+  html.theme-5 .field textarea:focus {
+    border-color: #0071e3;
+    background: rgba(0,113,227,0.05);
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+  }
+  html.theme-5 .form-submit:hover { box-shadow: 0 8px 25px rgba(0,113,227,0.32); }
+
+  /* ── Footer — noir Apple ── */
+  html.theme-5 .footer      { background: #000000; }
+  html.theme-5 .footer-logo { color: #f5f5f7; }
+  html.theme-5 .footer-copy { color: rgba(245,245,247,0.28); }
+  html.theme-5 .footer-nav a { color: rgba(245,245,247,0.28); }
+  html.theme-5 .footer-nav a:hover { color: #0071e3; }
+
+  /* ── Scrollbar ── */
+  html.theme-5 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); }
+
+
+  /* ══════════════════════════════════════════════════════
+     THÈME 6 — Palette logo neutralisée
+     Orangé #E8825A · Pêche #F5B08A · Mauve #9B6B7A · Brun-mauve #7A4F5A
+     → Terracotta neutre · Sable chaud · Crème · Brun discret · Mauve grisé
+  ══════════════════════════════════════════════════════ */
+
+  /* ── Hero ── */
+  html.theme-6 .hero {
+    background: linear-gradient(160deg, #FAF5F0 0%, #F5EDE4 55%, #FAF5F0 100%);
+  }
+  html.theme-6 .hero-glow {
+    background:
+      radial-gradient(ellipse 65% 55% at 65% 40%, rgba(184,128,94,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 45% 60% at 8%  78%, rgba(160,136,136,0.08) 0%, transparent 65%);
+  }
+  html.theme-6 .hero-orb-1 { background: radial-gradient(circle, rgba(184,128,94,0.28) 0%, rgba(184,128,94,0) 70%); }
+  html.theme-6 .hero-orb-2 { background: radial-gradient(circle, rgba(160,136,136,0.20) 0%, rgba(160,136,136,0) 70%); }
+  html.theme-6 .hero-letter        { color: #B8805E; }
+  html.theme-6 .hero-title-fr-name { color: #2E2420; }
+  html.theme-6 .hero-title-ar      { color: #2E2420; }
+
+  /* ── Nav ── */
+  html.theme-6 .nav {
+    background: rgba(250,245,240,0.88);
+    border-bottom: 1.5px solid rgba(122,94,86,0.09);
+  }
+
+  /* ── Boutons ── */
+  html.theme-6 .btn-fill:hover { box-shadow: 0 8px 28px rgba(184,128,94,0.30); }
+  html.theme-6 .nav-cta:hover  { box-shadow: 0 4px 16px rgba(184,128,94,0.28); }
+
+  /* ── Présentation ── */
+  html.theme-6 .pres { background: #F0E8E0; }
+  html.theme-6 .value {
+    background: #FFFFFF;
+    border: 1px solid rgba(122,94,86,0.08);
+    border-left: 3px solid #B8805E;
+  }
+  html.theme-6 .value:hover {
+    border-left-color: #CC9A74;
+    box-shadow: 0 8px 30px rgba(122,94,86,0.12);
+  }
+
+  /* ── Cartes tarifs ── */
+  html.theme-6 .card          { background: #FFFFFF; border-color: rgba(122,94,86,0.08); }
+  html.theme-6 .card:hover    { box-shadow: 0 20px 50px rgba(122,94,86,0.14); border-color: rgba(184,128,94,0.22); }
+  html.theme-6 .card-fr,
+  html.theme-6 .card-ar       { color: #2E2420; }
+  html.theme-6 .card-feats li  { color: #7A5E56; }
+  html.theme-6 .card-unit,
+  html.theme-6 .card-freq      { color: #A08888; }
+
+  /* Carte vedette — brun-mauve profond */
+  html.theme-6 .card.feat {
+    background: linear-gradient(145deg, #5A3E3A 0%, #7A5460 100%);
+    border-color: rgba(204,154,116,0.25);
+    box-shadow: 0 12px 40px rgba(46,36,32,0.35);
+  }
+  html.theme-6 .card.feat:hover      { box-shadow: 0 24px 56px rgba(46,36,32,0.42); }
+  html.theme-6 .feat .card-lvl        { color: #CC9A74; }
+  html.theme-6 .feat .card-ar         { color: rgba(255,255,255,0.65); }
+  html.theme-6 .feat .card-fr         { color: #FFFFFF; }
+  html.theme-6 .feat .card-amount     { color: #CC9A74; }
+  html.theme-6 .feat .card-unit       { color: rgba(255,255,255,0.50); }
+  html.theme-6 .feat .card-freq       { color: rgba(255,255,255,0.45); }
+  html.theme-6 .feat .card-sep        { background: rgba(255,255,255,0.10); }
+  html.theme-6 .feat .card-feats li   { color: rgba(255,255,255,0.82); }
+  html.theme-6 .feat .card-dot        { background: #CC9A74; }
+  html.theme-6 .feat .card-cta        { background: #B8805E; color: #FFFFFF; }
+  html.theme-6 .feat .card-cta:hover  { background: #CC9A74; color: #FFFFFF; box-shadow: 0 4px 16px rgba(184,128,94,0.40); }
+  html.theme-6 .card-badge            { background: #B8805E; color: #FFFFFF; }
+  html.theme-6 .card-cta:hover        { box-shadow: 0 4px 14px rgba(122,94,86,0.18); }
+
+  /* ── Séparateur ── */
+  html.theme-6 .orn      { background: #F0E8E0; }
+  html.theme-6 .orn-line { background: linear-gradient(to right, transparent, rgba(184,128,94,0.40), transparent); height: 1px; }
+  html.theme-6 .orn-glyph { color: #B8805E; opacity: 0.50; }
+
+  /* ── Témoignages ── */
+  html.theme-6 .temoignages { background: #F0E8E0; }
+  html.theme-6 .temoig-card {
+    background: #FFFFFF;
+    border-color: rgba(122,94,86,0.08);
+    box-shadow: 0 2px 12px rgba(122,94,86,0.05);
+  }
+  html.theme-6 .temoig-card::before { background: linear-gradient(90deg, #B8805E, #CC9A74); }
+  html.theme-6 .temoig-card:hover   { box-shadow: 0 16px 40px rgba(122,94,86,0.14); }
+  html.theme-6 .temoig-quote  { color: #2E2420; }
+  html.theme-6 .temoig-name   { color: #2E2420; }
+  html.theme-6 .temoig-role   { color: #B8805E; }
+  html.theme-6 .temoig-stars  { color: #CC9A74; }
+  html.theme-6 .temoig-avatar { background: linear-gradient(135deg, #B8805E, #7A5460); }
+  html.theme-6 .temoig-deco   { color: #B8805E; }
+
+  /* ── Contact ── */
+  html.theme-6 .contact { background: #3A2820; }
+  html.theme-6 .contact .s-eyebrow    { color: #CC9A74; }
+  html.theme-6 .contact .s-title      { color: #FAF5F0; }
+  html.theme-6 .contact .s-title-ar   { color: rgba(204,154,116,0.45); }
+  html.theme-6 .contact .s-body       { color: rgba(250,245,240,0.50); }
+  html.theme-6 .info-icon             { color: #CC9A74; background: rgba(184,128,94,0.12); }
+  html.theme-6 .info-label            { color: #CC9A74; }
+  html.theme-6 .info-val, html.theme-6 .info-val a { color: rgba(250,245,240,0.55); }
+  html.theme-6 .info-val a:hover      { color: #CC9A74; }
+  html.theme-6 .field input:focus,
+  html.theme-6 .field select:focus,
+  html.theme-6 .field textarea:focus {
+    border-color: #B8805E;
+    background: rgba(184,128,94,0.07);
+    box-shadow: 0 0 0 3px rgba(184,128,94,0.14);
+  }
+  html.theme-6 .form-submit:hover { box-shadow: 0 8px 25px rgba(184,128,94,0.32); }
+
+  /* ── Footer ── */
+  html.theme-6 .footer           { background: #2E2420; }
+  html.theme-6 .footer-logo      { color: #CC9A74; }
+  html.theme-6 .footer-copy      { color: rgba(250,245,240,0.30); }
+  html.theme-6 .footer-nav a     { color: rgba(250,245,240,0.30); }
+  html.theme-6 .footer-nav a:hover { color: #CC9A74; }
+
+  /* ── Scrollbar ── */
+  html.theme-6 ::-webkit-scrollbar-thumb { background: rgba(122,94,86,0.22); }
 `;
 
 export default STYLES;

@@ -286,7 +286,7 @@ export default function Enseignants() {
                 alert('Copié !');
               }}>📋 Copier</button>
               <button style={{ padding:'9px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }} onClick={() => {
-                const msg = encodeURIComponent(`🕌 École Raqib — Portail Enseignant\n\nBonjour ${result.prenom},\n\nVoici vos identifiants :\n\n👤 Identifiant : ${result.identifiant}\n🔑 Mot de passe : ${result.tempPassword}\n\n📱 ${window.location.origin}/enseignant/login\n\n⚠️ Changez votre mot de passe à la première connexion.`);
+                const msg = encodeURIComponent(`🕌 Institut As-Safaa — Portail Enseignant\n\nBonjour ${result.prenom},\n\nVoici vos identifiants :\n\n👤 Identifiant : ${result.identifiant}\n🔑 Mot de passe : ${result.tempPassword}\n\n📱 ${window.location.origin}/enseignant/login\n\n⚠️ Changez votre mot de passe à la première connexion.`);
                 window.open(`https://wa.me/?text=${msg}`, '_blank');
               }}>💬 WhatsApp</button>
               <button style={{ ...S.btnCancel, padding:'9px 16px', fontSize:12 }} onClick={() => setResult(null)}>Fermer</button>
@@ -329,7 +329,7 @@ export default function Enseignants() {
                 alert('Copié !');
               }}>📋 Copier</button>
               <button style={{ padding:'9px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }} onClick={() => {
-                const msg = encodeURIComponent(`🕌 École Raqib — Portail Enseignant\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/enseignant/login\n\n⚠️ Changez votre mot de passe à la connexion.`);
+                const msg = encodeURIComponent(`🕌 Institut As-Safaa — Portail Enseignant\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/enseignant/login\n\n⚠️ Changez votre mot de passe à la connexion.`);
                 window.open(`https://wa.me/?text=${msg}`, '_blank');
               }}>💬 WhatsApp</button>
               <button style={{ ...S.btnCancel, padding:'9px 16px', fontSize:12 }} onClick={() => setResetResult(null)}>Fermer</button>

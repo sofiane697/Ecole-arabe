@@ -188,7 +188,7 @@ export default function CinematicIntro({ onComplete }) {
               fontFamily:'"Times New Roman","Noto Naskh Arabic",Georgia,serif',
               letterSpacing:7, opacity:0.88,
               textShadow:'0 0 14px rgba(201,150,58,0.5)',
-            }}>رقيب</span>
+            }}>الصفاء</span>
             {/* Ligne dorée basse */}
             <div style={{ width:1, height:16, background:'linear-gradient(180deg,transparent,#c9963a,transparent)', opacity:0.5 }}/>
           </div>
@@ -253,12 +253,12 @@ export default function CinematicIntro({ onComplete }) {
               fontFamily:'"Times New Roman","Noto Naskh Arabic",Georgia,serif',
               lineHeight:1.1, position:'relative', zIndex:1,
               textShadow:'0 1px 8px rgba(154,110,30,0.2)',
-            }}>رقيب</div>
+            }}>الصفاء</div>
 
             <div style={{
               color:'#b8862e', fontSize:9, letterSpacing:10, marginLeft:10,
               fontFamily:'"Times New Roman",Georgia,serif', opacity:0.8,
-            }}>RAQIB</div>
+            }}>Institut As-Safaa</div>
 
             <Divider w={100} opacity={0.8}/>
 
@@ -325,7 +325,7 @@ export default function CinematicIntro({ onComplete }) {
                 fontFamily:'"Times New Roman","Noto Naskh Arabic",Georgia,serif',
                 lineHeight:1, position:'relative', zIndex:1,
                 textShadow:'0 0 50px rgba(201,150,58,0.35), 0 3px 10px rgba(0,0,0,0.8)',
-              }}>رقيب</div>
+              }}>الصفاء</div>
 
               <Divider w={120}/>
 
@@ -333,7 +333,7 @@ export default function CinematicIntro({ onComplete }) {
               <div style={{
                 color:'rgba(201,150,58,0.6)', fontSize:9, letterSpacing:9, marginLeft:9,
                 fontFamily:'"Times New Roman",Georgia,serif',
-              }}>RAQIB</div>
+              }}>Institut As-Safaa</div>
 
               {/* Filet horizontal bas */}
               <div style={{

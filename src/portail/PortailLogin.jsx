@@ -29,7 +29,10 @@ const BrandPanel = () => (
     <span className="portail-panel-deco" aria-hidden="true">ر</span>
 
     <div className="portail-panel-logo">
-      <span className="arabic">رقيب — RAQIB</span>
+      <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+        <span>Institut As-Safaa</span>
+        <span style={{textAlign:'right'}}>الصفاء</span>
+      </span>
       <span className="label">Espace Numérique de Travail</span>
     </div>
 
@@ -181,7 +184,10 @@ export default function PortailLogin() {
           <div className="portail-login-panel-right">
             <div className="portail-login-card">
               <div className="portail-login-brand">
-                <span className="arabic">رقيب — RAQIB</span>
+                <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+        <span>Institut As-Safaa</span>
+        <span style={{textAlign:'right'}}>الصفاء</span>
+      </span>
                 <span className="label">Première connexion</span>
               </div>
               <p className="portail-login-subtitle">
@@ -240,7 +246,10 @@ export default function PortailLogin() {
         <div className="portail-login-panel-right">
           <div className="portail-login-card">
             <div className="portail-login-brand">
-              <span className="arabic">رقيب — RAQIB</span>
+              <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+        <span>Institut As-Safaa</span>
+        <span style={{textAlign:'right'}}>الصفاء</span>
+      </span>
               <span className="label">Portail Élève</span>
             </div>
             <p className="portail-login-subtitle">

@@ -7,6 +7,81 @@ import {
 } from './supabaseEnseignant';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+const GRADES = [
+  { value: 4, label: 'A+',  libelle: 'Excellent',              color: '#30d158' },
+  { value: 3, label: 'A',   libelle: 'Acquis',                 color: '#0a84ff' },
+  { value: 2, label: 'ECA', libelle: "En cours d'acquisition", color: '#f7963a' },
+  { value: 1, label: 'NA',  libelle: 'Non acquis',             color: '#ff453a' },
+];
+function gradeFromScore(score) {
+  return GRADES.find(g => g.value === score) || null;
+}
+function GradeBadge({ score }) {
+  const grade = gradeFromScore(score);
+  if (!grade) return <span style={{ color: 'var(--a-fg-mid)' }}>—</span>;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        minWidth: 40, padding: '3px 10px', borderRadius: 8,
+        background: grade.color + '22', color: grade.color,
+        fontSize: 13, fontWeight: 800, letterSpacing: 0.5,
+      }}>
+        {grade.label}
+      </span>
+      <span style={{ fontSize: 12, color: 'var(--a-fg-mid)' }}>{grade.libelle}</span>
+    </span>
+  );
+}
+function PieChart({ dist, total }) {
+  const R = 72, CX = 90, CY = 90;
+  const segments = GRADES.map(g => ({ ...g, count: dist[g.value] || 0 })).filter(g => g.count > 0);
+  if (segments.length === 0) return null;
+  let startAngle = -Math.PI / 2;
+  const paths = segments.map(seg => {
+    const angle = (seg.count / total) * 2 * Math.PI;
+    const endAngle = startAngle + angle;
+    const x1 = CX + R * Math.cos(startAngle), y1 = CY + R * Math.sin(startAngle);
+    const x2 = CX + R * Math.cos(endAngle),   y2 = CY + R * Math.sin(endAngle);
+    const midAngle = startAngle + angle / 2;
+    const lx = CX + R * 0.62 * Math.cos(midAngle);
+    const ly = CY + R * 0.62 * Math.sin(midAngle);
+    const pct = Math.round((seg.count / total) * 100);
+    const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${angle > Math.PI ? 1 : 0} 1 ${x2} ${y2} Z`;
+    startAngle = endAngle;
+    return { ...seg, d, lx, ly, pct };
+  });
+  return (
+    <div style={{ marginTop: 24, background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius)', padding: '20px 24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
+      <div style={{ width: '100%', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--a-fg-light)', marginBottom: 4 }}>
+        Récapitulatif des appréciations
+      </div>
+      <svg width="180" height="180" viewBox="0 0 180 180" style={{ flexShrink: 0 }}>
+        <filter id="ps2"><feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.12"/></filter>
+        <g filter="url(#ps2)">
+          {paths.map((seg, i) => <path key={i} d={seg.d} fill={seg.color} stroke="var(--a-bg-card)" strokeWidth="2"/>)}
+        </g>
+        {paths.map((seg, i) => seg.pct >= 10 && (
+          <text key={i} x={seg.lx} y={seg.ly} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="11" fontWeight="800">{seg.pct}%</text>
+        ))}
+      </svg>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minWidth: 140 }}>
+        {paths.map((seg, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 12, height: 12, borderRadius: 3, background: seg.color, flexShrink: 0 }}/>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--a-fg)', minWidth: 34 }}>{seg.label}</span>
+            <span style={{ fontSize: 12, color: 'var(--a-fg-mid)', flex: 1 }}>{seg.libelle}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, background: seg.color + '22', color: seg.color, padding: '2px 8px', borderRadius: 6 }}>{seg.count} · {seg.pct}%</span>
+          </div>
+        ))}
+        <div style={{ marginTop: 2, fontSize: 12, color: 'var(--a-fg-mid)', borderTop: '1px solid var(--a-border)', paddingTop: 8 }}>
+          Total : <strong style={{ color: 'var(--a-fg)' }}>{total}</strong> évaluation{total > 1 ? 's' : ''}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function formatDate(str) {
   if (!str) return '—';
   const [y, m, d] = str.slice(0, 10).split('-');
@@ -17,16 +92,11 @@ function formatDateTime(str) {
   const d = new Date(str);
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-// Seuils /20 : rouge 0–9 (<50%), orange 10–13.5 (50–<70%), vert 14–20 (≥70%)
+// Utilisé uniquement pour la progression (barres QCM)
 function scoreColor(pct) {
   if (pct >= 70) return 'var(--a-green)';
   if (pct >= 50) return 'var(--a-gold)';
   return 'var(--a-red)';
-}
-function scoreBg(pct) {
-  if (pct >= 70) return 'rgba(48,209,88,.1)';
-  if (pct >= 50) return 'rgba(191,138,48,.12)';
-  return 'rgba(255,69,58,.1)';
 }
 
 const OBS_COLORS = {
@@ -77,9 +147,7 @@ const S = {
   miniBarWrap: { height: 6, background: 'rgba(127,127,127,.12)', borderRadius: 3, overflow: 'hidden', width: '100%' },
   miniBarFill: (pct, c) => ({ height: '100%', width: `${pct}%`, background: c, borderRadius: 3 }),
   // Notes
-  noteBadge: (pct, absent) => absent
-    ? { display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: 'rgba(127,127,127,.12)', color: 'var(--a-fg-light)' }
-    : { display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: scoreBg(pct), color: scoreColor(pct) },
+  absentBadge: { display: 'inline-block', padding: '3px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: 'rgba(255,69,58,.12)', color: '#ff453a' },
   // Présence
   presenceItem: { display: 'flex', gap: 14, alignItems: 'flex-start', padding: '14px 20px', borderBottom: '1px solid var(--a-border)' },
   presenceBadge: (type) => ({ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, flexShrink: 0, background: type === 'retard' ? 'rgba(240,180,41,.15)' : 'rgba(255,69,58,.1)', color: type === 'retard' ? 'var(--a-gold)' : 'var(--a-red)' }),
@@ -99,9 +167,9 @@ const TABS = [
 ];
 
 const PROG_COLS = '2fr 80px 80px 110px 110px';
-const NOTES_COLS = '100px 1fr 120px 90px';
+const NOTES_COLS = '100px 1fr 220px';
 const PROG_COLS_HEAD = ['Module', 'Niveaux QCM', 'Réussis', 'Moy. score', 'Statut'];
-const NOTES_COLS_HEAD = ['Date', 'Évaluation', 'Note', 'Statut'];
+const NOTES_COLS_HEAD = ['Date', 'Évaluation', 'Appréciation'];
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function EnseignantEleveProfile() {
@@ -209,10 +277,13 @@ export default function EnseignantEleveProfile() {
     .filter(n => n.eval)
     .sort((a, b) => new Date(b.eval.date_evaluation) - new Date(a.eval.date_evaluation));
 
-  const scoresValides = notesWithEval.filter(n => !n.absent && n.score != null && n.eval?.score_max);
-  const moyenne = scoresValides.length > 0
-    ? (scoresValides.reduce((s, n) => s + (n.score / n.eval.score_max) * 100, 0) / scoresValides.length).toFixed(1)
-    : null;
+  // Distribution des appréciations pour le camembert
+  const gradeDist = {};
+  notesWithEval.filter(n => !n.absent && n.score != null).forEach(n => {
+    const v = parseInt(n.score, 10);
+    gradeDist[v] = (gradeDist[v] || 0) + 1;
+  });
+  const pieTotal = Object.values(gradeDist).reduce((s, v) => s + v, 0);
 
   // ── Calculs Présence ──────────────────────────────────────────────────────
   const nbRetards  = presence.filter(p => p.type === 'retard').length;
@@ -320,12 +391,6 @@ export default function EnseignantEleveProfile() {
               {notesWithEval.length > 0 && (
                 <div style={S.statsRow}>
                   <div style={S.statCard}>
-                    <div style={S.statNum(moyenne !== null ? scoreColor(parseFloat(moyenne)) : 'var(--a-fg)')}>
-                      {moyenne !== null ? `${moyenne}%` : '—'}
-                    </div>
-                    <div style={S.statLabel}>Moyenne générale</div>
-                  </div>
-                  <div style={S.statCard}>
                     <div style={S.statNum('var(--a-fg)')}>{notesWithEval.length}</div>
                     <div style={S.statLabel}>Évaluation{notesWithEval.length > 1 ? 's' : ''}</div>
                   </div>
@@ -333,6 +398,12 @@ export default function EnseignantEleveProfile() {
                     <div style={S.statNum('var(--a-red)')}>{notesWithEval.filter(n => n.absent).length}</div>
                     <div style={S.statLabel}>Absence{notesWithEval.filter(n => n.absent).length > 1 ? 's' : ''} éval.</div>
                   </div>
+                  {GRADES.filter(g => gradeDist[g.value] > 0).map(g => (
+                    <div key={g.value} style={S.statCard}>
+                      <div style={{ fontSize: 26, fontWeight: 800, color: g.color }}>{gradeDist[g.value]}</div>
+                      <div style={S.statLabel}>{g.label} — {g.libelle}</div>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -342,35 +413,29 @@ export default function EnseignantEleveProfile() {
                   {stateClasseId ? 'Aucune note enregistrée pour cet élève.' : 'Navigue depuis la fiche classe pour voir les notes.'}
                 </div>
               ) : (
-                <div style={S.tableWrap}>
-                  <div style={S.tableHead(NOTES_COLS)}>
-                    {NOTES_COLS_HEAD.map(h => <span key={h}>{h}</span>)}
+                <>
+                  <div style={S.tableWrap}>
+                    <div style={S.tableHead(NOTES_COLS)}>
+                      {NOTES_COLS_HEAD.map(h => <span key={h}>{h}</span>)}
+                    </div>
+                    {notesWithEval.map((n, i) => {
+                      const score = n.score != null ? parseInt(n.score, 10) : null;
+                      return (
+                        <div key={`${n.evaluation_id}-${i}`} style={S.tableRow(NOTES_COLS, i)}>
+                          <span style={S.cellMid}>{formatDate(n.eval.date_evaluation)}</span>
+                          <span style={S.cell}>{n.eval.titre}</span>
+                          <span>
+                            {n.absent
+                              ? <span style={S.absentBadge}>Absent</span>
+                              : <GradeBadge score={score} />
+                            }
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  {notesWithEval.map((n, i) => {
-                    const pct = n.eval?.score_max && n.score != null ? Math.round((n.score / n.eval.score_max) * 100) : null;
-                    return (
-                      <div key={`${n.evaluation_id}-${i}`} style={S.tableRow(NOTES_COLS, i)}>
-                        <span style={S.cellMid}>{formatDate(n.eval.date_evaluation)}</span>
-                        <span style={S.cell}>{n.eval.titre}</span>
-                        <span>
-                          {n.absent
-                            ? <span style={S.noteBadge(0, true)}>Absent</span>
-                            : pct !== null
-                              ? <span style={S.noteBadge(pct, false)}>{n.score} / {n.eval.score_max} <span style={{ opacity: .7 }}>({pct}%)</span></span>
-                              : <span style={S.cellMid}>—</span>
-                          }
-                        </span>
-                        <span>
-                          {!n.absent && pct !== null && (
-                            <div style={{ ...S.miniBarWrap, maxWidth: 80 }}>
-                              <div style={S.miniBarFill(pct, scoreColor(pct))} />
-                            </div>
-                          )}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                  {pieTotal > 0 && <PieChart dist={gradeDist} total={pieTotal} />}
+                </>
               )}
             </div>
           )}

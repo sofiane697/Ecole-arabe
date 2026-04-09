@@ -99,8 +99,8 @@ export default function AdminLogin() {
         {/* Colonne gauche : panneau de marque */}
         <div className="admin-login-brand">
           <div className="admin-login-brand-inner">
-            <span className="admin-login-brand-logo">رقيب</span>
-            <span className="admin-login-brand-name">RAQIB</span>
+            <span className="admin-login-brand-logo">الصفاء</span>
+            <span className="admin-login-brand-name">Institut As-Safaa</span>
 
             <div className="admin-login-brand-divider" />
 
@@ -134,7 +134,10 @@ export default function AdminLogin() {
         <div className="admin-login-form-col">
           <div className="admin-login-card">
             <div className="admin-login-logo">
-              <span className="arabic">رقيب — RAQIB</span>
+              <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+                <span>Institut As-Safaa</span>
+                <span style={{textAlign:'right'}}>الصفاء</span>
+              </span>
               <span className="label">Administration</span>
             </div>
 
