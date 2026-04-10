@@ -124,6 +124,7 @@ export async function fetchUnreadCountEnseignant(enseignantId) {
     `${SUPABASE_URL}/rest/v1/chat_messages?enseignant_id=eq.${enseignantId}&sender_role=eq.eleve&lu=eq.false&select=id`,
     { headers: ANON_HEADERS }
   );
+  if (!res.ok) return 0;
   const data = await res.json();
   return Array.isArray(data) ? data.length : 0;
 }

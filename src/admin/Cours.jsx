@@ -1475,8 +1475,11 @@ function QCMCarouselModal({ initialQuestions, startIndex, addNew, onSaveAll, onC
 
   const handleSave = async () => {
     setSaving(true);
-    await onSaveAll(questions, deletedIds);
-    setSaving(false);
+    try {
+      await onSaveAll(questions, deletedIds);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const isCurrentValid = q.question.trim() && q.choix.every(c => c.trim()) && (q.reponse_correcte || []).length > 0;

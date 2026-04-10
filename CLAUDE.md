@@ -1,5 +1,11 @@
 # CLAUDE.md — Institut As-Safaa (الصفاء)
 
+## Objectif stratégique
+
+Ce projet est en cours de transformation en **SaaS multi-école** commercialisable.
+Voir `BRIEF_ENT_MULTI_ECOLE.md` pour le brief complet et `plan.md` pour la roadmap détaillée.
+Le script SQL de migration est dans `migration.sql`.
+
 ## Présentation du projet
 
 Site vitrine one-page pour une école d'arabe **"Institut As-Safaa" (الصفاء)**.

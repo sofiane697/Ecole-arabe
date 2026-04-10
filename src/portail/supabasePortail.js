@@ -191,6 +191,7 @@ export async function fetchUnreadCountEleve(eleveId) {
     `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&sender_role=eq.enseignant&lu=eq.false&select=id`,
     { headers: ANON_HEADERS }
   );
+  if (!res.ok) return 0;
   const data = await res.json();
   return Array.isArray(data) ? data.length : 0;
 }

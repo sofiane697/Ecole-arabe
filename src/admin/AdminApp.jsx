@@ -221,7 +221,7 @@ export default function AdminApp() {
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-user">
             {(() => {
-              const s = JSON.parse(sessionStorage.getItem('admin_session') || '{}');
+              let s; try { s = JSON.parse(sessionStorage.getItem('admin_session') || '{}'); } catch { s = {}; }
               return (<><strong>{s.display_name || 'Administrateur'}</strong><span>{s.identifiant || ''}</span></>);
             })()}
           </div>

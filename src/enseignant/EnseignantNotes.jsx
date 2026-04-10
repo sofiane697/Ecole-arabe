@@ -60,11 +60,14 @@ function NoteLetterInput({ note, onSave, onAbsent }) {
     // Déselectionner si on reclique sur la note déjà sélectionnée
     const newScore = note?.score === grade.value ? null : grade.value;
     setSaving(true);
-    await onSave(newScore);
-    setSaving(false);
-    if (newScore !== null) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 1500);
+    try {
+      await onSave(newScore);
+      if (newScore !== null) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 1500);
+      }
+    } finally {
+      setSaving(false);
     }
   };
 

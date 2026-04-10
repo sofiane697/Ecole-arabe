@@ -602,6 +602,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
   const [loading, setLoading]               = useState(true);
   const [niveauxWithQCM, setNiveauxWithQCM] = useState(new Set());
   const [submitting, setSubmitting]         = useState(false); // garde anti double-soumission
+  const [submitError, setSubmitError]       = useState('');
   const eleveId = getEleveId();
 
   const loadData = useCallback(async () => {
@@ -614,8 +615,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
             : fetchAllNiveauxForModuleEleve(fetchId),
         fetchProgression(eleveId),
       ]);
-      const qcmResults = await Promise.all(nivs.map(n => fetchQCMEleve(n.id)));
-      const withQCM = new Set(nivs.filter((_, i) => qcmResults[i].length > 0).map(n => n.id));
+      const withQCM = await fetchQCMExistenceForNiveaux(nivs.map(n => n.id));
       setNiveaux(nivs);
       setProgressionState(prog);
       setNiveauxWithQCM(withQCM);
@@ -647,6 +647,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
     setAnswers({});
     setQcmPage(0);
     setSubmitting(false);
+    setSubmitError('');
     setContenus([]);    // vide immédiatement pour éviter l'affichage du contenu précédent
     setQuestions([]);   // vide immédiatement — CRITIQUE : empêche le QCM stale d'apparaître
     // Chargement du nouveau contenu
@@ -694,24 +695,28 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
     if (!allAnswered) return;                            // réponses manquantes
     // ── Calcul du score ───────────────────────────────────────────────────────
     const correct = questions.filter((q, i) => {
-      const correctSet = Array.isArray(q.reponse_correcte)
-        ? q.reponse_correcte
-        : (q.reponse_correcte != null ? [q.reponse_correcte] : []);
+      const choixCount = (q.choix || []).length;
+      const correctSet = (Array.isArray(q.reponse_correcte) ? q.reponse_correcte : (q.reponse_correcte != null ? [q.reponse_correcte] : []))
+        .filter(v => v >= 0 && v < choixCount); // ignore les indices hors limites (données corrompues)
       const selected = answers[i] || [];
-      if (correctSet.length === 0 || selected.length === 0) return false; // question sans réponse correcte définie → jamais correcte
+      if (correctSet.length === 0 || selected.length === 0) return false;
       return correctSet.length === selected.length && correctSet.every(v => selected.includes(v));
     }).length;
     const pct = Math.round((correct / questions.length) * 100);
     const passed = pct >= (selNiveau.score_requis || 80);
     // ── Sauvegarde ────────────────────────────────────────────────────────────
     setSubmitting(true);
+    setSubmitError('');
     setScore(pct);
-    setShowResult(true);
     try {
       await saveProgression(eleveId, selNiveau.id, pct, passed);
       setProgressionState(await fetchProgression(eleveId));
-    } catch(e) {}
-    setSubmitting(false);
+      setShowResult(true); // affiché seulement si la sauvegarde réussit
+    } catch(e) {
+      setSubmitError('Erreur de connexion. Ta progression n\'a pas été enregistrée. Réessaie dans quelques instants.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Navigation vers le niveau suivant — vérifie le verrou avant de naviguer
@@ -816,8 +821,14 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
             ))}
           </div>
           <div style={NS.qcmCounter}>Question {qcmPage + 1} / {questions.length}</div>
+          {(questions[qcmPage]?.reponse_correcte || []).length > 1 && (
+            <div style={{ fontSize:12, color:'var(--p-gold)', fontWeight:600, marginBottom:10, display:'flex', alignItems:'center', gap:5 }}>
+              <span>☑</span> Plusieurs réponses correctes possibles
+            </div>
+          )}
           <div style={NS.qcmQuestion}>{questions[qcmPage]?.question}</div>
           {(questions[qcmPage]?.choix || []).map((ch, ci) => {
+            if (!ch?.trim()) return null; // ignore les choix vides (données incomplètes)
             const selected = (answers[qcmPage] || []).includes(ci);
             return (
               <button key={ci} style={NS.answerBtn(selected)}
@@ -830,6 +841,11 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
               </button>
             );
           })}
+          {submitError && (
+            <div style={{ marginTop:12, padding:'10px 14px', borderRadius:8, background:'rgba(255,69,58,0.08)', border:'1px solid rgba(255,69,58,0.25)', color:'var(--p-red, #ff453a)', fontSize:13 }}>
+              {submitError}
+            </div>
+          )}
           <div style={NS.qcmNavRow}>
             <button style={NS.qcmNavBtn(false, qcmPage === 0)}
               onClick={() => setQcmPage(p => p - 1)} disabled={qcmPage === 0}>
