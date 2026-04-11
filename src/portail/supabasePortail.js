@@ -127,6 +127,33 @@ export async function fetchNiveauxByThematiqueEleve(thId) {
   return res.json();
 }
 
+/**
+ * Retourne les niveaux d'une thématique EN RESPECTANT la hiérarchie leçons si elle existe.
+ * - Thématique avec leçons → niveaux via lecon_id (ignore les niveaux orphelins thematique_id)
+ * - Thématique sans leçons → niveaux via thematique_id (ancienne architecture)
+ * Utilisé par ModuleEntryView pour le calcul de progression des cartes thématiques.
+ */
+export async function fetchNiveauxParThematiquePourProgression(thId) {
+  const lecRes = await fetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${thId}&select=id&order=ordre`, { headers: ANON_HEADERS });
+  const lecons = lecRes.ok ? await lecRes.json() : [];
+
+  if (lecons.length > 0) {
+    // Nouvelle architecture : traverser via lecon_id
+    const allNiveaux = [];
+    await Promise.all(lecons.map(async (l) => {
+      const nRes = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?lecon_id=eq.${l.id}&order=ordre`, { headers: ANON_HEADERS });
+      const nivs = nRes.ok ? await nRes.json() : [];
+      allNiveaux.push(...nivs);
+    }));
+    return allNiveaux;
+  }
+
+  // Ancienne architecture : niveaux directement par thematique_id
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?thematique_id=eq.${thId}&order=ordre`, { headers: ANON_HEADERS });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function fetchLeconsEleve(thId) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${thId}&order=ordre`, { headers: ANON_HEADERS });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);

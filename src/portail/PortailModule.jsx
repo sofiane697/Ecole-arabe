@@ -5,7 +5,7 @@ import {
   fetchModulesEleve, fetchNiveauxByThematiqueEleve,
   fetchThematiquesEleve, fetchAllThematiquesEleve, fetchEleveNiveauScolaireId, fetchContenusEleve, fetchQCMEleve,
   fetchProgression, saveProgression, fetchLeconsEleve, fetchNiveauxByLeconEleve, fetchQCMExistenceForNiveaux,
-  fetchAllNiveauxForModuleEleve,
+  fetchAllNiveauxForModuleEleve, fetchNiveauxParThematiquePourProgression,
 } from './supabasePortail';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -40,11 +40,11 @@ const S = {
   cardImgContainer: (bg) => ({ width:'100%', height:140, background: bg || 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)', display:'flex', alignItems:'center', justifyContent:'center' }),
   cardImgPlaceholder: { fontSize:40, opacity:.4 },
   cardBody: { padding:20 },
-  cardTitle: { fontSize:17, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
-  cardDesc: { fontSize:13, color:'var(--p-fg-mid)', margin:'0 0 16px', lineHeight:1.5 },
+  cardTitle: { fontSize:17, fontWeight:700, color:'#1a1a1a', margin:'0 0 6px' },
+  cardDesc: { fontSize:13, color:'rgba(0,0,0,0.58)', margin:'0 0 16px', lineHeight:1.5 },
   progressBar: { height:8, borderRadius:4, background:'rgba(0,0,0,0.12)', overflow:'hidden' },
-  progressFill: (pct) => ({ height:'100%', borderRadius:4, background:'#ffffff', boxShadow:'0 1px 3px rgba(0,0,0,0.2)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
-  progressText: { display:'flex', justifyContent:'space-between', marginTop:8, fontSize:12, color:'var(--p-fg-mid)' },
+  progressFill: (pct) => ({ height:'100%', borderRadius:4, background:'rgba(0,0,0,0.28)', width:`${pct}%`, transition:'width .6s var(--p-ease-out)' }),
+  progressText: { display:'flex', justifyContent:'space-between', marginTop:8, fontSize:12, color:'rgba(0,0,0,0.52)' },
   btn: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-gold)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s, transform .15s' }),
   btnCompleted: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-green)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, opacity:0.75 }),
   moduleHeader: { marginBottom:28 },
@@ -283,7 +283,7 @@ function ModuleEntryView({ moduleId }) {
       if (filteredThs.length > 0) {
         const [prog, ...nivArrays] = await Promise.all([
           fetchProgression(eleveId),
-          ...filteredThs.map(th => fetchNiveauxByThematiqueEleve(th.id)),
+          ...filteredThs.map(th => fetchNiveauxParThematiquePourProgression(th.id)),
         ]);
         if (!cancelled) setProgression(prog);
         const map = {};
@@ -379,7 +379,7 @@ function ModuleEntryView({ moduleId }) {
                     <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
                     <div style={S.progressText}>
                       <span>{reussis} / {total} leçon{total > 1 ? 's' : ''}</span>
-                      <span style={{ color:'var(--p-fg-mid)' }}>{pct}%</span>
+                      <span style={{ color:'rgba(0,0,0,0.52)' }}>{pct}%</span>
                     </div>
                   </>
                 )}
@@ -962,7 +962,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
             {/* Bouton QCM */}
             {questions.length > 0 && !isPassed(selNiveau.id) && (
               <button style={NS.qcmCTA} onClick={() => { setShowQCM(true); setAnswers({}); setQcmPage(0); }}>
-                🎯 Passer le QCM · {questions.length} question{questions.length > 1 ? 's' : ''}
+                🎯 Je m'auto-évalue · {questions.length} question{questions.length > 1 ? 's' : ''}
               </button>
             )}
           </div>

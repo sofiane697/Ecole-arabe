@@ -606,12 +606,12 @@ const PORTAIL_STYLES = `
   .portail-module-card-title {
     font-size: 17px;
     font-weight: 700;
-    color: #1d1d1f;
+    color: #1a1a1a;
     margin: 0 0 6px;
   }
   .portail-module-card-desc {
     font-size: 13px;
-    color: #555;
+    color: rgba(0,0,0,0.58);
     margin: 0 0 16px;
     line-height: 1.5;
   }
@@ -625,14 +625,14 @@ const PORTAIL_STYLES = `
   .portail-module-card-progress-fill {
     height: 100%;
     border-radius: 3px;
-    background: rgba(0,0,0,0.25);
+    background: rgba(0,0,0,0.28);
     transition: width .6s var(--p-ease-out);
   }
   .portail-module-card-progress-label {
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: #777;
+    color: rgba(0,0,0,0.5);
     margin-bottom: 14px;
   }
   .portail-module-card-btn {
