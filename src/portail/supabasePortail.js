@@ -152,7 +152,7 @@ export async function fetchEnseignantsDeLEleve(eleveId) {
   const rows = await r2.json();
   if (!rows.length) return [];
   const ids = rows.map(r => r.enseignant_id).join(',');
-  const r3 = await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids})&select=id,nom,prenom`, { headers: ANON_HEADERS });
+  const r3 = await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids})&select=id,nom,prenom,statut_presence`, { headers: ANON_HEADERS });
   if (!r3.ok) throw new Error(`Erreur ${r3.status}`);
   return await r3.json();
 }
@@ -331,6 +331,20 @@ export async function fetchMesNotes(eleveId) {
   const evalMap = Object.fromEntries(evals.map(e => [e.id, e]));
 
   return notes.map(n => ({ ...n, evaluation: evalMap[n.evaluation_id] || null }));
+}
+
+// ─── PRÉSENCE ENSEIGNANTS ────────────────────────────────────────────────────
+
+/** Récupère le statut de présence de plusieurs enseignants — retourne { [id]: statut } */
+export async function fetchEnseignantsPresence(ids) {
+  if (!ids.length) return {};
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids.join(',')})&select=id,statut_presence`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return {};
+  const data = await res.json();
+  return Object.fromEntries((data || []).map(e => [e.id, e.statut_presence]));
 }
 
 // ─── TRACKING SESSIONS ───────────────────────────────────────────────────────

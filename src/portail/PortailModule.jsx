@@ -378,7 +378,7 @@ function ModuleEntryView({ moduleId }) {
                   <>
                     <div style={S.progressBar}><div style={S.progressFill(pct)} /></div>
                     <div style={S.progressText}>
-                      <span>{reussis} / {total} niveaux</span>
+                      <span>{reussis} / {total} leçon{total > 1 ? 's' : ''}</span>
                       <span style={{ color:'var(--p-fg-mid)' }}>{pct}%</span>
                     </div>
                   </>
@@ -820,7 +820,11 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
               <span key={i} style={NS.qcmDot((answers[i] || []).length > 0, i === qcmPage)} />
             ))}
           </div>
-          <div style={NS.qcmCounter}>Question {qcmPage + 1} / {questions.length}</div>
+          <div style={NS.qcmCounter}>
+            <span style={{ fontWeight:400 }}>Question</span>{' '}
+            <strong>{qcmPage + 1}</strong>
+            <span style={{ color:'var(--p-fg-light)' }}> / {questions.length}</span>
+          </div>
           {(questions[qcmPage]?.reponse_correcte || []).length > 1 && (
             <div style={{ fontSize:12, color:'var(--p-gold)', fontWeight:600, marginBottom:10, display:'flex', alignItems:'center', gap:5 }}>
               <span>☑</span> Plusieurs réponses correctes possibles

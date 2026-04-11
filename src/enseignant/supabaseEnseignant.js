@@ -420,3 +420,17 @@ export async function fetchRetardsAbsencesEleve(eleveId) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
+
+// ─── PRÉSENCE ─────────────────────────────────────────────────────────────────
+
+const PRESENCE_STATUTS = ['en_ligne', 'reunion', 'non_joignable', 'deconnecte'];
+
+/** Met à jour le statut de présence de l'enseignant */
+export async function updatePresence(enseignantId, statut) {
+  if (!PRESENCE_STATUTS.includes(statut)) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${enseignantId}`, {
+    method: 'PATCH',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ statut_presence: statut, presence_updated_at: new Date().toISOString() }),
+  });
+}

@@ -1,7 +1,7 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from '../admin/adminStyles';
-import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant } from './supabaseEnseignant';
+import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence } from './supabaseEnseignant';
 
 const IconClasses = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -57,6 +57,72 @@ const IconAbsences = () => (
   </svg>
 );
 
+const PRESENCE_STATUTS = [
+  { key:'en_ligne',      label:'En ligne',       color:'#30d158' },
+  { key:'reunion',       label:'En réunion',     color:'#ff9f0a' },
+  { key:'non_joignable', label:'Pas joignable',  color:'#ff453a' },
+  { key:'deconnecte',    label:'Déconnecté(e)', color:'#636366' },
+];
+
+function PresencePicker({ presence, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = PRESENCE_STATUTS.find(s => s.key === presence) || PRESENCE_STATUTS[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position:'relative', marginBottom:10 }}>
+      {/* Bouton statut actuel */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width:'100%', display:'flex', alignItems:'center', gap:8, padding:'7px 10px',
+          borderRadius:8, border:`1px solid ${current.color}44`,
+          background:`${current.color}12`, cursor:'pointer', textAlign:'left',
+        }}
+      >
+        <span style={{ width:9, height:9, borderRadius:'50%', background:current.color, flexShrink:0 }} />
+        <span style={{ flex:1, fontSize:12, fontWeight:700, color:current.color }}>{current.label}</span>
+        <span style={{ fontSize:9, color:'var(--a-fg-light)' }}>▼</span>
+      </button>
+
+      {/* Liste déroulante */}
+      {open && (
+        <div style={{
+          position:'absolute', bottom:'calc(100% + 4px)', left:0, right:0,
+          background:'var(--a-bg-card)', border:'1px solid var(--a-border)',
+          borderRadius:8, overflow:'hidden', zIndex:200,
+          boxShadow:'0 4px 16px rgba(0,0,0,.25)',
+        }}>
+          {PRESENCE_STATUTS.map(s => (
+            <button
+              key={s.key}
+              onClick={() => { onChange(s.key); setOpen(false); }}
+              style={{
+                width:'100%', display:'flex', alignItems:'center', gap:8,
+                padding:'8px 12px', border:'none', cursor:'pointer', textAlign:'left',
+                background: presence === s.key ? `${s.color}18` : 'transparent',
+                transition:'background .12s',
+              }}
+            >
+              <span style={{ width:9, height:9, borderRadius:'50%', background:s.color, flexShrink:0 }} />
+              <span style={{ fontSize:12, fontWeight: presence === s.key ? 700 : 500, color:s.color }}>
+                {s.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const PAGE_TITLES = {
   '/enseignant/classes':      'Mes classes',
   '/enseignant/absences':     'Retard / Absence',
@@ -75,6 +141,7 @@ export default function EnseignantApp() {
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [presence, setPresence]       = useState('en_ligne');
 
   useLayoutEffect(() => {
     const id = 'admin-styles';
@@ -101,6 +168,25 @@ export default function EnseignantApp() {
     if (!sessionStorage.getItem('enseignant_user')) navigate('/enseignant/login');
   }, [navigate]);
 
+  // Présence — En ligne à la connexion, Déconnecté(e) à la fermeture
+  useEffect(() => {
+    const u = getEnseignantUser();
+    if (!u?.id) return;
+    updatePresence(u.id, 'en_ligne');
+    const handleUnload = () => updatePresence(u.id, 'deconnecte');
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, []);
+
+  const handleSetPresence = (statut) => {
+    const u = getEnseignantUser();
+    if (!u?.id) return;
+    setPresence(statut);
+    updatePresence(u.id, statut);
+  };
+
   // Badge non-lus — poll toutes les 30s
   useEffect(() => {
     const u = getEnseignantUser();
@@ -111,7 +197,9 @@ export default function EnseignantApp() {
     return () => clearInterval(t);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const u = getEnseignantUser();
+    if (u?.id) await updatePresence(u.id, 'deconnecte');
     logoutEnseignant();
     navigate('/enseignant/login');
   };
@@ -191,6 +279,10 @@ export default function EnseignantApp() {
             <strong>{displayName}</strong>
             <span>{user?.identifiant?.toUpperCase() || ''}</span>
           </div>
+
+          {/* Sélecteur de présence */}
+          <PresencePicker presence={presence} onChange={handleSetPresence} />
+
           <button className="admin-logout-btn" onClick={handleLogout}>
             <IconLogout /> Se déconnecter
           </button>

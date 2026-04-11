@@ -571,22 +571,27 @@ export default function Eleves() {
             if (h > 0) return `${h}h ${m % 60}min`;
             return `${m}min`;
           };
-          const fmtRelDate = (dateStr) => {
+          const fmtTimeAgo = (dateStr) => {
             const d = new Date(dateStr);
-            const now = new Date();
-            const diff = now - d;
+            const diff = Date.now() - d;
+            const mins  = Math.floor(diff / 60000);
             const hours = Math.floor(diff / 3600000);
             const days  = Math.floor(diff / 86400000);
-            if (hours < 1) return "À l'instant";
+            if (mins  < 1)  return "À l'instant";
+            if (mins  < 60) return `Il y a ${mins}min`;
             if (hours < 24) return `Il y a ${hours}h`;
-            if (days < 7)  return `Il y a ${days}j`;
-            return d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+            if (days  < 30) return `Il y a ${days}j`;
+            return `Il y a ${Math.floor(days / 30)}mois`;
           };
+
+          // Dernière déconnexion = ended_at de la session la plus récente, sinon last_heartbeat
+          const lastSess = activite[0];
+          const lastDecoRef = lastSess ? (lastSess.ended_at || lastSess.last_heartbeat) : null;
+          const lastSession = lastDecoRef ? fmtTimeAgo(lastDecoRef) : '—';
 
           const totalVisites = activite.length;
           const totalSecs    = activite.reduce((acc, s) => acc + getDurationSec(s), 0);
           const avgSecs      = totalVisites > 0 ? Math.round(totalSecs / totalVisites) : 0;
-          const lastSession  = activite[0] ? fmtRelDate(activite[0].started_at) : '—';
 
           const PERIODES = [
             { key: '7j',  label: '7 jours' },
@@ -622,7 +627,7 @@ export default function Eleves() {
                   { label:'Visites',           value: activiteLoading ? '…' : totalVisites,              color:'var(--a-blue)' },
                   { label:'Temps total',        value: activiteLoading ? '…' : fmtDuration(totalSecs),   color:'var(--a-gold)' },
                   { label:'Durée moyenne',      value: activiteLoading ? '…' : fmtDuration(avgSecs),     color:'var(--a-green)' },
-                  { label:'Dernière connexion', value: activiteLoading ? '…' : lastSession,              color:'var(--a-fg-mid)' },
+                  { label:'Dernière déconnexion', value: activiteLoading ? '…' : lastSession,             color:'var(--a-fg-mid)' },
                 ].map(card => (
                   <div key={card.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 14px', textAlign:'center' }}>
                     <div style={{ fontSize:18, fontWeight:700, color: card.color }}>{card.value}</div>

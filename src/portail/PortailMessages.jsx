@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getEleveUser, fetchEnseignantsDeLEleve, fetchChatMessages, sendChatMessage, markMessagesReadEleve, fetchUnreadCountParEnseignant } from './supabasePortail';
+import { getEleveUser, fetchEnseignantsDeLEleve, fetchChatMessages, sendChatMessage, markMessagesReadEleve, fetchUnreadCountParEnseignant, fetchEnseignantsPresence } from './supabasePortail';
 
 const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : '';
 const fmtNom    = (s) => s ? s.trim().toUpperCase() : '';
@@ -45,6 +45,14 @@ const IconSend = () => (
 const AVATAR_COLORS = ['#5BA87A','#bf8a30','#7B68EE','#20B2AA','#CD853F','#6495ED'];
 const avatarColor = (id) => AVATAR_COLORS[(id || '').charCodeAt(0) % AVATAR_COLORS.length];
 
+const PRESENCE = {
+  en_ligne:      { label: 'En ligne',       color: '#30d158' },
+  reunion:       { label: 'En réunion',     color: '#ff9f0a' },
+  non_joignable: { label: 'Pas joignable',  color: '#ff453a' },
+  deconnecte:    { label: 'Déconnecté(e)', color: '#636366' },
+};
+const getPresence = (statut) => PRESENCE[statut] || PRESENCE['deconnecte'];
+
 export default function PortailMessages() {
   const user = getEleveUser();
   const eleveId = user?.id;
@@ -57,6 +65,7 @@ export default function PortailMessages() {
   const [text, setText]               = useState('');
   const [sending, setSending]         = useState(false);
   const [unreadMap, setUnreadMap]     = useState({});
+  const [presenceMap, setPresenceMap] = useState({});
   const bottomRef                     = useRef(null);
   const pollRef                       = useRef(null);
   const textareaRef                   = useRef(null);
@@ -66,6 +75,10 @@ export default function PortailMessages() {
     fetchEnseignantsDeLEleve(eleveId).then(async (data) => {
       const list = data || [];
       setEnseignants(list);
+      // Initialiser la presence depuis les données déjà chargées
+      const pm = {};
+      list.forEach(e => { pm[e.id] = e.statut_presence || 'deconnecte'; });
+      setPresenceMap(pm);
       const map = {};
       await Promise.all(list.map(async ens => {
         map[ens.id] = await fetchUnreadCountParEnseignant(eleveId, ens.id).catch(() => 0);
@@ -73,6 +86,15 @@ export default function PortailMessages() {
       setUnreadMap(map);
     }).catch(() => setEnseignants([]));
   }, [eleveId]);
+
+  // Poll présence toutes les 30s
+  useEffect(() => {
+    if (!enseignants?.length) return;
+    const ids = enseignants.map(e => e.id);
+    const refresh = () => fetchEnseignantsPresence(ids).then(pm => setPresenceMap(pm)).catch(() => {});
+    const t = setInterval(refresh, 30000);
+    return () => clearInterval(t);
+  }, [enseignants]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
 
@@ -144,9 +166,10 @@ export default function PortailMessages() {
             </div>
           )}
           {enseignants.map(ens => {
-            const unread = unreadMap[ens.id] || 0;
-            const active = selEns?.id === ens.id;
-            const color  = avatarColor(ens.id);
+            const unread   = unreadMap[ens.id] || 0;
+            const active   = selEns?.id === ens.id;
+            const color    = avatarColor(ens.id);
+            const presence = getPresence(presenceMap[ens.id]);
             return (
               <div
                 key={ens.id}
@@ -161,12 +184,16 @@ export default function PortailMessages() {
                   transition:'all .15s',
                 }}
               >
-                <div style={{ width:42, height:42, borderRadius:'50%', background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, flexShrink:0, boxShadow:`0 2px 8px ${color}44` }}>
-                  {initiales(ens.prenom, ens.nom)}
+                {/* Avatar + pastille présence */}
+                <div style={{ position:'relative', flexShrink:0 }}>
+                  <div style={{ width:42, height:42, borderRadius:'50%', background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, boxShadow:`0 2px 8px ${color}44` }}>
+                    {initiales(ens.prenom, ens.nom)}
+                  </div>
+                  <div style={{ position:'absolute', bottom:1, right:1, width:11, height:11, borderRadius:'50%', background:presence.color, border:'2px solid var(--p-bg-card)' }} />
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:14, fontWeight:600, color:'var(--p-fg)' }}>{fmtPrenom(ens.prenom)} {fmtNom(ens.nom)}</div>
-                  <div style={{ fontSize:12, color:'var(--p-fg-light)', marginTop:1 }}>Enseignant</div>
+                  <div style={{ fontSize:12, color:presence.color, marginTop:1, fontWeight:500 }}>● {presence.label}</div>
                 </div>
                 {unread > 0 && (
                   <span style={{ background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:800, padding:'2px 8px', borderRadius:20, flexShrink:0, boxShadow:'0 1px 4px rgba(191,138,48,.4)' }}>
@@ -192,18 +219,23 @@ export default function PortailMessages() {
         ) : (
           <>
             {/* Header chat */}
-            <div style={{ padding:'12px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'center', gap:12, background:'var(--p-bg-card)' }}>
-              <div style={{ position:'relative' }}>
-                <div style={{ width:40, height:40, borderRadius:'50%', background:`linear-gradient(135deg, ${avatarColor(selEns.id)} 0%, ${avatarColor(selEns.id)}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700 }}>
-                  {initiales(selEns.prenom, selEns.nom)}
+            {(() => {
+              const presence = getPresence(presenceMap[selEns.id]);
+              return (
+                <div style={{ padding:'12px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'center', gap:12, background:'var(--p-bg-card)' }}>
+                  <div style={{ position:'relative' }}>
+                    <div style={{ width:40, height:40, borderRadius:'50%', background:`linear-gradient(135deg, ${avatarColor(selEns.id)} 0%, ${avatarColor(selEns.id)}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700 }}>
+                      {initiales(selEns.prenom, selEns.nom)}
+                    </div>
+                    <div style={{ position:'absolute', bottom:1, right:1, width:10, height:10, borderRadius:'50%', background:presence.color, border:'2px solid var(--p-bg-card)' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:700, color:'var(--p-fg)' }}>{fmtPrenom(selEns.prenom)} {fmtNom(selEns.nom)}</div>
+                    <div style={{ fontSize:12, color:presence.color, fontWeight:500 }}>● {presence.label}</div>
+                  </div>
                 </div>
-                <div style={{ position:'absolute', bottom:1, right:1, width:10, height:10, borderRadius:'50%', background:'#30d158', border:'2px solid var(--p-bg-card)' }} />
-              </div>
-              <div>
-                <div style={{ fontSize:14, fontWeight:700, color:'var(--p-fg)' }}>{fmtPrenom(selEns.prenom)} {fmtNom(selEns.nom)}</div>
-                <div style={{ fontSize:12, color:'var(--p-green, #5BA87A)', fontWeight:500 }}>En ligne</div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Messages */}
             <div style={{ flex:1, overflowY:'auto', padding:'20px 20px 8px', display:'flex', flexDirection:'column', gap:4, background:`var(--p-bg)` }}>
