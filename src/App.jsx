@@ -362,8 +362,18 @@ function CarouselCards({ onInscribe }) {
 const SUPABASE_URL  = process.env.REACT_APP_SUPABASE_URL;
 const SUPABASE_ANON = process.env.REACT_APP_SUPABASE_ANON;
 
+function calcAge(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date();
+  const born  = new Date(dateStr);
+  let age = today.getFullYear() - born.getFullYear();
+  const m = today.getMonth() - born.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < born.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+
 function PreInscriptionModal({ cours, onClose }) {
-  const [data, setData]     = useState({ nom: '', prenom: '', age: '', annees: '' });
+  const [data, setData]     = useState({ nom: '', prenom: '', date_naissance: '', telephone: '', email: '', annees: '' });
   const [status, setStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
 
   const handleChange = (e) =>
@@ -373,6 +383,7 @@ function PreInscriptionModal({ cours, onClose }) {
     e.preventDefault();
     setStatus('loading');
     try {
+      const age = calcAge(data.date_naissance);
       const res = await fetch(`${SUPABASE_URL}/rest/v1/inscriptions`, {
         method: 'POST',
         headers: {
@@ -382,9 +393,12 @@ function PreInscriptionModal({ cours, onClose }) {
           'Prefer':        'return=minimal',
         },
         body: JSON.stringify({
-          nom:             data.nom,
-          prenom:          data.prenom,
-          age:             parseInt(data.age),
+          nom:             data.nom.trim().slice(0, 100),
+          prenom:          data.prenom.trim().slice(0, 100),
+          date_naissance:  data.date_naissance,
+          age:             age,
+          telephone:       data.telephone.trim().slice(0, 30),
+          email:           data.email.trim().slice(0, 200),
           annees_pratique: parseInt(data.annees),
           cours:           cours,
         }),
@@ -392,10 +406,11 @@ function PreInscriptionModal({ cours, onClose }) {
       if (!res.ok) throw new Error(res.status);
       setStatus('ok');
     } catch (err) {
-      console.error(err);
       setStatus('err');
     }
   };
+
+  const agePreview = calcAge(data.date_naissance);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -426,9 +441,13 @@ function PreInscriptionModal({ cours, onClose }) {
             </div>
             <div className="modal-row">
               <div className="modal-field">
-                <label htmlFor="mi-age">Âge</label>
-                <input id="mi-age" name="age" type="number" min="5" max="99" required placeholder="25"
-                  value={data.age} onChange={handleChange} />
+                <label htmlFor="mi-dob">
+                  Date de naissance
+                  {agePreview !== null && <span style={{ marginLeft: 8, fontWeight: 400, color: 'var(--gold)', fontSize: '0.82em' }}>({agePreview} ans)</span>}
+                </label>
+                <input id="mi-dob" name="date_naissance" type="date" required
+                  max={new Date().toISOString().split('T')[0]}
+                  value={data.date_naissance} onChange={handleChange} />
               </div>
               <div className="modal-field">
                 <label htmlFor="mi-annees">Années de pratique de l'arabe</label>
@@ -436,6 +455,21 @@ function PreInscriptionModal({ cours, onClose }) {
                   value={data.annees} onChange={handleChange} />
               </div>
             </div>
+            <div className="modal-row">
+              <div className="modal-field">
+                <label htmlFor="mi-tel">Téléphone</label>
+                <input id="mi-tel" name="telephone" type="tel" required placeholder="+33 6 12 34 56 78"
+                  value={data.telephone} onChange={handleChange} />
+              </div>
+              <div className="modal-field">
+                <label htmlFor="mi-email">Email</label>
+                <input id="mi-email" name="email" type="email" required placeholder="votre@email.com"
+                  value={data.email} onChange={handleChange} />
+              </div>
+            </div>
+            {status === 'err' && (
+              <div className="modal-error">✕ &nbsp; Une erreur est survenue. Réessayez.</div>
+            )}
             <button type="submit" className="modal-submit">Envoyer ma demande</button>
           </form>
         )}
@@ -453,7 +487,7 @@ export default function App() {
 
   /* — État global — */
   const [menuOpen, setMenuOpen]     = useState(false);
-  const [formData, setFormData]     = useState({ prenom: '', nom: '', email: '', cours: '', message: '' });
+  const [formData, setFormData]     = useState({ prenom: '', nom: '', telephone: '', email: '', cours: '', message: '' });
   const [formStatus, setFormStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
   const [cooldown, setCooldown]     = useState(0); // secondes restantes avant prochain envoi
   const cooldownRef                 = useRef(null);
@@ -538,16 +572,17 @@ export default function App() {
           'Prefer':        'return=minimal',
         },
         body: JSON.stringify({
-          prenom:  formData.prenom.trim().slice(0, 100),
-          nom:     formData.nom.trim().slice(0, 100),
-          email:   formData.email.trim().slice(0, 200),
-          cours:   formData.cours,
-          message: formData.message.trim().slice(0, 2000),
+          prenom:    formData.prenom.trim().slice(0, 100),
+          nom:       formData.nom.trim().slice(0, 100),
+          telephone: formData.telephone.trim().slice(0, 30),
+          email:     formData.email.trim().slice(0, 200),
+          cours:     formData.cours,
+          message:   formData.message.trim().slice(0, 2000),
         }),
       });
       if (!res.ok) throw new Error(res.status);
       setFormStatus('ok');
-      setFormData({ prenom: '', nom: '', email: '', cours: '', message: '' });
+      setFormData({ prenom: '', nom: '', telephone: '', email: '', cours: '', message: '' });
       setTimeout(() => setFormStatus(null), 5000);
       // Cooldown 30s
       setCooldown(30);
@@ -947,12 +982,21 @@ export default function App() {
               </div>
             </div>
 
-            <div className="field">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email" type="email" placeholder="votre@email.com"
-                value={formData.email} onChange={handleChange} required
-              />
+            <div className="form-row2">
+              <div className="field">
+                <label htmlFor="telephone">Téléphone</label>
+                <input
+                  id="telephone" type="tel" placeholder="+33 6 12 34 56 78"
+                  value={formData.telephone} onChange={handleChange}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email" type="email" placeholder="votre@email.com"
+                  value={formData.email} onChange={handleChange} required
+                />
+              </div>
             </div>
 
             <div className="field">

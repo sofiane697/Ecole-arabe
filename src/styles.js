@@ -1357,6 +1357,15 @@ const STYLES = `
     line-height: 1.7;
     text-align: center;
   }
+  .modal-error {
+    background: rgba(255,69,58,0.08);
+    border: 1px solid rgba(255,69,58,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    color: #ff453a;
+    font-size: 0.88rem;
+    margin-bottom: 0.5rem;
+  }
   @media (max-width: 480px) {
     .modal-box  { padding: 2.2rem 1.6rem; }
     .modal-row  { grid-template-columns: 1fr; }

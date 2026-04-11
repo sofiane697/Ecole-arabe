@@ -91,6 +91,21 @@ export default function Inscriptions() {
     return `${(prenom || '')[0] || ''}${(nom || '')[0] || ''}`.toUpperCase();
   };
 
+  const calcAge = (dateStr) => {
+    if (!dateStr) return null;
+    const today = new Date();
+    const born  = new Date(dateStr);
+    let age = today.getFullYear() - born.getFullYear();
+    const m = today.getMonth() - born.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < born.getDate())) age--;
+    return age >= 0 ? age : null;
+  };
+
+  const formatDateNaissance = (dateStr) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     const now = new Date();
@@ -183,11 +198,14 @@ export default function Inscriptions() {
                   </div>
                   <div className="insc-item-course">{(i.cours || '').split('—')[0].trim()}</div>
                   <div className="insc-item-bottom">
-                    <span className="insc-item-info">{i.age} ans</span>
+                    <span className="insc-item-info">
+                      {i.date_naissance ? `${calcAge(i.date_naissance)} ans` : i.age ? `${i.age} ans` : '—'}
+                    </span>
                     <span className="insc-item-sep">·</span>
                     <span className="insc-item-info">
                       {i.annees_pratique === 0 ? 'Débutant' : `${i.annees_pratique} an${i.annees_pratique > 1 ? 's' : ''} de pratique`}
                     </span>
+                    {i.telephone && <><span className="insc-item-sep">·</span><span className="insc-item-info">{i.telephone}</span></>}
                   </div>
                 </div>
                 <span className={`badge ${s.cls}`}>{s.label}</span>
@@ -219,7 +237,11 @@ export default function Inscriptions() {
                   </div>
                   <div className="insc-detail-sender">
                     <span className="insc-detail-name">{selected.prenom} {selected.nom}</span>
-                    <span className="insc-detail-sub">{selected.age} ans</span>
+                    <span className="insc-detail-sub">
+                      {selected.date_naissance
+                        ? `${calcAge(selected.date_naissance)} ans — né(e) le ${formatDateNaissance(selected.date_naissance)}`
+                        : selected.age ? `${selected.age} ans` : '—'}
+                    </span>
                   </div>
                   <span className={`badge ${s.cls}`}>{s.icon} {s.label}</span>
                 </div>
@@ -238,6 +260,22 @@ export default function Inscriptions() {
                       {selected.annees_pratique === 0 ? 'Aucune (débutant)' : `${selected.annees_pratique} an${selected.annees_pratique > 1 ? 's' : ''} de pratique`}
                     </span>
                   </div>
+                  {selected.telephone && (
+                    <div className="insc-detail-field">
+                      <span className="insc-detail-field-label">Téléphone</span>
+                      <span className="insc-detail-field-value">
+                        <a href={`tel:${selected.telephone}`} style={{ color:'var(--a-blue)', textDecoration:'none' }}>{selected.telephone}</a>
+                      </span>
+                    </div>
+                  )}
+                  {selected.email && (
+                    <div className="insc-detail-field">
+                      <span className="insc-detail-field-label">Email</span>
+                      <span className="insc-detail-field-value">
+                        <a href={`mailto:${selected.email}`} style={{ color:'var(--a-blue)', textDecoration:'none' }}>{selected.email}</a>
+                      </span>
+                    </div>
+                  )}
                   <div className="insc-detail-field">
                     <span className="insc-detail-field-label">Date d'inscription</span>
                     <span className="insc-detail-field-value insc-detail-field-date">
