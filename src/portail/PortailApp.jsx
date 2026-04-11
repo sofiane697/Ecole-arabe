@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
-import { logoutEleve, getEleveUser, fetchUnreadCountEleve, fetchClasseIdEleve, fetchNewDevoirsCount, fetchNewNotesCount, fetchNewObsCount } from './supabasePortail';
+import { logoutEleve, getEleveUser, fetchUnreadCountEleve, fetchClasseIdEleve, fetchNewDevoirsCount, fetchNewNotesCount, fetchNewObsCount, startSession, heartbeatSession, endSession } from './supabasePortail';
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -145,6 +145,36 @@ export default function PortailApp() {
     }
   }, [navigate]);
 
+  // ─── Tracking de session ────────────────────────────────────────────
+  useEffect(() => {
+    const user = getEleveUser();
+    if (!user?.id) return;
+
+    let sessionId = null;
+
+    startSession(user.id).then(sid => {
+      if (!sid) return;
+      sessionId = sid;
+      sessionStorage.setItem('portail_session_id', sid);
+    });
+
+    const hbInterval = setInterval(() => {
+      const sid = sessionId || sessionStorage.getItem('portail_session_id');
+      if (sid) heartbeatSession(sid);
+    }, 120_000);
+
+    const handleUnload = () => {
+      const sid = sessionId || sessionStorage.getItem('portail_session_id');
+      if (sid) endSession(sid);
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      clearInterval(hbInterval);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, []); // une seule fois au montage
+
   // Badge messages non-lus — poll toutes les 30s
   useEffect(() => {
     const user = getEleveUser();
@@ -214,7 +244,12 @@ export default function PortailApp() {
     return () => clearInterval(t);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const sid = sessionStorage.getItem('portail_session_id');
+    if (sid) {
+      sessionStorage.removeItem('portail_session_id');
+      await endSession(sid);
+    }
     logoutEleve();
     navigate('/portail/login');
   };

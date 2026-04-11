@@ -195,20 +195,28 @@ export default function Cours() {
     setSelLecon(lec);
     setLoading(true);
     try {
-      const nivs = await fetchNiveauxByLecon(lec.id);
-      setNiveaux(nivs);
+      let nivs = await fetchNiveauxByLecon(lec.id);
       if (nivs.length === 0) {
-        // Aucun niveau : affiche la vue niveaux avec liste vide + bouton "Ajouter un niveau"
-        setSelNiveau(null);
-        setView('niveaux');
-      } else {
-        const niv = nivs[0];
-        setSelNiveau(niv);
-        setView('niveau-detail');
-        setTab('contenus');
-        loadContenus(niv.id);
-        loadQuestions(niv.id);
+        // Auto-créer un niveau transparent
+        await createNiveau({
+          module_id: selModule.id,
+          thematique_id: selThematique?.id || null,
+          lecon_id: lec.id,
+          titre: lec.titre,
+          description: '',
+          image_url: null,
+          ordre: 1,
+          score_requis: 80,
+        });
+        nivs = await fetchNiveauxByLecon(lec.id);
       }
+      const niv = nivs[0];
+      setNiveaux(nivs);
+      setSelNiveau(niv);
+      setView('niveau-detail');
+      setTab('contenus');
+      loadContenus(niv.id);
+      loadQuestions(niv.id);
     } catch(e) { alert(e.message); }
     setLoading(false);
   };
@@ -376,7 +384,7 @@ export default function Cours() {
       message: <span>La question <strong>"{questionText}"</strong> sera supprimée définitivement.</span>,
       onConfirm: async () => {
         setConfirm(null);
-        try { await deleteQuestion(id); await loadQuestions(selNiveau.id); } catch(e) { alert(e.message); }
+        try { await deleteQuestion(id); await resetProgressionNiveau(selNiveau.id); await loadQuestions(selNiveau.id); } catch(e) { alert(e.message); }
       },
     });
   };
@@ -403,10 +411,13 @@ export default function Cours() {
       await Promise.all(deletedIds.map(id => deleteQuestion(id)));
       for (const q of updatedQuestions) {
         if (!q.question?.trim()) continue;
-        const payload = { question: q.question, choix: q.choix, reponse_correcte: q.reponse_correcte, ordre: q.ordre };
+        const sanitizedChoix = q.choix.filter(c => c.trim());
+        const sanitizedReponse = (q.reponse_correcte || []).filter(r => r >= 0 && r < sanitizedChoix.length);
+        const payload = { question: q.question, choix: sanitizedChoix, reponse_correcte: sanitizedReponse, ordre: q.ordre };
         if (q.id) { await updateQuestion(q.id, payload); }
         else { await createQuestion({ ...payload, niveau_id: selNiveau.id }); }
       }
+      await resetProgressionNiveau(selNiveau.id);
       await loadQuestions(selNiveau.id);
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -628,7 +639,7 @@ export default function Cours() {
   return (
     <div style={S.page}>
       <div style={S.breadcrumb} onClick={goBack}>
-        <IconBack /> <span style={S.breadcrumbText}>Retour aux niveaux</span>
+        <IconBack /> <span style={S.breadcrumbText}>{selLecon ? 'Retour aux leçons' : 'Retour aux niveaux'}</span>
         <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>
           {selLecon
             ? `${selModule?.titre} → ${selThematique?.titre} → ${selLecon?.titre}`
@@ -1482,8 +1493,12 @@ function QCMCarouselModal({ initialQuestions, startIndex, addNew, onSaveAll, onC
     }
   };
 
-  const isCurrentValid = q.question.trim() && q.choix.every(c => c.trim()) && (q.reponse_correcte || []).length > 0;
-  const allValid = questions.every(q => !q.question.trim() || (q.choix.every(c => c.trim()) && (q.reponse_correcte || []).length > 0));
+  const isCurrentValid = q.question.trim() && q.choix.every(c => c.trim()) && (q.reponse_correcte || []).length > 0
+    && (q.reponse_correcte || []).every(r => r >= 0 && r < q.choix.length);
+  const allValid = questions.every(q => !q.question.trim() || (
+    q.choix.every(c => c.trim()) && (q.reponse_correcte || []).length > 0
+    && (q.reponse_correcte || []).every(r => r >= 0 && r < q.choix.length)
+  ));
 
   return (
     <Modal title="Éditeur de QCM" onClose={onClose}>
@@ -1539,6 +1554,10 @@ function QCMCarouselModal({ initialQuestions, startIndex, addNew, onSaveAll, onC
         )}
         {!isCurrentValid && q.question.trim() && (q.reponse_correcte || []).length === 0 && (
           <div style={{ fontSize:11, color:'var(--a-red)', marginTop:6 }}>⚠ Cochez au moins une bonne réponse</div>
+        )}
+        {!isCurrentValid && q.question.trim() && (q.reponse_correcte || []).length > 0
+          && !(q.reponse_correcte || []).every(r => r >= 0 && r < q.choix.length) && (
+          <div style={{ fontSize:11, color:'var(--a-red)', marginTop:6 }}>⚠ Une bonne réponse cochée correspond à un choix supprimé — décochez-la ou recochez un choix valide</div>
         )}
       </div>
 

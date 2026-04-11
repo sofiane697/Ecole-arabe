@@ -6,6 +6,7 @@ const STATUT_LABEL = {
   nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau'  },
   contacté: { label: 'Contacté', cls: 'badge-contacte' },
   inscrit:  { label: 'Inscrit',  cls: 'badge-inscrit'  },
+  refuse:   { label: 'Refusé',   cls: 'badge-refuse'   },
 };
 
 export default function Dashboard() {

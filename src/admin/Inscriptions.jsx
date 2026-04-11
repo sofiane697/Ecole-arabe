@@ -8,7 +8,7 @@ const STATUT_CFG  = {
   nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau',  icon: '●', color: 'var(--a-yellow)' },
   contacté: { label: 'Contacté', cls: 'badge-contacte', icon: '◐', color: 'var(--a-blue)' },
   inscrit:  { label: 'Inscrit',  cls: 'badge-inscrit',  icon: '✓', color: 'var(--a-green)' },
-  refusé:   { label: 'Refusé',   cls: 'badge-refuse',   icon: '✕', color: 'var(--a-red)' },
+  refuse:   { label: 'Refusé',   cls: 'badge-refuse',   icon: '✕', color: 'var(--a-red)' },
 };
 
 const IconUsers = () => (
@@ -64,10 +64,10 @@ export default function Inscriptions() {
   };
 
   const refuserInscription = async (id, currentStatut) => {
-    setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refusé' } : i));
-    if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refusé' }));
+    setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refuse' } : i));
+    if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refuse' }));
     try {
-      await updateInscriptionStatut(id, 'refusé');
+      await updateInscriptionStatut(id, 'refuse');
     } catch (err) {
       setData(prev => prev.map(i => i.id === id ? { ...i, statut: currentStatut } : i));
       if (selected?.id === id) setSelected(prev => ({ ...prev, statut: currentStatut }));
@@ -80,8 +80,8 @@ export default function Inscriptions() {
     try {
       await updateInscriptionStatut(id, 'nouveau');
     } catch (err) {
-      setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refusé' } : i));
-      if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refusé' }));
+      setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refuse' } : i));
+      if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refuse' }));
     }
   };
 
@@ -133,7 +133,7 @@ export default function Inscriptions() {
           { key: 'nouveau',  label: 'Nouveaux',   count: countByStatut('nouveau'),  color: 'var(--a-yellow)' },
           { key: 'contacté', label: 'Contactés',  count: countByStatut('contacté'), color: 'var(--a-blue)' },
           { key: 'inscrit',  label: 'Inscrits',   count: countByStatut('inscrit'),  color: 'var(--a-green)' },
-          { key: 'refusé',   label: 'Refusés',    count: countByStatut('refusé'),   color: 'var(--a-red)' },
+          { key: 'refuse',   label: 'Refusés',    count: countByStatut('refusé'),   color: 'var(--a-red)' },
         ].map(s => (
           <button
             key={s.key}
@@ -250,7 +250,7 @@ export default function Inscriptions() {
 
                 {/* Progression statut */}
                 <p className="insc-detail-section-title">Progression</p>
-                {selected.statut === 'refusé' ? (
+                {selected.statut === 'refuse' ? (
                   <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background:'rgba(255,69,58,0.08)', borderRadius:10, border:'1px solid rgba(255,69,58,0.2)' }}>
                     <span style={{ color:'var(--a-red)', fontSize:16 }}>✕</span>
                     <span style={{ color:'var(--a-red)', fontWeight:600, fontSize:14 }}>Inscription refusée</span>
@@ -282,7 +282,7 @@ export default function Inscriptions() {
 
                 {/* Actions */}
                 <div className="insc-detail-actions">
-                  {selected.statut === 'refusé' ? (
+                  {selected.statut === 'refuse' ? (
                     <button
                       className="msg-action-primary"
                       onClick={() => reinitialiserInscription(selected.id)}

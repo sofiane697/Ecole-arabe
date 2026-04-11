@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail, fetchEleveActivite } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
@@ -79,6 +79,9 @@ export default function Eleves() {
   const [allClasses, setAllClasses] = useState([]);
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
   const [detailModule, setDetailModule] = useState(null); // module ouvert dans le panneau latéral
+  const [activitePeriode, setActivitePeriode] = useState('30j');
+  const [activite, setActivite] = useState([]);
+  const [activiteLoading, setActiviteLoading] = useState(false);
 
   const loadEleves = useCallback(async () => {
     try { setEleves(await fetchEleves()); } catch(e) {}
@@ -91,6 +94,29 @@ export default function Eleves() {
       .then(([cs, ns]) => { setAllClasses(cs); setNiveauxScolaires(ns); })
       .catch(() => {});
   }, []);
+
+  // ─── Charger l'activité de l'élève sélectionné (+ poll 30s) ─────────
+  useEffect(() => {
+    if (!selectedEleve) return;
+
+    const load = (initial) => {
+      if (initial) setActiviteLoading(true);
+      const to = new Date();
+      const from = new Date();
+      if (activitePeriode === '7j')  from.setDate(to.getDate() - 7);
+      else if (activitePeriode === '30j') from.setDate(to.getDate() - 30);
+      else if (activitePeriode === '3m')  from.setMonth(to.getMonth() - 3);
+      else                                from.setFullYear(to.getFullYear() - 1);
+      fetchEleveActivite(selectedEleve.id, from.toISOString(), to.toISOString())
+        .then(setActivite)
+        .catch(() => {})
+        .finally(() => { if (initial) setActiviteLoading(false); });
+    };
+
+    load(true);
+    const t = setInterval(() => load(false), 300_000);
+    return () => clearInterval(t);
+  }, [selectedEleve, activitePeriode]);
 
   // ─── Voir le détail d'un élève ───────────────────────────────────────
   const openEleve = async (eleve) => {
@@ -529,6 +555,130 @@ export default function Eleves() {
             </div>
           )}
         </div>
+
+        {/* ─── Section Activité ─── */}
+        {(() => {
+          const getDurationSec = (s) => {
+            if (s.duration_seconds != null) return s.duration_seconds;
+            const start = new Date(s.started_at);
+            const hb    = new Date(s.last_heartbeat);
+            return Math.max(0, Math.floor((hb - start) / 1000));
+          };
+          const fmtDuration = (secs) => {
+            if (!secs || secs < 60) return secs > 0 ? `${secs}s` : '< 1 min';
+            const m = Math.floor(secs / 60);
+            const h = Math.floor(m / 60);
+            if (h > 0) return `${h}h ${m % 60}min`;
+            return `${m}min`;
+          };
+          const fmtRelDate = (dateStr) => {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = now - d;
+            const hours = Math.floor(diff / 3600000);
+            const days  = Math.floor(diff / 86400000);
+            if (hours < 1) return "À l'instant";
+            if (hours < 24) return `Il y a ${hours}h`;
+            if (days < 7)  return `Il y a ${days}j`;
+            return d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+          };
+
+          const totalVisites = activite.length;
+          const totalSecs    = activite.reduce((acc, s) => acc + getDurationSec(s), 0);
+          const avgSecs      = totalVisites > 0 ? Math.round(totalSecs / totalVisites) : 0;
+          const lastSession  = activite[0] ? fmtRelDate(activite[0].started_at) : '—';
+
+          const PERIODES = [
+            { key: '7j',  label: '7 jours' },
+            { key: '30j', label: '30 jours' },
+            { key: '3m',  label: '3 mois' },
+            { key: '1an', label: 'Cette année' },
+          ];
+
+          return (
+            <div style={{ marginTop: 32 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                <h3 style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)', margin:0 }}>Activité sur le portail</h3>
+                <div style={{ display:'flex', gap:6 }}>
+                  {PERIODES.map(p => (
+                    <button
+                      key={p.key}
+                      onClick={() => setActivitePeriode(p.key)}
+                      style={{
+                        padding:'6px 14px', borderRadius:980, fontSize:12, fontWeight:600, cursor:'pointer', border:'1px solid var(--a-border)',
+                        background: activitePeriode === p.key ? 'var(--a-gold)' : 'transparent',
+                        color: activitePeriode === p.key ? '#fff' : 'var(--a-fg-mid)',
+                        borderColor: activitePeriode === p.key ? 'var(--a-gold)' : 'var(--a-border)',
+                        transition:'all .15s',
+                      }}
+                    >{p.label}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stats cards */}
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
+                {[
+                  { label:'Visites',           value: activiteLoading ? '…' : totalVisites,              color:'var(--a-blue)' },
+                  { label:'Temps total',        value: activiteLoading ? '…' : fmtDuration(totalSecs),   color:'var(--a-gold)' },
+                  { label:'Durée moyenne',      value: activiteLoading ? '…' : fmtDuration(avgSecs),     color:'var(--a-green)' },
+                  { label:'Dernière connexion', value: activiteLoading ? '…' : lastSession,              color:'var(--a-fg-mid)' },
+                ].map(card => (
+                  <div key={card.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 14px', textAlign:'center' }}>
+                    <div style={{ fontSize:18, fontWeight:700, color: card.color }}>{card.value}</div>
+                    <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2, textTransform:'uppercase', letterSpacing:'.5px' }}>{card.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tableau des sessions */}
+              {!activiteLoading && activite.length === 0 ? (
+                <div style={{ textAlign:'center', padding:'28px 20px', color:'var(--a-fg-light)', fontSize:13, background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)' }}>
+                  Aucune connexion sur cette période
+                </div>
+              ) : (
+                <div style={{ background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', overflow:'hidden' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+                    <thead>
+                      <tr style={{ borderBottom:'1px solid var(--a-border)' }}>
+                        {['Date & heure','Durée','Statut'].map(h => (
+                          <th key={h} style={{ padding:'8px 14px', textAlign:'left', fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activiteLoading ? (
+                        <tr><td colSpan={3} style={{ padding:'20px', textAlign:'center', color:'var(--a-fg-light)' }}>Chargement…</td></tr>
+                      ) : activite.map(s => {
+                        const duree = getDurationSec(s);
+                        const termine = s.ended_at != null;
+                        const dateStr = new Date(s.started_at).toLocaleDateString('fr-FR', {
+                          day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'
+                        });
+                        return (
+                          <tr key={s.id} style={{ borderBottom:'1px solid var(--a-border)' }}>
+                            <td style={{ padding:'9px 14px', color:'var(--a-fg)' }}>{dateStr}</td>
+                            <td style={{ padding:'9px 14px', color:'var(--a-fg-mid)', fontWeight:600 }}>{fmtDuration(duree)}</td>
+                            <td style={{ padding:'9px 14px' }}>
+                              <span style={{
+                                display:'inline-block', fontSize:11, fontWeight:600, padding:'2px 10px', borderRadius:20,
+                                background: termine ? 'rgba(48,209,88,.12)' : 'rgba(255,159,10,.12)',
+                                color: termine ? 'var(--a-green)' : 'var(--a-yellow)',
+                              }}>
+                                {termine ? '✓ Terminée' : '~ Interrompue'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
       </div>
     );
   }

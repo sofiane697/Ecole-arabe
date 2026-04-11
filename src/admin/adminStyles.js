@@ -853,7 +853,7 @@ const ADMIN_STYLES = `
   /* Stats mini */
   .insc-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.8rem;
     margin-bottom: 1.2rem;
   }
@@ -892,7 +892,7 @@ const ADMIN_STYLES = `
     letter-spacing: 0.04em;
   }
   @media (max-width: 600px) {
-    .insc-stats { grid-template-columns: repeat(2, 1fr); }
+    .insc-stats { grid-template-columns: repeat(3, 1fr); }
   }
 
   /* Filtre cours */

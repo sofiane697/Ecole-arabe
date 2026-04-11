@@ -333,6 +333,43 @@ export async function fetchMesNotes(eleveId) {
   return notes.map(n => ({ ...n, evaluation: evalMap[n.evaluation_id] || null }));
 }
 
+// ─── TRACKING SESSIONS ───────────────────────────────────────────────────────
+
+/** Démarre une session de suivi (appelé à la connexion) — retourne l'UUID de session */
+export async function startSession(eleveId) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/start_eleve_session`, {
+      method: 'POST',
+      headers: ANON_HEADERS,
+      body: JSON.stringify({ p_eleve_id: eleveId }),
+    });
+    if (!res.ok) return null;
+    return await res.json(); // UUID string
+  } catch { return null; }
+}
+
+/** Met à jour le heartbeat de la session (appelé toutes les 2 minutes) */
+export async function heartbeatSession(sessionId) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/rpc/heartbeat_eleve_session`, {
+      method: 'POST',
+      headers: ANON_HEADERS,
+      body: JSON.stringify({ p_session_id: sessionId }),
+    });
+  } catch {}
+}
+
+/** Clôture la session (appelé à la déconnexion) */
+export async function endSession(sessionId) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/rpc/end_eleve_session`, {
+      method: 'POST',
+      headers: ANON_HEADERS,
+      body: JSON.stringify({ p_session_id: sessionId }),
+    });
+  } catch {}
+}
+
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
 
 /** Récupère les observations de l'élève */

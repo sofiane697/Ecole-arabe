@@ -247,10 +247,10 @@ export async function fetchEleveProgression(eleveId) {
  *  À appeler quand les questions QCM d'un niveau sont supprimées / remplacées,
  *  pour éviter que d'anciens records reussi=true ressurgissent. */
 export async function resetProgressionNiveau(niveauId) {
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/eleve_progression?niveau_id=eq.${niveauId}`,
-    { method: 'DELETE' }
-  );
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/reset_progression_niveau`, {
+    method: 'POST',
+    body: JSON.stringify({ p_niveau_id: niveauId }),
+  });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
@@ -566,6 +566,17 @@ export async function updateEleveActif(id, actif) {
 // ─── EMAIL ───────────────────────────────────────────────────────────────────
 
 /** Envoie l'email de bienvenue via Supabase Edge Function (Resend) */
+/** Récupère les sessions de connexion d'un élève sur une période donnée */
+export async function fetchEleveActivite(eleveId, from, to) {
+  const fromEnc = encodeURIComponent(from);
+  const toEnc   = encodeURIComponent(to);
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/eleve_sessions?eleve_id=eq.${eleveId}&started_at=gte.${fromEnc}&started_at=lte.${toEnc}&order=started_at.desc`
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
 export async function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword, classeNom }) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
     method: 'POST',

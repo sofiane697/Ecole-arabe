@@ -60,15 +60,16 @@ export default function AdminApp() {
     return saved ? saved === 'dark' : true; // dark par défaut
   });
 
-  // Injecter les styles
+  // Injecter les styles (toujours mettre à jour pour que les changements soient visibles sans rechargement complet)
   useLayoutEffect(() => {
     const id = 'admin-styles';
-    if (!document.getElementById(id)) {
-      const style = document.createElement('style');
+    let style = document.getElementById(id);
+    if (!style) {
+      style = document.createElement('style');
       style.id = id;
-      style.textContent = ADMIN_STYLES;
       document.head.appendChild(style);
     }
+    style.textContent = ADMIN_STYLES;
   }, []);
 
   // Appliquer le thème
