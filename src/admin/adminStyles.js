@@ -1,4 +1,6 @@
 const ADMIN_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap');
+
   /* ─── Admin — Variables ─── */
   .admin-root {
     --a-bg:         #000000;
@@ -500,6 +502,8 @@ const ADMIN_STYLES = `
   .admin-nav {
     flex: 1;
     padding: 1rem 0;
+    overflow-y: auto;
+    min-height: 0;
   }
   .admin-nav-section {
     padding: 0.6rem 1.5rem 0.3rem;
@@ -1178,6 +1182,26 @@ const ADMIN_STYLES = `
     flex-wrap: wrap;
   }
 
+
+  /* ═══════════════════════════════
+     INSCRIPTIONS — CONVERSION
+  ═══════════════════════════════ */
+  .insc-convert-panel  { background:#1e2530; border:1px solid #2e3a4a; border-radius:10px; padding:18px 20px 20px; margin-top:4px; display:flex; flex-direction:column; gap:10px; }
+  .insc-convert-title  { font-size:14px; font-weight:700; color:#e2e8f0; margin:0; letter-spacing:0.02em; }
+  .insc-convert-label  { font-size:12px; color:#718096; margin:0; }
+  .insc-convert-select { width:100%; background:#0f1923; border:1px solid #2e3a4a; border-radius:8px; padding:10px 12px; color:#e2e8f0; font-size:14px; cursor:pointer; }
+  .insc-convert-select:focus { outline:none; border-color:#4f8ef7; }
+  .insc-convert-btn    { background:#4f8ef7; color:#fff; border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer; width:100%; margin-top:2px; transition:opacity 0.15s; }
+  .insc-convert-btn:hover:not(:disabled) { opacity:0.88; }
+  .insc-convert-btn:disabled { opacity:0.45; cursor:not-allowed; }
+  .insc-creds-box      { background:#0f1923; border:1px solid #2a9d5c; border-radius:8px; padding:14px 16px; margin-top:14px; }
+  .insc-creds-title    { font-size:13px; font-weight:700; color:#2a9d5c; margin:0 0 8px; }
+  .insc-creds-row      { font-size:13px; color:#a0aec0; margin:3px 0; }
+  .insc-creds-row strong { color:#e2e8f0; }
+  .insc-activation-banner { display:flex; align-items:center; justify-content:space-between; background:#2d1f0a; border:1px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:12px; }
+  .insc-activation-text   { font-size:13px; color:#fcd34d; }
+  .insc-activation-btn    { background:#f59e0b; color:#0f1923; border:none; border-radius:6px; padding:7px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .insc-convert-error  { color:#f87171; font-size:13px; margin-top:8px; }
 
   /* ═══════════════════════════════
      MESSAGES — REFONTE

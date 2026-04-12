@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { fetchInscriptions, updateInscriptionStatut } from './supabaseAdmin';
+import {
+  fetchInscriptions, updateInscriptionStatut,
+  fetchAllClasses,
+  updateInscriptionEleveId, fetchEleveById,
+  updateEleveActif, updateEleve,
+  createEleve, sendWelcomeEmail, fetchEleveIdParIdentifiant,
+} from './supabaseAdmin';
+import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 
@@ -9,6 +16,7 @@ const STATUT_CFG  = {
   contacté: { label: 'Contacté', cls: 'badge-contacte', icon: '◐', color: 'var(--a-blue)' },
   inscrit:  { label: 'Inscrit',  cls: 'badge-inscrit',  icon: '✓', color: 'var(--a-green)' },
   refuse:   { label: 'Refusé',   cls: 'badge-refuse',   icon: '✕', color: 'var(--a-red)' },
+  converti: { label: 'Converti', cls: 'badge-inscrit',  icon: '★', color: 'var(--a-green)' },
 };
 
 const IconUsers = () => (
@@ -33,24 +41,44 @@ const IconArrow = () => (
 );
 
 export default function Inscriptions() {
-  const [data,        setData]        = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [filtreStat,  setFiltreStat]  = useState('tous');
-  const [filtreCours, setFiltreCours] = useState('tous');
-  const [selected,    setSelected]    = useState(null);
+  const [data,             setData]             = useState([]);
+  const [loading,          setLoading]          = useState(true);
+  const [filtreStat,       setFiltreStat]       = useState('tous');
+  const [filtreCours,      setFiltreCours]      = useState('tous');
+  const [selected,         setSelected]         = useState(null);
+  const [classes,        setClasses]        = useState([]);
+  const [convertForm,    setConvertForm]    = useState({ classeId: '' });
+  const [convertLoading,   setConvertLoading]   = useState(false);
+  const [convertError,     setConvertError]     = useState('');
+  const [convertResult,    setConvertResult]    = useState(null);
+  const [linkedEleve,      setLinkedEleve]      = useState(null);
+  const [activating,       setActivating]       = useState(false);
+  const [mailEnvoye,       setMailEnvoye]       = useState(null); // email destinataire ou false
 
   useEffect(() => {
-    fetchInscriptions()
-      .then(setData)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    fetchInscriptions().then(setData).catch(() => {}).finally(() => setLoading(false));
+    fetchAllClasses().then(setClasses).catch(() => {});
   }, []);
 
   const filtered = data.filter(i => {
+    if (i.statut === 'converti') return false;
     const okStat  = filtreStat  === 'tous' || i.statut === filtreStat;
     const okCours = filtreCours === 'tous' || i.cours  === filtreCours;
     return okStat && okCours;
   });
+
+  const selectInscription = async (insc) => {
+    setSelected(insc);
+    setConvertResult(null);
+    setConvertError('');
+    setMailEnvoye(null);
+    if (insc.eleve_id) {
+      const eleve = await fetchEleveById(insc.eleve_id);
+      setLinkedEleve(eleve);
+    } else {
+      setLinkedEleve(null);
+    }
+  };
 
   const avancerStatut = async (id, currentStatut) => {
     const next = STATUT_NEXT[currentStatut];
@@ -83,6 +111,65 @@ export default function Inscriptions() {
       setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refuse' } : i));
       if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refuse' }));
     }
+  };
+
+  const handleConvertToEleve = async () => {
+    setConvertLoading(true);
+    setConvertError('');
+    try {
+      const identifiant = generateIdentifiant(selected.prenom, selected.nom);
+      const password    = generateTempPassword();
+
+      const newEleve = await createEleve(selected.nom, selected.prenom, identifiant, password);
+
+      // admin_create_user ne retourne pas toujours l'UUID → fallback par identifiant
+      const eleveId = newEleve.id ?? await fetchEleveIdParIdentifiant(identifiant);
+      if (!eleveId) throw new Error('Compte créé mais ID introuvable — réessayez.');
+
+      await updateEleveActif(eleveId, false);
+
+      await updateEleve(eleveId, {
+        classe_id:      convertForm.classeId      || null,
+        telephone:      selected.telephone        || null,
+        email_contact:  selected.email            || null,
+        date_naissance: selected.date_naissance   || null,
+      });
+      await updateInscriptionEleveId(selected.id, eleveId);
+
+      // Email envoyé uniquement à l'activation, pas ici (élève inactif à ce stade)
+
+      const eleveComplet = { id: eleveId, nom: selected.nom, prenom: selected.prenom, actif: false };
+      setConvertResult({ identifiant, password });
+      setLinkedEleve(eleveComplet);
+      setSelected(prev => ({ ...prev, statut: 'converti', eleve_id: eleveId }));
+      setData(prev => prev.map(i => i.id === selected.id
+        ? { ...i, statut: 'converti', eleve_id: eleveId } : i));
+    } catch (e) {
+      setConvertError(e.message ?? 'Erreur lors de la conversion');
+    } finally {
+      setConvertLoading(false);
+    }
+  };
+
+  const handleActivateEleve = async () => {
+    setActivating(true);
+    await updateEleveActif(linkedEleve.id, true);
+    setLinkedEleve(prev => ({ ...prev, actif: true }));
+    if (selected?.email && convertResult) {
+      const classeNom = classes.find(c => c.id === convertForm.classeId)?.nom ?? '';
+      sendWelcomeEmail({
+        email:        selected.email,
+        prenom:       selected.prenom,
+        nom:          selected.nom,
+        identifiant:  convertResult.identifiant,
+        tempPassword: convertResult.password,
+        classeNom,
+      }).catch(() => {});
+      setMailEnvoye(selected.email);
+    } else {
+      setMailEnvoye(false);
+    }
+    setActivating(false);
   };
 
   const countByStatut = (s) => data.filter(i => i.statut === s).length;
@@ -148,7 +235,7 @@ export default function Inscriptions() {
           { key: 'nouveau',  label: 'Nouveaux',   count: countByStatut('nouveau'),  color: 'var(--a-yellow)' },
           { key: 'contacté', label: 'Contactés',  count: countByStatut('contacté'), color: 'var(--a-blue)' },
           { key: 'inscrit',  label: 'Inscrits',   count: countByStatut('inscrit'),  color: 'var(--a-green)' },
-          { key: 'refuse',   label: 'Refusés',    count: countByStatut('refusé'),   color: 'var(--a-red)' },
+          { key: 'refuse',   label: 'Refusés',    count: countByStatut('refuse'),   color: 'var(--a-red)' },
         ].map(s => (
           <button
             key={s.key}
@@ -186,7 +273,7 @@ export default function Inscriptions() {
               <div
                 key={i.id}
                 className={`insc-item ${selected?.id === i.id ? 'selected' : ''}`}
-                onClick={() => setSelected(i)}
+                onClick={() => selectInscription(i)}
               >
                 <div className="insc-item-avatar">
                   {getInitials(i.prenom, i.nom)}
@@ -327,7 +414,7 @@ export default function Inscriptions() {
                     >
                       Remettre en traitement <IconArrow />
                     </button>
-                  ) : (
+                  ) : selected.statut === 'converti' ? null : (
                     <>
                       <button
                         className="msg-action-primary"
@@ -344,6 +431,80 @@ export default function Inscriptions() {
                     </>
                   )}
                 </div>
+
+                {/* ── Conversion : visible uniquement si statut = inscrit et pas encore converti ── */}
+                {selected.statut === 'inscrit' && !selected.eleve_id && !linkedEleve && (
+                  <>
+                    <div className="insc-detail-sep" />
+                    <div className="insc-convert-panel">
+                      <p className="insc-convert-title">Créer le compte élève</p>
+                      <label className="insc-convert-label">Assigner une classe</label>
+                      <select
+                        className="insc-convert-select"
+                        value={convertForm.classeId}
+                        onChange={e => setConvertForm(f => ({ ...f, classeId: e.target.value }))}
+                      >
+                        <option value="">— Sans classe pour l'instant —</option>
+                        {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                      </select>
+                      {convertError && <p className="insc-convert-error">{convertError}</p>}
+                      <button
+                        className="insc-convert-btn"
+                        disabled={convertLoading}
+                        onClick={handleConvertToEleve}
+                      >
+                        {convertLoading ? 'Création en cours…' : '✓ Créer le compte élève'}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* ── Identifiants générés ── */}
+                {convertResult && (
+                  <div className="insc-creds-box">
+                    <p className="insc-creds-title">✓ Compte créé — identifiants</p>
+                    <p className="insc-creds-row">Identifiant : <strong>{convertResult.identifiant}</strong></p>
+                    <p className="insc-creds-row">Mot de passe provisoire : <strong>{convertResult.password}</strong></p>
+                  </div>
+                )}
+
+                {/* ── Banner activation ── */}
+                {linkedEleve && !linkedEleve.actif && (
+                  <div className="insc-activation-banner">
+                    <span className="insc-activation-text">⏳ Compte en attente d'activation</span>
+                    <button
+                      className="insc-activation-btn"
+                      disabled={activating}
+                      onClick={handleActivateEleve}
+                    >
+                      {activating ? '…' : "Activer l'accès"}
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Compte déjà actif ── */}
+                {linkedEleve && linkedEleve.actif && (
+                  <div style={{ marginTop:12, padding:'10px 14px', background:'rgba(48,209,88,0.08)', border:'1px solid rgba(48,209,88,0.3)', borderRadius:8, fontSize:13, color:'var(--a-green)' }}>
+                    ✅ Élève actif — accès portail ouvert
+                  </div>
+                )}
+
+                {/* ── Indicateur email envoyé ── */}
+                {mailEnvoye && (
+                  <div style={{ marginTop:8, display:'flex', alignItems:'center', gap:8, padding:'10px 14px', background:'rgba(48,209,88,0.07)', border:'1px solid rgba(48,209,88,0.25)', borderRadius:8 }}>
+                    <span style={{ fontSize:15 }}>✉️</span>
+                    <span style={{ fontSize:12, color:'var(--a-green)', lineHeight:1.5 }}>
+                      Mail envoyé avec les identifiants et mot de passe provisoire<br />
+                      <strong style={{ fontFamily:'monospace' }}>{mailEnvoye}</strong>
+                    </span>
+                  </div>
+                )}
+                {mailEnvoye === false && (
+                  <div style={{ marginTop:8, padding:'10px 14px', background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', borderRadius:8, fontSize:12, color:'var(--a-yellow)' }}>
+                    ⚠️ Aucun email de contact — transmettez les identifiants manuellement.
+                  </div>
+                )}
+
               </div>
             );
           })()}

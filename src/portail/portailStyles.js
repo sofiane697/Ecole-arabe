@@ -85,19 +85,20 @@ const PORTAIL_STYLES = `
     border-right: 1px solid var(--p-border);
     display: flex;
     flex-direction: column;
-    padding: 24px 0;
     position: fixed;
     top: 0;
     left: 0;
     width: var(--p-sidebar-w);
     height: 100vh;
     z-index: 10;
-    overflow-y: auto;
+    overflow: hidden;
+    box-sizing: border-box;
   }
   .portail-sidebar-brand {
-    padding: 0 20px 24px;
+    padding: 24px 20px 24px;
     border-bottom: 1px solid var(--p-border);
     margin-bottom: 16px;
+    flex-shrink: 0;
   }
   .portail-sidebar-brand .arabic {
     font-family: 'Scheherazade New', serif;
@@ -116,7 +117,7 @@ const PORTAIL_STYLES = `
   }
 
   /* ─── Nav links ─── */
-  .portail-nav { padding: 0 12px; flex: 1; }
+  .portail-nav { padding: 0 12px; flex: 1; overflow-y: auto; min-height: 0; }
   .portail-nav-section {
     font-size: 10px;
     font-weight: 700;
@@ -195,6 +196,7 @@ const PORTAIL_STYLES = `
   .portail-sidebar-footer {
     padding: 16px 20px;
     border-top: 1px solid var(--p-border);
+    flex-shrink: 0;
   }
   .portail-sidebar-user { margin-bottom: 12px; }
   .portail-sidebar-user strong { display: block; font-size: 13px; color: var(--p-fg); }

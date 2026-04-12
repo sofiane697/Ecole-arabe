@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail, fetchEleveActivite } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail, fetchEleveActivite, fetchEleveIdParIdentifiant } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
@@ -145,9 +145,27 @@ export default function Eleves() {
 
   const handleToggleActif = async (eleve) => {
     try {
-      await updateEleveActif(eleve.id, !eleve.actif);
+      const activation = !eleve.actif; // true = on active, false = on désactive
+      await updateEleveActif(eleve.id, activation);
+
+      if (activation) {
+        // Générer un nouveau mot de passe provisoire et l'envoyer par email
+        const tempPwd = generateTempPassword();
+        await resetElevePassword(eleve.id, tempPwd);
+        setResetResult({ identifiant: eleve.identifiant, tempPassword: tempPwd, prenom: eleve.prenom, nom: eleve.nom, emailSent: eleve.email_contact || null });
+        if (eleve.email_contact) {
+          sendWelcomeEmail({
+            email:       eleve.email_contact,
+            prenom:      eleve.prenom,
+            nom:         eleve.nom,
+            identifiant: eleve.identifiant,
+            tempPassword: tempPwd,
+          }).catch(() => {});
+        }
+      }
+
       await loadEleves();
-      if (selectedEleve?.id === eleve.id) setSelectedEleve({ ...eleve, actif: !eleve.actif });
+      if (selectedEleve?.id === eleve.id) setSelectedEleve({ ...eleve, actif: activation });
     } catch(e) { alert(e.message); }
   };
 
@@ -393,9 +411,23 @@ export default function Eleves() {
                   <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1 }}>{resetResult.tempPassword}</div>
                 </div>
               </div>
-              <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:16 }}>
+              <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:12 }}>
                 ⚠️ L'élève devra changer ce mot de passe à sa prochaine connexion.
               </div>
+              {resetResult.emailSent ? (
+                <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(48,209,88,0.1)', border:'1px solid rgba(48,209,88,0.3)', borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12 }}>
+                  <span style={{ fontSize:16 }}>✉️</span>
+                  <span style={{ color:'var(--a-green)', lineHeight:1.5 }}>
+                    Mail envoyé avec les identifiants et mot de passe provisoire<br />
+                    <strong style={{ fontFamily:'monospace' }}>{resetResult.emailSent}</strong>
+                  </span>
+                </div>
+              ) : resetResult.emailSent === null ? (
+                <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12, color:'var(--a-yellow)' }}>
+                  <span style={{ fontSize:16 }}>⚠️</span>
+                  Aucun email de contact — transmettez les identifiants manuellement.
+                </div>
+              ) : null}
               <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
                 <button style={{ ...S.btnSave, fontSize:12, padding:'9px 16px' }} onClick={() => {
                   navigator.clipboard.writeText(`Identifiant : ${resetResult.identifiant}\nMot de passe : ${resetResult.tempPassword}`);
@@ -802,6 +834,7 @@ function CreateEleveModal({ onClose, onCreated }) {
   const [prenom, setPrenom] = useState('');
   const [classeId, setClasseId] = useState('');
   const [emailContact, setEmailContact] = useState('');
+  const [inactif, setInactif] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
@@ -835,28 +868,44 @@ function CreateEleveModal({ onClose, onCreated }) {
     setLoading(true);
     setError('');
     try {
-      const tempPwd = generateTempPassword();
-      const eleve = await createEleve(fmtNom(nom), fmtPrenom(prenom), identifiant.toLowerCase(), tempPwd);
-      if (classeId && eleve?.id) {
-        const niveauScolaireId = allClasses.find(c => c.id === classeId)?.niveau_id || null;
-        await Promise.all([
-          updateEleve(eleve.id, { classe_id: classeId }),
-          updateEleveNiveauScolaire(eleve.id, niveauScolaireId),
-        ]);
+      const tempPwd  = generateTempPassword();
+      const idLogin  = identifiant.toLowerCase();
+      const eleve    = await createEleve(fmtNom(nom), fmtPrenom(prenom), idLogin, tempPwd);
+      const eleveId  = eleve?.id ?? await fetchEleveIdParIdentifiant(idLogin);
+
+      if (eleveId) {
+        const patch = {};
+        if (classeId)              patch.classe_id    = classeId;
+        if (inactif)               patch.actif        = false;
+        if (emailContact.trim())   patch.email_contact = emailContact.trim();
+        if (Object.keys(patch).length) await updateEleve(eleveId, patch);
+        if (classeId) {
+          const niveauScolaireId = allClasses.find(c => c.id === classeId)?.niveau_id || null;
+          await updateEleveNiveauScolaire(eleveId, niveauScolaireId);
+        }
       }
-      // Envoi email de bienvenue (non-bloquant)
-      if (emailContact.trim()) {
+
+      // Email uniquement si l'élève est actif
+      if (emailContact.trim() && !inactif) {
         const classeNom = allClasses.find(c => c.id === classeId)?.nom || null;
         sendWelcomeEmail({
-          email: emailContact.trim(),
-          prenom: fmtPrenom(prenom),
-          nom: fmtNom(nom),
-          identifiant: identifiant.toLowerCase(),
+          email:        emailContact.trim(),
+          prenom:       fmtPrenom(prenom),
+          nom:          fmtNom(nom),
+          identifiant:  idLogin,
           tempPassword: tempPwd,
           classeNom,
         }).catch(() => {});
       }
-      setResult({ identifiant, tempPassword: tempPwd });
+
+      const emailTrimmed = emailContact.trim();
+      setResult({
+        identifiant,
+        tempPassword:  tempPwd,
+        emailContact:  emailTrimmed || null,
+        emailSent:     (!inactif && emailTrimmed) ? emailTrimmed : null,
+        inactif,
+      });
     } catch(e) {
       setError(e.message);
     }
@@ -871,8 +920,8 @@ function CreateEleveModal({ onClose, onCreated }) {
       <div style={S.overlay} onClick={onClose}>
         <div style={{ ...S.modal, maxWidth:480 }} onClick={e => e.stopPropagation()}>
           <div style={{ textAlign:'center', marginBottom:20 }}>
-            <div style={{ fontSize:40, marginBottom:8 }}>✅</div>
-            <div style={S.modalTitle}>Compte créé avec succès</div>
+            <div style={{ fontSize:40, marginBottom:8 }}>{result.inactif ? '⏳' : '✅'}</div>
+            <div style={S.modalTitle}>{result.inactif ? 'Compte créé — en attente' : 'Compte créé avec succès'}</div>
           </div>
           <div style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:20, marginBottom:16 }}>
             <div style={{ marginBottom:14 }}>
@@ -894,10 +943,33 @@ function CreateEleveModal({ onClose, onCreated }) {
               </div>
             </div>
           </div>
-          <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:16, padding:'0 4px' }}>
+          <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:12, padding:'0 4px' }}>
             ⚠️ <strong>Notez ces identifiants</strong> — le mot de passe provisoire ne sera plus visible après fermeture.
             L'élève devra le modifier à sa première connexion.
           </div>
+          {result.emailSent ? (
+            <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(48,209,88,0.1)', border:'1px solid rgba(48,209,88,0.3)', borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12 }}>
+              <span style={{ fontSize:16 }}>✉️</span>
+              <span style={{ color:'var(--a-green)', lineHeight:1.5 }}>
+                Mail envoyé avec les identifiants et mot de passe provisoire<br />
+                <strong style={{ fontFamily:'monospace' }}>{result.emailSent}</strong>
+              </span>
+            </div>
+          ) : result.inactif && result.emailContact ? (
+            <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12, color:'var(--a-yellow)' }}>
+              <span style={{ fontSize:16 }}>⏳</span>
+              <span style={{ lineHeight:1.5 }}>
+                Les identifiants et le mot de passe provisoire seront envoyés à<br />
+                <strong style={{ fontFamily:'monospace' }}>{result.emailContact}</strong><br />
+                lors du passage au statut actif.
+              </span>
+            </div>
+          ) : (
+            <div style={{ display:'flex', alignItems:'center', gap:8, background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12, color:'var(--a-yellow)' }}>
+              <span style={{ fontSize:16 }}>⚠️</span>
+              Aucun email de contact — transmettez les identifiants manuellement.
+            </div>
+          )}
           <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
             <button style={{ ...S.btnSave, padding:'10px 18px', fontSize:12 }} onClick={() => {
               navigator.clipboard.writeText(`Identifiant : ${result.identifiant}\nMot de passe : ${result.tempPassword}`);
@@ -1014,9 +1086,18 @@ function CreateEleveModal({ onClose, onCreated }) {
             placeholder="parent@email.com"
           />
         </div>
-        <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.5, marginBottom:8 }}>
+        <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.5, marginBottom:12 }}>
           Un mot de passe provisoire sera généré automatiquement. L'élève devra le modifier à sa première connexion.
         </div>
+        <label style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background: inactif ? 'rgba(255,159,10,0.08)' : 'transparent', border: `1px solid ${inactif ? 'rgba(255,159,10,0.35)' : 'var(--a-border)'}`, borderRadius:8, cursor:'pointer', fontSize:13, color: inactif ? 'var(--a-yellow)' : 'var(--a-fg-mid)', marginBottom:12, transition:'all 0.15s' }}>
+          <input
+            type="checkbox"
+            checked={inactif}
+            onChange={e => setInactif(e.target.checked)}
+            style={{ width:15, height:15, cursor:'pointer', accentColor:'var(--a-yellow)' }}
+          />
+          Inactif pour l'instant — l'élève ne pourra pas se connecter avant activation
+        </label>
         {error && <div style={S.error}>{error}</div>}
         <div style={S.btnRow}>
           <button style={S.btnCancel} onClick={onClose}>Annuler</button>

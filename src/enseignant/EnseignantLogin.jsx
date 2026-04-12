@@ -53,7 +53,7 @@ function BrandPanel({ subtitle }) {
       className="ens-brand-panel"
       style={{
         width: '50%',
-        minHeight: '100vh',
+        height: '100vh',
         background: 'linear-gradient(160deg, #0f0f0f 0%, #0a0a0a 60%, #111008 100%)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
         display: 'flex',
@@ -221,7 +221,11 @@ export default function EnseignantLogin() {
     }
 
     document.body.style.background = '#000';
-    return () => { document.body.style.background = ''; };
+    document.body.style.overflow   = 'hidden';
+    return () => {
+      document.body.style.background = '';
+      document.body.style.overflow   = '';
+    };
   }, []);
 
   useEffect(() => {
@@ -267,7 +271,7 @@ export default function EnseignantLogin() {
   };
 
   const S = {
-    page: { minHeight:'100vh', display:'flex', background:'#000' },
+    page: { height:'100vh', display:'flex', background:'#000', overflow:'hidden' },
     card: { background:'#1c1c1e', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'40px 36px', width:'100%', maxWidth:400, boxSizing:'border-box', overflow:'hidden' },
     brand: { textAlign:'center', marginBottom:32 },
     brandArabic: { display:'block', fontFamily:"'Scheherazade New', serif", fontSize:28, color:'#bf8a30', direction:'rtl', lineHeight:1.3 },

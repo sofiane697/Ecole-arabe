@@ -555,6 +555,36 @@ export async function adminResetEnseignantPassword(id, newPassword) {
   if (!res.ok) throw new Error(`Erreur reset mot de passe enseignant ${res.status}`);
 }
 
+/** Récupérer l'ID d'un élève par son identifiant (fallback si createEleve ne retourne pas l'UUID) */
+export async function fetchEleveIdParIdentifiant(identifiant) {
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/profils_eleves?identifiant=eq.${encodeURIComponent(identifiant)}&select=id`
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows[0]?.id ?? null;
+}
+
+/** Lier une inscription à un élève et passer le statut à 'converti' */
+export async function updateInscriptionEleveId(inscriptionId, eleveId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/inscriptions?id=eq.${inscriptionId}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ eleve_id: eleveId, statut: 'converti' }),
+  });
+  return res.ok;
+}
+
+/** Récupérer un élève par son id */
+export async function fetchEleveById(eleveId) {
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=*`
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows[0] ?? null;
+}
+
 /** Activer / désactiver un élève */
 export async function updateEleveActif(id, actif) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, {
