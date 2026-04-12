@@ -11,6 +11,7 @@ import Cours from './admin/Cours';
 import Classes from './admin/Classes';
 import Eleves from './admin/Eleves';
 import Enseignants from './admin/Enseignants';
+import AdminSurveillance from './admin/AdminSurveillance';
 import EnseignantLogin      from './enseignant/EnseignantLogin';
 import EnseignantApp        from './enseignant/EnseignantApp';
 import EnseignantMesClasses from './enseignant/EnseignantMesClasses';
@@ -47,6 +48,7 @@ root.render(
         <Route path="classes" element={<Classes />} />
         <Route path="eleves" element={<Eleves />} />
         <Route path="enseignants" element={<Enseignants />} />
+        <Route path="surveillance" element={<AdminSurveillance />} />
       </Route>
 
       {/* Portail enseignant */}

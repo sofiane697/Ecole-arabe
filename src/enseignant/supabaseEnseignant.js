@@ -115,6 +115,7 @@ export async function markMessagesReadEnseignant(eleveId, enseignantId) {
     `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.eleve&lu=eq.false`,
     { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
   );
+  await res.text().catch(() => {});
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
@@ -151,8 +152,8 @@ export async function fetchUnreadCountParEleve(eleveId, enseignantId) {
 // ─── DEVOIRS ─────────────────────────────────────────────────────────────────
 
 /** Récupère tous les devoirs de l'enseignant */
-export async function fetchDevoirsEnseignant(enseignantId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?enseignant_id=eq.${enseignantId}&order=date_limite.asc`, { headers: ANON_HEADERS });
+export async function fetchDevoirsClasse(classeId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?classe_id=eq.${classeId}&select=*,enseignants(nom,prenom)&order=date_limite.asc`, { headers: ANON_HEADERS });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
@@ -170,18 +171,19 @@ export async function createDevoir(data) {
 }
 
 /** Modifie un devoir */
-export async function updateDevoir(id, data) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?id=eq.${id}`, {
+export async function updateDevoir(id, data, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'PATCH',
     headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
     body: JSON.stringify(data),
   });
+  await res.text().catch(() => {});
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
 /** Supprime un devoir */
-export async function deleteDevoir(id) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?id=eq.${id}`, {
+export async function deleteDevoir(id, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/devoirs?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'DELETE',
     headers: ANON_HEADERS,
   });
@@ -193,7 +195,7 @@ export async function deleteDevoir(id) {
 /** Récupère les évaluations d'une classe */
 export async function fetchEvaluationsClasse(classeId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/evaluations?classe_id=eq.${classeId}&order=date_evaluation.asc,created_at.asc`,
+    `${SUPABASE_URL}/rest/v1/evaluations?classe_id=eq.${classeId}&select=*,enseignants(nom,prenom)&order=date_evaluation.asc,created_at.asc`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -213,18 +215,19 @@ export async function createEvaluation(data) {
 }
 
 /** Modifie une évaluation */
-export async function updateEvaluation(id, data) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations?id=eq.${id}`, {
+export async function updateEvaluation(id, data, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'PATCH',
     headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
     body: JSON.stringify(data),
   });
+  await res.text().catch(() => {});
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
 /** Supprime une évaluation (cascade sur les notes) */
-export async function deleteEvaluation(id) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations?id=eq.${id}`, {
+export async function deleteEvaluation(id, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/evaluations?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'DELETE',
     headers: ANON_HEADERS,
   });
@@ -267,10 +270,10 @@ export async function upsertNote(evaluationId, eleveId, score, absent) {
 
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
 
-/** Récupère toutes les observations d'une classe par un enseignant */
-export async function fetchObservationsClasse(classeId, enseignantId) {
+/** Récupère toutes les observations d'une classe (tous les enseignants) */
+export async function fetchObservationsClasse(classeId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/observations?classe_id=eq.${classeId}&enseignant_id=eq.${enseignantId}&order=created_at.desc`,
+    `${SUPABASE_URL}/rest/v1/observations?classe_id=eq.${classeId}&select=*,enseignants(nom,prenom)&order=created_at.desc`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -289,9 +292,9 @@ export async function createObservation(data) {
   return arr[0];
 }
 
-/** Supprime une observation */
-export async function deleteObservation(id) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/observations?id=eq.${id}`, {
+/** Supprime une observation (vérifie que l'enseignant en est le créateur) */
+export async function deleteObservation(id, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/observations?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'DELETE',
     headers: ANON_HEADERS,
   });
@@ -303,7 +306,7 @@ export async function deleteObservation(id) {
 /** Récupère tous les retards/absences d'une classe, triés par date desc */
 export async function fetchRetardsAbsences(classeId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/retards_absences?classe_id=eq.${classeId}&order=date.desc,created_at.desc`,
+    `${SUPABASE_URL}/rest/v1/retards_absences?classe_id=eq.${classeId}&select=*,enseignants(nom,prenom)&order=date.desc,created_at.desc`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -323,18 +326,19 @@ export async function createRetardAbsence(data) {
 }
 
 /** Modifie une entrée */
-export async function updateRetardAbsence(id, data) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences?id=eq.${id}`, {
+export async function updateRetardAbsence(id, data, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'PATCH',
     headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
     body: JSON.stringify(data),
   });
+  await res.text().catch(() => {});
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
 /** Supprime une entrée */
-export async function deleteRetardAbsence(id) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences?id=eq.${id}`, {
+export async function deleteRetardAbsence(id, enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/retards_absences?id=eq.${id}&enseignant_id=eq.${enseignantId}`, {
     method: 'DELETE',
     headers: ANON_HEADERS,
   });
@@ -428,9 +432,10 @@ const PRESENCE_STATUTS = ['en_ligne', 'reunion', 'non_joignable', 'deconnecte'];
 /** Met à jour le statut de présence de l'enseignant */
 export async function updatePresence(enseignantId, statut) {
   if (!PRESENCE_STATUTS.includes(statut)) return;
-  await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${enseignantId}`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${enseignantId}`, {
     method: 'PATCH',
     headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
     body: JSON.stringify({ statut_presence: statut, presence_updated_at: new Date().toISOString() }),
   });
+  await res.text().catch(() => {});
 }

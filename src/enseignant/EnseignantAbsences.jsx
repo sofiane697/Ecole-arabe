@@ -45,8 +45,8 @@ const S = {
   }),
   // Tableau
   tableWrap: { background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius)', border: '1px solid var(--a-border)', overflow: 'hidden' },
-  tableHeader: { display: 'grid', gridTemplateColumns: '110px 1fr 90px 1fr 80px', gap: 0, borderBottom: '1px solid var(--a-border)', padding: '10px 20px', fontSize: 11, fontWeight: 700, color: 'var(--a-fg-light)', textTransform: 'uppercase', letterSpacing: '0.8px' },
-  tableRow: (i) => ({ display: 'grid', gridTemplateColumns: '110px 1fr 90px 1fr 80px', gap: 0, padding: '13px 20px', borderBottom: '1px solid var(--a-border)', background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,0.02)', alignItems: 'center' }),
+  tableHeader: { display: 'grid', gridTemplateColumns: '110px 1fr 90px 1fr 120px 80px', gap: 0, borderBottom: '1px solid var(--a-border)', padding: '10px 20px', fontSize: 11, fontWeight: 700, color: 'var(--a-fg-light)', textTransform: 'uppercase', letterSpacing: '0.8px' },
+  tableRow: (i) => ({ display: 'grid', gridTemplateColumns: '110px 1fr 90px 1fr 120px 80px', gap: 0, padding: '13px 20px', borderBottom: '1px solid var(--a-border)', background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,0.02)', alignItems: 'center' }),
   badgeRetard:  { display: 'inline-block', padding: '3px 10px', borderRadius: 20, background: 'rgba(240,180,41,0.15)', color: 'var(--a-gold)', fontSize: 12, fontWeight: 700 },
   badgeAbsence: { display: 'inline-block', padding: '3px 10px', borderRadius: 20, background: 'rgba(255,69,58,0.1)', color: 'var(--a-red)', fontSize: 12, fontWeight: 700 },
   actionBtn: (danger) => ({ padding: '5px 10px', borderRadius: 6, border: `1px solid ${danger ? 'rgba(255,69,58,.3)' : 'var(--a-border)'}`, background: 'transparent', color: danger ? 'var(--a-red)' : 'var(--a-fg-mid)', fontSize: 12, cursor: 'pointer', marginLeft: 6 }),
@@ -165,7 +165,7 @@ export default function EnseignantAbsences() {
       } else {
         await updateRetardAbsence(modal.entry.id, {
           type: fType, date: fDate, commentaire: fCommentaire.trim() || null,
-        });
+        }, user.id);
         showFeedback(true, 'Entrée modifiée.');
       }
       setModal(null);
@@ -181,7 +181,7 @@ export default function EnseignantAbsences() {
     if (!confirmDel) return;
     setSaving(true);
     try {
-      await deleteRetardAbsence(confirmDel.id);
+      await deleteRetardAbsence(confirmDel.id, user.id);
       showFeedback(true, 'Entrée supprimée.');
       setConfirmDel(null);
       await load();
@@ -258,25 +258,38 @@ export default function EnseignantAbsences() {
             <span>Élève</span>
             <span>Type</span>
             <span>Commentaire</span>
+            <span>Par</span>
             <span>Actions</span>
           </div>
-          {entries.map((e, i) => (
-            <div key={e.id} style={S.tableRow(i)}>
-              <span style={S.cell}>{formatDate(e.date)}</span>
-              <span style={S.cell}>{getEleveName(eleves, e.eleve_id)}</span>
-              <span>
-                {e.type === 'retard'
-                  ? <span style={S.badgeRetard}>⏰ Retard</span>
-                  : <span style={S.badgeAbsence}>🚫 Absence</span>
-                }
-              </span>
-              <span style={S.cellMid}>{e.commentaire || '—'}</span>
-              <span>
-                <button style={S.actionBtn(false)} onClick={() => openEdit(e)}>✏️</button>
-                <button style={S.actionBtn(true)}  onClick={() => setConfirmDel(e)}>🗑️</button>
-              </span>
-            </div>
-          ))}
+          {entries.map((e, i) => {
+            const isOwn = e.enseignant_id === user.id;
+            return (
+              <div key={e.id} style={S.tableRow(i)}>
+                <span style={S.cell}>{formatDate(e.date)}</span>
+                <span style={S.cell}>{getEleveName(eleves, e.eleve_id)}</span>
+                <span>
+                  {e.type === 'retard'
+                    ? <span style={S.badgeRetard}>⏰ Retard</span>
+                    : <span style={S.badgeAbsence}>🚫 Absence</span>
+                  }
+                </span>
+                <span style={S.cellMid}>{e.commentaire || '—'}</span>
+                <span style={{ fontSize: 11, color: isOwn ? 'var(--a-fg-mid)' : 'var(--a-fg-light)', fontStyle: isOwn ? 'normal' : 'italic' }}>
+                  {isOwn ? 'Moi' : (e.enseignants ? `${e.enseignants.prenom} ${e.enseignants.nom}` : '—')}
+                </span>
+                <span>
+                  {isOwn ? (
+                    <>
+                      <button style={S.actionBtn(false)} onClick={() => openEdit(e)}>✏️</button>
+                      <button style={S.actionBtn(true)}  onClick={() => setConfirmDel(e)}>🗑️</button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 11, color: 'var(--a-fg-light)' }}>—</span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 

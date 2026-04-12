@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
-import { logoutEleve, getEleveUser, fetchUnreadCountEleve, fetchClasseIdEleve, fetchNewDevoirsCount, fetchNewNotesCount, fetchNewObsCount, startSession, heartbeatSession, endSession } from './supabasePortail';
+import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession } from './supabasePortail';
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -175,72 +175,31 @@ export default function PortailApp() {
     };
   }, []); // une seule fois au montage
 
-  // Badge messages non-lus — poll toutes les 30s
+  // ─── Badges consolidés — 1 seul poll toutes les 30s au lieu de 4 ───
   useEffect(() => {
     const user = getEleveUser();
     if (!user?.id) return;
-    const refresh = () => fetchUnreadCountEleve(user.id).then(setUnreadCount).catch(() => {});
-    refresh();
-    const t = setInterval(refresh, 30000);
-    return () => clearInterval(t);
-  }, []);
 
-  // Badge devoirs non-vus — poll toutes les 30s
-  useEffect(() => {
-    const user = getEleveUser();
-    if (!user?.id) return;
-    const seenKey = `devoirs_seen_at_${user.id}`;
+    const epoch = new Date(0).toISOString();
 
-    const refreshDevoirs = async () => {
-      try {
-        let cid = classeIdRef.current;
-        if (!cid) {
-          cid = user.classe_id || await fetchClasseIdEleve(user.id);
-          classeIdRef.current = cid;
-        }
-        if (!cid) return;
-        const seenAt = localStorage.getItem(seenKey) || new Date(0).toISOString();
-        const count = await fetchNewDevoirsCount(cid, seenAt);
-        setNewDevoirsCount(count);
-      } catch {}
+    const refreshAll = async () => {
+      const seenDates = {
+        devoirs: localStorage.getItem(`devoirs_seen_at_${user.id}`) || epoch,
+        notes:   localStorage.getItem(`notes_seen_at_${user.id}`)   || epoch,
+        obs:     localStorage.getItem(`obs_seen_at_${user.id}`)     || epoch,
+      };
+      const cid = classeIdRef.current || user.classe_id || null;
+      const counts = await fetchAllBadgeCounts(user.id, cid, seenDates).catch(() => null);
+      if (!counts) return;
+      if (counts.classeId) classeIdRef.current = counts.classeId;
+      setUnreadCount(counts.unread);
+      setNewDevoirsCount(counts.devoirs);
+      setNewNotesCount(counts.notes);
+      setNewObsCount(counts.obs);
     };
 
-    refreshDevoirs();
-    const t = setInterval(refreshDevoirs, 30000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Badge notes non-vues — poll toutes les 30s
-  useEffect(() => {
-    const user = getEleveUser();
-    if (!user?.id) return;
-    const seenKey = `notes_seen_at_${user.id}`;
-    const refresh = async () => {
-      try {
-        const seenAt = localStorage.getItem(seenKey) || new Date(0).toISOString();
-        const count = await fetchNewNotesCount(user.id, seenAt);
-        setNewNotesCount(count);
-      } catch {}
-    };
-    refresh();
-    const t = setInterval(refresh, 30000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Badge observations non-vues — poll toutes les 30s
-  useEffect(() => {
-    const user = getEleveUser();
-    if (!user?.id) return;
-    const seenKey = `obs_seen_at_${user.id}`;
-    const refresh = async () => {
-      try {
-        const seenAt = localStorage.getItem(seenKey) || new Date(0).toISOString();
-        const count = await fetchNewObsCount(user.id, seenAt);
-        setNewObsCount(count);
-      } catch {}
-    };
-    refresh();
-    const t = setInterval(refresh, 30000);
+    refreshAll();
+    const t = setInterval(refreshAll, 30_000);
     return () => clearInterval(t);
   }, []);
 

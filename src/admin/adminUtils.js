@@ -5,7 +5,9 @@ export function generateIdentifiant(prenom, nom) {
   const part1 = (p[0] || 'X').toUpperCase();
   const part2 = (n[1] || n[0] || 'X').toLowerCase();
   const part3 = (n[0] || 'X').toUpperCase();
-  const digits = String(Math.floor(1000 + Math.random() * 9000));
+  const arr = new Uint32Array(1);
+  crypto.getRandomValues(arr);
+  const digits = String(1000 + (arr[0] % 9000));
   return `${part1}${part2}${part3}${digits}`;
 }
 
@@ -15,11 +17,22 @@ export function generateTempPassword() {
   const upper    = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits   = '23456789';
   const specials = '!@#$%&*?';
+  const rnd = (max) => {
+    const a = new Uint32Array(1);
+    crypto.getRandomValues(a);
+    return a[0] % max;
+  };
   let pwd = '';
-  pwd += upper[Math.floor(Math.random() * upper.length)];
-  pwd += chars[Math.floor(Math.random() * chars.length)];
-  pwd += digits[Math.floor(Math.random() * digits.length)];
-  pwd += specials[Math.floor(Math.random() * specials.length)];
-  for (let i = 0; i < 4; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
-  return pwd.split('').sort(() => Math.random() - 0.5).join('');
+  pwd += upper[rnd(upper.length)];
+  pwd += chars[rnd(chars.length)];
+  pwd += digits[rnd(digits.length)];
+  pwd += specials[rnd(specials.length)];
+  for (let i = 0; i < 4; i++) pwd += chars[rnd(chars.length)];
+  // Mélange cryptographiquement sûr (Fisher-Yates)
+  const arr = pwd.split('');
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = rnd(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.join('');
 }

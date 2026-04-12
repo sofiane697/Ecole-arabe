@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getEnseignantUser, fetchMesClasses, fetchDevoirsEnseignant, createDevoir, updateDevoir, deleteDevoir } from './supabaseEnseignant';
+import { getEnseignantUser, fetchMesClasses, fetchDevoirsClasse, createDevoir, updateDevoir, deleteDevoir } from './supabaseEnseignant';
 
 // ─── Helpers calendrier ───────────────────────────────────────────────────────
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -119,13 +119,12 @@ export default function EnseignantDevoirs() {
   const load = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const [cls, dvs] = await Promise.all([
-        fetchMesClasses(user.id),
-        fetchDevoirsEnseignant(user.id),
-      ]);
+      const cls = await fetchMesClasses(user.id);
       setClasses(cls);
       if (cls.length > 0 && !selClasse) setSelClasse(cls[0].id);
-      setDevoirs(dvs);
+      // Fetch devoirs de TOUTES les classes du prof (inclut ceux des autres profs)
+      const allDevoirs = await Promise.all(cls.map(c => fetchDevoirsClasse(c.id)));
+      setDevoirs(allDevoirs.flat());
     } catch(e) {}
     setLoading(false);
   }, [user?.id]);
@@ -177,7 +176,7 @@ export default function EnseignantDevoirs() {
       if (modal.mode === 'create') {
         await createDevoir({ enseignant_id: user.id, classe_id: fClasse, titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate });
       } else {
-        await updateDevoir(modal.devoir.id, { titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate, classe_id: fClasse });
+        await updateDevoir(modal.devoir.id, { titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate, classe_id: fClasse }, user.id);
       }
       await load();
       setModal(null);
@@ -187,7 +186,7 @@ export default function EnseignantDevoirs() {
 
   const handleDelete = async (id) => {
     try {
-      await deleteDevoir(id);
+      await deleteDevoir(id, user.id);
       setConfirmDel(null);
       await load();
     } catch(e) { alert(e.message); }
@@ -272,15 +271,23 @@ export default function EnseignantDevoirs() {
             ) : (
               devoirsDuJour.map(d => {
                 const cl = classes.find(c => c.id === d.classe_id);
+                const isOwn = d.enseignant_id === user.id;
                 return (
                   <div key={d.id} style={S.devoirCard}>
                     <div style={S.devoirTitre}>{d.titre}</div>
                     {d.description && <div style={S.devoirDesc}>{d.description}</div>}
                     {cl && <div style={S.devoirClasse}>📚 {cl.nom}</div>}
-                    <div style={S.devoirActions}>
-                      <button style={S.iconBtn('var(--a-gold)')} onClick={() => openEdit(d)}>✏️ Modifier</button>
-                      <button style={S.iconBtn('var(--a-red)')} onClick={() => setConfirmDel(d)}>🗑️ Supprimer</button>
-                    </div>
+                    {!isOwn && d.enseignants && (
+                      <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:4, fontStyle:'italic' }}>
+                        Par {d.enseignants.prenom} {d.enseignants.nom}
+                      </div>
+                    )}
+                    {isOwn && (
+                      <div style={S.devoirActions}>
+                        <button style={S.iconBtn('var(--a-gold)')} onClick={() => openEdit(d)}>✏️ Modifier</button>
+                        <button style={S.iconBtn('var(--a-red)')} onClick={() => setConfirmDel(d)}>🗑️ Supprimer</button>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -324,7 +331,7 @@ export default function EnseignantDevoirs() {
             </div>
 
             <div style={S.btnRow}>
-              {modal.mode === 'edit' && (
+              {modal.mode === 'edit' && modal.devoir?.enseignant_id === user.id && (
                 <button style={S.btnDel} onClick={() => { setConfirmDel(modal.devoir); setModal(null); }}>Supprimer</button>
               )}
               <button style={S.btnCancel} onClick={() => setModal(null)}>Annuler</button>

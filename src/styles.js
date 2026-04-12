@@ -1317,12 +1317,29 @@ const STYLES = `
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: var(--radius-sm);
     padding: 0.8rem 1rem;
+    height: 3rem;
+    box-sizing: border-box;
     color: #f5f5f7; font-size: 0.9rem;
     outline: none;
     transition: all 0.3s var(--ease);
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
     -moz-appearance: textfield;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
   }
+  .modal-field input[type="date"] {
+    color-scheme: dark;
+    cursor: pointer;
+  }
+  .modal-field input[type="date"]:not([value=""])::-webkit-datetime-edit { color: #f5f5f7; }
+  .modal-field input[type="date"]::-webkit-datetime-edit { color: rgba(245,245,247,0.2); }
+  .modal-field input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
+    cursor: pointer;
+    opacity: 0.5;
+  }
+  .modal-field input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 0.9; }
   .modal-field input::-webkit-inner-spin-button,
   .modal-field input::-webkit-outer-spin-button { -webkit-appearance: none; }
   .modal-field input::placeholder { color: rgba(245,245,247,0.2); }

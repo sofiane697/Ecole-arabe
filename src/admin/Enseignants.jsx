@@ -9,6 +9,7 @@ import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
 // ─── Formatage des noms ──────────────────────────────────────────────────────
+const PAGE_SIZE = 25;
 const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
 const fmtNom    = (s) => s.trim().toUpperCase();
 
@@ -69,6 +70,8 @@ export default function Enseignants() {
   const [modal, setModal]             = useState(null); // null | { type:'add'|'edit', data? }
   const [confirm, setConfirm]         = useState(null);
   const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState('');
+  const [page, setPage]               = useState(0);
   const [result, setResult]           = useState(null); // { prenom, nom, identifiant, tempPassword }
   const [resetResult, setResetResult] = useState(null);
   const [pwdVisible, setPwdVisible]         = useState(true);
@@ -120,6 +123,16 @@ export default function Enseignants() {
   }, [resetResult]);
 
   const handleSave = async (data, selectedClasseIds) => {
+    setError('');
+    const NOM_REGEX = /^[a-zA-Zàâäéèêëïîôùûüœæ\s'\-]{1,50}$/;
+    if (!NOM_REGEX.test(data.prenom.trim())) {
+      setError('Le prénom contient des caractères non autorisés.');
+      return;
+    }
+    if (!NOM_REGEX.test(data.nom.trim())) {
+      setError('Le nom contient des caractères non autorisés.');
+      return;
+    }
     setLoading(true);
     try {
       const cleanPrenom = fmtPrenom(data.prenom);
@@ -140,7 +153,7 @@ export default function Enseignants() {
       await setEnseignantClasses(ensId, selectedClasseIds);
       await load();
       setModal(null);
-    } catch(e) { alert(e.message); }
+    } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
     setLoading(false);
   };
 
@@ -154,7 +167,7 @@ export default function Enseignants() {
         try {
           await adminResetEnseignantPassword(ens.id, tempPwd);
           setResetResult({ prenom: ens.prenom, nom: ens.nom, identifiant: (ens.identifiant || '').toUpperCase(), tempPassword: tempPwd });
-        } catch(e) { alert(e.message); }
+        } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
       },
     });
   };
@@ -165,7 +178,7 @@ export default function Enseignants() {
       message: <span>L'enseignant <strong>{ens.prenom} {ens.nom}</strong> sera supprimé définitivement. Ses assignations de classes seront également supprimées.</span>,
       onConfirm: async () => {
         setConfirm(null);
-        try { await deleteEnseignant(ens.id); await load(); } catch(e) { alert(e.message); }
+        try { await deleteEnseignant(ens.id); await load(); } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
       },
     });
   };
@@ -181,11 +194,17 @@ export default function Enseignants() {
         </button>
       </div>
 
+      {error && <p style={{ color:'var(--a-red)', fontSize:13, marginBottom:12 }}>{error}</p>}
+
       {enseignants.length === 0 ? (
         <div style={S.empty}>Aucun enseignant créé.<br />Commencez par ajouter le premier enseignant.</div>
-      ) : (
+      ) : (() => {
+        const totalPages = Math.max(1, Math.ceil(enseignants.length / PAGE_SIZE));
+        const safePage   = Math.min(page, totalPages - 1);
+        const paginated  = enseignants.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+        return (<>
         <div style={S.grid}>
-          {enseignants.map(ens => {
+          {paginated.map(ens => {
             const initiales = (fmtPrenom(ens.prenom || '')?.[0] || '') + (fmtNom(ens.nom || '')?.[0] || '');
             const classeIds = classesMap[ens.id] || [];
             const classeObjs = allClasses.filter(c => classeIds.includes(c.id));
@@ -233,7 +252,22 @@ export default function Enseignants() {
             );
           })}
         </div>
-      )}
+        {totalPages > 1 && (
+          <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:12, padding:'20px 0' }}>
+            <button
+              disabled={safePage === 0}
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              style={{ padding:'6px 14px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color: safePage === 0 ? 'var(--a-fg-light)' : 'var(--a-fg)', fontSize:12, fontWeight:600, cursor: safePage === 0 ? 'default' : 'pointer', opacity: safePage === 0 ? 0.5 : 1 }}
+            >← Précédent</button>
+            <span style={{ fontSize:12, color:'var(--a-fg-mid)', fontWeight:600 }}>Page {safePage + 1} / {totalPages}</span>
+            <button
+              disabled={safePage >= totalPages - 1}
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              style={{ padding:'6px 14px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color: safePage >= totalPages - 1 ? 'var(--a-fg-light)' : 'var(--a-fg)', fontSize:12, fontWeight:600, cursor: safePage >= totalPages - 1 ? 'default' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.5 : 1 }}
+            >Suivant →</button>
+          </div>
+        )}
+        </>); })()}
 
       {modal && (
         <EnseignantModal

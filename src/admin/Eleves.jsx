@@ -3,6 +3,8 @@ import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, delet
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 
+const PAGE_SIZE = 25;
+
 // ─── Formatage des noms ──────────────────────────────────────────────────────
 const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
 const fmtNom    = (s) => s.trim().toUpperCase();
@@ -71,6 +73,7 @@ export default function Eleves() {
   const [search, setSearch]       = useState('');
   const [filterActif, setFilterActif] = useState('tous'); // 'tous' | 'actif' | 'inactif'
   const [sortBy, setSortBy]       = useState('date');     // 'date' | 'nom'
+  const [page, setPage]           = useState(0);
   const [confirmReset, setConfirmReset] = useState(null);  // élève en attente de confirmation reset
   const [confirmDelete, setConfirmDelete] = useState(null); // élève en attente de confirmation suppression
   const [editEleve, setEditEleve] = useState(null);       // élève en cours d'édition
@@ -82,6 +85,7 @@ export default function Eleves() {
   const [activitePeriode, setActivitePeriode] = useState('30j');
   const [activite, setActivite] = useState([]);
   const [activiteLoading, setActiviteLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const loadEleves = useCallback(async () => {
     try { setEleves(await fetchEleves()); } catch(e) {}
@@ -166,7 +170,7 @@ export default function Eleves() {
 
       await loadEleves();
       if (selectedEleve?.id === eleve.id) setSelectedEleve({ ...eleve, actif: activation });
-    } catch(e) { alert(e.message); }
+    } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
   };
 
   const handleResetPassword = (eleve) => {
@@ -202,7 +206,7 @@ export default function Eleves() {
       setSelectedEleve(updated);
       setEleves(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEditEleve(null);
-    } catch(e) { alert(e.message); }
+    } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
     finally { setEditLoading(false); }
   };
 
@@ -213,7 +217,7 @@ export default function Eleves() {
       await deleteEleve(eleve.id);
       setEleves(prev => prev.filter(e => e.id !== eleve.id));
       setSelectedEleve(null); // retour à la liste
-    } catch(e) { alert(e.message); }
+    } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
   };
 
   const handleConfirmReset = async () => {
@@ -224,7 +228,7 @@ export default function Eleves() {
       await resetElevePassword(eleve.id, tempPwd);
       const identifiant = (eleve.identifiant || '').toUpperCase();
       setResetResult({ identifiant, tempPassword: tempPwd, prenom: eleve.prenom, nom: eleve.nom });
-    } catch(e) { alert(e.message); }
+    } catch(e) { setError(e.message || 'Une erreur est survenue.'); }
   };
 
   // ─── VUE DÉTAIL ──────────────────────────────────────────────────────
@@ -235,6 +239,7 @@ export default function Eleves() {
         <div style={S.breadcrumb} onClick={() => setSelectedEleve(null)}>
           <IconBack /> <span>Retour à la liste</span>
         </div>
+        {error && <p style={{ color:'var(--a-red)', fontSize:13, marginBottom:12 }}>{error}</p>}
 
         <div style={S.detailHeader}>
           <div style={S.detailAvatar}>{initials}</div>
@@ -780,13 +785,13 @@ export default function Eleves() {
               style={S.searchInput}
               placeholder="Rechercher par nom ou identifiant…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); setPage(0); }}
             />
           </div>
-          <button style={S.filterBtn(filterActif === 'tous')}   onClick={() => setFilterActif('tous')}>Tous</button>
-          <button style={S.filterBtn(filterActif === 'actif')}  onClick={() => setFilterActif('actif')}>Actifs</button>
-          <button style={S.filterBtn(filterActif === 'inactif')} onClick={() => setFilterActif('inactif')}>Inactifs</button>
-          <select style={S.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <button style={S.filterBtn(filterActif === 'tous')}   onClick={() => { setFilterActif('tous'); setPage(0); }}>Tous</button>
+          <button style={S.filterBtn(filterActif === 'actif')}  onClick={() => { setFilterActif('actif'); setPage(0); }}>Actifs</button>
+          <button style={S.filterBtn(filterActif === 'inactif')} onClick={() => { setFilterActif('inactif'); setPage(0); }}>Inactifs</button>
+          <select style={S.sortSelect} value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(0); }}>
             <option value="date">↓ Plus récents</option>
             <option value="nom">↑ Nom A→Z</option>
           </select>
@@ -798,24 +803,48 @@ export default function Eleves() {
         <div style={S.empty}>Aucun élève ne correspond à votre recherche.</div>
       )}
 
-      <div style={S.grid}>
-        {elevesFiltered.map(e => {
-          const initials = (fmtPrenom(e.prenom || '')?.[0] || '') + (fmtNom(e.nom || '')?.[0] || '');
-          return (
-            <div key={e.id} style={S.card} onClick={() => openEleve(e)}
-              onMouseEnter={ev => { ev.currentTarget.style.transform='translateY(-2px)'; ev.currentTarget.style.boxShadow='0 6px 24px rgba(0,0,0,.12)'; }}
-              onMouseLeave={ev => { ev.currentTarget.style.transform=''; ev.currentTarget.style.boxShadow=''; }}>
-              <div style={S.avatar()}>{initials}</div>
-              <div style={S.info}>
-                <div style={S.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
-                <div style={S.email}>ID : <span style={{ fontFamily:'monospace', fontWeight:600, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>
-                <div style={S.date}>Inscrit le {new Date(e.created_at).toLocaleDateString('fr-FR')}</div>
-              </div>
-              <span style={S.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
+      {(() => {
+        const totalPages = Math.max(1, Math.ceil(elevesFiltered.length / PAGE_SIZE));
+        const safePage   = Math.min(page, totalPages - 1);
+        const paginated  = elevesFiltered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+        return (
+          <>
+            <div style={S.grid}>
+              {paginated.map(e => {
+                const initials = (fmtPrenom(e.prenom || '')?.[0] || '') + (fmtNom(e.nom || '')?.[0] || '');
+                return (
+                  <div key={e.id} style={S.card} onClick={() => openEleve(e)}
+                    onMouseEnter={ev => { ev.currentTarget.style.transform='translateY(-2px)'; ev.currentTarget.style.boxShadow='0 6px 24px rgba(0,0,0,.12)'; }}
+                    onMouseLeave={ev => { ev.currentTarget.style.transform=''; ev.currentTarget.style.boxShadow=''; }}>
+                    <div style={S.avatar()}>{initials}</div>
+                    <div style={S.info}>
+                      <div style={S.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
+                      <div style={S.email}>ID : <span style={{ fontFamily:'monospace', fontWeight:600, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>
+                      <div style={S.date}>Inscrit le {new Date(e.created_at).toLocaleDateString('fr-FR')}</div>
+                    </div>
+                    <span style={S.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+            {totalPages > 1 && (
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:16 }}>
+                <button disabled={safePage === 0} onClick={() => setPage(p => p - 1)}
+                  style={{ padding:'6px 14px', borderRadius:8, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color:'var(--a-text)', cursor: safePage === 0 ? 'not-allowed' : 'pointer', opacity: safePage === 0 ? 0.4 : 1, fontSize:13 }}>
+                  ← Précédent
+                </button>
+                <span style={{ fontSize:12, color:'var(--a-muted)' }}>
+                  Page {safePage + 1} / {totalPages} — {elevesFiltered.length} résultat{elevesFiltered.length !== 1 ? 's' : ''}
+                </span>
+                <button disabled={safePage >= totalPages - 1} onClick={() => setPage(p => p + 1)}
+                  style={{ padding:'6px 14px', borderRadius:8, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color:'var(--a-text)', cursor: safePage >= totalPages - 1 ? 'not-allowed' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.4 : 1, fontSize:13 }}>
+                  Suivant →
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {showModal && <CreateEleveModal onClose={() => setShowModal(false)} onCreated={() => { setShowModal(false); loadEleves(); }} />}
     </div>
@@ -865,8 +894,17 @@ function CreateEleveModal({ onClose, onCreated }) {
   const identifiant = nom.trim() && prenom.trim() ? generateIdentifiant(prenom, nom) : '';
 
   const handleSubmit = async () => {
-    setLoading(true);
     setError('');
+    const NOM_REGEX = /^[a-zA-Zàâäéèêëïîôùûüœæ\s'\-]{1,50}$/;
+    if (!NOM_REGEX.test(prenom.trim())) {
+      setError('Le prénom contient des caractères non autorisés.');
+      return;
+    }
+    if (!NOM_REGEX.test(nom.trim())) {
+      setError('Le nom contient des caractères non autorisés.');
+      return;
+    }
+    setLoading(true);
     try {
       const tempPwd  = generateTempPassword();
       const idLogin  = identifiant.toLowerCase();

@@ -607,6 +607,37 @@ export async function fetchEleveActivite(eleveId, from, to) {
   return res.json();
 }
 
+// ─── SURVEILLANCE DISCUSSIONS ────────────────────────────────────────────────
+
+/** Toutes les conversations (dédupliquées, triées par dernier message) */
+export async function fetchAllConversations() {
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages` +
+    `?select=eleve_id,enseignant_id,contenu,created_at,sender_role,` +
+    `profils_eleves(id,nom,prenom,classe_id),enseignants(id,nom,prenom)` +
+    `&order=created_at.desc`
+  );
+  if (!res.ok) return [];
+  const rows = await res.json();
+  const seen = new Set();
+  return rows.filter(r => {
+    const key = `${r.eleve_id}|${r.enseignant_id}`;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+
+/** Tous les messages d'une conversation élève ↔ enseignant */
+export async function fetchConversationMessages(eleveId, enseignantId) {
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages` +
+    `?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}` +
+    `&order=created_at.asc`
+  );
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword, classeNom }) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
     method: 'POST',

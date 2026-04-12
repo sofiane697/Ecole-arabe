@@ -171,6 +171,7 @@ export default function EnseignantNotes() {
   const [fDate,       setFDate]       = useState('');
   const [saving,      setSaving]      = useState(false);
   const [confirmDel,  setConfirmDel]  = useState(null);
+  const [actionError, setActionError] = useState('');
 
   // Load classes
   useEffect(() => {
@@ -213,7 +214,7 @@ export default function EnseignantNotes() {
     try {
       const result = await upsertNote(evalId, eleveId, score, false);
       setNotesMap(prev => ({ ...prev, [key]: result }));
-    } catch {}
+    } catch(e) { setActionError(e.message || 'Erreur lors de la sauvegarde de la note.'); }
   }, []);
 
   const toggleAbsent = useCallback(async (evalId, eleveId) => {
@@ -227,7 +228,7 @@ export default function EnseignantNotes() {
     try {
       const result = await upsertNote(evalId, eleveId, null, newAbsent);
       setNotesMap(prev => ({ ...prev, [key]: result }));
-    } catch {}
+    } catch(e) { setActionError(e.message || 'Erreur lors du marquage absent.'); }
   }, [notesMap]);
 
   // Stats par évaluation
@@ -255,24 +256,24 @@ export default function EnseignantNotes() {
         setEvaluations(prev => [...prev, created]);
         setSelEval(created);
       } else {
-        await updateEvaluation(modal.eval.id, { titre:data.titre, date_evaluation:data.date_evaluation, score_max:4 });
+        await updateEvaluation(modal.eval.id, { titre:data.titre, date_evaluation:data.date_evaluation, score_max:4 }, user.id);
         setEvaluations(prev => prev.map(e => e.id === modal.eval.id ? { ...e, ...data } : e));
         setSelEval(prev => prev?.id === modal.eval.id ? { ...prev, ...data } : prev);
       }
       setModal(null);
-    } catch {}
+    } catch(e) { setActionError(e.message || 'Erreur lors de l\'enregistrement de l\'évaluation.'); }
     setSaving(false);
   };
 
   const handleDeleteEval = async () => {
     if (!confirmDel) return;
     try {
-      await deleteEvaluation(confirmDel.id);
+      await deleteEvaluation(confirmDel.id, user.id);
       const next = evaluations.filter(e => e.id !== confirmDel.id);
       setEvaluations(next);
       setNotesMap(prev => { const n={...prev}; Object.keys(n).forEach(k=>{if(k.startsWith(confirmDel.id+'_'))delete n[k];}); return n; });
       setSelEval(next.length ? next[0] : null);
-    } catch {}
+    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression de l\'évaluation.'); }
     setConfirmDel(null);
   };
 
@@ -281,6 +282,7 @@ export default function EnseignantNotes() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div style={{ padding:'24px 0' }}>
+      {actionError && <p style={{ color:'#ff453a', fontSize:13, marginBottom:12 }}>{actionError}</p>}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .eval-card:hover { background: rgba(201,150,58,.06) !important; }
@@ -360,15 +362,22 @@ export default function EnseignantNotes() {
                           {fmt(ev.date_evaluation)}
                         </span>
                       )}
+                      {ev.enseignant_id !== user.id && ev.enseignants && (
+                        <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:3, fontStyle:'italic' }}>
+                          Par {ev.enseignants.prenom} {ev.enseignants.nom}
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display:'flex', gap:4, flexShrink:0 }}>
-                      <button onClick={e => openEdit(ev, e)} style={{ width:28, height:28, borderRadius:8, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <IconEdit2/>
-                      </button>
-                      <button onClick={e => { e.stopPropagation(); setConfirmDel(ev); }} style={{ width:28, height:28, borderRadius:8, border:'1px solid rgba(255,69,58,.25)', background:'transparent', color:'var(--a-red)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <IconTrash2/>
-                      </button>
-                    </div>
+                    {ev.enseignant_id === user.id && (
+                      <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                        <button onClick={e => openEdit(ev, e)} style={{ width:28, height:28, borderRadius:8, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <IconEdit2/>
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); setConfirmDel(ev); }} style={{ width:28, height:28, borderRadius:8, border:'1px solid rgba(255,69,58,.25)', background:'transparent', color:'var(--a-red)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <IconTrash2/>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Distribution des notes */}
@@ -497,12 +506,21 @@ export default function EnseignantNotes() {
                           </div>
                         </div>
 
-                        {/* Saisie note */}
-                        <NoteLetterInput
-                          note={note}
-                          onSave={(score) => saveNote(selEval.id, eleve.id, score)}
-                          onAbsent={() => toggleAbsent(selEval.id, eleve.id)}
-                        />
+                        {/* Saisie note (lecture seule si évaluation d'un autre prof) */}
+                        {selEval.enseignant_id === user.id ? (
+                          <NoteLetterInput
+                            note={note}
+                            onSave={(score) => saveNote(selEval.id, eleve.id, score)}
+                            onAbsent={() => toggleAbsent(selEval.id, eleve.id)}
+                          />
+                        ) : (
+                          <div style={{ display:'flex', justifyContent:'center' }}>
+                            {note?.absent
+                              ? <span style={{ fontSize:12, fontWeight:700, padding:'4px 12px', borderRadius:8, background:'rgba(255,69,58,.12)', color:'#ff453a' }}>ABSENT</span>
+                              : <GradeBadge score={note?.score} size="lg" />
+                            }
+                          </div>
+                        )}
                       </div>
                     );
                   })}

@@ -447,24 +447,25 @@ function PreInscriptionModal({ cours, onClose }) {
                 </label>
                 <input id="mi-dob" name="date_naissance" type="date" required
                   max={new Date().toISOString().split('T')[0]}
-                  value={data.date_naissance} onChange={handleChange} />
+                  value={data.date_naissance} onChange={handleChange}
+                  style={{ color: data.date_naissance ? '#f5f5f7' : undefined }} />
               </div>
-              <div className="modal-field">
-                <label htmlFor="mi-annees">Années de pratique de l'arabe</label>
-                <input id="mi-annees" name="annees" type="number" min="0" max="50" required placeholder="0"
-                  value={data.annees} onChange={handleChange} />
-              </div>
-            </div>
-            <div className="modal-row">
               <div className="modal-field">
                 <label htmlFor="mi-tel">Téléphone</label>
                 <input id="mi-tel" name="telephone" type="tel" required placeholder="+33 6 12 34 56 78"
                   value={data.telephone} onChange={handleChange} />
               </div>
+            </div>
+            <div className="modal-row">
               <div className="modal-field">
                 <label htmlFor="mi-email">Email</label>
                 <input id="mi-email" name="email" type="email" required placeholder="votre@email.com"
                   value={data.email} onChange={handleChange} />
+              </div>
+              <div className="modal-field">
+                <label htmlFor="mi-annees">Années de pratique</label>
+                <input id="mi-annees" name="annees" type="number" min="0" max="50" required placeholder="0"
+                  value={data.annees} onChange={handleChange} />
               </div>
             </div>
             {status === 'err' && (

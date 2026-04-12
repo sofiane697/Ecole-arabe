@@ -134,6 +134,7 @@ export default function EnseignantObservations() {
   const [formContenu,  setFormContenu]  = useState('');
   const [formType,     setFormType]     = useState('general');
   const [saving,       setSaving]       = useState(false);
+  const [actionError,  setActionError]  = useState('');
 
   // Load classes on mount
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function EnseignantObservations() {
     try {
       const [elevs, obs] = await Promise.all([
         fetchElevesDeClasse(classeId),
-        fetchObservationsClasse(classeId, user.id),
+        fetchObservationsClasse(classeId),
       ]);
       setEleves(elevs);
       setObservations(obs);
@@ -169,6 +170,7 @@ export default function EnseignantObservations() {
   const handleSave = async () => {
     if (!formContenu.trim() || !selEleve) return;
     setSaving(true);
+    setActionError('');
     try {
       const obs = await createObservation({
         enseignant_id: user.id,
@@ -180,15 +182,15 @@ export default function EnseignantObservations() {
       setObservations(prev => [obs, ...prev]);
       setFormContenu('');
       setFormType('general');
-    } catch(e) { /* silent */ }
+    } catch(e) { setActionError(e.message || 'Erreur lors de l\'enregistrement de l\'observation.'); }
     setSaving(false);
   };
 
   const handleDelete = async (obsId) => {
     try {
-      await deleteObservation(obsId);
+      await deleteObservation(obsId, user.id);
       setObservations(prev => prev.filter(o => o.id !== obsId));
-    } catch(e) { /* silent */ }
+    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression.'); }
   };
 
   const eleveObs   = selEleve ? observations.filter(o => o.eleve_id === selEleve.id) : [];
@@ -272,6 +274,7 @@ export default function EnseignantObservations() {
                 placeholder="Rédigez votre observation, appréciation ou remarque ici…"
               />
 
+              {actionError && <p style={{ color:'#ff453a', fontSize:13, marginTop:8 }}>{actionError}</p>}
               <div style={S.formBtns}>
                 <button style={S.btnClear} onClick={() => { setFormContenu(''); setFormType('general'); }}>
                   Effacer
@@ -291,13 +294,21 @@ export default function EnseignantObservations() {
                   </div>
                   {eleveObs.map(obs => {
                     const ti = typeInfo(obs.type);
+                    const isOwn = obs.enseignant_id === user.id;
                     return (
                       <div key={obs.id} style={S.histItem}>
-                        <button style={S.delBtn} title="Supprimer" onClick={() => handleDelete(obs.id)}>
-                          <IconTrash />
-                        </button>
+                        {isOwn && (
+                          <button style={S.delBtn} title="Supprimer" onClick={() => handleDelete(obs.id)}>
+                            <IconTrash />
+                          </button>
+                        )}
                         <div style={S.histHeader}>
                           <span style={S.histTypePill(ti.color)}>{ti.label}</span>
+                          {!isOwn && obs.enseignants && (
+                            <span style={{ fontSize:11, color:'var(--a-fg-light)', fontStyle:'italic' }}>
+                              par {obs.enseignants.prenom} {obs.enseignants.nom}
+                            </span>
+                          )}
                           <span style={S.histDate}>{formatDate(obs.created_at)}</span>
                         </div>
                         <div style={S.histText}>{obs.contenu}</div>

@@ -411,6 +411,28 @@ export async function endSession(sessionId) {
   } catch {}
 }
 
+// ─── BADGES CONSOLIDÉS (1 seul poll au lieu de 4) ────────────────────────────
+
+/**
+ * Récupère les 4 compteurs de badges en une seule salve (Promise.all).
+ * @param {string} eleveId
+ * @param {string|null} classeId — si null, sera résolu automatiquement
+ * @param {{ devoirs: string, notes: string, obs: string }} seenDates — ISO timestamps
+ * @returns {{ unread, devoirs, notes, obs }} compteurs
+ */
+export async function fetchAllBadgeCounts(eleveId, classeId, seenDates) {
+  const cid = classeId || await fetchClasseIdEleve(eleveId).catch(() => null);
+
+  const [unread, devoirs, notes, obs] = await Promise.all([
+    fetchUnreadCountEleve(eleveId).catch(() => 0),
+    cid ? fetchNewDevoirsCount(cid, seenDates.devoirs).catch(() => 0) : 0,
+    fetchNewNotesCount(eleveId, seenDates.notes).catch(() => 0),
+    fetchNewObsCount(eleveId, seenDates.obs).catch(() => 0),
+  ]);
+
+  return { unread, devoirs, notes, obs, classeId: cid };
+}
+
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
 
 /** Récupère les observations de l'élève */

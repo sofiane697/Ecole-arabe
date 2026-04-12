@@ -68,6 +68,7 @@ export default function EnseignantMessages() {
   const [sending, setSending]         = useState(false);
   const [unreadMap, setUnreadMap]     = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [actionError, setActionError]     = useState('');
   const bottomRef                 = useRef(null);
   const pollRef                   = useRef(null);
 
@@ -119,11 +120,12 @@ export default function EnseignantMessages() {
   const handleSend = async () => {
     if (!text.trim() || sending || !selEleve) return;
     setSending(true);
+    setActionError('');
     try {
       await sendChatMessage(selEleve.id, enseignantId, text.trim(), 'enseignant');
       setText('');
       await loadMessages();
-    } catch {}
+    } catch(e) { setActionError(e.message || 'Erreur lors de l\'envoi du message.'); }
     setSending(false);
   };
 
@@ -137,7 +139,7 @@ export default function EnseignantMessages() {
       await deleteConversation(selEleve.id, enseignantId);
       setMessages([]);
       setConfirmDelete(false);
-    } catch {}
+    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression de la conversation.'); }
   };
 
   if (eleves === null) return <div style={{ padding:32, color:'var(--a-fg-mid)' }}>Chargement…</div>;
@@ -235,6 +237,7 @@ export default function EnseignantMessages() {
               <div ref={bottomRef} />
             </div>
 
+            {actionError && <p style={{ color:'#ff453a', fontSize:13, margin:'0 14px 4px' }}>{actionError}</p>}
             <div style={S.inputRow}>
               <textarea
                 style={S.textarea}

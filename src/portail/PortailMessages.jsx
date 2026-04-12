@@ -64,6 +64,7 @@ export default function PortailMessages() {
   const [messages, setMessages]       = useState([]);
   const [text, setText]               = useState('');
   const [sending, setSending]         = useState(false);
+  const [sendError, setSendError]     = useState('');
   const [unreadMap, setUnreadMap]     = useState({});
   const [presenceMap, setPresenceMap] = useState({});
   const bottomRef                     = useRef(null);
@@ -118,12 +119,15 @@ export default function PortailMessages() {
   const handleSend = async () => {
     if (!text.trim() || sending || !selEns) return;
     setSending(true);
+    setSendError('');
     try {
       await sendChatMessage(eleveId, selEns.id, text.trim(), 'eleve');
       setText('');
       await loadMessages();
       textareaRef.current?.focus();
-    } catch {}
+    } catch {
+      setSendError('Message non envoyé. Vérifiez votre connexion.');
+    }
     setSending(false);
   };
 
@@ -293,6 +297,11 @@ export default function PortailMessages() {
 
             {/* Zone de saisie */}
             <div style={{ padding:'12px 16px', borderTop:'1px solid var(--p-border)', background:'var(--p-bg-card)' }}>
+              {sendError && (
+                <div style={{ marginBottom:8, padding:'8px 12px', borderRadius:8, background:'rgba(255,69,58,0.08)', border:'1px solid rgba(255,69,58,0.25)', color:'var(--p-red, #ff453a)', fontSize:12 }}>
+                  {sendError}
+                </div>
+              )}
               <div style={{ display:'flex', alignItems:'flex-end', gap:10, background:'var(--p-bg)', borderRadius:24, border:'1px solid var(--p-border)', padding:'6px 6px 6px 16px', transition:'border-color .2s' }}>
                 <textarea
                   ref={textareaRef}

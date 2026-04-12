@@ -31,6 +31,12 @@ const IconLogout = () => (
   </svg>
 );
 
+const IconEye = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
 const IconBook = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -50,6 +56,7 @@ const PAGE_TITLES = {
   '/admin/classes':      'Gestion des classes',
   '/admin/eleves':        'Gestion des élèves',
   '/admin/enseignants':   'Gestion des enseignants',
+  '/admin/surveillance':  'Surveillance des discussions',
 };
 
 export default function AdminApp() {
@@ -207,6 +214,14 @@ export default function AdminApp() {
               <line x1="9.5" y1="13.5" x2="14.5" y2="13.5"/>
             </svg>
             Gestion des enseignants
+          </NavLink>
+
+          <NavLink
+            to="/admin/surveillance"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <IconEye /> Surveillance
           </NavLink>
 
           <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>

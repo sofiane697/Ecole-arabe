@@ -3,6 +3,7 @@ import { fetchMessages, updateMessageLu, deleteMessage } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
+const PAGE_SIZE = 25;
 
 const IconReply = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -68,6 +69,7 @@ export default function Messages() {
   const [filtreLu,    setFiltreLu]    = useState('tous');
   const [filtreCours, setFiltreCours] = useState('tous');
   const [search,      setSearch]      = useState('');
+  const [page,        setPage]        = useState(0);
   const [selected,    setSelected]    = useState(null);
   const [confirm,     setConfirm]     = useState(null);
 
@@ -206,14 +208,14 @@ export default function Messages() {
               <button
                 key={f.key}
                 className={`msg-filter-tab ${filtreLu === f.key ? 'active' : ''}`}
-                onClick={() => setFiltreLu(f.key)}
+                onClick={() => { setFiltreLu(f.key); setPage(0); }}
               >
                 {f.label}
                 <span className="msg-filter-tab-count">{f.count}</span>
               </button>
             ))}
           </div>
-          <select className="admin-filter-select" value={filtreCours} onChange={e => setFiltreCours(e.target.value)}
+          <select className="admin-filter-select" value={filtreCours} onChange={e => { setFiltreCours(e.target.value); setPage(0); }}
             style={{ maxWidth:220 }}>
             <option value="tous">Tous les cours</option>
             {COURS.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
@@ -226,7 +228,7 @@ export default function Messages() {
           </span>
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(0); }}
             placeholder="Rechercher…"
             style={{
               paddingLeft:32, paddingRight:12, paddingTop:7, paddingBottom:7,
@@ -249,7 +251,11 @@ export default function Messages() {
               <IconMail />
               <p>{search ? `Aucun résultat pour « ${search} »` : 'Aucun message trouvé'}</p>
             </div>
-          ) : filtered.map(m => {
+          ) : (() => {
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            const safePage   = Math.min(page, totalPages - 1);
+            const paginated  = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+            return (<>{paginated.map(m => {
             const cStyle = getCourseStyle(m.cours);
             return (
               <div
@@ -289,6 +295,22 @@ export default function Messages() {
               </div>
             );
           })}
+          {totalPages > 1 && (
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:12, padding:'16px 0', borderTop:'1px solid var(--a-border)', marginTop:8 }}>
+              <button
+                disabled={safePage === 0}
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                style={{ padding:'6px 14px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color: safePage === 0 ? 'var(--a-fg-light)' : 'var(--a-fg)', fontSize:12, fontWeight:600, cursor: safePage === 0 ? 'default' : 'pointer', opacity: safePage === 0 ? 0.5 : 1 }}
+              >← Précédent</button>
+              <span style={{ fontSize:12, color:'var(--a-fg-mid)', fontWeight:600 }}>Page {safePage + 1} / {totalPages}</span>
+              <button
+                disabled={safePage >= totalPages - 1}
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                style={{ padding:'6px 14px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color: safePage >= totalPages - 1 ? 'var(--a-fg-light)' : 'var(--a-fg)', fontSize:12, fontWeight:600, cursor: safePage >= totalPages - 1 ? 'default' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.5 : 1 }}
+              >Suivant →</button>
+            </div>
+          )}
+          </>); })()}
         </div>
 
         {/* Panneau de lecture */}
