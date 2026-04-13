@@ -223,7 +223,6 @@ export default function Inscriptions() {
     <>
       <div className="admin-page-header">
         <div>
-          <p className="admin-page-title">Pré-inscriptions</p>
           <p className="admin-page-subtitle">Gérez les demandes d'inscription et leur avancement</p>
         </div>
       </div>
@@ -495,7 +494,7 @@ export default function Inscriptions() {
                     <span style={{ fontSize:15 }}>✉️</span>
                     <span style={{ fontSize:12, color:'var(--a-green)', lineHeight:1.5 }}>
                       Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                      <strong style={{ fontFamily:'monospace' }}>{mailEnvoye}</strong>
+                      <strong style={{ fontFamily:'var(--a-font-mono)' }}>{mailEnvoye}</strong>
                     </span>
                   </div>
                 )}

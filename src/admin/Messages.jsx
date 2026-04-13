@@ -168,7 +168,6 @@ export default function Messages() {
     <>
       <div className="admin-page-header">
         <div>
-          <p className="admin-page-title">Messages</p>
           <p className="admin-page-subtitle">
             {nonLus > 0
               ? `${nonLus} message${nonLus > 1 ? 's' : ''} non lu${nonLus > 1 ? 's' : ''}`

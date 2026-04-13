@@ -89,7 +89,7 @@ export default function AdminApp() {
         root.classList.add('admin-light');
       }
     }
-    document.body.style.background = darkMode ? '#000000' : '#f5f5f7';
+    document.body.style.background = darkMode ? '#07112a' : '#f1f0ec';
     localStorage.setItem('admin_theme', darkMode ? 'dark' : 'light');
     return () => { document.body.style.background = ''; };
   }, [darkMode]);

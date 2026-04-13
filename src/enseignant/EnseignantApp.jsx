@@ -159,7 +159,7 @@ export default function EnseignantApp() {
       if (darkMode) root.classList.remove('admin-light');
       else root.classList.add('admin-light');
     }
-    document.body.style.background = darkMode ? '#000000' : '#f5f5f7';
+    document.body.style.background = darkMode ? '#07112a' : '#f1f0ec';
     localStorage.setItem('enseignant_theme', darkMode ? 'dark' : 'light');
     return () => { document.body.style.background = ''; };
   }, [darkMode]);
@@ -263,13 +263,10 @@ export default function EnseignantApp() {
 
           <NavLink to="/enseignant/messages"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
-            onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}
-            style={{ position:'relative' }}>
+            onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}>
             <IconMessages /> Messages
             {unreadCount > 0 && (
-              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--a-red)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
-                {unreadCount}
-              </span>
+              <span className="admin-nav-badge">{unreadCount}</span>
             )}
           </NavLink>
         </nav>
