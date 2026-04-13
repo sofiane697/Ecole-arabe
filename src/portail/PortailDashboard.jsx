@@ -85,7 +85,7 @@ const CARD_PASTELS = [
 
 const S = {
   empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)' },
-  emptyTitle: { fontSize:20, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
+  emptyTitle: { fontFamily:'var(--p-font-display)', fontSize:20, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
   loading: { textAlign:'center', padding:'60px', color:'var(--p-fg-mid)', fontSize:14 },
   welcome: { marginBottom:28 },
   welcomeSub: { fontSize:14, color:'var(--p-fg-mid)', marginTop:6 },
@@ -123,7 +123,7 @@ function SalamGreeting({ prenom }) {
       <div style={{ display:'flex', alignItems:'baseline', gap:12, flexWrap:'wrap', overflow:'hidden' }}>
         {prenom && (
           <span style={{
-            fontSize: 22, fontWeight: 700, color: 'var(--p-fg)',
+            fontFamily: 'var(--p-font-display)', fontSize: 22, fontWeight: 700, color: 'var(--p-fg)',
             display: 'inline-block',
             animation: shouldAnimate
               ? 'salamSpreadName .75s cubic-bezier(0.22,1,0.36,1) .1s both'

@@ -94,7 +94,7 @@ function BrandPanel() {
 
       {/* Titre */}
       <h1 style={{
-        fontSize: 22, fontWeight: 700, color: '#f5f5f7',
+        fontFamily: "var(--a-font-display)", fontSize: 22, fontWeight: 700, color: '#f5f5f7',
         textAlign: 'center', margin: '0 0 14px', letterSpacing: 0.3,
       }}>Portail Administration</h1>
 

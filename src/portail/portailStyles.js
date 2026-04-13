@@ -1,5 +1,5 @@
 const PORTAIL_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
   /* ─── Portail Élève — Variables ─── */
   .portail-root {
@@ -22,6 +22,14 @@ const PORTAIL_STYLES = `
     --p-radius-sm:  10px;
     --p-ease:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --p-ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+    --p-font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    --p-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --p-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --p-font-arabic: 'Scheherazade New', serif;
+    --p-shadow-sm:  0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --p-shadow-md:  0 4px 16px rgba(0,0,0,0.16), 0 2px 4px rgba(0,0,0,0.08);
+    --p-shadow-lg:  0 12px 40px rgba(0,0,0,0.24), 0 4px 12px rgba(0,0,0,0.12);
+    --p-shadow-gold: 0 4px 20px rgba(191,138,48,0.15);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -42,6 +50,9 @@ const PORTAIL_STYLES = `
     --p-blue:       #5BA8C4;
     --p-red:        #E87070;
     --p-yellow:     #F0C050;
+    --p-shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --p-shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --p-shadow-lg:  0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
   }
   .portail-root.portail-light .portail-sidebar {
     background: #ffffff;
@@ -51,6 +62,8 @@ const PORTAIL_STYLES = `
   .portail-root.portail-light .portail-nav-link.active {
     background: rgba(91,168,122,0.18);
     color: #1E6B45;
+    border-left: 3px solid #5BA87A;
+    padding-left: 9px;
   }
   .portail-root.portail-light .portail-nav-link:hover {
     background: rgba(0,0,0,0.04);
@@ -93,6 +106,15 @@ const PORTAIL_STYLES = `
     z-index: 10;
     overflow: hidden;
     box-sizing: border-box;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+  }
+  .portail-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--p-gold), transparent);
+    z-index: 1;
   }
   .portail-sidebar-brand {
     padding: 24px 20px 24px;
@@ -140,7 +162,13 @@ const PORTAIL_STYLES = `
     margin-bottom: 2px;
   }
   .portail-nav-link:hover { background: var(--p-bg-hover); color: var(--p-fg); }
-  .portail-nav-link.active { background: rgba(191,138,48,.1); color: var(--p-gold); font-weight: 600; }
+  .portail-nav-link.active {
+    background: rgba(191,138,48,.1);
+    color: var(--p-gold);
+    font-weight: 600;
+    border-left: 3px solid var(--p-gold);
+    padding-left: 9px;
+  }
 
   /* ─── Main ─── */
   .portail-main {
@@ -167,9 +195,9 @@ const PORTAIL_STYLES = `
     z-index: 5;
     flex-shrink: 0;
   }
-  .portail-topbar-title { font-size: 18px; font-weight: 600; color: var(--p-fg); white-space: nowrap; }
+  .portail-topbar-title { font-family: var(--p-font-display); font-size: 18px; font-weight: 700; color: var(--p-fg); white-space: nowrap; }
   .portail-topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-  .portail-topbar-date { font-size: 12px; color: var(--p-fg-light); white-space: nowrap; }
+  .portail-topbar-date { font-family: var(--p-font-mono); font-size: 0.75rem; color: var(--p-fg-light); white-space: nowrap; }
 
   .portail-theme-toggle {
     background: var(--p-bg-card);
@@ -674,6 +702,54 @@ const PORTAIL_STYLES = `
   .portail-rich-text { overflow:auto; }
   .portail-rich-text img { max-width:100%; height:auto; border-radius:6px; margin:8px 0; }
   .portail-rich-text [dir="rtl"] { text-align:right; }
+
+  /* ─── Nav badge ─── */
+  .portail-nav-badge {
+    margin-left: auto;
+    background: var(--p-gold);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    line-height: 1.4;
+  }
+
+  /* ─── Focus states (accessibilité) ─── */
+  .portail-root input:focus,
+  .portail-root select:focus,
+  .portail-root textarea:focus {
+    border-color: var(--p-gold) !important;
+    box-shadow: 0 0 0 3px rgba(191,138,48,0.12) !important;
+    outline: none;
+  }
+
+  /* ─── Button press feedback ─── */
+  .portail-root button:active {
+    transform: scale(0.97);
+  }
+
+  /* ─── Animation d'entrée — stagger contenu ─── */
+  @keyframes portailSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .portail-content > * {
+    animation: portailSlideUp 0.4s var(--p-ease-out) both;
+  }
+  .portail-content > *:nth-child(1) { animation-delay: 0s; }
+  .portail-content > *:nth-child(2) { animation-delay: 0.06s; }
+  .portail-content > *:nth-child(3) { animation-delay: 0.12s; }
+  .portail-content > *:nth-child(4) { animation-delay: 0.18s; }
+  .portail-content > *:nth-child(5) { animation-delay: 0.24s; }
+
+  /* ─── Module cards hover shadow ─── */
+  .portail-module-card {
+    box-shadow: var(--p-shadow-sm);
+  }
+  .portail-module-card:hover {
+    box-shadow: var(--p-shadow-md);
+  }
 
   /* ─── Lettres arabes de fond ─── */
   @keyframes bgFloat1 {

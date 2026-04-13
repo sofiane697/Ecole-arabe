@@ -51,7 +51,7 @@ const S = {
   eleveTop: { display:'flex', alignItems:'center', gap:14 },
   eleveAvatar: { width:48, height:48, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:800, flexShrink:0, letterSpacing:'-0.5px' },
   eleveName: { fontSize:15, fontWeight:700, color:'var(--a-fg)', lineHeight:1.2 },
-  eleveId: { fontSize:12, color:'var(--a-gold)', fontWeight:700, fontFamily:'monospace', marginTop:3 },
+  eleveId: { fontSize:12, color:'var(--a-gold)', fontWeight:700, fontFamily:'var(--a-font-mono)', marginTop:3 },
   eleveBody: { display:'flex', flexDirection:'column', gap:6, paddingTop:12, borderTop:'1px solid var(--a-border)' },
   eleveRow: { display:'flex', justifyContent:'space-between', alignItems:'center' },
   eleveLabel: { fontSize:11, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:'.5px' },
@@ -64,7 +64,7 @@ const S = {
   // Misc
   overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
   modal: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:420, border:'1px solid var(--a-border)' },
-  modalTitle: { fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
+  modalTitle: { fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
   field: { marginBottom:16 },
   label: { display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
   input: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
@@ -387,7 +387,7 @@ function EleveInfoModal({ eleve, onClose }) {
           </div>
           <div>
             <div style={{ fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>{eleve.prenom} {eleve.nom}</div>
-            <div style={{ fontSize:13, color:'var(--a-gold)', fontWeight:700, fontFamily:'monospace', marginTop:3 }}>{identifiant}</div>
+            <div style={{ fontSize:13, color:'var(--a-gold)', fontWeight:700, fontFamily:'var(--a-font-mono)', marginTop:3 }}>{identifiant}</div>
             <span style={{ display:'inline-block', marginTop:6, padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: eleve.actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: eleve.actif ? 'var(--a-green)' : 'var(--a-red)' }}>
               {eleve.actif ? 'Actif' : 'Inactif'}
             </span>

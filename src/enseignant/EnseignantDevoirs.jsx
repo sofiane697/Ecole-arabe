@@ -48,7 +48,7 @@ const S = {
   // Calendrier
   calWrap:  { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', overflow:'hidden' },
   calHeader:{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid var(--a-border)' },
-  calTitle: { fontSize:16, fontWeight:700, color:'var(--a-fg)' },
+  calTitle: { fontFamily:'var(--a-font-display)', fontSize:16, fontWeight:700, color:'var(--a-fg)' },
   navBtn:   { background:'none', border:'1px solid var(--a-border)', borderRadius:8, padding:'6px 12px', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center' },
   calGrid:  { display:'grid', gridTemplateColumns:'repeat(7, 1fr)' },
   dayHead:  { textAlign:'center', padding:'10px 4px', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', borderBottom:'1px solid var(--a-border)' },
@@ -66,7 +66,7 @@ const S = {
   empty:    { textAlign:'center', padding:'80px 20px', color:'var(--a-fg-mid)' },
   // Panneau latéral
   panel:    { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', padding:20, display:'flex', flexDirection:'column', gap:14 },
-  panelTitle:{ fontSize:15, fontWeight:700, color:'var(--a-fg)', marginBottom:4 },
+  panelTitle:{ fontFamily:'var(--a-font-display)', fontSize:15, fontWeight:700, color:'var(--a-fg)', marginBottom:4 },
   devoirCard:{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', padding:'12px 14px' },
   devoirTitre:{ fontSize:14, fontWeight:600, color:'var(--a-fg)', marginBottom:4 },
   devoirDesc:{ fontSize:13, color:'var(--a-fg-mid)', lineHeight:1.5 },
@@ -77,7 +77,7 @@ const S = {
   // Modal
   overlay:  { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
   modal:    { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:480, border:'1px solid var(--a-border)', maxHeight:'90vh', overflowY:'auto' },
-  modalTitle:{ fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
+  modalTitle:{ fontFamily:'var(--a-font-display)', fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
   field:    { marginBottom:16 },
   label:    { display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
   input:    { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },

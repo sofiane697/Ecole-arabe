@@ -432,7 +432,7 @@ export default function EnseignantNotes() {
               <div style={{ padding:'20px 24px', borderBottom:'1px solid var(--a-border)', background:'rgba(201,150,58,.04)' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                   <div style={{ flex:1 }}>
-                    <h3 style={{ margin:0, fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>{selEval.titre}</h3>
+                    <h3 style={{ margin:0, fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>{selEval.titre}</h3>
                     <div style={{ display:'flex', gap:12, marginTop:5, flexWrap:'wrap' }}>
                       {selEval.date_evaluation && <span style={{ fontSize:13, color:'var(--a-fg-mid)' }}>{fmt(selEval.date_evaluation)}</span>}
                       <div style={{ display:'flex', gap:6 }}>
@@ -449,7 +449,7 @@ export default function EnseignantNotes() {
                     const s = evalStats(selEval);
                     return (
                       <div style={{ display:'flex', gap:12, textAlign:'center', flexShrink:0 }}>
-                        <div><div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)' }}>{s.noted}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>saisis</div></div>
+                        <div><div style={{ fontFamily:'var(--a-font-display)', fontSize:20, fontWeight:700, color:'var(--a-gold)' }}>{s.noted}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>saisis</div></div>
                         {s.absent > 0 && <div><div style={{ fontSize:20, fontWeight:700, color:'#ff453a' }}>{s.absent}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>absents</div></div>}
                       </div>
                     );
@@ -568,7 +568,7 @@ export default function EnseignantNotes() {
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.65)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
           onClick={e => { if (e.target===e.currentTarget) setModal(null); }}>
           <div style={{ background:'var(--a-bg-card)', borderRadius:20, padding:32, width:'100%', maxWidth:420, boxShadow:'0 24px 80px rgba(0,0,0,.6)' }}>
-            <h3 style={{ margin:'0 0 24px', fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>
+            <h3 style={{ margin:'0 0 24px', fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>
               {modal.mode==='create' ? 'Nouvelle évaluation' : 'Modifier l\'évaluation'}
             </h3>
 
@@ -611,7 +611,7 @@ export default function EnseignantNotes() {
       {confirmDel && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.65)', zIndex:1100, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
           <div style={{ background:'var(--a-bg-card)', borderRadius:16, padding:28, maxWidth:380, width:'100%', boxShadow:'0 20px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize:16, fontWeight:700, color:'var(--a-fg)', marginBottom:10 }}>Supprimer cette évaluation ?</div>
+            <div style={{ fontFamily:'var(--a-font-display)', fontSize:16, fontWeight:700, color:'var(--a-fg)', marginBottom:10 }}>Supprimer cette évaluation ?</div>
             <div style={{ fontSize:13, color:'var(--a-fg-mid)', marginBottom:24, lineHeight:1.6 }}>
               <strong style={{color:'var(--a-fg)'}}>{confirmDel.titre}</strong> et toutes les appréciations associées seront supprimées définitivement.
             </div>

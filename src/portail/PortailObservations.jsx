@@ -20,7 +20,7 @@ const S = {
   sub:     { fontSize: 14, color: 'var(--p-fg-mid)', marginTop: 6 },
   empty:   { textAlign: 'center', padding: '80px 20px' },
   emptyIcon:  { fontSize: 48, marginBottom: 16, opacity: 0.35 },
-  emptyTitle: { fontSize: 18, fontWeight: 600, color: 'var(--p-fg)', marginBottom: 8 },
+  emptyTitle: { fontFamily: 'var(--p-font-display)', fontSize: 18, fontWeight: 600, color: 'var(--p-fg)', marginBottom: 8 },
   emptyText:  { fontSize: 14, color: 'var(--p-fg-mid)', lineHeight: 1.6 },
   loading:    { textAlign: 'center', padding: '80px 20px', color: 'var(--p-fg-mid)', fontSize: 14 },
   timeline: { display: 'flex', flexDirection: 'column', gap: 14 },

@@ -283,13 +283,10 @@ export default function PortailApp() {
               if (user?.id) localStorage.setItem(`devoirs_seen_at_${user.id}`, new Date().toISOString());
               setNewDevoirsCount(0);
             }}
-            style={{ position:'relative' }}
           >
             <span style={{fontSize:18}}>📝</span> Mes devoirs
             {newDevoirsCount > 0 && (
-              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
-                {newDevoirsCount}
-              </span>
+              <span className="portail-nav-badge">{newDevoirsCount}</span>
             )}
           </NavLink>
 
@@ -302,13 +299,10 @@ export default function PortailApp() {
               if (user?.id) localStorage.setItem(`notes_seen_at_${user.id}`, new Date().toISOString());
               setNewNotesCount(0);
             }}
-            style={{ position:'relative' }}
           >
             <span style={{fontSize:18}}>📊</span> Mes résultats
             {newNotesCount > 0 && (
-              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
-                {newNotesCount}
-              </span>
+              <span className="portail-nav-badge">{newNotesCount}</span>
             )}
           </NavLink>
 
@@ -321,13 +315,10 @@ export default function PortailApp() {
               if (user?.id) localStorage.setItem(`obs_seen_at_${user.id}`, new Date().toISOString());
               setNewObsCount(0);
             }}
-            style={{ position:'relative' }}
           >
             <span style={{fontSize:18}}>👁️</span> Mes observations
             {newObsCount > 0 && (
-              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
-                {newObsCount}
-              </span>
+              <span className="portail-nav-badge">{newObsCount}</span>
             )}
           </NavLink>
 
@@ -335,13 +326,10 @@ export default function PortailApp() {
             to="/portail/messages"
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}
-            style={{ position:'relative' }}
           >
             <span style={{fontSize:18}}>💬</span> Messages
             {unreadCount > 0 && (
-              <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20 }}>
-                {unreadCount}
-              </span>
+              <span className="portail-nav-badge">{unreadCount}</span>
             )}
           </NavLink>
 

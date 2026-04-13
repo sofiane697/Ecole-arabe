@@ -100,6 +100,7 @@ function BrandPanel({ subtitle }) {
 
       {/* Titre */}
       <h1 style={{
+        fontFamily: "var(--p-font-display, 'Plus Jakarta Sans', 'Inter', sans-serif)",
         fontSize: 22, fontWeight: 700, color: '#f5f5f7',
         textAlign: 'center', margin: '0 0 14px', letterSpacing: 0.3,
       }}>{subtitle}</h1>
@@ -315,7 +316,7 @@ export default function PortailLogin() {
             <div style={S.field}>
               <label style={S.label}>Identifiant</label>
               <input
-                style={{ ...S.input, fontFamily: 'monospace', fontSize: 15, letterSpacing: 1 }}
+                style={{ ...S.input, fontFamily: "var(--p-font-mono, 'JetBrains Mono', monospace)", fontSize: 15, letterSpacing: 1 }}
                 type="text"
                 value={identifiant}
                 onChange={e => setIdentifiant(e.target.value)}

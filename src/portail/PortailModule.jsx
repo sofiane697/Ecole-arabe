@@ -48,7 +48,7 @@ const S = {
   btn: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-gold)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, transition:'opacity .2s, transform .15s' }),
   btnCompleted: (palette) => ({ display:'inline-flex', alignItems:'center', gap:6, padding:'10px 20px', borderRadius:980, border:'none', background: palette ? palette.btnGrad : 'var(--p-green)', boxShadow: palette ? `0 4px 12px ${palette.btnShadow}` : 'none', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginTop:16, opacity:0.75 }),
   moduleHeader: { marginBottom:28 },
-  moduleTitle: { fontSize:24, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
+  moduleTitle: { fontFamily:'var(--p-font-display)', fontSize:24, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
   moduleDesc: { fontSize:14, color:'var(--p-fg-mid)' },
   // Niveaux view (stepper)
   layout: { display:'grid', gridTemplateColumns:'260px 1fr', gap:0, minHeight:'calc(100vh - 100px)', border:'1px solid var(--p-border)', borderRadius:'var(--p-radius)', overflow:'hidden', background:'var(--p-bg-card)' },
@@ -70,7 +70,7 @@ const S = {
   stepScore: { fontSize:11, color:'var(--p-fg-light)', marginTop:2 },
   main: { padding:28, overflowY:'auto' },
   backBtn: { display:'inline-flex', alignItems:'center', gap:6, color:'var(--p-fg-mid)', fontSize:13, fontWeight:500, cursor:'pointer', marginBottom:20, background:'none', border:'none', padding:0 },
-  sectionTitle: { fontSize:20, fontWeight:700, color:'var(--p-fg)', marginBottom:6 },
+  sectionTitle: { fontFamily:'var(--p-font-display)', fontSize:20, fontWeight:700, color:'var(--p-fg)', marginBottom:6 },
   sectionDesc: { fontSize:14, color:'var(--p-fg-mid)', marginBottom:24 },
   contentCard: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', marginBottom:16, overflow:'hidden' },
   contentHeader: { display:'flex', alignItems:'center', gap:10, padding:'14px 18px', borderBottom:'1px solid var(--p-border)' },
@@ -95,7 +95,7 @@ const S = {
   choiceRadioDot: { width:10, height:10, borderRadius:'50%', background:'var(--p-gold)' },
   result: (passed) => ({ textAlign:'center', padding:32, background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', marginTop:24 }),
   resultIcon: { fontSize:48, marginBottom:12 },
-  resultTitle: (passed) => ({ fontSize:22, fontWeight:700, color: passed ? 'var(--p-green)' : 'var(--p-red)', marginBottom:8 }),
+  resultTitle: (passed) => ({ fontFamily:'var(--p-font-display)', fontSize:22, fontWeight:700, color: passed ? 'var(--p-green)' : 'var(--p-red)', marginBottom:8 }),
   resultScore: { fontSize:16, color:'var(--p-fg-mid)', marginBottom:20 },
   resultBtn: (primary) => ({
     padding:'11px 24px', borderRadius:980, border: primary ? 'none' : '1px solid var(--p-border)',
@@ -340,7 +340,7 @@ function ModuleEntryView({ moduleId }) {
 
       {module_ && (
         <div style={S.moduleHeader}>
-          <h1 style={{ fontSize:25, fontWeight:800, color:'var(--p-fg)', margin:'0 0 8px', letterSpacing:'-0.3px', lineHeight:1.2 }}>
+          <h1 style={{ fontFamily:'var(--p-font-display)', fontSize:25, fontWeight:800, color:'var(--p-fg)', margin:'0 0 8px', letterSpacing:'-0.3px', lineHeight:1.2 }}>
             {module_.titre}
           </h1>
           {module_.description && <p style={S.moduleDesc}>{module_.description}</p>}
@@ -384,7 +384,7 @@ function ModuleEntryView({ moduleId }) {
                   </>
                 )}
                 <button style={completed ? S.btnCompleted(palette) : S.btn(palette)}>
-                  {completed ? '✓ Terminé' : started ? 'Continuer' : 'Commencer'}
+                  {completed ? '📖 Je révise' : started ? 'Continuer' : 'Commencer'}
                 </button>
               </div>
             </div>
@@ -504,7 +504,7 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
                 <h3 style={S.cardTitle}>{lec.titre}</h3>
                 {lec.description && <p style={S.cardDesc}>{lec.description}</p>}
                 <button style={locked ? { ...S.btn(palette), opacity:0.6, cursor:'not-allowed' } : completed ? S.btnCompleted(palette) : S.btn(palette)} disabled={locked}>
-                  {locked ? '🔒 Verrouillée' : completed ? '✓ Terminé' : started ? 'Continuer' : 'Commencer'}
+                  {locked ? '🔒 Verrouillée' : completed ? '📖 Je révise' : started ? 'Continuer' : 'Commencer'}
                 </button>
               </div>
             </div>
@@ -550,7 +550,7 @@ const NS = {
   heroTitleOnImg: { position:'absolute', bottom:20, left:20, right:20, fontSize:22, fontWeight:700, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.5)' },
   heroGradient: (idx) => { const c = NIVEAU_COLORS[idx % NIVEAU_COLORS.length]; return { background:`linear-gradient(160deg, ${c}1A 0%, ${c}08 100%)`, padding:'24px 20px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'flex-start', gap:14 }; },
   heroGradientBadge: (idx) => { const c = NIVEAU_COLORS[idx % NIVEAU_COLORS.length]; return { width:48, height:48, borderRadius:14, background:`${c}1A`, border:`1px solid ${c}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }; },
-  heroGradientTitle: { fontSize:20, fontWeight:700, color:'var(--p-fg)', lineHeight:1.3 },
+  heroGradientTitle: { fontFamily:'var(--p-font-display)', fontSize:20, fontWeight:700, color:'var(--p-fg)', lineHeight:1.3 },
   heroGradientDesc: { fontSize:13, color:'var(--p-fg-mid)', marginTop:5, lineHeight:1.55 },
   contentBody: { padding:20 },
   contentItem: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius-sm)', border:'1px solid var(--p-border)', marginBottom:14, overflow:'hidden' },
@@ -564,7 +564,7 @@ const NS = {
   // Niveau verrouillé
   lockedCard: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', padding:'60px 24px', textAlign:'center', marginBottom:16 },
   lockedIcon: { fontSize:52, marginBottom:14 },
-  lockedTitle: { fontSize:18, fontWeight:700, color:'var(--p-fg)', marginBottom:8 },
+  lockedTitle: { fontFamily:'var(--p-font-display)', fontSize:18, fontWeight:700, color:'var(--p-fg)', marginBottom:8 },
   lockedDesc: { fontSize:14, color:'var(--p-fg-mid)', lineHeight:1.6, maxWidth:340, margin:'0 auto 24px' },
   lockedPrevBtn: { display:'inline-flex', alignItems:'center', gap:6, padding:'10px 22px', borderRadius:980, border:'1px solid var(--p-border)', background:'transparent', color:'var(--p-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' },
   // Zone 4 — QCM carrousel
@@ -581,7 +581,7 @@ const NS = {
   // Résultat
   resultCard: (passed) => ({ textAlign:'center', padding:'40px 24px', background:'var(--p-bg-card)', borderRadius:'var(--p-radius)', border:`1px solid ${passed ? 'rgba(48,209,88,0.22)' : 'rgba(255,69,58,0.18)'}`, marginBottom:16 }),
   resultEmoji: { fontSize:56, marginBottom:14 },
-  resultTitle: (passed) => ({ fontSize:24, fontWeight:800, color: passed ? 'var(--p-green)' : 'var(--p-red)', marginBottom:8 }),
+  resultTitle: (passed) => ({ fontFamily:'var(--p-font-display)', fontSize:24, fontWeight:800, color: passed ? 'var(--p-green)' : 'var(--p-red)', marginBottom:8 }),
   resultScore: { fontSize:16, color:'var(--p-fg-mid)', marginBottom:24 },
   resultBtns: { display:'flex', flexWrap:'wrap', gap:10, justifyContent:'center' },
   resultBtn: (primary) => ({ padding:'11px 24px', borderRadius:980, border: primary ? 'none' : '1px solid var(--p-border)', background: primary ? 'var(--p-gold)' : 'transparent', color: primary ? '#fff' : 'var(--p-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' }),

@@ -37,7 +37,7 @@ function labelSemaine(lundiStr) {
 const S = {
   page:   { padding:'32px 0' },
   header: { marginBottom:28 },
-  title:  { fontSize:24, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
+  title:  { fontFamily:'var(--p-font-display)', fontSize:24, fontWeight:700, color:'var(--p-fg)', margin:'0 0 6px' },
   sub:    { fontSize:14, color:'var(--p-fg-mid)', marginTop:6 },
   // Semaine
   semaine:     { marginBottom:28 },
@@ -50,7 +50,7 @@ const S = {
     border: `1px solid ${jours < 0 ? 'rgba(255,69,58,.25)' : jours <= 2 ? 'rgba(255,69,58,.25)' : jours <= 6 ? 'rgba(255,159,10,.3)' : 'rgba(48,209,88,.25)'}`,
   }),
   badgeJours: (jours) => ({
-    fontSize:18, fontWeight:900, display:'block', lineHeight:1,
+    fontFamily:'var(--p-font-display)', fontSize:18, fontWeight:900, display:'block', lineHeight:1,
     color: jours < 0 ? 'var(--p-red)' : jours <= 2 ? 'var(--p-red)' : jours <= 6 ? '#ff9f0a' : 'var(--p-green)',
   }),
   badgeLabel: (jours) => ({
@@ -67,7 +67,7 @@ const S = {
   // Empty
   empty:      { textAlign:'center', padding:'80px 20px' },
   emptyIcon:  { fontSize:48, marginBottom:16, opacity:.4 },
-  emptyTitle: { fontSize:18, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
+  emptyTitle: { fontFamily:'var(--p-font-display)', fontSize:18, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
   emptyText:  { fontSize:14, color:'var(--p-fg-mid)', lineHeight:1.6 },
 };
 

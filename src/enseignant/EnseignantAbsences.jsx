@@ -56,12 +56,12 @@ const S = {
   // Stats
   statsRow: { display: 'flex', gap: 12, flexWrap: 'wrap' },
   statCard: (color) => ({ background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius-sm)', padding: '14px 20px', flex: '1 1 120px', minWidth: 120 }),
-  statNum:  (color) => ({ fontSize: 26, fontWeight: 800, color }),
+  statNum:  (color) => ({ fontFamily: 'var(--a-font-display)', fontSize: 26, fontWeight: 800, color }),
   statLabel: { fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 2 },
   // Modal
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 },
   modal: { background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius)', padding: 28, width: '100%', maxWidth: 440, boxShadow: '0 24px 80px rgba(0,0,0,.5)' },
-  modalTitle: { fontSize: 17, fontWeight: 700, color: 'var(--a-fg)', marginBottom: 20 },
+  modalTitle: { fontFamily: 'var(--a-font-display)', fontSize: 17, fontWeight: 700, color: 'var(--a-fg)', marginBottom: 20 },
   fieldGroup: { marginBottom: 16 },
   label: { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--a-fg-mid)', marginBottom: 6 },
   input: { width: '100%', background: 'var(--a-bg)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius-sm)', padding: '9px 12px', color: 'var(--a-fg)', fontSize: 14, boxSizing: 'border-box' },

@@ -115,6 +115,7 @@ function BrandPanel({ subtitle }) {
 
       {/* Titre portail */}
       <h1 style={{
+        fontFamily: "var(--a-font-display)",
         fontSize: 22,
         fontWeight: 700,
         color: '#f5f5f7',
@@ -369,7 +370,7 @@ export default function EnseignantLogin() {
           <form onSubmit={handleSubmit}>
             <div style={S.field}>
               <label style={S.label}>Identifiant</label>
-              <input style={{ ...S.input, fontFamily:'monospace', fontSize:15, letterSpacing:1 }} type="text" value={identifiant} onChange={e => setIdentifiant(e.target.value)} placeholder="Ex : SoD1234" autoComplete="username" required />
+              <input style={{ ...S.input, fontFamily:"var(--a-font-mono)", fontSize:15, letterSpacing:1 }} type="text" value={identifiant} onChange={e => setIdentifiant(e.target.value)} placeholder="Ex : SoD1234" autoComplete="username" required />
             </div>
             <div style={S.field}>
               <label style={S.label}>Mot de passe</label>

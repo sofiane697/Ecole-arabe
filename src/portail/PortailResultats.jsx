@@ -19,7 +19,7 @@ const S = {
   sub:     { fontSize: 14, color: 'var(--p-fg-mid)', marginTop: 6 },
   empty:   { textAlign: 'center', padding: '80px 20px' },
   emptyIcon:  { fontSize: 48, marginBottom: 16, opacity: 0.35 },
-  emptyTitle: { fontSize: 18, fontWeight: 600, color: 'var(--p-fg)', marginBottom: 8 },
+  emptyTitle: { fontFamily: 'var(--p-font-display)', fontSize: 18, fontWeight: 600, color: 'var(--p-fg)', marginBottom: 8 },
   emptyText:  { fontSize: 14, color: 'var(--p-fg-mid)', lineHeight: 1.6 },
   loading:    { textAlign: 'center', padding: '80px 20px', color: 'var(--p-fg-mid)', fontSize: 14 },
   tableWrap: { overflowX: 'auto', borderRadius: 12, border: '1px solid var(--p-border)' },
@@ -79,6 +79,10 @@ function PieChart({ dist, total }) {
 
   if (segments.length === 0) return null;
 
+  // Cas spécial : un seul segment à 100% → cercle plein (un arc SVG ne peut pas
+  // décrire un cercle complet en une seule commande, start == end).
+  const singleFull = segments.length === 1;
+
   // Calcule les arcs SVG
   let startAngle = -Math.PI / 2; // commence à 12h
   const paths = segments.map(seg => {
@@ -90,10 +94,10 @@ function PieChart({ dist, total }) {
     const y2 = CY + R * Math.sin(endAngle);
     const largeArc = angle > Math.PI ? 1 : 0;
     const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-    // Label au milieu du secteur
+    // Label au centre pour un segment plein, sinon au milieu du secteur
     const midAngle = startAngle + angle / 2;
-    const lx = CX + (R * 0.62) * Math.cos(midAngle);
-    const ly = CY + (R * 0.62) * Math.sin(midAngle);
+    const lx = singleFull ? CX : CX + (R * 0.62) * Math.cos(midAngle);
+    const ly = singleFull ? CY : CY + (R * 0.62) * Math.sin(midAngle);
     startAngle = endAngle;
     return { ...seg, d, lx, ly, pct: Math.round((seg.count / total) * 100) };
   });
@@ -124,9 +128,13 @@ function PieChart({ dist, total }) {
           <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.12" />
         </filter>
         <g filter="url(#pie-shadow)">
-          {paths.map((seg, i) => (
-            <path key={i} d={seg.d} fill={seg.color} stroke="var(--p-bg-card)" strokeWidth="2" />
-          ))}
+          {singleFull ? (
+            <circle cx={CX} cy={CY} r={R} fill={paths[0].color} stroke="var(--p-bg-card)" strokeWidth="2" />
+          ) : (
+            paths.map((seg, i) => (
+              <path key={i} d={seg.d} fill={seg.color} stroke="var(--p-bg-card)" strokeWidth="2" />
+            ))
+          )}
         </g>
         {/* Labels % dans les secteurs (uniquement si segment assez grand) */}
         {paths.map((seg, i) => seg.pct >= 10 && (

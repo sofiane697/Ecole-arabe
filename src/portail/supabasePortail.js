@@ -194,6 +194,39 @@ export async function fetchChatMessages(eleveId, enseignantId) {
   return await res.json();
 }
 
+/** Récupère toutes les annonces de classe (broadcasts) pour cet élève, tous enseignants confondus */
+export async function fetchBroadcastsEleve(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages` +
+    `?eleve_id=eq.${eleveId}` +
+    `&broadcast_id=not.is.null` +
+    `&select=id,contenu,created_at,lu,enseignant_id,broadcast_id,enseignants(id,nom,prenom)` +
+    `&order=created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return [];
+  return await res.json();
+}
+
+/** Marque toutes les annonces non lues comme lues pour cet élève */
+export async function markBroadcastsReadEleve(eleveId) {
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&broadcast_id=not.is.null&lu=eq.false`,
+    { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
+  );
+}
+
+/** Compte les annonces non lues pour cet élève */
+export async function fetchUnreadBroadcastsCount(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&broadcast_id=not.is.null&lu=eq.false&select=id`,
+    { headers: { ...ANON_HEADERS, 'Prefer': 'count=exact' } }
+  );
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return Array.isArray(data) ? data.length : 0;
+}
+
 /** Envoie un message */
 export async function sendChatMessage(eleveId, enseignantId, contenu, senderRole) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`, {

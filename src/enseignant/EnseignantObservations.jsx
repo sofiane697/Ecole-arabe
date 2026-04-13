@@ -69,7 +69,7 @@ const S = {
     background:'var(--a-bg-card)', borderRadius:12,
     border:'1px solid var(--a-border)', padding:24,
   },
-  panelTitle: { fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:2 },
+  panelTitle: { fontFamily:'var(--a-font-display)', fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:2 },
   panelSub:   { fontSize:12, color:'var(--a-fg-mid)', marginBottom:22 },
   label: {
     display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)',

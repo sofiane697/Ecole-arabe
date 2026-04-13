@@ -30,7 +30,7 @@ const S = {
   // Modal
   overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
   modal: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:460, border:'1px solid var(--a-border)' },
-  modalTitle: { fontSize:18, fontWeight:600, color:'var(--a-fg)', marginBottom:20 },
+  modalTitle: { fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
   field: { marginBottom:16 },
   label: { display:'block', fontSize:12, fontWeight:600, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
   input: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
@@ -409,11 +409,11 @@ export default function Eleves() {
                 </div>
                 <div style={{ marginBottom:14 }}>
                   <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Identifiant</div>
-                  <div style={{ fontSize:18, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{resetResult.identifiant}</div>
+                  <div style={{ fontSize:18, fontWeight:700, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:1 }}>{resetResult.identifiant}</div>
                 </div>
                 <div>
                   <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Nouveau mot de passe provisoire</div>
-                  <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1 }}>{resetResult.tempPassword}</div>
+                  <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:1 }}>{resetResult.tempPassword}</div>
                 </div>
               </div>
               <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:12 }}>
@@ -424,7 +424,7 @@ export default function Eleves() {
                   <span style={{ fontSize:16 }}>✉️</span>
                   <span style={{ color:'var(--a-green)', lineHeight:1.5 }}>
                     Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                    <strong style={{ fontFamily:'monospace' }}>{resetResult.emailSent}</strong>
+                    <strong style={{ fontFamily:'var(--a-font-mono)' }}>{resetResult.emailSent}</strong>
                   </span>
                 </div>
               ) : resetResult.emailSent === null ? (
@@ -691,7 +691,7 @@ export default function Eleves() {
                     <tbody>
                       {activiteLoading ? (
                         <tr><td colSpan={3} style={{ padding:'20px', textAlign:'center', color:'var(--a-fg-light)' }}>Chargement…</td></tr>
-                      ) : activite.map(s => {
+                      ) : activite.slice(0, 10).map(s => {
                         const duree = getDurationSec(s);
                         const termine = s.ended_at != null;
                         const dateStr = new Date(s.started_at).toLocaleDateString('fr-FR', {
@@ -819,7 +819,7 @@ export default function Eleves() {
                     <div style={S.avatar()}>{initials}</div>
                     <div style={S.info}>
                       <div style={S.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
-                      <div style={S.email}>ID : <span style={{ fontFamily:'monospace', fontWeight:600, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>
+                      <div style={S.email}>ID : <span style={{ fontFamily:'var(--a-font-mono)', fontWeight:600, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>
                       <div style={S.date}>Inscrit le {new Date(e.created_at).toLocaleDateString('fr-FR')}</div>
                     </div>
                     <span style={S.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
@@ -968,14 +968,14 @@ function CreateEleveModal({ onClose, onCreated }) {
             </div>
             <div style={{ marginBottom:14 }}>
               <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Identifiant de connexion</div>
-              <div style={{ fontSize:18, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{result.identifiant}</div>
+              <div style={{ fontSize:18, fontWeight:700, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:1 }}>{result.identifiant}</div>
             </div>
             <div>
               <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>
                 Mot de passe provisoire
                 {pwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {countdown}s</span>}
               </div>
-              <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1, cursor: pwdVisible ? 'default' : 'pointer' }}
+              <div style={{ fontSize:18, fontWeight:700, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:1, cursor: pwdVisible ? 'default' : 'pointer' }}
                 onClick={() => { if (!pwdVisible) { setPwdVisible(true); setCountdown(10); } }}>
                 {pwdVisible ? result.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>●●●●●●●● (cliquer pour afficher)</span>}
               </div>
@@ -990,7 +990,7 @@ function CreateEleveModal({ onClose, onCreated }) {
               <span style={{ fontSize:16 }}>✉️</span>
               <span style={{ color:'var(--a-green)', lineHeight:1.5 }}>
                 Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                <strong style={{ fontFamily:'monospace' }}>{result.emailSent}</strong>
+                <strong style={{ fontFamily:'var(--a-font-mono)' }}>{result.emailSent}</strong>
               </span>
             </div>
           ) : result.inactif && result.emailContact ? (
@@ -998,7 +998,7 @@ function CreateEleveModal({ onClose, onCreated }) {
               <span style={{ fontSize:16 }}>⏳</span>
               <span style={{ lineHeight:1.5 }}>
                 Les identifiants et le mot de passe provisoire seront envoyés à<br />
-                <strong style={{ fontFamily:'monospace' }}>{result.emailContact}</strong><br />
+                <strong style={{ fontFamily:'var(--a-font-mono)' }}>{result.emailContact}</strong><br />
                 lors du passage au statut actif.
               </span>
             </div>
@@ -1091,7 +1091,7 @@ function CreateEleveModal({ onClose, onCreated }) {
         {identifiant && (
           <div style={{ ...S.field, background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px' }}>
             <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Identifiant généré automatiquement</div>
-            <div style={{ fontSize:17, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{identifiant}</div>
+            <div style={{ fontSize:17, fontWeight:700, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:1 }}>{identifiant}</div>
             <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:4 }}>
               {prenom[0]?.toUpperCase()} (prénom) + {nom[1]?.toLowerCase()} (2e lettre nom) + {nom[0]?.toUpperCase()} (nom) + 4 chiffres
             </div>

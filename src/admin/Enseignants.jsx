@@ -30,7 +30,7 @@ const S = {
   cardTop: { display:'flex', alignItems:'center', gap:14 },
   avatar: { width:48, height:48, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, fontWeight:800, flexShrink:0, letterSpacing:'-0.5px' },
   name: { fontSize:16, fontWeight:700, color:'var(--a-fg)', lineHeight:1.2 },
-  sub: { fontSize:12, color:'var(--a-fg-mid)', marginTop:3 },
+  sub: { fontSize:12, color:'var(--a-fg-mid)', marginTop:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
   badge: (actif) => ({ display:'inline-block', padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
   classesSection: { paddingTop:14, borderTop:'1px solid var(--a-border)' },
   classesLabel: { fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:8 },
@@ -43,7 +43,7 @@ const S = {
   // Modal
   overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
   modal: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:520, maxHeight:'85vh', overflowY:'auto', border:'1px solid var(--a-border)' },
-  modalTitle: { fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
+  modalTitle: { fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
   field: { marginBottom:16 },
   label: { display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
   input: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
@@ -232,7 +232,7 @@ export default function Enseignants() {
                 </div>
 
                 {ens.identifiant && (
-                  <div style={{ fontSize:12, color:'var(--a-fg-light)', fontFamily:'monospace', letterSpacing:.5 }}>
+                  <div style={{ fontSize:12, color:'var(--a-fg-light)', fontFamily:'var(--a-font-mono)', letterSpacing:.5 }}>
                     ID : {ens.identifiant.toUpperCase()}
                   </div>
                 )}
@@ -298,14 +298,14 @@ export default function Enseignants() {
               </div>
               <div style={{ marginBottom:14 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Identifiant</div>
-                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{result.identifiant}</div>
+                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:1 }}>{result.identifiant}</div>
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>
                   Mot de passe provisoire
                   {pwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {countdown}s</span>}
                 </div>
-                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1, cursor: pwdVisible ? 'default' : 'pointer' }}
+                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:1, cursor: pwdVisible ? 'default' : 'pointer' }}
                   onClick={() => { if (!pwdVisible) { setPwdVisible(true); setCountdown(10); } }}>
                   {pwdVisible ? result.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>●●●●●●●● (cliquer pour afficher)</span>}
                 </div>
@@ -344,14 +344,14 @@ export default function Enseignants() {
               </div>
               <div style={{ marginBottom:14 }}>
                 <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Identifiant</div>
-                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)', fontFamily:'monospace', letterSpacing:1 }}>{resetResult.identifiant}</div>
+                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:1 }}>{resetResult.identifiant}</div>
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:600, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>
                   Nouveau mot de passe provisoire
                   {resetPwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {resetCountdown}s</span>}
                 </div>
-                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'monospace', letterSpacing:1, cursor: resetPwdVisible ? 'default' : 'pointer' }}
+                <div style={{ fontSize:20, fontWeight:700, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:1, cursor: resetPwdVisible ? 'default' : 'pointer' }}
                   onClick={() => { if (!resetPwdVisible) { setResetPwdVisible(true); setResetCountdown(10); } }}>
                   {resetPwdVisible ? resetResult.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400 }}>●●●●●●●● (cliquer pour afficher)</span>}
                 </div>

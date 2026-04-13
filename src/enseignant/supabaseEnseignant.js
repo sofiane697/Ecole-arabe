@@ -149,6 +149,78 @@ export async function fetchUnreadCountParEleve(eleveId, enseignantId) {
   return Array.isArray(data) ? data.length : 0;
 }
 
+/** Envoie une annonce de classe à tous ses élèves (fan-out via broadcast_id). */
+export const BROADCAST_MAX_LENGTH = 2000;
+
+export async function sendGroupMessage(enseignantId, classeId, contenu) {
+  const clean = (contenu || '').trim();
+  if (!clean) throw new Error('Message vide');
+  if (clean.length > BROADCAST_MAX_LENGTH) throw new Error(`Annonce trop longue (max ${BROADCAST_MAX_LENGTH} caractères)`);
+  const eleves = await fetchElevesDeClasse(classeId);
+  if (!eleves.length) throw new Error('Classe vide');
+  if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+    throw new Error('Votre navigateur est trop ancien pour cette fonctionnalité. Merci de le mettre à jour.');
+  }
+  const broadcastId = crypto.randomUUID();
+  const rows = eleves.map(e => ({
+    eleve_id: e.id,
+    enseignant_id: enseignantId,
+    sender_role: 'enseignant',
+    contenu: clean,
+    broadcast_id: broadcastId,
+    classe_id: classeId,
+  }));
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`, {
+    method: 'POST',
+    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(rows),
+  });
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return { broadcastId, count: rows.length };
+}
+
+/** Historique des annonces envoyées par l'enseignant à une classe (1 ligne par broadcast). */
+export async function fetchBroadcastsClasse(enseignantId, classeId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages` +
+    `?enseignant_id=eq.${enseignantId}` +
+    `&classe_id=eq.${classeId}` +
+    `&broadcast_id=not.is.null` +
+    `&order=created_at.desc`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return [];
+  const rows = await res.json();
+  // Dédoublonner par broadcast_id (une ligne par élève destinataire → on ne garde qu'un exemplaire)
+  const seen = new Set();
+  return rows.filter(r => {
+    if (seen.has(r.broadcast_id)) return false;
+    seen.add(r.broadcast_id);
+    return true;
+  });
+}
+
+/** Modifie le contenu d'une annonce (toutes les lignes partageant le broadcast_id) */
+export async function updateBroadcast(enseignantId, broadcastId, contenu) {
+  const clean = (contenu || '').trim();
+  if (!clean) throw new Error('Message vide');
+  if (clean.length > BROADCAST_MAX_LENGTH) throw new Error(`Annonce trop longue (max ${BROADCAST_MAX_LENGTH} caractères)`);
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?enseignant_id=eq.${enseignantId}&broadcast_id=eq.${broadcastId}`,
+    { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ contenu: clean }) }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
+/** Supprime une annonce (toutes les lignes partageant le broadcast_id) */
+export async function deleteBroadcast(enseignantId, broadcastId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_messages?enseignant_id=eq.${enseignantId}&broadcast_id=eq.${broadcastId}`,
+    { method: 'DELETE', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' } }
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+}
+
 // ─── DEVOIRS ─────────────────────────────────────────────────────────────────
 
 /** Récupère tous les devoirs de l'enseignant */

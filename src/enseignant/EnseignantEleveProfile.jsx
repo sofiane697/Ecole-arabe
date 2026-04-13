@@ -113,10 +113,10 @@ const S = {
   headerCard: { background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius)', border: '1px solid var(--a-border)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' },
   avatar: { width: 56, height: 56, borderRadius: '50%', background: 'var(--a-gold)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, flexShrink: 0, letterSpacing: '-0.5px' },
   headerInfo: { flex: 1, minWidth: 0 },
-  headerName: { fontSize: 20, fontWeight: 800, color: 'var(--a-fg)', letterSpacing: '-0.4px' },
+  headerName: { fontFamily: 'var(--a-font-display)', fontSize: 20, fontWeight: 800, color: 'var(--a-fg)', letterSpacing: '-0.4px' },
   headerMeta: { display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 6 },
   metaItem:   { fontSize: 13, color: 'var(--a-fg-mid)', display: 'flex', alignItems: 'center', gap: 4 },
-  identifiant:{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--a-gold)', fontSize: 14, background: 'rgba(191,138,48,.1)', padding: '2px 8px', borderRadius: 6 },
+  identifiant:{ fontFamily: 'var(--a-font-mono)', fontWeight: 700, color: 'var(--a-gold)', fontSize: 14, background: 'rgba(191,138,48,.1)', padding: '2px 8px', borderRadius: 6 },
   badge: (actif) => ({ padding: '3px 10px', borderRadius: 980, fontSize: 11, fontWeight: 700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
   // Tabs
   tabsRow:  { display: 'flex', gap: 4, borderBottom: '1px solid var(--a-border)', flexWrap: 'wrap' },
@@ -127,7 +127,7 @@ const S = {
   sectionTitle: { fontSize: 13, fontWeight: 700, color: 'var(--a-fg-light)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 14 },
   statsRow: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 },
   statCard: { background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius-sm)', padding: '14px 20px', flex: '1 1 120px', minWidth: 120 },
-  statNum:  (c) => ({ fontSize: 26, fontWeight: 800, color: c }),
+  statNum:  (c) => ({ fontFamily: 'var(--a-font-display)', fontSize: 26, fontWeight: 800, color: c }),
   statLabel:{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 2 },
   // Progression
   globalBarWrap: { background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius)', padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 },

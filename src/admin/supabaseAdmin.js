@@ -578,7 +578,7 @@ export async function updateInscriptionEleveId(inscriptionId, eleveId) {
 /** Récupérer un élève par son id */
 export async function fetchEleveById(eleveId) {
   const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=*`
+    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=id,created_at,nom,prenom,email,must_change_password,actif,telephone,email_contact,classe_id,identifiant,niveau_scolaire_id,date_naissance`
   );
   if (!res.ok) return null;
   const rows = await res.json();

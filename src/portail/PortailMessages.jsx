@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getEleveUser, fetchEnseignantsDeLEleve, fetchChatMessages, sendChatMessage, markMessagesReadEleve, fetchUnreadCountParEnseignant, fetchEnseignantsPresence } from './supabasePortail';
+import { getEleveUser, fetchEnseignantsDeLEleve, fetchChatMessages, sendChatMessage, markMessagesReadEleve, fetchUnreadCountParEnseignant, fetchEnseignantsPresence, fetchBroadcastsEleve, markBroadcastsReadEleve, fetchUnreadBroadcastsCount } from './supabasePortail';
 
 const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : '';
 const fmtNom    = (s) => s ? s.trim().toUpperCase() : '';
@@ -61,6 +61,9 @@ export default function PortailMessages() {
 
   const [enseignants, setEnseignants] = useState(null);
   const [selEns, setSelEns]           = useState(null);
+  const [viewBroadcasts, setViewBroadcasts] = useState(false);
+  const [broadcasts, setBroadcasts]   = useState([]);
+  const [unreadBroadcasts, setUnreadBroadcasts] = useState(0);
   const [messages, setMessages]       = useState([]);
   const [text, setText]               = useState('');
   const [sending, setSending]         = useState(false);
@@ -86,7 +89,29 @@ export default function PortailMessages() {
       }));
       setUnreadMap(map);
     }).catch(() => setEnseignants([]));
+    fetchUnreadBroadcastsCount(eleveId).then(setUnreadBroadcasts).catch(() => {});
   }, [eleveId]);
+
+  const loadBroadcasts = useCallback(async () => {
+    if (!eleveId) return;
+    try {
+      const bs = await fetchBroadcastsEleve(eleveId);
+      setBroadcasts(bs || []);
+      if (viewBroadcasts) {
+        await markBroadcastsReadEleve(eleveId);
+        setUnreadBroadcasts(0);
+      } else {
+        setUnreadBroadcasts(await fetchUnreadBroadcastsCount(eleveId).catch(() => 0));
+      }
+    } catch {}
+  }, [eleveId, viewBroadcasts]);
+
+  useEffect(() => {
+    if (!viewBroadcasts) return;
+    loadBroadcasts();
+    const t = setInterval(loadBroadcasts, 10000);
+    return () => clearInterval(t);
+  }, [viewBroadcasts, loadBroadcasts]);
 
   // Poll présence toutes les 30s
   useEffect(() => {
@@ -103,7 +128,7 @@ export default function PortailMessages() {
     if (!eleveId || !selEns) return;
     try {
       const msgs = await fetchChatMessages(eleveId, selEns.id);
-      setMessages(msgs || []);
+      setMessages((msgs || []).filter(m => !m.broadcast_id));
       await markMessagesReadEleve(eleveId, selEns.id);
       setUnreadMap(prev => ({ ...prev, [selEns.id]: 0 }));
     } catch {}
@@ -157,12 +182,42 @@ export default function PortailMessages() {
 
         {/* En-tête sidebar */}
         <div style={{ padding:'18px 18px 14px', borderBottom:'1px solid var(--p-border)' }}>
-          <div style={{ fontSize:15, fontWeight:700, color:'var(--p-fg)', marginBottom:2 }}>Messages</div>
+          <div style={{ fontFamily:'var(--p-font-display)', fontSize:15, fontWeight:700, color:'var(--p-fg)', marginBottom:2 }}>Messages</div>
           <div style={{ fontSize:12, color:'var(--p-fg-light)' }}>Contacte ton professeur</div>
         </div>
 
         {/* Liste enseignants */}
         <div style={{ flex:1, overflowY:'auto' }}>
+          {/* Item épinglé : Annonces de la classe */}
+          <div
+            onClick={() => { setViewBroadcasts(true); setSelEns(null); }}
+            style={{
+              display:'flex', alignItems:'center', gap:12, padding:'13px 16px',
+              cursor:'pointer', borderBottom:'1px solid var(--p-border)',
+              background: viewBroadcasts
+                ? 'linear-gradient(90deg, rgba(191,138,48,.18) 0%, rgba(191,138,48,.04) 100%)'
+                : 'linear-gradient(90deg, rgba(191,138,48,.06) 0%, transparent 100%)',
+              borderLeft: viewBroadcasts ? '3px solid var(--p-gold)' : '3px solid transparent',
+              transition:'all .15s',
+            }}
+          >
+            <div style={{ width:42, height:42, borderRadius:'50%', background:'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, boxShadow:'0 2px 8px rgba(191,138,48,.4)' }}>
+              📢
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:14, fontWeight:700, color:'var(--p-fg)', display:'flex', alignItems:'center', gap:6 }}>
+                Annonces de la classe
+                <span style={{ fontSize:9, fontWeight:700, color:'var(--p-gold)', border:'1px solid var(--p-gold)', padding:'1px 5px', borderRadius:3, letterSpacing:0.5 }}>ÉPINGLÉ</span>
+              </div>
+              <div style={{ fontSize:12, color:'var(--p-fg-light)', marginTop:1 }}>Messages de tes professeurs</div>
+            </div>
+            {unreadBroadcasts > 0 && (
+              <span style={{ background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:800, padding:'2px 8px', borderRadius:20, flexShrink:0, boxShadow:'0 1px 4px rgba(191,138,48,.4)' }}>
+                {unreadBroadcasts}
+              </span>
+            )}
+          </div>
+
           {enseignants.length === 0 && (
             <div style={{ padding:'32px 18px', textAlign:'center', color:'var(--p-fg-light)', fontSize:13, lineHeight:1.7 }}>
               <div style={{ fontSize:32, marginBottom:10 }}>🎓</div>
@@ -177,7 +232,7 @@ export default function PortailMessages() {
             return (
               <div
                 key={ens.id}
-                onClick={() => setSelEns(ens)}
+                onClick={() => { setSelEns(ens); setViewBroadcasts(false); }}
                 style={{
                   display:'flex', alignItems:'center', gap:12, padding:'13px 16px',
                   cursor:'pointer', borderBottom:'1px solid var(--p-border)',
@@ -212,10 +267,63 @@ export default function PortailMessages() {
 
       {/* ── Zone chat ── */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
-        {!selEns ? (
+        {viewBroadcasts ? (
+          <>
+            <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'center', gap:12, background:'linear-gradient(90deg, rgba(191,138,48,.08) 0%, transparent 100%)' }}>
+              <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, boxShadow:'0 2px 8px rgba(191,138,48,.4)' }}>📢</div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:'var(--p-fg)' }}>Annonces de la classe</div>
+                <div style={{ fontSize:12, color:'var(--p-fg-light)', fontWeight:500 }}>Lecture seule · messages envoyés par tes professeurs</div>
+              </div>
+            </div>
+            <div style={{ flex:1, overflowY:'auto', padding:'20px', display:'flex', flexDirection:'column', gap:14, background:'var(--p-bg)' }}>
+              {broadcasts.length === 0 ? (
+                <div style={{ textAlign:'center', color:'var(--p-fg-light)', fontSize:13, marginTop:60, lineHeight:1.7 }}>
+                  <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
+                  Aucune annonce pour l'instant.
+                </div>
+              ) : broadcasts.map(b => {
+                const ens = b.enseignants || {};
+                const color = avatarColor(ens.id || b.enseignant_id);
+                return (
+                  <div key={b.id} style={{
+                    background:'var(--p-bg-card)',
+                    border:'1px solid rgba(191,138,48,0.35)',
+                    borderLeft:'4px solid var(--p-gold)',
+                    borderRadius:12, padding:'14px 16px',
+                    boxShadow:'0 2px 12px rgba(191,138,48,.08)',
+                  }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                      <div style={{ fontSize:9, fontWeight:800, color:'var(--p-gold)', background:'rgba(191,138,48,.12)', padding:'3px 7px', borderRadius:4, letterSpacing:0.8, textTransform:'uppercase' }}>📢 Annonce classe</div>
+                      <div style={{ flex:1 }} />
+                      <div style={{ fontSize:11, color:'var(--p-fg-light)' }}>{fmtTime(b.created_at)}</div>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                      <div style={{ width:32, height:32, borderRadius:'50%', background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, flexShrink:0 }}>
+                        {initiales(ens.prenom, ens.nom)}
+                      </div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:12, fontWeight:600, color:'var(--p-fg-light)', marginBottom:4 }}>
+                          {fmtPrenom(ens.prenom)} {fmtNom(ens.nom)}
+                        </div>
+                        <div style={{ fontSize:14, color:'var(--p-fg)', lineHeight:1.55, wordBreak:'break-word' }}>
+                          {b.contenu}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ padding:'10px 16px', borderTop:'1px solid var(--p-border)', background:'var(--p-bg-card)', textAlign:'center', fontSize:12, color:'var(--p-fg-light)', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+              <span style={{ fontSize:14 }}>🔒</span>
+              Lecture seule — pour écrire, sélectionne un professeur à gauche
+            </div>
+          </>
+        ) : !selEns ? (
           <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, color:'var(--p-fg-light)', padding:32 }}>
             <div style={{ width:72, height:72, borderRadius:'50%', background:'var(--p-border)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>💬</div>
-            <div style={{ fontSize:15, fontWeight:600, color:'var(--p-fg)' }}>Tes messages</div>
+            <div style={{ fontFamily:'var(--p-font-display)', fontSize:15, fontWeight:600, color:'var(--p-fg)' }}>Tes messages</div>
             <div style={{ fontSize:13, textAlign:'center', maxWidth:240, lineHeight:1.6 }}>
               Sélectionne un enseignant à gauche pour démarrer ou voir une conversation.
             </div>
