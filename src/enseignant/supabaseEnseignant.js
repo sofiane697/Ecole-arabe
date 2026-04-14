@@ -92,7 +92,7 @@ export async function fetchTousLesElevesEnseignant(enseignantId) {
 /** Récupère tous les messages d'une conversation élève↔enseignant */
 export async function fetchChatMessages(eleveId, enseignantId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&order=created_at.asc`,
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&broadcast_id=is.null&order=created_at.asc`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -133,7 +133,7 @@ export async function fetchUnreadCountEnseignant(enseignantId) {
 /** Supprime tous les messages d'une conversation élève↔enseignant */
 export async function deleteConversation(eleveId, enseignantId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}`,
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&broadcast_id=is.null`,
     { method: 'DELETE', headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);

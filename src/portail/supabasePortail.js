@@ -187,7 +187,7 @@ export async function fetchEnseignantsDeLEleve(eleveId) {
 /** Récupère tous les messages d'une conversation élève↔enseignant */
 export async function fetchChatMessages(eleveId, enseignantId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&order=created_at.asc`,
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&broadcast_id=is.null&order=created_at.asc`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -240,7 +240,7 @@ export async function sendChatMessage(eleveId, enseignantId, contenu, senderRole
 /** Marque comme lus les messages reçus par l'élève */
 export async function markMessagesReadEleve(eleveId, enseignantId) {
   await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&lu=eq.false`,
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&broadcast_id=is.null&lu=eq.false`,
     { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
   );
 }
@@ -248,7 +248,7 @@ export async function markMessagesReadEleve(eleveId, enseignantId) {
 /** Compte les messages non lus reçus par l'élève (tous enseignants) */
 export async function fetchUnreadCountEleve(eleveId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&sender_role=eq.enseignant&lu=eq.false&select=id`,
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&sender_role=eq.enseignant&broadcast_id=is.null&lu=eq.false&select=id`,
     { headers: ANON_HEADERS }
   );
   if (!res.ok) return 0;
@@ -259,7 +259,7 @@ export async function fetchUnreadCountEleve(eleveId) {
 /** Compte les messages non lus d'un enseignant précis pour l'élève */
 export async function fetchUnreadCountParEnseignant(eleveId, enseignantId) {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&lu=eq.false&select=id`,
+    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&broadcast_id=is.null&lu=eq.false&select=id`,
     { headers: ANON_HEADERS }
   );
   const data = await res.json();
@@ -456,14 +456,15 @@ export async function endSession(sessionId) {
 export async function fetchAllBadgeCounts(eleveId, classeId, seenDates) {
   const cid = classeId || await fetchClasseIdEleve(eleveId).catch(() => null);
 
-  const [unread, devoirs, notes, obs] = await Promise.all([
+  const [unreadPrivate, unreadBroadcasts, devoirs, notes, obs] = await Promise.all([
     fetchUnreadCountEleve(eleveId).catch(() => 0),
+    fetchUnreadBroadcastsCount(eleveId).catch(() => 0),
     cid ? fetchNewDevoirsCount(cid, seenDates.devoirs).catch(() => 0) : 0,
     fetchNewNotesCount(eleveId, seenDates.notes).catch(() => 0),
     fetchNewObsCount(eleveId, seenDates.obs).catch(() => 0),
   ]);
 
-  return { unread, devoirs, notes, obs, classeId: cid };
+  return { unread: unreadPrivate + unreadBroadcasts, devoirs, notes, obs, classeId: cid };
 }
 
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────

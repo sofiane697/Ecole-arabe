@@ -173,12 +173,14 @@ export default function PortailMessages() {
   );
 
   const grouped = groupByDay(messages);
+  const hasSelection = !!selEns || viewBroadcasts;
+  const handleBack = () => { setSelEns(null); setViewBroadcasts(false); };
 
   return (
-    <div style={{ display:'flex', height:'calc(100vh - 160px)', overflow:'hidden', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', background:'var(--p-bg-card)', boxShadow:'0 4px 24px rgba(0,0,0,.06)' }}>
+    <div className={`portail-msg-layout${hasSelection ? ' has-selection' : ''}`} style={{ display:'flex', height:'calc(100vh - 160px)', overflow:'hidden', borderRadius:'var(--p-radius)', border:'1px solid var(--p-border)', background:'var(--p-bg-card)', boxShadow:'0 4px 24px rgba(0,0,0,.06)' }}>
 
       {/* ── Colonne gauche ── */}
-      <div style={{ width:270, flexShrink:0, borderRight:'1px solid var(--p-border)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div className="portail-msg-sidebar" style={{ width:270, flexShrink:0, borderRight:'1px solid var(--p-border)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
 
         {/* En-tête sidebar */}
         <div style={{ padding:'18px 18px 14px', borderBottom:'1px solid var(--p-border)' }}>
@@ -266,58 +268,202 @@ export default function PortailMessages() {
       </div>
 
       {/* ── Zone chat ── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div className="portail-msg-chat" style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
         {viewBroadcasts ? (
           <>
-            <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'center', gap:12, background:'linear-gradient(90deg, rgba(191,138,48,.08) 0%, transparent 100%)' }}>
-              <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, boxShadow:'0 2px 8px rgba(191,138,48,.4)' }}>📢</div>
-              <div>
-                <div style={{ fontSize:14, fontWeight:700, color:'var(--p-fg)' }}>Annonces de la classe</div>
-                <div style={{ fontSize:12, color:'var(--p-fg-light)', fontWeight:500 }}>Lecture seule · messages envoyés par tes professeurs</div>
+            {/* En-tête officiel */}
+            <div style={{
+              padding:'18px 24px 16px',
+              borderBottom:'2px solid var(--p-gold)',
+              background:'linear-gradient(180deg, #faf4e6 0%, #f6ecd5 100%)',
+              position:'relative',
+              display:'flex', alignItems:'center', gap:14,
+              overflow:'hidden',
+            }}>
+              <div style={{
+                position:'absolute', top:0, left:0, right:0, height:6,
+                backgroundImage:'repeating-linear-gradient(-45deg, var(--p-gold) 0 10px, #e8c36b 10px 20px)',
+                opacity:.9,
+              }} />
+              <button className="portail-msg-back" onClick={handleBack} aria-label="Retour" style={{ display:'none', alignItems:'center', justifyContent:'center', width:34, height:34, borderRadius:8, background:'rgba(255,255,255,.6)', border:'1px solid var(--p-gold)', color:'#6b5220', cursor:'pointer', flexShrink:0, marginTop:6 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <div style={{
+                marginTop:6, width:52, height:52, borderRadius:'50%',
+                background:'radial-gradient(circle at 30% 28%, #e8c36b, #bf8a30 68%)',
+                color:'#fff', display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:22, boxShadow:'0 4px 14px rgba(191,138,48,.45), inset 0 -3px 6px rgba(0,0,0,.18)',
+                border:'2px solid #fffaf0', flexShrink:0,
+              }}>📢</div>
+              <div style={{ marginTop:6, minWidth:0 }}>
+                <div style={{
+                  fontFamily:'"Playfair Display", "Cormorant Garamond", Georgia, serif',
+                  fontSize:24, fontWeight:800, color:'#2d2008',
+                  letterSpacing:0.3, lineHeight:1.05,
+                }}>
+                  Tableau d'annonces
+                </div>
+                <div style={{
+                  fontSize:10.5, fontWeight:700, letterSpacing:2.8,
+                  color:'#8a6a28', textTransform:'uppercase', marginTop:5,
+                  display:'flex', alignItems:'center', gap:8,
+                }}>
+                  <span style={{ width:16, height:1, background:'#8a6a28' }} />
+                  Communiqués officiels · de tes professeurs
+                </div>
               </div>
             </div>
-            <div style={{ flex:1, overflowY:'auto', padding:'20px', display:'flex', flexDirection:'column', gap:14, background:'var(--p-bg)' }}>
+
+            {/* Liste des communiqués */}
+            <div style={{
+              flex:1, overflowY:'auto',
+              padding:'28px 32px 36px',
+              display:'flex', flexDirection:'column', gap:24,
+              backgroundImage:`
+                radial-gradient(ellipse at top, rgba(191,138,48,.06), transparent 55%),
+                repeating-linear-gradient(0deg, rgba(191,138,48,.035) 0 1px, transparent 1px 30px)
+              `,
+              backgroundColor:'#fbf7ee',
+            }}>
               {broadcasts.length === 0 ? (
-                <div style={{ textAlign:'center', color:'var(--p-fg-light)', fontSize:13, marginTop:60, lineHeight:1.7 }}>
-                  <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
-                  Aucune annonce pour l'instant.
-                </div>
-              ) : broadcasts.map(b => {
-                const ens = b.enseignants || {};
-                const color = avatarColor(ens.id || b.enseignant_id);
-                return (
-                  <div key={b.id} style={{
-                    background:'var(--p-bg-card)',
-                    border:'1px solid rgba(191,138,48,0.35)',
-                    borderLeft:'4px solid var(--p-gold)',
-                    borderRadius:12, padding:'14px 16px',
-                    boxShadow:'0 2px 12px rgba(191,138,48,.08)',
+                <div style={{ textAlign:'center', marginTop:70 }}>
+                  <div style={{
+                    display:'inline-block', padding:'26px 34px',
+                    background:'#fffdf7',
+                    border:'1px dashed var(--p-gold)',
+                    fontFamily:'"Playfair Display", Georgia, serif',
+                    fontStyle:'italic', fontSize:17, color:'#6b5220',
+                    transform:'rotate(-1.4deg)',
+                    boxShadow:'0 10px 28px rgba(58,42,16,.12)',
                   }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-                      <div style={{ fontSize:9, fontWeight:800, color:'var(--p-gold)', background:'rgba(191,138,48,.12)', padding:'3px 7px', borderRadius:4, letterSpacing:0.8, textTransform:'uppercase' }}>📢 Annonce classe</div>
-                      <div style={{ flex:1 }} />
-                      <div style={{ fontSize:11, color:'var(--p-fg-light)' }}>{fmtTime(b.created_at)}</div>
-                    </div>
-                    <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                      <div style={{ width:32, height:32, borderRadius:'50%', background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, flexShrink:0 }}>
-                        {initiales(ens.prenom, ens.nom)}
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:12, fontWeight:600, color:'var(--p-fg-light)', marginBottom:4 }}>
-                          {fmtPrenom(ens.prenom)} {fmtNom(ens.nom)}
-                        </div>
-                        <div style={{ fontSize:14, color:'var(--p-fg)', lineHeight:1.55, wordBreak:'break-word' }}>
-                          {b.contenu}
-                        </div>
-                      </div>
-                    </div>
+                    « Aucun communiqué à afficher pour le moment. »
                   </div>
+                </div>
+              ) : broadcasts.map((b, idx) => {
+                const ens = b.enseignants || {};
+                const num = String(broadcasts.length - idx).padStart(3, '0');
+                const d = new Date(b.created_at);
+                const day = d.getDate();
+                const month = d.toLocaleDateString('fr-FR', { month:'short' }).toUpperCase().replace(/\./g,'');
+                const year = d.getFullYear();
+                const time = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+                return (
+                  <article key={b.id} style={{
+                    background:'#fffdf7',
+                    border:'1px solid rgba(191,138,48,.35)',
+                    boxShadow:'0 14px 32px rgba(58,42,16,.08), 0 2px 0 #f3e6c6',
+                    position:'relative',
+                    overflow:'hidden',
+                  }}>
+                    {/* Ruban à rayures */}
+                    <div style={{
+                      height:10,
+                      backgroundImage:'repeating-linear-gradient(-45deg, var(--p-gold) 0 8px, #e8c36b 8px 16px)',
+                    }} />
+
+                    {/* En-tête : date + numéro + sceau */}
+                    <header style={{ display:'flex', alignItems:'stretch', borderBottom:'1px solid rgba(191,138,48,.22)' }}>
+                      <div style={{
+                        width:92, flexShrink:0,
+                        background:'linear-gradient(180deg, #3a2a10 0%, #5b4218 100%)',
+                        color:'#f6dea0', textAlign:'center',
+                        padding:'14px 8px',
+                        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+                        fontFamily:'"Playfair Display", Georgia, serif',
+                        borderRight:'1px solid rgba(191,138,48,.25)',
+                      }}>
+                        <div style={{ fontSize:10, letterSpacing:2.5, fontWeight:700, opacity:.8 }}>{month}</div>
+                        <div style={{ fontSize:34, fontWeight:800, lineHeight:1, margin:'4px 0' }}>{day}</div>
+                        <div style={{ fontSize:10, letterSpacing:2.5, opacity:.8 }}>{year}</div>
+                      </div>
+                      <div style={{ flex:1, padding:'14px 20px', minWidth:0 }}>
+                        <div style={{
+                          fontSize:10, letterSpacing:3, fontWeight:800,
+                          color:'var(--p-gold)', textTransform:'uppercase',
+                          display:'flex', alignItems:'center', gap:10, flexWrap:'wrap',
+                        }}>
+                          <span>Communiqué N° {num}</span>
+                          <span style={{ width:4, height:4, borderRadius:'50%', background:'var(--p-gold)' }} />
+                          <span style={{ color:'#8a6a28' }}>{time}</span>
+                        </div>
+                        <div style={{
+                          marginTop:6,
+                          fontFamily:'"Playfair Display", Georgia, serif',
+                          fontSize:20, fontWeight:700, color:'#2d2008', lineHeight:1.22,
+                        }}>
+                          À l'attention de la classe
+                        </div>
+                      </div>
+                      <div style={{ width:78, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 12px' }}>
+                        <div style={{
+                          width:54, height:54, borderRadius:'50%',
+                          background:'radial-gradient(circle at 35% 32%, #d18642, #8a3c14 75%)',
+                          color:'#fbe8c2',
+                          display:'flex', alignItems:'center', justifyContent:'center',
+                          fontSize:9, fontWeight:800, letterSpacing:.6, textAlign:'center',
+                          border:'2px solid #fbe8c2',
+                          boxShadow:'0 3px 10px rgba(138,60,20,.35), inset 0 -2px 5px rgba(0,0,0,.28)',
+                          transform:'rotate(-8deg)',
+                          textTransform:'uppercase', lineHeight:1.05,
+                          fontFamily:'"Playfair Display", Georgia, serif',
+                        }}>
+                          As-<br/>Safaa
+                        </div>
+                      </div>
+                    </header>
+
+                    {/* Corps du communiqué */}
+                    <div style={{ padding:'24px 32px 14px', position:'relative' }}>
+                      <div style={{
+                        position:'absolute', left:14, top:4,
+                        fontFamily:'"Playfair Display", Georgia, serif',
+                        fontSize:76, color:'rgba(191,138,48,.18)',
+                        lineHeight:0.8, userSelect:'none', pointerEvents:'none',
+                      }}>“</div>
+                      <div style={{
+                        fontFamily:'"Playfair Display", "Cormorant Garamond", Georgia, serif',
+                        fontSize:17.5, color:'#2d2008', lineHeight:1.7,
+                        wordBreak:'break-word', padding:'0 4px 0 34px',
+                        whiteSpace:'pre-wrap',
+                      }}>
+                        {b.contenu}
+                      </div>
+                    </div>
+
+                    {/* Signature */}
+                    <footer style={{
+                      padding:'12px 28px 18px',
+                      borderTop:'1px dashed rgba(191,138,48,.28)',
+                      display:'flex', alignItems:'center', justifyContent:'flex-end', gap:12, flexWrap:'wrap',
+                    }}>
+                      <span style={{ fontSize:10.5, letterSpacing:2.4, textTransform:'uppercase', fontWeight:700, color:'#8a6a28' }}>
+                        Transmis par
+                      </span>
+                      <span style={{
+                        fontFamily:'"Playfair Display", Georgia, serif',
+                        fontSize:17, fontWeight:700, fontStyle:'italic', color:'#2d2008',
+                      }}>
+                        {fmtPrenom(ens.prenom) || '—'} {fmtNom(ens.nom)}
+                      </span>
+                    </footer>
+                  </article>
                 );
               })}
             </div>
-            <div style={{ padding:'10px 16px', borderTop:'1px solid var(--p-border)', background:'var(--p-bg-card)', textAlign:'center', fontSize:12, color:'var(--p-fg-light)', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-              <span style={{ fontSize:14 }}>🔒</span>
-              Lecture seule — pour écrire, sélectionne un professeur à gauche
+
+            {/* Pied officiel */}
+            <div style={{
+              padding:'10px 20px',
+              borderTop:'1px solid var(--p-gold)',
+              background:'linear-gradient(180deg, #faf4e6 0%, #f6ecd5 100%)',
+              textAlign:'center',
+              fontSize:10.5, letterSpacing:2.8, textTransform:'uppercase', fontWeight:700,
+              color:'#8a6a28',
+              display:'flex', alignItems:'center', justifyContent:'center', gap:12,
+            }}>
+              <span style={{ width:24, height:1, background:'#8a6a28' }} />
+              Lecture seule · Panneau officiel
+              <span style={{ width:24, height:1, background:'#8a6a28' }} />
             </div>
           </>
         ) : !selEns ? (
@@ -335,6 +481,9 @@ export default function PortailMessages() {
               const presence = getPresence(presenceMap[selEns.id]);
               return (
                 <div style={{ padding:'12px 20px', borderBottom:'1px solid var(--p-border)', display:'flex', alignItems:'center', gap:12, background:'var(--p-bg-card)' }}>
+                  <button className="portail-msg-back" onClick={handleBack} aria-label="Retour" style={{ display:'none', alignItems:'center', justifyContent:'center', width:34, height:34, borderRadius:8, background:'none', border:'1px solid var(--p-border)', color:'var(--p-fg-mid)', cursor:'pointer', flexShrink:0 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
                   <div style={{ position:'relative' }}>
                     <div style={{ width:40, height:40, borderRadius:'50%', background:`linear-gradient(135deg, ${avatarColor(selEns.id)} 0%, ${avatarColor(selEns.id)}bb 100%)`, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:700 }}>
                       {initiales(selEns.prenom, selEns.nom)}
