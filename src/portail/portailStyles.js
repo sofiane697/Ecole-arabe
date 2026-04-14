@@ -691,6 +691,20 @@ const PORTAIL_STYLES = `
     .portail-module-card-body  { padding: 18px; }
   }
 
+  /* ─── Messages — layout responsive ─── */
+  @media (max-width: 1024px) {
+    .portail-msg-layout { height: calc(100vh - 130px) !important; }
+    .portail-msg-sidebar { width: 240px !important; }
+    .portail-msg-chat .portail-msg-bubble-wrap { max-width: 75% !important; }
+  }
+  @media (max-width: 768px) {
+    .portail-msg-layout { height: calc(100vh - 110px) !important; border-radius: 12px !important; }
+    .portail-msg-sidebar { width: 100% !important; border-right: none !important; }
+    .portail-msg-layout.has-selection .portail-msg-sidebar { display: none !important; }
+    .portail-msg-layout:not(.has-selection) .portail-msg-chat { display: none !important; }
+    .portail-msg-back { display: inline-flex !important; }
+  }
+
   /* ─── Rendu texte riche portail ─── */
   .portail-rich-text h1 { font-size:1.5em; font-weight:700; margin:.5em 0; color:var(--p-fg); }
   .portail-rich-text h2 { font-size:1.25em; font-weight:700; margin:.5em 0; color:var(--p-fg); }

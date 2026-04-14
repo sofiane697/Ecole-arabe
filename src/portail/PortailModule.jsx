@@ -383,8 +383,8 @@ function ModuleEntryView({ moduleId }) {
                     </div>
                   </>
                 )}
-                <button style={completed ? S.btnCompleted(palette) : S.btn(palette)}>
-                  {completed ? '📖 Je révise' : started ? 'Continuer' : 'Commencer'}
+                <button style={S.btn(palette)}>
+                  {started ? 'Continuer' : 'Commencer'}
                 </button>
               </div>
             </div>
