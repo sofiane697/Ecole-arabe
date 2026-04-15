@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchInscriptions, fetchMessages } from './supabaseAdmin';
+import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
 
 const STATUT_LABEL = {
   nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau'  },
@@ -43,28 +44,33 @@ export default function Dashboard() {
   return (
     <>
       {/* ── Stats ── */}
-      <div className="admin-stats-grid">
-        <div className="admin-stat-card gold">
+      <motion.div
+        className="admin-stats-grid"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div className="admin-stat-card gold" variants={fadeUp} {...cardHover}>
           <span className="admin-stat-label">Total inscriptions</span>
           <span className="admin-stat-value">{totalInscriptions}</span>
           <span className="admin-stat-sub">Toutes les demandes</span>
-        </div>
-        <div className="admin-stat-card red">
+        </motion.div>
+        <motion.div className="admin-stat-card red" variants={fadeUp} {...cardHover}>
           <span className="admin-stat-label">Nouvelles demandes</span>
           <span className="admin-stat-value">{nouveaux}</span>
           <span className="admin-stat-sub">En attente de traitement</span>
-        </div>
-        <div className="admin-stat-card blue">
+        </motion.div>
+        <motion.div className="admin-stat-card blue" variants={fadeUp} {...cardHover}>
           <span className="admin-stat-label">Total messages</span>
           <span className="admin-stat-value">{totalMessages}</span>
           <span className="admin-stat-sub">Formulaire contact</span>
-        </div>
-        <div className="admin-stat-card green">
+        </motion.div>
+        <motion.div className="admin-stat-card green" variants={fadeUp} {...cardHover}>
           <span className="admin-stat-label">Messages non lus</span>
           <span className="admin-stat-value">{nonLus}</span>
           <span className="admin-stat-sub">À traiter</span>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* ── Tableaux résumés ── */}
       <div className="admin-dash-grid">

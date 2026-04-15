@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getEnseignantUser, fetchMesClasses, fetchDevoirsClasse, createDevoir, updateDevoir, deleteDevoir } from './supabaseEnseignant';
+import { motion, tapScale } from '../animations';
 
 // ─── Helpers calendrier ───────────────────────────────────────────────────────
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -211,14 +212,14 @@ export default function EnseignantDevoirs() {
       <div style={S.topBar}>
         <div style={S.classeTabs}>
           {classes.map(c => (
-            <button key={c.id} style={S.classeTab(selClasse === c.id)} onClick={() => { setSelClasse(c.id); setSelDay(null); }}>
+            <motion.button key={c.id} style={S.classeTab(selClasse === c.id)} {...tapScale} onClick={() => { setSelClasse(c.id); setSelDay(null); }}>
               {c.nom}
-            </button>
+            </motion.button>
           ))}
         </div>
-        <button style={S.addBtn} onClick={() => openCreate('')}>
+        <motion.button style={S.addBtn} {...tapScale} onClick={() => openCreate('')}>
           <IconPlus /> Ajouter un devoir
-        </button>
+        </motion.button>
       </div>
 
       {/* ── Calendrier + panneau latéral ── */}

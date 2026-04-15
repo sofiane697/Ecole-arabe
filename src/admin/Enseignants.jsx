@@ -7,6 +7,7 @@ import {
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
+import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
 
 // ─── Formatage des noms ──────────────────────────────────────────────────────
 const PAGE_SIZE = 25;
@@ -203,15 +204,17 @@ export default function Enseignants() {
         const safePage   = Math.min(page, totalPages - 1);
         const paginated  = enseignants.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
         return (<>
-        <div style={S.grid}>
+        <motion.div style={S.grid} variants={staggerContainer} initial="hidden" animate="visible" key={safePage}>
           {paginated.map(ens => {
             const initiales = (fmtPrenom(ens.prenom || '')?.[0] || '') + (fmtNom(ens.nom || '')?.[0] || '');
             const classeIds = classesMap[ens.id] || [];
             const classeObjs = allClasses.filter(c => classeIds.includes(c.id));
             return (
-              <div key={ens.id} style={S.card}
-                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
+              <motion.div key={ens.id} style={S.card}
+                variants={fadeUp}
+                {...cardHover}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
                 <div style={S.cardTop}>
                   <div style={S.avatar}>{initiales}</div>
                   <div style={{ flex:1, minWidth:0 }}>
@@ -248,10 +251,10 @@ export default function Enseignants() {
                     <IconTrash /> Supprimer
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
         {totalPages > 1 && (
           <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:12, padding:'20px 0' }}>
             <button

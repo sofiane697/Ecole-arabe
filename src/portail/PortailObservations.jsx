@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getEleveUser, fetchMesObservations } from './supabasePortail';
+import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
 
 const TYPES = {
   general:      { label: 'Général',      color: 'var(--p-gold)' },
@@ -74,21 +75,21 @@ export default function PortailObservations() {
           </p>
         </div>
       ) : (
-        <div style={S.timeline}>
+        <motion.div style={S.timeline} variants={staggerContainer} initial="hidden" animate="visible">
           {observations.map(obs => {
             const ti = typeInfo(obs.type);
             return (
-              <div key={obs.id} style={S.card}>
+              <motion.div key={obs.id} style={S.card} variants={fadeUp} {...cardHover}>
                 <div style={S.accentBar(ti.color)} />
                 <div style={S.cardHeader}>
                   <span style={S.typePill(ti.color)}>{ti.label}</span>
                   <span style={S.cardDate}>{formatDate(obs.created_at)}</span>
                 </div>
                 <div style={S.cardText}>{obs.contenu}</div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </div>
   );

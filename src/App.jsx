@@ -3,6 +3,7 @@ import STYLES from './styles';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
 import CinematicIntro from './CinematicIntro';
+import { motion, Reveal, staggerContainer, fadeUp, tapScale, cardHover } from './animations';
 
 // ─── Palettes de couleurs ─────────────────────────────────────────────────────
 const THEMES = [
@@ -699,8 +700,8 @@ export default function App() {
             aux sciences islamiques et à la langue arabe — pour enfants et adultes.
           </p>
           <div className="hero-actions">
-            <button className="btn-fill"    onClick={() => goTo('tarifs')}>Découvrir les cours</button>
-            <a href="/portail/login" className="btn-outline" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center'}}>Mon portail</a>
+            <motion.button className="btn-fill" onClick={() => goTo('tarifs')} {...tapScale}>Découvrir les cours</motion.button>
+            <motion.a href="/portail/login" className="btn-outline" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center'}} {...tapScale}>Mon portail</motion.a>
           </div>
         </div>
 
@@ -751,17 +752,23 @@ export default function App() {
           </div>
 
           {/* Colonne valeurs */}
-          <div className="values sr d2">
+          <motion.div
+            className="values sr d2"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
             {VALUES.map((v, i) => (
-              <div key={i} className="value">
+              <motion.div key={i} className="value" variants={fadeUp}>
                 <div className="value-ico">{v.icon}</div>
                 <div>
                   <div className="value-name">{v.name}</div>
                   <div className="value-desc">{v.desc}</div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
         </div>
       </section>
@@ -796,13 +803,21 @@ export default function App() {
         {/* Carrousel mobile */}
         <CarouselCards onInscribe={setModalCours} />
 
-        <div className="wrap grid-cards">
+        <motion.div
+          className="wrap grid-cards"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+        >
 
           {/* 3 cartes niveaux */}
           {COURSES.map((c, i) => (
-            <div
+            <motion.div
               key={i}
               className={`card sr ${c.featured ? 'feat' : ''} ${i > 0 ? `d${i}` : ''}`}
+              variants={fadeUp}
+              {...cardHover}
             >
               {c.featured && <div className="card-badge">Recommandé</div>}
               <p className="card-lvl">{c.level}</p>
@@ -819,14 +834,14 @@ export default function App() {
                   <li key={j}><span className="card-dot" />{f}</li>
                 ))}
               </ul>
-              <button className="card-cta" onClick={() => setModalCours(c.fr)}>
+              <motion.button className="card-cta" onClick={() => setModalCours(c.fr)} {...tapScale}>
                 S'inscrire
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           ))}
 
           {/* Carte spécialisation Coran — pleine largeur */}
-          <div className="card card-wide sr">
+          <motion.div className="card card-wide sr" variants={fadeUp} {...cardHover}>
             <div>
               <p className="card-lvl">Spécialisation</p>
               <div className="card-ar">تحفيظ القرآن الكريم</div>
@@ -850,13 +865,13 @@ export default function App() {
                 </div>
                 <div className="card-freq">2 séances / semaine · 1h</div>
               </div>
-              <button className="card-cta" onClick={() => setModalCours('Lecture & Mémorisation Coranique')}>
+              <motion.button className="card-cta" onClick={() => setModalCours('Lecture & Mémorisation Coranique')} {...tapScale}>
                 S'inscrire
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       </section>
 
 

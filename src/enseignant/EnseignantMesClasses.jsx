@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getEnseignantUser, fetchMesClasses, fetchElevesDeClasse } from './supabaseEnseignant';
+import { motion, staggerContainer, fadeUp, cardHover, tapScale } from '../animations';
 
 const S = {
   page: { minHeight:'100%' },
@@ -53,26 +54,28 @@ export default function EnseignantMesClasses() {
           <p style={{ fontSize:14 }}>L'administrateur vous assignera des classes prochainement.</p>
         </div>
       ) : (
-        <div style={S.grid}>
+        <motion.div style={S.grid} variants={staggerContainer} initial="hidden" animate="visible">
           {classes.map(c => {
             const nb = nbEleves[c.id] ?? 0;
             return (
-              <div key={c.id} style={S.card}
+              <motion.div key={c.id} style={S.card}
+                variants={fadeUp}
+                {...cardHover}
                 onClick={() => navigate(`/enseignant/classe/${c.id}`)}
-                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
+                onMouseEnter={e => { e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
                 <div style={S.className}>{c.nom}</div>
                 <div style={S.classeNb}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                   {nb} élève{nb > 1 ? 's' : ''}
                 </div>
-                <button style={S.btn} onClick={e => { e.stopPropagation(); navigate(`/enseignant/classe/${c.id}`); }}>
+                <motion.button style={S.btn} {...tapScale} onClick={e => { e.stopPropagation(); navigate(`/enseignant/classe/${c.id}`); }}>
                   Voir la classe →
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </div>
   );

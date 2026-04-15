@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
 import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession } from './supabasePortail';
+import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -382,7 +383,17 @@ export default function PortailApp() {
           </div>
         </header>
         <div className="portail-content">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

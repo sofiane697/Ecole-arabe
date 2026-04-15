@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchModulesEleve, fetchEleveNiveauScolaireId } from './supabasePortail';
+import { motion, staggerContainer, fadeUp, cardHover, tapScale } from '../animations';
 
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
@@ -229,14 +230,22 @@ export default function PortailDashboard() {
           );
         })()
       ) : (
-        <div className="portail-modules-grid" style={{ '--grid-cols': Math.min(modules.length, 4) }}>
+        <motion.div
+          className="portail-modules-grid"
+          style={{ '--grid-cols': Math.min(modules.length, 4) }}
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {modules.map((m, index) => {
             const palette = CARD_PASTELS[index % CARD_PASTELS.length];
 
             return (
-              <div key={m.id}
+              <motion.div key={m.id}
                 className="portail-module-card"
                 style={{ background: palette.bg }}
+                variants={fadeUp}
+                {...cardHover}
                 onClick={() => navigate(`/portail/module/${m.id}`)}>
                 {m.image_url ? (
                   <img src={m.image_url} alt={m.titre} className="portail-module-card-img" />
@@ -248,16 +257,17 @@ export default function PortailDashboard() {
                 <div className="portail-module-card-body">
                   <h3 className="portail-module-card-title">{m.titre}</h3>
                   {m.description && <p className="portail-module-card-desc">{m.description}</p>}
-                  <button
+                  <motion.button
                     className="portail-module-card-btn"
-                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}` }}>
+                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}` }}
+                    {...tapScale}>
                     Commencer
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </div>
   );

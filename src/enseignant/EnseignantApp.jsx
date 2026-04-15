@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from '../admin/adminStyles';
 import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence } from './supabaseEnseignant';
+import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconClasses = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -300,7 +301,17 @@ export default function EnseignantApp() {
           </div>
         </header>
         <div className="admin-content">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

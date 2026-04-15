@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchDevoirsEleve, fetchClasseIdEleve } from './supabasePortail';
+import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
 
 function getEleveUser() {
   try { return JSON.parse(sessionStorage.getItem('eleve_user')); } catch { return null; }
@@ -140,12 +141,12 @@ export default function PortailDevoirs() {
 
       {/* Devoirs à venir groupés par semaine */}
       {semaines.map(([lundiStr, dvs]) => (
-        <div key={lundiStr} style={S.semaine}>
+        <motion.div key={lundiStr} style={S.semaine} variants={staggerContainer} initial="hidden" animate="visible">
           <div style={S.semaineLabel}>{labelSemaine(lundiStr)}</div>
           {dvs.map(d => {
             const jours = joursRestants(d.date_limite);
             return (
-              <div key={d.id} style={S.card}>
+              <motion.div key={d.id} style={S.card} variants={fadeUp} {...cardHover}>
                 <div style={S.badge(jours)}>
                   <span style={S.badgeJours(jours)}>
                     {jours < 0 ? Math.abs(jours) : jours}
@@ -159,10 +160,10 @@ export default function PortailDevoirs() {
                   <div style={S.cardDate}>📅 Pour le {formatDate(d.date_limite)}</div>
                   {d.description && <div style={S.cardDesc}>{d.description}</div>}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       ))}
 
       {/* Devoirs passés (repliables) */}

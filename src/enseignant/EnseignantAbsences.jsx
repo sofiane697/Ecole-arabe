@@ -3,6 +3,7 @@ import {
   getEnseignantUser, fetchMesClasses, fetchElevesDeClasse,
   fetchRetardsAbsences, createRetardAbsence, updateRetardAbsence, deleteRetardAbsence,
 } from './supabaseEnseignant';
+import { motion, staggerContainer, fadeUp, tapScale } from '../animations';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function todayStr() {
@@ -205,20 +206,21 @@ export default function EnseignantAbsences() {
       <div style={S.topBar}>
         <div style={S.classeTabs}>
           {classes.map(c => (
-            <button key={c.id} style={S.classeTab(selClasse === c.id)}
+            <motion.button key={c.id} style={S.classeTab(selClasse === c.id)}
+              {...tapScale}
               onClick={() => setSelClasse(c.id)}>
               {c.nom}
-            </button>
+            </motion.button>
           ))}
         </div>
         {selClasse && (
           <div style={S.btnRow}>
-            <button style={S.btnRetard} onClick={() => openCreate('retard')}>
+            <motion.button style={S.btnRetard} {...tapScale} onClick={() => openCreate('retard')}>
               ⏰ Ajouter un retard
-            </button>
-            <button style={S.btnAbsence} onClick={() => openCreate('absence')}>
+            </motion.button>
+            <motion.button style={S.btnAbsence} {...tapScale} onClick={() => openCreate('absence')}>
               🚫 Ajouter une absence
-            </button>
+            </motion.button>
           </div>
         )}
       </div>

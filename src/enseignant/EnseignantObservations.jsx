@@ -3,6 +3,7 @@ import {
   getEnseignantUser, fetchMesClasses, fetchElevesDeClasse,
   fetchObservationsClasse, createObservation, deleteObservation,
 } from './supabaseEnseignant';
+import { motion, staggerContainer, fadeUp, tapScale } from '../animations';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const TYPES = [
@@ -204,9 +205,9 @@ export default function EnseignantObservations() {
       <div style={S.topbar}>
         <div style={S.tabs}>
           {classes.map(c => (
-            <button key={c.id} style={S.tab(selClasse === c.id)} onClick={() => setSelClasse(c.id)}>
+            <motion.button key={c.id} style={S.tab(selClasse === c.id)} {...tapScale} onClick={() => setSelClasse(c.id)}>
               {c.nom}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -223,13 +224,13 @@ export default function EnseignantObservations() {
               <div style={{ padding:'24px 16px', color:'var(--a-fg-mid)', fontSize:13, textAlign:'center' }}>
                 Aucun élève dans cette classe
               </div>
-            ) : eleves.map(e => {
+            ) : (<motion.div variants={staggerContainer} initial="hidden" animate="visible" key={selClasse}>{eleves.map(e => {
               const latest  = getLatest(e.id);
               const count   = obsCount(e.id);
               const hasObs  = count > 0;
               const ti      = latest ? typeInfo(latest.type) : null;
               return (
-                <div key={e.id} style={S.listItem(selEleve?.id === e.id)} onClick={() => selectEleve(e)}>
+                <motion.div key={e.id} variants={fadeUp} style={S.listItem(selEleve?.id === e.id)} onClick={() => selectEleve(e)}>
                   <div style={S.avatar(hasObs)}>{initials(e)}</div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={S.listName}>{e.prenom} {e.nom}</div>
@@ -240,9 +241,9 @@ export default function EnseignantObservations() {
                       }
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
-            })}
+            })}</motion.div>)}
           </div>
 
           {/* ── Panneau d'édition ── */}
