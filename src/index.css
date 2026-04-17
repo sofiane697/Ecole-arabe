@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Overrides CSS : pseudo-éléments, scrollbar, variables, thèmes ─── */
+/* Phase 1 : portail */
+@import './styles/portail-overrides.css';
+/* Phase 2 : admin + enseignant */
+/* @import './styles/admin-overrides.css'; */
+/* Phase 3 : site public */
+/* @import './styles/base.css'; */
+/* @import './styles/site-themes.css'; */
+/* @import './styles/site-keyframes.css'; */

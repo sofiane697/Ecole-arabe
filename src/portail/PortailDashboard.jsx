@@ -30,38 +30,37 @@ function FunTitle() {
     <>
       <style>{FUN_KEYFRAMES}</style>
       <motion.div
-        style={{ fontFamily:"'Nunito', 'Inter', sans-serif", marginBottom: 24 }}
+        style={{ fontFamily:"'Nunito', 'Inter', sans-serif" }}
+        className="mb-6"
         initial={{ opacity: 0, y: -18, scale: 0.92 }}
         animate={{ opacity: 1, y: 0,   scale: 1    }}
         transition={{ ...DASH_SPRING }}
       >
-        <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
-          <span style={{ fontSize:20, animation:'bubbleFloat 2.5s ease-in-out infinite' }}>📚</span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span style={{ animation:'bubbleFloat 2.5s ease-in-out infinite' }} className="text-xl">📚</span>
           {/* "Mes" lettre par lettre en couleurs rotatives */}
-          <span style={{ fontSize:40, fontWeight:900, letterSpacing:2, display:'inline-flex', gap:0 }}>
+          <span className="text-[40px] font-black tracking-[2px] inline-flex gap-0">
             {word1.split('').map((char, i) => (
               <span key={i} style={{
                 color: LETTER_COLORS[i % LETTER_COLORS.length],
                 textShadow:`0 3px 10px ${LETTER_COLORS[i % LETTER_COLORS.length]}55`,
-                display:'inline-block',
-              }}>{char}</span>
+              }} className="inline-block">{char}</span>
             ))}
           </span>
           {/* "Modules" lettre par lettre en couleurs rotatives */}
-          <span style={{ fontSize:40, fontWeight:900, letterSpacing:2, display:'inline-flex', gap:0 }}>
+          <span className="text-[40px] font-black tracking-[2px] inline-flex gap-0">
             {word2.split('').map((char, i) => (
               <span key={i} style={{
                 color: LETTER_COLORS[i % LETTER_COLORS.length],
                 textShadow:`0 3px 10px ${LETTER_COLORS[i % LETTER_COLORS.length]}55`,
-                display:'inline-block',
-              }}>{char}</span>
+              }} className="inline-block">{char}</span>
             ))}
           </span>
-          <span style={{ fontSize:18, animation:'starSpin 5s linear infinite', display:'inline-block' }}>⭐</span>
-          <span style={{ fontSize:16, animation:'bubbleFloat 3s ease-in-out 0.8s infinite', display:'inline-block' }}>✨</span>
+          <span style={{ animation:'starSpin 5s linear infinite' }} className="text-lg inline-block">⭐</span>
+          <span style={{ animation:'bubbleFloat 3s ease-in-out 0.8s infinite' }} className="text-base inline-block">✨</span>
         </div>
         {/* Bulles décoratives */}
-        <div style={{ display:'flex', gap:5, alignItems:'center', marginTop:6, paddingLeft:4 }}>
+        <div className="flex gap-[5px] items-center mt-1.5 pl-1">
           {['#7EC8E3','#7DCFA0','#F4A896','#F7D070','#7EC8E3','#F4A896'].map((c, i) => (
             <span key={i} style={{
               color: c, fontSize: [8,11,7,10,9,8][i],
@@ -83,11 +82,11 @@ const CARD_PASTELS = [
 ];
 
 const S = {
-  empty: { textAlign:'center', padding:'60px 20px', color:'var(--p-fg-mid)' },
-  emptyTitle: { fontFamily:'var(--p-font-display)', fontSize:20, fontWeight:600, color:'var(--p-fg)', marginBottom:8 },
-  loading: { textAlign:'center', padding:'60px', color:'var(--p-fg-mid)', fontSize:14 },
-  welcome: { marginBottom:28 },
-  welcomeSub: { fontSize:14, color:'var(--p-fg-mid)', marginTop:6 },
+  empty: 'text-center px-5 py-[60px] text-p-fg-mid',
+  emptyTitle: 'font-[var(--p-font-display)] text-xl font-semibold text-p-fg mb-2',
+  loading: 'text-center p-[60px] text-p-fg-mid text-sm',
+  welcome: 'mb-7',
+  welcomeSub: 'text-sm text-p-fg-mid mt-1.5',
 };
 
 const GREETING_KEYFRAMES = `
@@ -109,10 +108,10 @@ function SalamGreeting({ prenom }) {
   return (
     <>
       <style>{GREETING_KEYFRAMES}</style>
-      <div style={{ display:'flex', alignItems:'baseline', gap:12, flexWrap:'wrap', overflow:'hidden' }}>
+      <div className="flex items-baseline gap-3 flex-wrap overflow-hidden">
         {prenom && (
           <motion.span
-            style={{ fontFamily:'var(--p-font-display)', fontSize:22, fontWeight:700, color:'var(--p-fg)', display:'inline-block' }}
+            className="font-[var(--p-font-display)] text-[22px] font-bold text-p-fg inline-block"
             initial={shouldAnimate ? { opacity:0, x:-60, filter:'blur(6px)' } : false}
             animate={{ opacity:1, x:0, filter:'blur(0px)' }}
             transition={{ ...salamTransition, delay: 0.1 }}
@@ -121,7 +120,8 @@ function SalamGreeting({ prenom }) {
           </motion.span>
         )}
         <motion.span
-          style={{ fontFamily:"'Scheherazade New', serif", fontSize:36, fontWeight:700, color:'#5BA87A', lineHeight:1.3, direction:'rtl', display:'inline-block', animation:'salamGlow 3s ease-in-out 1s infinite' }}
+          style={{ fontFamily:"'Scheherazade New', serif", animation:'salamGlow 3s ease-in-out 1s infinite' }}
+          className="text-4xl font-bold text-[#5BA87A] leading-[1.3] [direction:rtl] inline-block"
           initial={shouldAnimate ? { opacity:0, x:60, filter:'blur(6px)' } : false}
           animate={{ opacity:1, x:0, filter:'blur(0px)' }}
           transition={{ ...salamTransition, delay: 0.1 }}
@@ -129,7 +129,7 @@ function SalamGreeting({ prenom }) {
           السلام عليكم
         </motion.span>
         <motion.span
-          style={{ fontSize:28, display:'inline-block' }}
+          className="text-[28px] inline-block"
           initial={shouldAnimate ? { opacity:0, x:60, filter:'blur(6px)' } : false}
           animate={{ opacity:1, x:0, filter:'blur(0px)' }}
           transition={{ ...salamTransition, delay: 0.25 }}
@@ -178,7 +178,7 @@ export default function PortailDashboard() {
     return () => { cancelled = true; };
   }, []);
 
-  if (loading) return <div style={S.loading}>Chargement de vos cours...</div>;
+  if (loading) return <div className={S.loading}>Chargement de vos cours...</div>;
 
   // Récupérer le prénom
   let prenom = '';
@@ -186,9 +186,9 @@ export default function PortailDashboard() {
 
   return (
     <div>
-      <div style={S.welcome}>
+      <div className={S.welcome}>
         <SalamGreeting prenom={prenom} />
-        <div style={S.welcomeSub}>Démarre ton apprentissage en sélectionnant un module !</div>
+        <div className={S.welcomeSub}>Démarre ton apprentissage en sélectionnant un module !</div>
       </div>
 
       {modules.length === 0 ? (
@@ -197,20 +197,20 @@ export default function PortailDashboard() {
           try { _niveauScolaireId = JSON.parse(sessionStorage.getItem('eleve_user'))?.niveau_scolaire_id; } catch {}
           if (!_niveauScolaireId) {
             return (
-              <div style={S.empty}>
-                <div style={{ fontSize:48, marginBottom:16 }}>⚙️</div>
-                <div style={S.emptyTitle}>Profil en cours de configuration</div>
-                <p style={{ color:'var(--p-fg-mid)', fontSize:14, maxWidth:340, margin:'0 auto' }}>
+              <div className={S.empty}>
+                <div className="text-5xl mb-4">⚙️</div>
+                <div className={S.emptyTitle}>Profil en cours de configuration</div>
+                <p className="text-p-fg-mid text-sm max-w-[340px] mx-auto">
                   Ton niveau scolaire n'a pas encore été assigné. Contacte ton enseignant pour qu'il configure ton profil.
                 </p>
               </div>
             );
           }
           return (
-            <div style={S.empty}>
-              <div style={{ fontSize:48, marginBottom:16 }}>📚</div>
-              <div style={S.emptyTitle}>Aucun cours disponible</div>
-              <p style={{ color:'var(--p-fg-mid)', fontSize:14 }}>Les cours seront bientôt disponibles. Revenez plus tard !</p>
+            <div className={S.empty}>
+              <div className="text-5xl mb-4">📚</div>
+              <div className={S.emptyTitle}>Aucun cours disponible</div>
+              <p className="text-p-fg-mid text-sm">Les cours seront bientôt disponibles. Revenez plus tard !</p>
             </div>
           );
         })()

@@ -101,7 +101,7 @@ export default function PortailDevoirs() {
   if (loading) return (
     <div style={S.page}>
       <div style={{ ...S.empty, padding:'40px 0' }}>
-        <div style={{ color:'var(--p-fg-mid)', fontSize:14 }}>Chargement...</div>
+        <div className="text-p-fg-mid text-sm">Chargement...</div>
       </div>
     </div>
   );
@@ -177,7 +177,7 @@ export default function PortailDevoirs() {
           {showPass && passes.map(d => {
             const jours = joursRestants(d.date_limite);
             return (
-              <div key={d.id} style={{ ...S.card, opacity:.6 }}>
+              <div key={d.id} style={S.card} className="opacity-60">
                 <div style={S.badge(jours)}>
                   <span style={S.badgeJours(jours)}>{Math.abs(jours)}</span>
                   <span style={S.badgeLabel(jours)}>passé</span>

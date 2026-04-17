@@ -14,34 +14,20 @@ function gradeFromScore(score) {
 }
 
 const S = {
-  page:    { padding: '32px 0' },
-  header:  { marginBottom: 32 },
-  sub:     { fontSize: 14, color: 'var(--p-fg-mid)', marginTop: 6 },
-  empty:   { textAlign: 'center', padding: '80px 20px' },
-  emptyIcon:  { fontSize: 48, marginBottom: 16, opacity: 0.35 },
-  emptyTitle: { fontFamily: 'var(--p-font-display)', fontSize: 18, fontWeight: 600, color: 'var(--p-fg)', marginBottom: 8 },
-  emptyText:  { fontSize: 14, color: 'var(--p-fg-mid)', lineHeight: 1.6 },
-  loading:    { textAlign: 'center', padding: '80px 20px', color: 'var(--p-fg-mid)', fontSize: 14 },
-  tableWrap: { overflowX: 'auto', borderRadius: 12, border: '1px solid var(--p-border)' },
-  table: { borderCollapse: 'collapse', width: '100%' },
-  th: {
-    padding: '11px 16px', background: 'var(--p-bg-card)', color: 'var(--p-fg-mid)',
-    fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
-    textAlign: 'left', borderBottom: '1px solid var(--p-border)',
-  },
-  thRight: {
-    padding: '11px 16px', background: 'var(--p-bg-card)', color: 'var(--p-fg-mid)',
-    fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
-    textAlign: 'center', borderBottom: '1px solid var(--p-border)',
-  },
-  td: {
-    padding: '12px 16px', fontSize: 13, color: 'var(--p-fg)',
-    borderBottom: '1px solid var(--p-border)',
-  },
-  tdCenter: {
-    padding: '12px 16px', fontSize: 13, textAlign: 'center',
-    borderBottom: '1px solid var(--p-border)',
-  },
+  page:       'py-8',
+  header:     'mb-8',
+  sub:        'text-sm text-p-fg-mid mt-1.5',
+  empty:      'text-center py-20 px-5',
+  emptyIcon:  'text-5xl mb-4 opacity-35',
+  emptyTitle: 'font-p-display text-lg font-semibold text-p-fg mb-2',
+  emptyText:  'text-sm text-p-fg-mid leading-relaxed',
+  loading:    'text-center py-20 px-5 text-p-fg-mid text-sm',
+  tableWrap:  'overflow-x-auto rounded-xl border border-p-border',
+  table:      'border-collapse w-full',
+  th:         'py-2.5 px-4 bg-p-bg-card text-p-fg-mid text-[11px] font-bold uppercase tracking-wide text-left border-b border-p-border',
+  thRight:    'py-2.5 px-4 bg-p-bg-card text-p-fg-mid text-[11px] font-bold uppercase tracking-wide text-center border-b border-p-border',
+  td:         'py-3 px-4 text-[13px] text-p-fg border-b border-p-border',
+  tdCenter:   'py-3 px-4 text-[13px] text-center border-b border-p-border',
 };
 
 function formatDate(str) {
@@ -51,18 +37,16 @@ function formatDate(str) {
 
 function GradeBadge({ score }) {
   const grade = gradeFromScore(score);
-  if (!grade) return <span style={{ color: 'var(--p-fg-mid)' }}>—</span>;
+  if (!grade) return <span className="text-p-fg-mid">—</span>;
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        minWidth: 40, padding: '3px 10px', borderRadius: 8,
-        background: grade.color + '22', color: grade.color,
-        fontSize: 13, fontWeight: 800, letterSpacing: 0.5,
-      }}>
+    <span className="inline-flex items-center gap-2">
+      <span
+        className="inline-flex items-center justify-center min-w-[40px] px-2.5 py-0.5 rounded-lg text-[13px] font-extrabold tracking-wide"
+        style={{ background: grade.color + '22', color: grade.color }}
+      >
         {grade.label}
       </span>
-      <span style={{ fontSize: 12, color: 'var(--p-fg-mid)' }}>{grade.libelle}</span>
+      <span className="text-xs text-p-fg-mid">{grade.libelle}</span>
     </span>
   );
 }
@@ -103,26 +87,16 @@ function PieChart({ dist, total }) {
   });
 
   return (
-    <div style={{
-      marginTop: 36,
-      background: 'var(--p-bg-card)',
-      border: '1px solid var(--p-border)',
-      borderRadius: 16,
-      padding: '28px 32px',
-      display: 'flex',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-      gap: 32,
-    }}>
+    <div className="mt-9 bg-p-bg-card border border-p-border rounded-2xl py-7 px-8 flex flex-wrap items-center gap-8">
       {/* Titre */}
-      <div style={{ width: '100%', marginBottom: 4 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--p-fg-mid)' }}>
+      <div className="w-full mb-1">
+        <span className="text-xs font-bold uppercase tracking-wide text-p-fg-mid">
           Récapitulatif des appréciations
         </span>
       </div>
 
       {/* SVG camembert */}
-      <svg width="200" height="200" viewBox="0 0 200 200" style={{ flexShrink: 0 }}>
+      <svg width="200" height="200" viewBox="0 0 200 200" className="shrink-0">
         {/* Ombre douce */}
         <filter id="pie-shadow">
           <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.12" />
@@ -143,7 +117,8 @@ function PieChart({ dist, total }) {
             x={seg.lx} y={seg.ly}
             textAnchor="middle" dominantBaseline="central"
             fill="#fff" fontSize="12" fontWeight="800"
-            style={{ pointerEvents: 'none', textShadow: '0 1px 3px rgba(0,0,0,.4)' }}
+            className="pointer-events-none"
+            style={{ textShadow: '0 1px 3px rgba(0,0,0,.4)' }}
           >
             {seg.pct}%
           </text>
@@ -151,30 +126,29 @@ function PieChart({ dist, total }) {
       </svg>
 
       {/* Légende */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minWidth: 160 }}>
+      <div className="flex flex-col gap-3 flex-1 min-w-[160px]">
         {paths.map((seg, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{
-              width: 14, height: 14, borderRadius: 4,
-              background: seg.color, flexShrink: 0,
-            }} />
-            <span style={{ fontSize: 13, color: 'var(--p-fg)', fontWeight: 700, minWidth: 36 }}>
+          <div key={i} className="flex items-center gap-3">
+            <span
+              className="w-3.5 h-3.5 rounded shrink-0"
+              style={{ background: seg.color }}
+            />
+            <span className="text-[13px] text-p-fg font-bold min-w-[36px]">
               {seg.label}
             </span>
-            <span style={{ fontSize: 13, color: 'var(--p-fg-mid)', flex: 1 }}>
+            <span className="text-[13px] text-p-fg-mid flex-1">
               {seg.libelle}
             </span>
-            <span style={{
-              fontSize: 12, fontWeight: 700,
-              background: seg.color + '22', color: seg.color,
-              padding: '2px 8px', borderRadius: 6,
-            }}>
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-md"
+              style={{ background: seg.color + '22', color: seg.color }}
+            >
               {seg.count} fois · {seg.pct}%
             </span>
           </div>
         ))}
-        <div style={{ marginTop: 4, fontSize: 12, color: 'var(--p-fg-mid)', borderTop: '1px solid var(--p-border)', paddingTop: 10 }}>
-          Total : <strong style={{ color: 'var(--p-fg)' }}>{total}</strong> évaluation{total > 1 ? 's' : ''}
+        <div className="mt-1 text-xs text-p-fg-mid border-t border-p-border pt-2.5">
+          Total : <strong className="text-p-fg">{total}</strong> évaluation{total > 1 ? 's' : ''}
         </div>
       </div>
     </div>
@@ -195,7 +169,7 @@ export default function PortailResultats() {
   }, []); // eslint-disable-line
 
   if (loading) {
-    return <div style={S.page}><div style={S.loading}>Chargement…</div></div>;
+    return <div className={S.page}><div className={S.loading}>Chargement…</div></div>;
   }
 
   const withEval = notes.filter(n => n.evaluation && !n.absent);
@@ -210,28 +184,28 @@ export default function PortailResultats() {
   const pieTotal = Object.values(dist).reduce((s, v) => s + v, 0);
 
   return (
-    <div style={S.page}>
-      <div style={S.header}>
-        <p style={S.sub}>Consultez vos appréciations et votre progression dans les évaluations.</p>
+    <div className={S.page}>
+      <div className={S.header}>
+        <p className={S.sub}>Consultez vos appréciations et votre progression dans les évaluations.</p>
       </div>
 
       {notes.length === 0 ? (
-        <div style={S.empty}>
-          <div style={S.emptyIcon}>📊</div>
-          <div style={S.emptyTitle}>Aucun résultat disponible</div>
-          <p style={S.emptyText}>
+        <div className={S.empty}>
+          <div className={S.emptyIcon}>📊</div>
+          <div className={S.emptyTitle}>Aucun résultat disponible</div>
+          <p className={S.emptyText}>
             Vos résultats d'évaluations seront affichés ici par votre professeur.
           </p>
         </div>
       ) : (
         <>
-          <div style={S.tableWrap}>
-            <table style={S.table}>
+          <div className={S.tableWrap}>
+            <table className={S.table}>
               <thead>
                 <tr>
-                  <th style={S.th}>Évaluation</th>
-                  <th style={S.thRight}>Appréciation</th>
-                  <th style={S.thRight}>Date</th>
+                  <th className={S.th}>Évaluation</th>
+                  <th className={S.thRight}>Appréciation</th>
+                  <th className={S.thRight}>Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -240,23 +214,26 @@ export default function PortailResultats() {
                   const score = n.score !== null && n.score !== undefined ? parseInt(n.score, 10) : null;
                   return (
                     <tr key={i}>
-                      <td style={S.td}>{ev?.titre || '—'}</td>
-                      <td style={S.tdCenter}>
+                      <td className={S.td}>{ev?.titre || '—'}</td>
+                      <td className={S.tdCenter}>
                         <GradeBadge score={score} />
                       </td>
-                      <td style={{ ...S.tdCenter, color: 'var(--p-fg-mid)' }}>{formatDate(ev?.date_evaluation)}</td>
+                      <td className={`${S.tdCenter} text-p-fg-mid`}>{formatDate(ev?.date_evaluation)}</td>
                     </tr>
                   );
                 })}
                 {absents.map((n, i) => (
                   <tr key={`abs-${i}`}>
-                    <td style={S.td}>{n.evaluation?.titre || '—'}</td>
-                    <td style={S.tdCenter}>
-                      <span style={{ padding: '3px 10px', borderRadius: 8, background: 'rgba(255,69,58,.12)', color: '#ff453a', fontSize: 12, fontWeight: 700 }}>
+                    <td className={S.td}>{n.evaluation?.titre || '—'}</td>
+                    <td className={S.tdCenter}>
+                      <span
+                        className="px-2.5 py-0.5 rounded-lg text-xs font-bold"
+                        style={{ background: 'rgba(255,69,58,.12)', color: '#ff453a' }}
+                      >
                         Absent
                       </span>
                     </td>
-                    <td style={{ ...S.tdCenter, color: 'var(--p-fg-mid)' }}>{formatDate(n.evaluation?.date_evaluation)}</td>
+                    <td className={`${S.tdCenter} text-p-fg-mid`}>{formatDate(n.evaluation?.date_evaluation)}</td>
                   </tr>
                 ))}
               </tbody>

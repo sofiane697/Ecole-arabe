@@ -1,6 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import PORTAIL_STYLES from './portailStyles';
 import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession, verifyEleveSession } from './supabasePortail';
 import { AnimatePresence, motion, pageVariants, staggerContainer } from '../animations';
 
@@ -65,16 +64,16 @@ function TopbarFunTitle({ title, emoji }) {
     <>
       <style>{TOPBAR_KEYFRAMES}</style>
       <motion.span
-        className="portail-topbar-fun-title"
-        style={{ display:'inline-flex', alignItems:'center', gap:8, fontFamily:"'Nunito','Inter',sans-serif", fontSize:40, fontWeight:900 }}
+        className="portail-topbar-fun-title inline-flex items-center gap-2 text-[40px] font-black"
+        style={{ fontFamily:"'Nunito','Inter',sans-serif" }}
         variants={{ hidden:{}, visible:{ transition:{ staggerChildren: 0.04, delayChildren: 0.05 } } }}
         initial="hidden" animate="visible"
       >
         {/* Emoji gauche */}
-        <span style={{ fontSize:28, display:'inline-block', animation:'topbarBubble 2.5s ease-in-out infinite' }}>{emoji}</span>
+        <span className="text-[28px] inline-block" style={{ animation:'topbarBubble 2.5s ease-in-out infinite' }}>{emoji}</span>
         {/* Lettres animées */}
         {title.split(' ').map((word, wi) => (
-          <span key={wi} style={{ display:'inline-flex', gap:0 }}>
+          <span key={wi} className="inline-flex gap-0">
             {word.split('').map((char) => {
               const color = FUN_COLORS[ci % FUN_COLORS.length];
               const floatDur = `${2.2 + (ci % 3) * 0.4}s`;
@@ -83,13 +82,14 @@ function TopbarFunTitle({ title, emoji }) {
                 /* motion.span gère l'entrée (opacity+y+scale), span interne gère le float CSS sans conflit */
                 <motion.span
                   key={ci}
-                  style={{ display:'inline-block', color, textShadow:`0 2px 10px ${color}55` }}
+                  className="inline-block"
+                  style={{ color, textShadow:`0 2px 10px ${color}55` }}
                   variants={{
                     hidden:  { opacity: 0, y: -14, scale: 0.85 },
                     visible: { opacity: 1, y: 0,   scale: 1, transition: LETTER_SPRING },
                   }}
                 >
-                  <span style={{ display:'inline-block', animation:`topbarLetterFloat ${floatDur} ease-in-out infinite` }}>
+                  <span className="inline-block" style={{ animation:`topbarLetterFloat ${floatDur} ease-in-out infinite` }}>
                     {char}
                   </span>
                 </motion.span>
@@ -98,8 +98,8 @@ function TopbarFunTitle({ title, emoji }) {
           </span>
         ))}
         {/* Étoiles droite */}
-        <span className="portail-topbar-fun-stars" style={{ fontSize:22, display:'inline-block', animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
-        <span className="portail-topbar-fun-stars" style={{ fontSize:18, display:'inline-block', animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
+        <span className="portail-topbar-fun-stars text-[22px] inline-block" style={{ animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
+        <span className="portail-topbar-fun-stars text-lg inline-block" style={{ animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
       </motion.span>
     </>
   );
@@ -127,14 +127,7 @@ export default function PortailApp() {
   const [newObsCount, setNewObsCount] = useState(0);
   const classeIdRef = useRef(null);
 
-  useLayoutEffect(() => {
-    const id = 'portail-styles';
-    if (!document.getElementById(id)) {
-      const style = document.createElement('style');
-      style.id = id;
-      style.textContent = PORTAIL_STYLES;
-      document.head.appendChild(style);
-    }
+  useEffect(() => {
     document.body.style.background = darkMode ? '#000' : 'linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%)';
     return () => { document.body.style.background = ''; };
   }, [darkMode]);
@@ -259,11 +252,11 @@ export default function PortailApp() {
       {/* Sidebar */}
       <aside className={`portail-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="portail-sidebar-brand">
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <img src="/logo-eleve.png" alt="Logo" style={{ height:50, width:'auto', objectFit:'contain' }} />
-            <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+          <div className="flex items-center gap-2.5">
+            <img src="/logo-eleve.png" alt="Logo" className="h-[50px] w-auto object-contain" />
+            <span className="arabic flex flex-col w-full leading-[1.4]">
               <span>Institut As-Safaa</span>
-              <span style={{textAlign:'right'}}>الصفاء</span>
+              <span className="text-right">الصفاء</span>
             </span>
           </div>
           <span className="label">Portail Élève</span>
@@ -277,7 +270,7 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
           >
-            <span style={{fontSize:18}}>📚</span> Mes Modules
+            <span className="text-lg">📚</span> Mes Modules
           </NavLink>
 
           <NavLink
@@ -291,7 +284,7 @@ export default function PortailApp() {
               setNewDevoirsCount(0);
             }}
           >
-            <span style={{fontSize:18}}>📝</span> Mes devoirs
+            <span className="text-lg">📝</span> Mes devoirs
             {newDevoirsCount > 0 && (
               <span className="portail-nav-badge">{newDevoirsCount}</span>
             )}
@@ -307,7 +300,7 @@ export default function PortailApp() {
               setNewNotesCount(0);
             }}
           >
-            <span style={{fontSize:18}}>📊</span> Mes résultats
+            <span className="text-lg">📊</span> Mes résultats
             {newNotesCount > 0 && (
               <span className="portail-nav-badge">{newNotesCount}</span>
             )}
@@ -323,7 +316,7 @@ export default function PortailApp() {
               setNewObsCount(0);
             }}
           >
-            <span style={{fontSize:18}}>👁️</span> Mes observations
+            <span className="text-lg">👁️</span> Mes observations
             {newObsCount > 0 && (
               <span className="portail-nav-badge">{newObsCount}</span>
             )}
@@ -334,13 +327,13 @@ export default function PortailApp() {
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}
           >
-            <span style={{fontSize:18}}>💬</span> Messages
+            <span className="text-lg">💬</span> Messages
             {unreadCount > 0 && (
               <span className="portail-nav-badge">{unreadCount}</span>
             )}
           </NavLink>
 
-          <div className="portail-nav-section" style={{ marginTop: '1.5rem' }}>Ressources</div>
+          <div className="portail-nav-section mt-6">Ressources</div>
           <a href="https://www.mon-kitabi.fr/kitabis/" className="portail-nav-link" target="_blank" rel="noreferrer" onClick={() => setSidebarOpen(false)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -367,7 +360,7 @@ export default function PortailApp() {
             <span>ID : {userIdentifiant}</span>
           </div>
           <button className="portail-logout-btn" onClick={handleLogout}>
-            <span style={{fontSize:14}}>🚪</span> Se déconnecter
+            <span className="text-sm">🚪</span> Se déconnecter
           </button>
         </div>
       </aside>
