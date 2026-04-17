@@ -35,8 +35,8 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div style={{ textAlign:'center', padding:'4rem', color:'var(--a-fg-light)' }}>
-        Chargement des données…
+      <div className="text-center p-16 text-a-fg-light">
+        Chargement des données...
       </div>
     );
   }
@@ -78,7 +78,7 @@ export default function Dashboard() {
         {/* Dernières inscriptions */}
         <div>
           <p className="admin-section-title">Dernières pré-inscriptions</p>
-          <div className="admin-panel dash-table-wrap" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="admin-panel dash-table-wrap p-0 overflow-hidden">
             <table className="admin-table">
               <thead>
                 <tr>
@@ -90,7 +90,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {lastInscriptions.length === 0 ? (
-                  <tr><td colSpan="4" style={{ textAlign:'center', padding:'2rem', color:'var(--a-fg-light)' }}>Aucune inscription</td></tr>
+                  <tr><td colSpan="4" className="text-center p-8 text-a-fg-light">Aucune inscription</td></tr>
                 ) : lastInscriptions.map(i => {
                   const s = STATUT_LABEL[i.statut] || { label: i.statut, cls: '' };
                   const date = new Date(i.created_at).toLocaleDateString('fr-FR');
@@ -98,7 +98,7 @@ export default function Dashboard() {
                     <tr key={i.id} onClick={() => navigate('/admin/inscriptions')}>
                       <td>
                         <strong>{i.prenom} {i.nom}</strong>
-                        <span className="muted" style={{ display:'block' }}>{i.age} ans</span>
+                        <span className="muted block">{i.age} ans</span>
                       </td>
                       <td className="muted">{(i.cours || '').split('—')[0].trim()}</td>
                       <td><span className={`badge ${s.cls}`}>● {s.label}</span></td>
@@ -108,10 +108,10 @@ export default function Dashboard() {
                 })}
               </tbody>
             </table>
-            <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--a-border)' }}>
+            <div className="px-4 py-3 border-t border-a-border">
               <button
                 onClick={() => navigate('/admin/inscriptions')}
-                style={{ background:'none', border:'none', color:'var(--a-gold)', fontSize:'0.82rem', cursor:'pointer', fontFamily:'Jost, sans-serif' }}
+                className="bg-transparent border-none text-a-gold text-[0.82rem] cursor-pointer" style={{ fontFamily: 'Jost, sans-serif' }}
               >
                 Voir toutes les inscriptions →
               </button>
@@ -122,7 +122,7 @@ export default function Dashboard() {
         {/* Derniers messages */}
         <div>
           <p className="admin-section-title">Derniers messages</p>
-          <div className="admin-panel dash-table-wrap" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="admin-panel dash-table-wrap p-0 overflow-hidden">
             <table className="admin-table">
               <thead>
                 <tr>
@@ -134,7 +134,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {lastMessages.length === 0 ? (
-                  <tr><td colSpan="4" style={{ textAlign:'center', padding:'2rem', color:'var(--a-fg-light)' }}>Aucun message</td></tr>
+                  <tr><td colSpan="4" className="text-center p-8 text-a-fg-light">Aucun message</td></tr>
                 ) : lastMessages.map(m => {
                   const date = new Date(m.created_at).toLocaleDateString('fr-FR');
                   return (
@@ -145,7 +145,7 @@ export default function Dashboard() {
                     >
                       <td>
                         <strong>{m.prenom} {m.nom}</strong>
-                        <span className="muted" style={{ display:'block' }}>{m.email}</span>
+                        <span className="muted block">{m.email}</span>
                       </td>
                       <td className="muted">{(m.cours || '').split('—')[0].trim()}</td>
                       <td>
@@ -159,10 +159,10 @@ export default function Dashboard() {
                 })}
               </tbody>
             </table>
-            <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--a-border)' }}>
+            <div className="px-4 py-3 border-t border-a-border">
               <button
                 onClick={() => navigate('/admin/messages')}
-                style={{ background:'none', border:'none', color:'var(--a-gold)', fontSize:'0.82rem', cursor:'pointer', fontFamily:'Jost, sans-serif' }}
+                className="bg-transparent border-none text-a-gold text-[0.82rem] cursor-pointer" style={{ fontFamily: 'Jost, sans-serif' }}
               >
                 Voir tous les messages →
               </button>

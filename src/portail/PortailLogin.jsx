@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ADMIN_STYLES from '../admin/adminStyles';
 import { loginEleve, changePassword } from './supabasePortail';
 
 function validatePassword(pwd) {
@@ -123,13 +122,6 @@ export default function PortailLogin() {
   const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   useLayoutEffect(() => {
-    const id = 'admin-styles';
-    if (!document.getElementById(id)) {
-      const style = document.createElement('style');
-      style.id = id;
-      style.textContent = ADMIN_STYLES;
-      document.head.appendChild(style);
-    }
     const mediaId = 'portail-login-media';
     if (!document.getElementById(mediaId)) {
       const mediaStyle = document.createElement('style');

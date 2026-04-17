@@ -211,24 +211,16 @@ export default function AdminSurveillance() {
                 onClick={() => { setSelected(c); setMessages([]); prevMsgCountRef.current = 0; }}
               >
                 {/* Avatar double */}
-                <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    background: pEleve.bg, color: pEleve.color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, fontWeight: 700, position: 'absolute', top: 0, left: 0,
-                    zIndex: 2, boxShadow: '0 0 0 2px var(--a-bg-card)',
-                  }}>
+                <div className="relative w-9 h-9 shrink-0">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold absolute top-0 left-0 z-[2] shadow-[0_0_0_2px_var(--a-bg-card)]"
+                    style={{ background: pEleve.bg, color: pEleve.color }}>
                     {initials(eleve?.prenom, eleve?.nom)}
                   </div>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: 6,
-                    background: avatarPalette(`${ens?.prenom}${ens?.nom}`).bg,
-                    color: avatarPalette(`${ens?.prenom}${ens?.nom}`).color,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 8, fontWeight: 700, position: 'absolute', bottom: 0, right: 0,
-                    zIndex: 1, boxShadow: '0 0 0 2px var(--a-bg-card)',
-                  }}>
+                  <div className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-[8px] font-bold absolute bottom-0 right-0 z-[1] shadow-[0_0_0_2px_var(--a-bg-card)]"
+                    style={{
+                      background: avatarPalette(`${ens?.prenom}${ens?.nom}`).bg,
+                      color: avatarPalette(`${ens?.prenom}${ens?.nom}`).color,
+                    }}>
                     {initials(ens?.prenom, ens?.nom)}
                   </div>
                 </div>
@@ -241,7 +233,7 @@ export default function AdminSurveillance() {
                     </span>
                     <span className="surv-conv-time">{formatDateShort(c.created_at)}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--a-muted)', marginTop: 1, marginBottom: 3 }}>
+                  <div className="text-[11px] text-[var(--a-muted)] mt-px mb-[3px]">
                     avec {ens?.prenom} {ens?.nom}
                   </div>
                   <div className="surv-conv-row2">
@@ -309,7 +301,7 @@ export default function AdminSurveillance() {
           {/* Messages */}
           <div className="surv-messages" ref={messagesContainerRef}>
             {messages.length === 0 && (
-              <div className="surv-empty" style={{ flex: 1 }}>Chargement…</div>
+              <div className="surv-empty flex-1">Chargement…</div>
             )}
 
             {groupedMessages.map(group => (

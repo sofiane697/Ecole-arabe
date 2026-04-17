@@ -1,6 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import ADMIN_STYLES from '../admin/adminStyles';
 import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence, verifyEnseignantSession } from './supabaseEnseignant';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
@@ -78,42 +77,39 @@ function PresencePicker({ presence, onChange }) {
   }, [open]);
 
   return (
-    <div ref={ref} style={{ position:'relative', marginBottom:10 }}>
+    <div ref={ref} className="relative mb-2.5">
       {/* Bouton statut actuel */}
       <button
         onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2 py-[7px] px-2.5 rounded-lg cursor-pointer text-left"
         style={{
-          width:'100%', display:'flex', alignItems:'center', gap:8, padding:'7px 10px',
-          borderRadius:8, border:`1px solid ${current.color}44`,
-          background:`${current.color}12`, cursor:'pointer', textAlign:'left',
+          border:`1px solid ${current.color}44`,
+          background:`${current.color}12`,
         }}
       >
-        <span style={{ width:9, height:9, borderRadius:'50%', background:current.color, flexShrink:0 }} />
-        <span style={{ flex:1, fontSize:12, fontWeight:700, color:current.color }}>{current.label}</span>
-        <span style={{ fontSize:9, color:'var(--a-fg-light)' }}>▼</span>
+        <span className="w-[9px] h-[9px] rounded-full flex-shrink-0" style={{ background:current.color }} />
+        <span className="flex-1 text-xs font-bold" style={{ color:current.color }}>{current.label}</span>
+        <span className="text-[9px] text-a-fg-light">▼</span>
       </button>
 
       {/* Liste déroulante */}
       {open && (
-        <div style={{
-          position:'absolute', bottom:'calc(100% + 4px)', left:0, right:0,
-          background:'var(--a-bg-card)', border:'1px solid var(--a-border)',
-          borderRadius:8, overflow:'hidden', zIndex:200,
-          boxShadow:'0 4px 16px rgba(0,0,0,.25)',
-        }}>
+        <div className="absolute left-0 right-0 bg-a-bg-card border border-a-border rounded-lg overflow-hidden z-[200]"
+          style={{
+            bottom:'calc(100% + 4px)',
+            boxShadow:'0 4px 16px rgba(0,0,0,.25)',
+          }}>
           {PRESENCE_STATUTS.map(s => (
             <button
               key={s.key}
               onClick={() => { onChange(s.key); setOpen(false); }}
+              className="w-full flex items-center gap-2 py-2 px-3 border-none cursor-pointer text-left transition-colors"
               style={{
-                width:'100%', display:'flex', alignItems:'center', gap:8,
-                padding:'8px 12px', border:'none', cursor:'pointer', textAlign:'left',
                 background: presence === s.key ? `${s.color}18` : 'transparent',
-                transition:'background .12s',
               }}
             >
-              <span style={{ width:9, height:9, borderRadius:'50%', background:s.color, flexShrink:0 }} />
-              <span style={{ fontSize:12, fontWeight: presence === s.key ? 700 : 500, color:s.color }}>
+              <span className="w-[9px] h-[9px] rounded-full flex-shrink-0" style={{ background:s.color }} />
+              <span className="text-xs" style={{ fontWeight: presence === s.key ? 700 : 500, color:s.color }}>
                 {s.label}
               </span>
             </button>
@@ -143,16 +139,6 @@ export default function EnseignantApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [presence, setPresence]       = useState('en_ligne');
-
-  useLayoutEffect(() => {
-    const id = 'admin-styles';
-    if (!document.getElementById(id)) {
-      const style = document.createElement('style');
-      style.id = id;
-      style.textContent = ADMIN_STYLES;
-      document.head.appendChild(style);
-    }
-  }, []);
 
   useEffect(() => {
     const root = document.querySelector('.admin-root');
@@ -226,9 +212,9 @@ export default function EnseignantApp() {
 
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+          <span className="arabic flex flex-col leading-snug w-full">
             <span>Institut As-Safaa</span>
-            <span style={{textAlign:'right'}}>الصفاء</span>
+            <span className="text-right">الصفاء</span>
           </span>
           <span className="label">Espace Enseignant</span>
         </div>

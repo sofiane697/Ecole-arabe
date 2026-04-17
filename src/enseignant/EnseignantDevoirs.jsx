@@ -36,24 +36,50 @@ function isPast(year, month, day) {
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+// Classes Tailwind pour les styles statiques
+const C = {
+  page:       'min-h-full flex flex-col gap-5',
+  topBar:     'flex items-center justify-between flex-wrap gap-3',
+  classeTabs: 'flex gap-2 flex-wrap',
+  addBtn:     'inline-flex items-center gap-[7px] py-[9px] px-[18px] rounded-full border-none bg-a-gold text-white text-[13px] font-bold cursor-pointer whitespace-nowrap shadow-a-gold',
+  calWrap:    'bg-a-bg-card rounded-a border border-a-border overflow-hidden',
+  calHeader:  'flex items-center justify-between px-5 py-4 border-b border-a-border',
+  calTitle:   'font-a-display text-base font-bold text-a-fg',
+  navBtn:     'bg-transparent border border-a-border rounded-lg px-3 py-1.5 text-a-fg-mid cursor-pointer text-sm flex items-center',
+  calGrid:    'grid grid-cols-7',
+  dayHead:    'text-center py-2.5 px-1 text-[11px] font-bold text-a-fg-light uppercase tracking-[.5px] border-b border-a-border',
+  pill:       'text-a-gold text-[11px] font-semibold py-[2px] px-[7px] rounded-[6px] mb-[3px] whitespace-nowrap overflow-hidden text-ellipsis max-w-full block leading-[1.4]',
+  empty:      'text-center py-20 px-5 text-a-fg-mid',
+  panel:      'bg-a-bg-card rounded-a border border-a-border p-5 flex flex-col gap-3.5',
+  panelTitle: 'font-a-display text-[15px] font-bold text-a-fg mb-1',
+  devoirCard: 'bg-a-bg rounded-a-sm border border-a-border py-3 px-3.5',
+  devoirTitre:'text-sm font-semibold text-a-fg mb-1',
+  devoirDesc: 'text-[13px] text-a-fg-mid leading-normal',
+  devoirClasse:'text-[11px] text-a-gold font-semibold mt-1.5',
+  devoirActions:'flex gap-2 mt-2.5',
+  panelAddBtn:'flex items-center gap-1.5 py-[9px] px-3.5 rounded-lg border-[1.5px] border-dashed border-a-border bg-transparent text-a-fg-mid text-[13px] cursor-pointer justify-center mt-1',
+  overlay:    'fixed inset-0 flex items-center justify-center z-[1000]',
+  modal:      'bg-a-bg-card rounded-a p-7 w-full max-w-[480px] border border-a-border max-h-[90vh] overflow-y-auto',
+  modalTitle: 'font-a-display text-[17px] font-bold text-a-fg mb-5',
+  field:      'mb-4',
+  label:      'block text-[11px] font-bold text-a-fg-mid mb-1.5 uppercase tracking-[.5px]',
+  input:      'w-full py-2.5 px-3.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
+  textarea:   'w-full py-2.5 px-3.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border resize-y min-h-[80px]',
+  btnRow:     'flex gap-2.5 justify-end mt-5',
+  btnCancel:  'py-[9px] px-5 rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer',
+  btnSave:    'py-[9px] px-5 rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer',
+  btnDel:     'py-[9px] px-5 rounded-full border-none bg-a-red text-white text-[13px] font-semibold cursor-pointer mr-auto',
+  loading:    'text-center p-[60px] text-a-fg-mid text-sm',
+};
+
+// Styles dynamiques (dépendent de paramètres JS)
 const S = {
-  page:     { minHeight:'100%', display:'flex', flexDirection:'column', gap:20 },
-  topBar:   { display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 },
-  classeTabs: { display:'flex', gap:8, flexWrap:'wrap' },
-  classeTab:  (active) => ({
+  classeTab: (active) => ({
     padding:'7px 16px', borderRadius:980, border:`1.5px solid ${active ? 'var(--a-gold)' : 'var(--a-border)'}`,
     background: active ? 'rgba(191,138,48,.12)' : 'transparent',
     color: active ? 'var(--a-gold)' : 'var(--a-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer',
   }),
-  addBtn: { display:'inline-flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', boxShadow:'0 2px 12px rgba(191,138,48,.3)' },
-  // Calendrier
-  calWrap:  { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', overflow:'hidden' },
-  calHeader:{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid var(--a-border)' },
-  calTitle: { fontFamily:'var(--a-font-display)', fontSize:16, fontWeight:700, color:'var(--a-fg)' },
-  navBtn:   { background:'none', border:'1px solid var(--a-border)', borderRadius:8, padding:'6px 12px', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center' },
-  calGrid:  { display:'grid', gridTemplateColumns:'repeat(7, 1fr)' },
-  dayHead:  { textAlign:'center', padding:'10px 4px', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.5px', borderBottom:'1px solid var(--a-border)' },
-  dayCell:  (today, past, selected, hasDevoirs) => ({
+  dayCell: (today, past, selected, hasDevoirs) => ({
     minHeight:90, padding:'8px 6px', borderRight:'1px solid var(--a-border)', borderBottom:'1px solid var(--a-border)',
     cursor: past ? 'default' : 'pointer',
     background: selected ? 'rgba(191,138,48,.07)' : 'transparent',
@@ -62,32 +88,10 @@ const S = {
     opacity: past ? 0.45 : 1,
     transition:'background .15s',
   }),
-  dayNum:   (today) => ({ fontSize:13, fontWeight: today ? 700 : 400, color: today ? 'var(--a-gold)' : 'var(--a-fg)', marginBottom:4 }),
-  pill:     { background:'rgba(191,138,48,.18)', color:'var(--a-gold)', fontSize:11, fontWeight:600, padding:'2px 7px', borderRadius:6, marginBottom:3, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:'100%', display:'block', lineHeight:1.4 },
-  empty:    { textAlign:'center', padding:'80px 20px', color:'var(--a-fg-mid)' },
-  // Panneau latéral
-  panel:    { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', padding:20, display:'flex', flexDirection:'column', gap:14 },
-  panelTitle:{ fontFamily:'var(--a-font-display)', fontSize:15, fontWeight:700, color:'var(--a-fg)', marginBottom:4 },
-  devoirCard:{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', padding:'12px 14px' },
-  devoirTitre:{ fontSize:14, fontWeight:600, color:'var(--a-fg)', marginBottom:4 },
-  devoirDesc:{ fontSize:13, color:'var(--a-fg-mid)', lineHeight:1.5 },
-  devoirClasse:{ fontSize:11, color:'var(--a-gold)', fontWeight:600, marginTop:6 },
-  devoirActions:{ display:'flex', gap:8, marginTop:10 },
-  iconBtn:  (color) => ({ padding:'5px 12px', borderRadius:6, border:`1px solid ${color}22`, background:`${color}12`, color, fontSize:12, cursor:'pointer', fontWeight:600 }),
-  panelAddBtn:{ display:'flex', alignItems:'center', gap:6, padding:'9px 14px', borderRadius:8, border:'1.5px dashed var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:13, cursor:'pointer', justifyContent:'center', marginTop:4 },
-  // Modal
-  overlay:  { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
-  modal:    { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:480, border:'1px solid var(--a-border)', maxHeight:'90vh', overflowY:'auto' },
-  modalTitle:{ fontFamily:'var(--a-font-display)', fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
-  field:    { marginBottom:16 },
-  label:    { display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
-  input:    { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
-  textarea: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box', resize:'vertical', minHeight:80 },
-  btnRow:   { display:'flex', gap:10, justifyContent:'flex-end', marginTop:20 },
-  btnCancel:{ padding:'9px 20px', borderRadius:980, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnSave:  { padding:'9px 20px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnDel:   { padding:'9px 20px', borderRadius:980, border:'none', background:'var(--a-red)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginRight:'auto' },
-  loading:  { textAlign:'center', padding:60, color:'var(--a-fg-mid)', fontSize:14 },
+  dayNum: (today) => ({ fontSize:13, fontWeight: today ? 700 : 400, color: today ? 'var(--a-gold)' : 'var(--a-fg)', marginBottom:4 }),
+  iconBtn: (color) => ({ padding:'5px 12px', borderRadius:6, border:`1px solid ${color}22`, background:`${color}12`, color, fontSize:12, cursor:'pointer', fontWeight:600 }),
+  overlay: { background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)' },
+  pill: { background:'rgba(191,138,48,.18)' },
 };
 
 const IconPlus = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -193,47 +197,47 @@ export default function EnseignantDevoirs() {
     } catch(e) { alert(e.message); }
   };
 
-  if (loading) return <div style={S.loading}>Chargement...</div>;
+  if (loading) return <div className={C.loading}>Chargement...</div>;
 
   if (classes.length === 0) return (
-    <div style={S.empty}>
-      <div style={{ fontSize:48, marginBottom:16, opacity:.4 }}>📋</div>
-      <div style={{ fontSize:18, fontWeight:600, color:'var(--a-fg)', marginBottom:8 }}>Aucune classe assignée</div>
-      <p style={{ fontSize:14 }}>L'administrateur vous assignera des classes prochainement.</p>
+    <div className={C.empty}>
+      <div className="text-5xl mb-4 opacity-40">📋</div>
+      <div className="text-lg font-semibold text-a-fg mb-2">Aucune classe assignée</div>
+      <p className="text-sm">L'administrateur vous assignera des classes prochainement.</p>
     </div>
   );
 
   const days = getDaysInMonth(calYear, calMonth);
 
   return (
-    <div style={S.page}>
+    <div className={C.page}>
 
       {/* ── Barre du haut ── */}
-      <div style={S.topBar}>
-        <div style={S.classeTabs}>
+      <div className={C.topBar}>
+        <div className={C.classeTabs}>
           {classes.map(c => (
             <motion.button key={c.id} style={S.classeTab(selClasse === c.id)} {...tapScale} onClick={() => { setSelClasse(c.id); setSelDay(null); }}>
               {c.nom}
             </motion.button>
           ))}
         </div>
-        <motion.button style={S.addBtn} {...tapScale} onClick={() => openCreate('')}>
+        <motion.button className={C.addBtn} {...tapScale} onClick={() => openCreate('')}>
           <IconPlus /> Ajouter un devoir
         </motion.button>
       </div>
 
       {/* ── Calendrier + panneau latéral ── */}
-      <div style={{ display:'grid', gridTemplateColumns: selDay ? '1fr 300px' : '1fr', gap:16, alignItems:'start' }}>
+      <div className="grid gap-4 items-start" style={{ gridTemplateColumns: selDay ? '1fr 300px' : '1fr' }}>
 
         {/* Calendrier */}
-        <div style={S.calWrap}>
-          <div style={S.calHeader}>
-            <button style={S.navBtn} onClick={prevMonth}><IconChevLeft /></button>
-            <span style={S.calTitle}>{MOIS[calMonth]} {calYear}</span>
-            <button style={S.navBtn} onClick={nextMonth}><IconChevRight /></button>
+        <div className={C.calWrap}>
+          <div className={C.calHeader}>
+            <button className={C.navBtn} onClick={prevMonth}><IconChevLeft /></button>
+            <span className={C.calTitle}>{MOIS[calMonth]} {calYear}</span>
+            <button className={C.navBtn} onClick={nextMonth}><IconChevRight /></button>
           </div>
-          <div style={S.calGrid}>
-            {JOURS.map(j => <div key={j} style={S.dayHead}>{j}</div>)}
+          <div className={C.calGrid}>
+            {JOURS.map(j => <div key={j} className={C.dayHead}>{j}</div>)}
             {days.map((day, i) => {
               if (!day) return <div key={`empty-${i}`} style={{ ...S.dayCell(false, false, false, false), background:'rgba(0,0,0,.02)', cursor:'default' }} />;
               const dateStr  = toDateStr(calYear, calMonth, day);
@@ -249,7 +253,7 @@ export default function EnseignantDevoirs() {
                   onMouseLeave={e => { e.currentTarget.style.background = selected ? 'rgba(191,138,48,.07)' : 'transparent'; }}>
                   <div style={S.dayNum(today_)}>{day}</div>
                   {dayDvs.map(d => (
-                    <span key={d.id} style={S.pill} title={d.titre}>{d.titre}</span>
+                    <span key={d.id} className={C.pill} style={S.pill} title={d.titre}>{d.titre}</span>
                   ))}
                 </div>
               );
@@ -259,14 +263,14 @@ export default function EnseignantDevoirs() {
 
         {/* Panneau latéral */}
         {selDay && (
-          <div style={S.panel}>
+          <div className={C.panel}>
             <div>
-              <div style={S.panelTitle}>{formatDayLabel(selDay.year, selDay.month, selDay.day)}</div>
-              <div style={{ fontSize:12, color:'var(--a-fg-light)' }}>{devoirsDuJour.length} devoir{devoirsDuJour.length !== 1 ? 's' : ''}</div>
+              <div className={C.panelTitle}>{formatDayLabel(selDay.year, selDay.month, selDay.day)}</div>
+              <div className="text-xs text-a-fg-light">{devoirsDuJour.length} devoir{devoirsDuJour.length !== 1 ? 's' : ''}</div>
             </div>
 
             {devoirsDuJour.length === 0 ? (
-              <div style={{ textAlign:'center', padding:'20px 0', color:'var(--a-fg-light)', fontSize:13 }}>
+              <div className="text-center py-5 text-a-fg-light text-[13px]">
                 Aucun devoir ce jour
               </div>
             ) : (
@@ -274,17 +278,17 @@ export default function EnseignantDevoirs() {
                 const cl = classes.find(c => c.id === d.classe_id);
                 const isOwn = d.enseignant_id === user.id;
                 return (
-                  <div key={d.id} style={S.devoirCard}>
-                    <div style={S.devoirTitre}>{d.titre}</div>
-                    {d.description && <div style={S.devoirDesc}>{d.description}</div>}
-                    {cl && <div style={S.devoirClasse}>📚 {cl.nom}</div>}
+                  <div key={d.id} className={C.devoirCard}>
+                    <div className={C.devoirTitre}>{d.titre}</div>
+                    {d.description && <div className={C.devoirDesc}>{d.description}</div>}
+                    {cl && <div className={C.devoirClasse}>📚 {cl.nom}</div>}
                     {!isOwn && d.enseignants && (
-                      <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:4, fontStyle:'italic' }}>
+                      <div className="text-[11px] text-a-fg-light mt-1 italic">
                         Par {d.enseignants.prenom} {d.enseignants.nom}
                       </div>
                     )}
                     {isOwn && (
-                      <div style={S.devoirActions}>
+                      <div className={C.devoirActions}>
                         <button style={S.iconBtn('var(--a-gold)')} onClick={() => openEdit(d)}>✏️ Modifier</button>
                         <button style={S.iconBtn('var(--a-red)')} onClick={() => setConfirmDel(d)}>🗑️ Supprimer</button>
                       </div>
@@ -294,7 +298,7 @@ export default function EnseignantDevoirs() {
               })
             )}
 
-            <button style={S.panelAddBtn} onClick={() => openCreate(toDateStr(selDay.year, selDay.month, selDay.day))}>
+            <button className={C.panelAddBtn} onClick={() => openCreate(toDateStr(selDay.year, selDay.month, selDay.day))}>
               <IconPlus /> Ajouter pour ce jour
             </button>
           </div>
@@ -303,40 +307,40 @@ export default function EnseignantDevoirs() {
 
       {/* ── Modal création / édition ── */}
       {modal && (
-        <div style={S.overlay} onClick={() => setModal(null)}>
-          <div style={S.modal} onClick={e => e.stopPropagation()}>
-            <div style={S.modalTitle}>{modal.mode === 'create' ? '➕ Nouveau devoir' : '✏️ Modifier le devoir'}</div>
+        <div className={C.overlay} style={S.overlay} onClick={() => setModal(null)}>
+          <div className={C.modal} onClick={e => e.stopPropagation()}>
+            <div className={C.modalTitle}>{modal.mode === 'create' ? '➕ Nouveau devoir' : '✏️ Modifier le devoir'}</div>
 
-            <div style={S.field}>
-              <label style={S.label}>Titre *</label>
-              <input style={S.input} value={fTitre} onChange={e => setFTitre(e.target.value)} placeholder="Ex : Révisions chapitre 3" autoFocus />
+            <div className={C.field}>
+              <label className={C.label}>Titre *</label>
+              <input className={C.input} value={fTitre} onChange={e => setFTitre(e.target.value)} placeholder="Ex : Révisions chapitre 3" autoFocus />
             </div>
 
-            <div style={S.field}>
-              <label style={S.label}>Description</label>
-              <textarea style={S.textarea} value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Instructions, pages à lire..." />
+            <div className={C.field}>
+              <label className={C.label}>Description</label>
+              <textarea className={C.textarea} value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Instructions, pages à lire..." />
             </div>
 
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-              <div style={S.field}>
-                <label style={S.label}>Classe *</label>
-                <select style={S.input} value={fClasse} onChange={e => setFClasse(e.target.value)}>
+            <div className="grid grid-cols-2 gap-3">
+              <div className={C.field}>
+                <label className={C.label}>Classe *</label>
+                <select className={C.input} value={fClasse} onChange={e => setFClasse(e.target.value)}>
                   <option value="">— Choisir —</option>
                   {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
                 </select>
               </div>
-              <div style={S.field}>
-                <label style={S.label}>Date limite *</label>
-                <input type="date" style={S.input} value={fDate} onChange={e => setFDate(e.target.value)} />
+              <div className={C.field}>
+                <label className={C.label}>Date limite *</label>
+                <input type="date" className={C.input} value={fDate} onChange={e => setFDate(e.target.value)} />
               </div>
             </div>
 
-            <div style={S.btnRow}>
+            <div className={C.btnRow}>
               {modal.mode === 'edit' && modal.devoir?.enseignant_id === user.id && (
-                <button style={S.btnDel} onClick={() => { setConfirmDel(modal.devoir); setModal(null); }}>Supprimer</button>
+                <button className={C.btnDel} onClick={() => { setConfirmDel(modal.devoir); setModal(null); }}>Supprimer</button>
               )}
-              <button style={S.btnCancel} onClick={() => setModal(null)}>Annuler</button>
-              <button style={{ ...S.btnSave, opacity: saving ? .6 : 1 }} onClick={handleSave} disabled={saving}>
+              <button className={C.btnCancel} onClick={() => setModal(null)}>Annuler</button>
+              <button className={C.btnSave} style={{ opacity: saving ? .6 : 1 }} onClick={handleSave} disabled={saving}>
                 {saving ? 'Enregistrement...' : 'Enregistrer'}
               </button>
             </div>
@@ -346,16 +350,16 @@ export default function EnseignantDevoirs() {
 
       {/* ── Confirmation suppression ── */}
       {confirmDel && (
-        <div style={S.overlay} onClick={() => setConfirmDel(null)}>
-          <div style={{ ...S.modal, maxWidth:380 }} onClick={e => e.stopPropagation()}>
-            <div style={{ textAlign:'center', marginBottom:16 }}>
-              <div style={{ fontSize:36, marginBottom:8 }}>🗑️</div>
-              <div style={S.modalTitle}>Supprimer ce devoir ?</div>
-              <p style={{ fontSize:14, color:'var(--a-fg-mid)' }}>« {confirmDel.titre} » sera supprimé définitivement.</p>
+        <div className={C.overlay} style={S.overlay} onClick={() => setConfirmDel(null)}>
+          <div className={`${C.modal} !max-w-[380px]`} onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">🗑️</div>
+              <div className={C.modalTitle}>Supprimer ce devoir ?</div>
+              <p className="text-sm text-a-fg-mid">« {confirmDel.titre} » sera supprimé définitivement.</p>
             </div>
-            <div style={S.btnRow}>
-              <button style={S.btnCancel} onClick={() => setConfirmDel(null)}>Annuler</button>
-              <button style={S.btnDel} onClick={() => handleDelete(confirmDel.id)}>Supprimer</button>
+            <div className={C.btnRow}>
+              <button className={C.btnCancel} onClick={() => setConfirmDel(null)}>Annuler</button>
+              <button className={C.btnDel} onClick={() => handleDelete(confirmDel.id)}>Supprimer</button>
             </div>
           </div>
         </div>

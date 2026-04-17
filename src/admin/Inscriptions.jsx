@@ -214,7 +214,7 @@ export default function Inscriptions() {
 
   if (loading) {
     return (
-      <div style={{ textAlign:'center', padding:'4rem', color:'var(--a-fg-light)' }}>
+      <div className="text-center p-16 text-a-fg-light">
         Chargement des inscriptions...
       </div>
     );
@@ -356,7 +356,7 @@ export default function Inscriptions() {
                     <div className="insc-detail-field">
                       <span className="insc-detail-field-label">Téléphone</span>
                       <span className="insc-detail-field-value">
-                        <a href={`tel:${selected.telephone}`} style={{ color:'var(--a-blue)', textDecoration:'none' }}>{selected.telephone}</a>
+                        <a href={`tel:${selected.telephone}`} className="text-a-blue no-underline">{selected.telephone}</a>
                       </span>
                     </div>
                   )}
@@ -364,7 +364,7 @@ export default function Inscriptions() {
                     <div className="insc-detail-field">
                       <span className="insc-detail-field-label">Email</span>
                       <span className="insc-detail-field-value">
-                        <a href={`mailto:${selected.email}`} style={{ color:'var(--a-blue)', textDecoration:'none' }}>{selected.email}</a>
+                        <a href={`mailto:${selected.email}`} className="text-a-blue no-underline">{selected.email}</a>
                       </span>
                     </div>
                   )}
@@ -381,9 +381,9 @@ export default function Inscriptions() {
                 {/* Progression statut */}
                 <p className="insc-detail-section-title">Progression</p>
                 {selected.statut === 'refuse' ? (
-                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background:'rgba(255,69,58,0.08)', borderRadius:10, border:'1px solid rgba(255,69,58,0.2)' }}>
-                    <span style={{ color:'var(--a-red)', fontSize:16 }}>✕</span>
-                    <span style={{ color:'var(--a-red)', fontWeight:600, fontSize:14 }}>Inscription refusée</span>
+                  <div className="flex items-center gap-2.5 px-4 py-3 rounded-[10px] bg-[rgba(255,69,58,0.08)] border border-[rgba(255,69,58,0.2)]">
+                    <span className="text-a-red text-base">✕</span>
+                    <span className="text-a-red font-semibold text-sm">Inscription refusée</span>
                   </div>
                 ) : (
                   <div className="insc-progress">
@@ -397,7 +397,7 @@ export default function Inscriptions() {
                         <React.Fragment key={step}>
                           <div className={`insc-progress-step ${isDone ? 'done' : ''} ${isCurrent ? 'current' : ''}`}>
                             <div className="insc-progress-dot" style={{ borderColor: isDone ? stepCfg.color : 'var(--a-border)', background: isDone ? stepCfg.color : 'transparent' }}>
-                              {isDone && <span style={{ color: '#fff', fontSize: '0.6rem' }}>✓</span>}
+                              {isDone && <span className="text-white text-[0.6rem]">✓</span>}
                             </div>
                             <span className="insc-progress-label" style={{ color: isDone ? stepCfg.color : 'var(--a-fg-light)' }}>{stepCfg.label}</span>
                           </div>
@@ -428,7 +428,7 @@ export default function Inscriptions() {
                         Passer à : {nextCfg.label} <IconArrow />
                       </button>
                       <button
-                        style={{ marginTop:8, width:'100%', padding:'9px 16px', borderRadius:980, border:'1px solid var(--a-red)', background:'transparent', color:'var(--a-red)', fontSize:13, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
+                        className="mt-2 w-full px-4 py-[9px] rounded-full border border-a-red bg-transparent text-a-red text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-1.5"
                         onClick={() => refuserInscription(selected.id, selected.statut)}
                       >
                         ✕ Refuser l'inscription
@@ -489,23 +489,23 @@ export default function Inscriptions() {
 
                 {/* ── Compte déjà actif ── */}
                 {linkedEleve && linkedEleve.actif && (
-                  <div style={{ marginTop:12, padding:'10px 14px', background:'rgba(48,209,88,0.08)', border:'1px solid rgba(48,209,88,0.3)', borderRadius:8, fontSize:13, color:'var(--a-green)' }}>
+                  <div className="mt-3 px-3.5 py-2.5 rounded-lg text-[13px] text-a-green bg-[rgba(48,209,88,0.08)] border border-[rgba(48,209,88,0.3)]">
                     ✅ Élève actif — accès portail ouvert
                   </div>
                 )}
 
                 {/* ── Indicateur email envoyé ── */}
                 {mailEnvoye && (
-                  <div style={{ marginTop:8, display:'flex', alignItems:'center', gap:8, padding:'10px 14px', background:'rgba(48,209,88,0.07)', border:'1px solid rgba(48,209,88,0.25)', borderRadius:8 }}>
-                    <span style={{ fontSize:15 }}>✉️</span>
-                    <span style={{ fontSize:12, color:'var(--a-green)', lineHeight:1.5 }}>
+                  <div className="mt-2 flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-[rgba(48,209,88,0.07)] border border-[rgba(48,209,88,0.25)]">
+                    <span className="text-[15px]">✉️</span>
+                    <span className="text-xs text-a-green leading-normal">
                       Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                      <strong style={{ fontFamily:'var(--a-font-mono)' }}>{mailEnvoye}</strong>
+                      <strong className="font-a-mono">{mailEnvoye}</strong>
                     </span>
                   </div>
                 )}
                 {mailEnvoye === false && (
-                  <div style={{ marginTop:8, padding:'10px 14px', background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', borderRadius:8, fontSize:12, color:'var(--a-yellow)' }}>
+                  <div className="mt-2 px-3.5 py-2.5 rounded-lg text-xs text-a-yellow bg-[rgba(255,159,10,0.08)] border border-[rgba(255,159,10,0.3)]">
                     ⚠️ Aucun email de contact — transmettez les identifiants manuellement.
                   </div>
                 )}

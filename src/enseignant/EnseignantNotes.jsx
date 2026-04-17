@@ -73,24 +73,21 @@ function NoteLetterInput({ note, onSave, onAbsent }) {
 
   if (note?.absent) {
     return (
-      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-        <div style={{
-          flex:1, height:40, borderRadius:10,
-          background:'rgba(255,69,58,.1)', border:'1.5px solid rgba(255,69,58,.25)',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          color:'#ff453a', fontWeight:700, fontSize:12, letterSpacing:.5,
-        }}>ABSENT</div>
-        <button onClick={onAbsent} style={{
-          padding:'0 12px', height:40, borderRadius:10, border:'1px solid var(--a-border)',
-          background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer',
-          fontSize:11, whiteSpace:'nowrap', flexShrink:0,
-        }}>Retirer</button>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-10 rounded-[10px] flex items-center justify-center font-bold text-xs tracking-[0.5px]"
+          style={{
+            background:'rgba(255,69,58,.1)', border:'1.5px solid rgba(255,69,58,.25)',
+            color:'#ff453a',
+          }}>ABSENT</div>
+        <button onClick={onAbsent} className="px-3 h-10 rounded-[10px] border border-a-border bg-transparent text-a-fg-mid cursor-pointer text-[11px] whitespace-nowrap shrink-0">
+          Retirer
+        </button>
       </div>
     );
   }
 
   return (
-    <div style={{ display:'flex', gap:5, alignItems:'center' }}>
+    <div className="flex gap-[5px] items-center">
       {GRADES.map(g => {
         const isSelected = note?.score === g.value;
         return (
@@ -99,16 +96,14 @@ function NoteLetterInput({ note, onSave, onAbsent }) {
             onClick={() => handleSelect(g)}
             disabled={saving}
             title={g.libelle}
+            className="flex-1 h-10 rounded-[10px] transition-all duration-150 tracking-[0.3px]"
             style={{
-              flex:1, height:40, borderRadius:10,
               border: `1.5px solid ${isSelected ? g.color : 'var(--a-border)'}`,
               background: isSelected ? `${g.color}20` : 'var(--a-bg)',
               color: isSelected ? g.color : 'var(--a-fg-mid)',
               fontWeight: isSelected ? 800 : 600,
               fontSize: g.label === 'ECA' ? 10 : 12,
               cursor: saving ? 'wait' : 'pointer',
-              transition: 'all .15s',
-              letterSpacing: .3,
             }}
             onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = g.color; e.currentTarget.style.color = g.color; }}}
             onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'var(--a-border)'; e.currentTarget.style.color = 'var(--a-fg-mid)'; }}}
@@ -119,16 +114,13 @@ function NoteLetterInput({ note, onSave, onAbsent }) {
       })}
 
       {/* Bouton absent */}
-      <button onClick={onAbsent} title="Marquer absent" style={{
-        width:40, height:40, borderRadius:10, border:'1px solid var(--a-border)',
-        background:'transparent', color:'var(--a-fg-light)', cursor:'pointer',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        fontSize:10, fontWeight:600, letterSpacing:.2, flexShrink:0,
-      }}>Abs</button>
+      <button onClick={onAbsent} title="Marquer absent" className="w-10 h-10 rounded-[10px] border border-a-border bg-transparent text-a-fg-light cursor-pointer flex items-center justify-center text-[10px] font-semibold tracking-[0.2px] shrink-0">
+        Abs
+      </button>
 
       {/* Feedback sauvegarde */}
       {saved && (
-        <div style={{ width:36, height:40, borderRadius:10, background:'rgba(48,209,88,.15)', display:'flex', alignItems:'center', justifyContent:'center', color:'#30d158', flexShrink:0 }}>
+        <div className="w-9 h-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background:'rgba(48,209,88,.15)', color:'#30d158' }}>
           <IconCheck/>
         </div>
       )}
@@ -139,16 +131,16 @@ function NoteLetterInput({ note, onSave, onAbsent }) {
 // ─── Badge note ───────────────────────────────────────────────────────────────
 function GradeBadge({ score, size = 'md' }) {
   const g = gradeFromScore(score);
-  if (!g) return <span style={{ color:'var(--a-fg-light)', fontSize:12 }}>—</span>;
+  if (!g) return <span className="text-a-fg-light text-xs">—</span>;
   const fs = size === 'lg' ? 15 : 12;
   return (
-    <span style={{
-      display:'inline-flex', alignItems:'center', gap:5,
-      padding: size === 'lg' ? '4px 12px' : '2px 8px',
-      borderRadius:8, fontSize:fs, fontWeight:800,
-      background:`${g.color}18`, color: g.color,
-      border:`1px solid ${g.color}35`,
-    }}>
+    <span className="inline-flex items-center gap-[5px] rounded-lg font-extrabold"
+      style={{
+        padding: size === 'lg' ? '4px 12px' : '2px 8px',
+        fontSize:fs,
+        background:`${g.color}18`, color: g.color,
+        border:`1px solid ${g.color}35`,
+      }}>
       {g.label}
       <span style={{ fontSize:fs-2, fontWeight:400, opacity:.8 }}>{g.libelle}</span>
     </span>
@@ -281,8 +273,8 @@ export default function EnseignantNotes() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding:'24px 0' }}>
-      {actionError && <p style={{ color:'#ff453a', fontSize:13, marginBottom:12 }}>{actionError}</p>}
+    <div className="py-6">
+      {actionError && <p className="text-[13px] mb-3" style={{ color:'#ff453a' }}>{actionError}</p>}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .eval-card:hover { background: rgba(201,150,58,.06) !important; }
@@ -291,39 +283,41 @@ export default function EnseignantNotes() {
       `}</style>
 
       {/* ── Tabs classes ── */}
-      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:24, flexWrap:'wrap' }}>
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
         {classes.map(c => (
-          <button key={c.id} onClick={() => setSelClasse(c.id)} style={{
-            padding:'7px 20px', borderRadius:24, border:'1.5px solid',
-            borderColor: selClasse===c.id ? 'var(--a-gold)' : 'var(--a-border)',
-            background: selClasse===c.id ? 'var(--a-gold)' : 'transparent',
-            color: selClasse===c.id ? '#000' : 'var(--a-fg-mid)',
-            fontWeight:700, fontSize:13, cursor:'pointer', transition:'all .15s',
-          }}>{c.nom}</button>
+          <button key={c.id} onClick={() => setSelClasse(c.id)} className="rounded-3xl font-bold text-[13px] cursor-pointer transition-all duration-150"
+            style={{
+              padding:'7px 20px',
+              border:'1.5px solid',
+              borderColor: selClasse===c.id ? 'var(--a-gold)' : 'var(--a-border)',
+              background: selClasse===c.id ? 'var(--a-gold)' : 'transparent',
+              color: selClasse===c.id ? '#000' : 'var(--a-fg-mid)',
+            }}>{c.nom}</button>
         ))}
       </div>
 
       {loading ? (
-        <div style={{ textAlign:'center', padding:'80px 0', color:'var(--a-fg-mid)' }}>Chargement…</div>
+        <div className="text-center text-a-fg-mid" style={{ padding:'80px 0' }}>Chargement…</div>
       ) : (
-        <div style={{ display:'grid', gridTemplateColumns:'280px 1fr', gap:20, alignItems:'start' }}>
+        <div className="grid gap-5 items-start" style={{ gridTemplateColumns:'280px 1fr' }}>
 
           {/* ══ COLONNE GAUCHE — liste évaluations ══ */}
-          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          <div className="flex flex-col gap-2.5">
 
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:1 }}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-bold text-a-fg-mid uppercase tracking-[1px]">
                 Évaluations — {className}
               </span>
             </div>
 
             {/* Légende des notes */}
-            <div style={{ display:'flex', flexWrap:'wrap', gap:4, marginBottom:4 }}>
+            <div className="flex flex-wrap gap-1 mb-1">
               {GRADES.map(g => (
-                <span key={g.label} style={{
-                  fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:6,
-                  background:`${g.color}18`, color:g.color, border:`1px solid ${g.color}30`,
-                }}>
+                <span key={g.label} className="text-[10px] font-bold rounded-md"
+                  style={{
+                    padding:'2px 8px',
+                    background:`${g.color}18`, color:g.color, border:`1px solid ${g.color}30`,
+                  }}>
                   {g.label} = {g.libelle}
                 </span>
               ))}
@@ -331,7 +325,7 @@ export default function EnseignantNotes() {
 
             {/* Eval cards */}
             {evaluations.length === 0 ? (
-              <div style={{ padding:'32px 20px', textAlign:'center', borderRadius:14, border:'1px dashed var(--a-border)', color:'var(--a-fg-mid)', fontSize:13 }}>
+              <div className="text-center rounded-[14px] text-a-fg-mid text-[13px]" style={{ padding:'32px 20px', border:'1px dashed var(--a-border)' }}>
                 Aucune évaluation.<br/>Créez-en une ci-dessous.
               </div>
             ) : evaluations.map(ev => {
@@ -340,40 +334,36 @@ export default function EnseignantNotes() {
               const isActive = selEval?.id === ev.id;
               return (
                 <div key={ev.id}
-                  className={`eval-card${isActive ? ' eval-card-active' : ''}`}
+                  className={`eval-card${isActive ? ' eval-card-active' : ''} rounded-[14px] border border-a-border cursor-pointer transition-all duration-150 bg-a-bg-card relative`}
                   onClick={() => setSelEval(ev)}
-                  style={{
-                    borderRadius:14, border:'1px solid var(--a-border)',
-                    padding:'14px 16px', cursor:'pointer', transition:'all .15s',
-                    background:'var(--a-bg-card)', position:'relative',
-                  }}
+                  style={{ padding:'14px 16px' }}
                 >
                   {isActive && (
-                    <div style={{ position:'absolute', left:0, top:14, bottom:14, width:3, borderRadius:'0 3px 3px 0', background:'var(--a-gold)' }}/>
+                    <div className="absolute left-0 rounded-r-[3px]" style={{ top:14, bottom:14, width:3, background:'var(--a-gold)' }}/>
                   )}
 
-                  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, paddingLeft: isActive ? 10 : 0 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:'var(--a-fg)', marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  <div className="flex items-start justify-between gap-2" style={{ paddingLeft: isActive ? 10 : 0 }}>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-a-fg mb-[3px] overflow-hidden text-ellipsis whitespace-nowrap">
                         {ev.titre}
                       </div>
                       {ev.date_evaluation && (
-                        <span style={{ fontSize:11, color:'var(--a-fg-light)', background:'var(--a-bg)', padding:'1px 8px', borderRadius:10 }}>
+                        <span className="text-[11px] text-a-fg-light bg-a-bg rounded-[10px]" style={{ padding:'1px 8px' }}>
                           {fmt(ev.date_evaluation)}
                         </span>
                       )}
                       {ev.enseignant_id !== user.id && ev.enseignants && (
-                        <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:3, fontStyle:'italic' }}>
+                        <div className="text-[11px] text-a-fg-light mt-[3px] italic">
                           Par {ev.enseignants.prenom} {ev.enseignants.nom}
                         </div>
                       )}
                     </div>
                     {ev.enseignant_id === user.id && (
-                      <div style={{ display:'flex', gap:4, flexShrink:0 }}>
-                        <button onClick={e => openEdit(ev, e)} style={{ width:28, height:28, borderRadius:8, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={e => openEdit(ev, e)} className="w-7 h-7 rounded-lg border border-a-border bg-transparent text-a-fg-mid cursor-pointer flex items-center justify-center">
                           <IconEdit2/>
                         </button>
-                        <button onClick={e => { e.stopPropagation(); setConfirmDel(ev); }} style={{ width:28, height:28, borderRadius:8, border:'1px solid rgba(255,69,58,.25)', background:'transparent', color:'var(--a-red)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <button onClick={e => { e.stopPropagation(); setConfirmDel(ev); }} className="w-7 h-7 rounded-lg bg-transparent text-a-red cursor-pointer flex items-center justify-center" style={{ border:'1px solid rgba(255,69,58,.25)' }}>
                           <IconTrash2/>
                         </button>
                       </div>
@@ -381,28 +371,29 @@ export default function EnseignantNotes() {
                   </div>
 
                   {/* Distribution des notes */}
-                  <div style={{ display:'flex', gap:4, marginTop:8, paddingLeft: isActive ? 10 : 0 }}>
+                  <div className="flex gap-1 mt-2" style={{ paddingLeft: isActive ? 10 : 0 }}>
                     {GRADES.map(g => s.dist[g.label] > 0 && (
-                      <span key={g.label} style={{
-                        fontSize:10, fontWeight:700, padding:'1px 6px', borderRadius:5,
-                        background:`${g.color}18`, color:g.color,
-                      }}>{g.label}×{s.dist[g.label]}</span>
+                      <span key={g.label} className="text-[10px] font-bold rounded-[5px]"
+                        style={{
+                          padding:'1px 6px',
+                          background:`${g.color}18`, color:g.color,
+                        }}>{g.label}×{s.dist[g.label]}</span>
                     ))}
-                    {s.absent > 0 && <span style={{ fontSize:10, fontWeight:700, padding:'1px 6px', borderRadius:5, background:'rgba(255,69,58,.12)', color:'#ff453a' }}>Abs×{s.absent}</span>}
+                    {s.absent > 0 && <span className="text-[10px] font-bold rounded-[5px]" style={{ padding:'1px 6px', background:'rgba(255,69,58,.12)', color:'#ff453a' }}>Abs×{s.absent}</span>}
                   </div>
 
                   {/* Barre de progression */}
-                  <div style={{ marginTop:8, paddingLeft: isActive ? 10 : 0 }}>
-                    <div style={{ height:4, borderRadius:4, background:'var(--a-bg)', overflow:'hidden' }}>
-                      <div style={{ height:'100%', width:`${pct*100}%`, borderRadius:4, background: pct===1 ? '#30d158' : 'var(--a-gold)', transition:'width .3s' }}/>
+                  <div className="mt-2" style={{ paddingLeft: isActive ? 10 : 0 }}>
+                    <div className="h-1 rounded bg-a-bg overflow-hidden">
+                      <div className="h-full rounded transition-[width] duration-300" style={{ width:`${pct*100}%`, background: pct===1 ? '#30d158' : 'var(--a-gold)' }}/>
                     </div>
-                    <div style={{ marginTop:5 }}>
-                      <span style={{ fontSize:11, color:'var(--a-fg-mid)' }}>{s.noted}/{s.total} élèves saisis</span>
+                    <div className="mt-[5px]">
+                      <span className="text-[11px] text-a-fg-mid">{s.noted}/{s.total} élèves saisis</span>
                     </div>
                   </div>
 
                   {isActive && (
-                    <div style={{ position:'absolute', right:14, top:'50%', transform:'translateY(-50%)', color:'var(--a-gold)', opacity:.7 }}>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-a-gold opacity-70">
                       <IconChevRight/>
                     </div>
                   )}
@@ -411,14 +402,10 @@ export default function EnseignantNotes() {
             })}
 
             {/* Bouton ajouter */}
-            <button onClick={openCreate} style={{
-              display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-              padding:'13px', borderRadius:14, border:'1.5px dashed rgba(201,150,58,.4)',
-              background:'transparent', color:'var(--a-gold)', cursor:'pointer',
-              fontSize:13, fontWeight:600, transition:'all .15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background='rgba(201,150,58,.06)'}
-            onMouseLeave={e => e.currentTarget.style.background='transparent'}
+            <button onClick={openCreate} className="flex items-center justify-center gap-2 p-[13px] rounded-[14px] bg-transparent text-a-gold cursor-pointer text-[13px] font-semibold transition-all duration-150"
+              style={{ border:'1.5px dashed rgba(201,150,58,.4)' }}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(201,150,58,.06)'}
+              onMouseLeave={e => e.currentTarget.style.background='transparent'}
             >
               <IconPlus/> Nouvelle évaluation
             </button>
@@ -426,18 +413,19 @@ export default function EnseignantNotes() {
 
           {/* ══ COLONNE DROITE — saisie notes ══ */}
           {selEval ? (
-            <div style={{ background:'var(--a-bg-card)', borderRadius:16, border:'1px solid var(--a-border)', overflow:'hidden' }}>
+            <div className="bg-a-bg-card rounded-2xl border border-a-border overflow-hidden">
 
               {/* Header éval */}
-              <div style={{ padding:'20px 24px', borderBottom:'1px solid var(--a-border)', background:'rgba(201,150,58,.04)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                  <div style={{ flex:1 }}>
-                    <h3 style={{ margin:0, fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>{selEval.titre}</h3>
-                    <div style={{ display:'flex', gap:12, marginTop:5, flexWrap:'wrap' }}>
-                      {selEval.date_evaluation && <span style={{ fontSize:13, color:'var(--a-fg-mid)' }}>{fmt(selEval.date_evaluation)}</span>}
-                      <div style={{ display:'flex', gap:6 }}>
+              <div className="border-b border-a-border" style={{ padding:'20px 24px', background:'rgba(201,150,58,.04)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <h3 className="m-0 a-display text-lg font-bold text-a-fg">{selEval.titre}</h3>
+                    <div className="flex gap-3 mt-[5px] flex-wrap">
+                      {selEval.date_evaluation && <span className="text-[13px] text-a-fg-mid">{fmt(selEval.date_evaluation)}</span>}
+                      <div className="flex gap-1.5">
                         {GRADES.map(g => (
-                          <span key={g.label} style={{ fontSize:11, fontWeight:700, padding:'1px 7px', borderRadius:6, background:`${g.color}18`, color:g.color }}>
+                          <span key={g.label} className="text-[11px] font-bold rounded-md"
+                            style={{ padding:'1px 7px', background:`${g.color}18`, color:g.color }}>
                             {g.label} = {g.libelle}
                           </span>
                         ))}
@@ -448,9 +436,9 @@ export default function EnseignantNotes() {
                   {(() => {
                     const s = evalStats(selEval);
                     return (
-                      <div style={{ display:'flex', gap:12, textAlign:'center', flexShrink:0 }}>
-                        <div><div style={{ fontFamily:'var(--a-font-display)', fontSize:20, fontWeight:700, color:'var(--a-gold)' }}>{s.noted}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>saisis</div></div>
-                        {s.absent > 0 && <div><div style={{ fontSize:20, fontWeight:700, color:'#ff453a' }}>{s.absent}</div><div style={{ fontSize:11, color:'var(--a-fg-mid)' }}>absents</div></div>}
+                      <div className="flex gap-3 text-center shrink-0">
+                        <div><div className="a-display text-xl font-bold text-a-gold">{s.noted}</div><div className="text-[11px] text-a-fg-mid">saisis</div></div>
+                        {s.absent > 0 && <div><div className="text-xl font-bold" style={{ color:'#ff453a' }}>{s.absent}</div><div className="text-[11px] text-a-fg-mid">absents</div></div>}
                       </div>
                     );
                   })()}
@@ -459,49 +447,46 @@ export default function EnseignantNotes() {
 
               {/* Liste élèves */}
               {eleves.length === 0 ? (
-                <div style={{ padding:'60px 24px', textAlign:'center', color:'var(--a-fg-mid)', fontSize:14 }}>
+                <div className="text-center text-a-fg-mid text-sm" style={{ padding:'60px 24px' }}>
                   Aucun élève dans cette classe
                 </div>
               ) : (
                 <div>
                   {/* Légende colonnes */}
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 260px', gap:16, padding:'12px 24px', borderBottom:'1px solid var(--a-border)', background:'rgba(0,0,0,.15)' }}>
-                    <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:1 }}>Élève</span>
-                    <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:1, textAlign:'center' }}>Appréciation</span>
+                  <div className="gap-4 border-b border-a-border" style={{ display:'grid', gridTemplateColumns:'1fr 260px', padding:'12px 24px', background:'rgba(0,0,0,.15)' }}>
+                    <span className="text-[11px] font-bold text-a-fg-light uppercase tracking-[1px]">Élève</span>
+                    <span className="text-[11px] font-bold text-a-fg-light uppercase tracking-[1px] text-center">Appréciation</span>
                   </div>
 
                   {eleves.map((eleve, idx) => {
                     const note  = notesMap[noteKey(selEval.id, eleve.id)];
                     const grade = (note && !note.absent && note.score != null) ? gradeFromScore(note.score) : null;
                     return (
-                      <div key={eleve.id} className="note-row" style={{
-                        display:'grid', gridTemplateColumns:'1fr 260px', gap:16,
-                        padding:'14px 24px', alignItems:'center',
-                        borderBottom: idx < eleves.length-1 ? '1px solid var(--a-border)' : 'none',
-                        transition:'background .1s',
-                      }}>
+                      <div key={eleve.id} className="note-row gap-4 items-center transition-[background] duration-100"
+                        style={{
+                          display:'grid', gridTemplateColumns:'1fr 260px',
+                          padding:'14px 24px',
+                          borderBottom: idx < eleves.length-1 ? '1px solid var(--a-border)' : 'none',
+                        }}>
                         {/* Identité */}
-                        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                          <div style={{
-                            width:38, height:38, borderRadius:'50%', flexShrink:0,
-                            background: grade ? `${grade.color}18` : 'rgba(255,255,255,.05)',
-                            border: `2px solid ${grade ? grade.color : 'var(--a-border)'}`,
-                            display:'flex', alignItems:'center', justifyContent:'center',
-                            fontSize:12, fontWeight:700,
-                            color: grade ? grade.color : 'var(--a-fg-mid)',
-                            transition:'all .2s',
-                          }}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-[38px] h-[38px] rounded-full shrink-0 flex items-center justify-center text-xs font-bold transition-all duration-200"
+                            style={{
+                              background: grade ? `${grade.color}18` : 'rgba(255,255,255,.05)',
+                              border: `2px solid ${grade ? grade.color : 'var(--a-border)'}`,
+                              color: grade ? grade.color : 'var(--a-fg-mid)',
+                            }}>
                             {initials(eleve)}
                           </div>
                           <div>
-                            <div style={{ fontSize:14, fontWeight:600, color:'var(--a-fg)' }}>{eleve.prenom} {eleve.nom}</div>
+                            <div className="text-sm font-semibold text-a-fg">{eleve.prenom} {eleve.nom}</div>
                             {note?.absent
-                              ? <div style={{ fontSize:12, color:'#ff453a', marginTop:1 }}>Absent(e)</div>
+                              ? <div className="text-xs mt-px" style={{ color:'#ff453a' }}>Absent(e)</div>
                               : grade
-                                ? <div style={{ fontSize:12, color: grade.color, marginTop:1, fontWeight:600 }}>
+                                ? <div className="text-xs mt-px font-semibold" style={{ color: grade.color }}>
                                     {grade.label} — {grade.libelle}
                                   </div>
-                                : <div style={{ fontSize:12, color:'var(--a-fg-light)', marginTop:1 }}>Appréciation non saisie</div>
+                                : <div className="text-xs text-a-fg-light mt-px">Appréciation non saisie</div>
                             }
                           </div>
                         </div>
@@ -514,9 +499,9 @@ export default function EnseignantNotes() {
                             onAbsent={() => toggleAbsent(selEval.id, eleve.id)}
                           />
                         ) : (
-                          <div style={{ display:'flex', justifyContent:'center' }}>
+                          <div className="flex justify-center">
                             {note?.absent
-                              ? <span style={{ fontSize:12, fontWeight:700, padding:'4px 12px', borderRadius:8, background:'rgba(255,69,58,.12)', color:'#ff453a' }}>ABSENT</span>
+                              ? <span className="text-xs font-bold rounded-lg" style={{ padding:'4px 12px', background:'rgba(255,69,58,.12)', color:'#ff453a' }}>ABSENT</span>
                               : <GradeBadge score={note?.score} size="lg" />
                             }
                           </div>
@@ -531,19 +516,19 @@ export default function EnseignantNotes() {
                     const hasNotes = GRADES.some(g => s.dist[g.label] > 0);
                     if (!hasNotes) return null;
                     return (
-                      <div style={{ padding:'16px 24px', borderTop:'2px solid rgba(201,150,58,.2)', background:'rgba(201,150,58,.04)', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
-                        <span style={{ fontSize:13, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:.5 }}>Résultats de classe</span>
-                        <div style={{ display:'flex', gap:8 }}>
+                      <div className="flex items-center justify-between flex-wrap gap-2.5" style={{ padding:'16px 24px', borderTop:'2px solid rgba(201,150,58,.2)', background:'rgba(201,150,58,.04)' }}>
+                        <span className="text-[13px] font-bold text-a-fg-mid uppercase tracking-[0.5px]">Résultats de classe</span>
+                        <div className="flex gap-2">
                           {GRADES.map(g => s.dist[g.label] > 0 && (
-                            <div key={g.label} style={{ textAlign:'center' }}>
-                              <div style={{ fontSize:18, fontWeight:800, color:g.color }}>{s.dist[g.label]}</div>
-                              <div style={{ fontSize:10, fontWeight:700, color:g.color, opacity:.8 }}>{g.label}</div>
+                            <div key={g.label} className="text-center">
+                              <div className="text-lg font-extrabold" style={{ color:g.color }}>{s.dist[g.label]}</div>
+                              <div className="text-[10px] font-bold opacity-80" style={{ color:g.color }}>{g.label}</div>
                             </div>
                           ))}
                           {s.absent > 0 && (
-                            <div style={{ textAlign:'center' }}>
-                              <div style={{ fontSize:18, fontWeight:800, color:'#ff453a' }}>{s.absent}</div>
-                              <div style={{ fontSize:10, fontWeight:700, color:'#ff453a', opacity:.8 }}>Abs.</div>
+                            <div className="text-center">
+                              <div className="text-lg font-extrabold" style={{ color:'#ff453a' }}>{s.absent}</div>
+                              <div className="text-[10px] font-bold opacity-80" style={{ color:'#ff453a' }}>Abs.</div>
                             </div>
                           )}
                         </div>
@@ -554,10 +539,10 @@ export default function EnseignantNotes() {
               )}
             </div>
           ) : (
-            <div style={{ background:'var(--a-bg-card)', borderRadius:16, border:'1px solid var(--a-border)', padding:'80px 24px', textAlign:'center' }}>
-              <div style={{ fontSize:36, marginBottom:12, opacity:.2 }}>📋</div>
-              <div style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)', marginBottom:6 }}>Commencez par créer une évaluation</div>
-              <div style={{ fontSize:13, color:'var(--a-fg-mid)' }}>Cliquez sur "Nouvelle évaluation" dans la colonne de gauche.</div>
+            <div className="bg-a-bg-card rounded-2xl border border-a-border text-center" style={{ padding:'80px 24px' }}>
+              <div className="text-4xl mb-3 opacity-20">📋</div>
+              <div className="text-[15px] font-semibold text-a-fg mb-1.5">Commencez par créer une évaluation</div>
+              <div className="text-[13px] text-a-fg-mid">Cliquez sur "Nouvelle évaluation" dans la colonne de gauche.</div>
             </div>
           )}
         </div>
@@ -565,41 +550,42 @@ export default function EnseignantNotes() {
 
       {/* ── Modal évaluation ── */}
       {modal && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.65)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-5" style={{ background:'rgba(0,0,0,.65)' }}
           onClick={e => { if (e.target===e.currentTarget) setModal(null); }}>
-          <div style={{ background:'var(--a-bg-card)', borderRadius:20, padding:32, width:'100%', maxWidth:420, boxShadow:'0 24px 80px rgba(0,0,0,.6)' }}>
-            <h3 style={{ margin:'0 0 24px', fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>
+          <div className="bg-a-bg-card rounded-[20px] p-8 w-full max-w-[420px]" style={{ boxShadow:'0 24px 80px rgba(0,0,0,.6)' }}>
+            <h3 className="mt-0 mb-6 a-display text-lg font-bold text-a-fg">
               {modal.mode==='create' ? 'Nouvelle évaluation' : 'Modifier l\'évaluation'}
             </h3>
 
             {/* Rappel du système de notation */}
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:20, padding:'10px 14px', borderRadius:12, background:'var(--a-bg)', border:'1px solid var(--a-border)' }}>
+            <div className="flex gap-1.5 flex-wrap mb-5 rounded-xl bg-a-bg border border-a-border" style={{ padding:'10px 14px' }}>
               {GRADES.map(g => (
-                <span key={g.label} style={{ fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:6, background:`${g.color}18`, color:g.color }}>
+                <span key={g.label} className="text-[11px] font-bold rounded-md"
+                  style={{ padding:'2px 8px', background:`${g.color}18`, color:g.color }}>
                   {g.label} = {g.libelle}
                 </span>
               ))}
             </div>
 
-            <div style={{ marginBottom:18 }}>
-              <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Titre de l'évaluation</label>
-              <input autoFocus style={{ width:'100%', background:'var(--a-bg)', border:'1.5px solid var(--a-border)', color:'var(--a-fg)', borderRadius:12, padding:'12px 16px', fontSize:14, outline:'none', boxSizing:'border-box' }}
+            <div className="mb-[18px]">
+              <label className="block text-[11px] font-bold text-a-fg-mid mb-2 uppercase tracking-[0.5px]">Titre de l'évaluation</label>
+              <input autoFocus className="w-full bg-a-bg text-a-fg rounded-xl text-sm outline-none box-border" style={{ border:'1.5px solid var(--a-border)', padding:'12px 16px' }}
                 value={fTitre} onChange={e=>setFTitre(e.target.value)} placeholder="ex : Contrôle de lecture n°1"
                 onKeyDown={e => { if (e.key==='Enter' && fTitre.trim()) handleSaveEval(); }}
               />
             </div>
 
-            <div style={{ marginBottom:28 }}>
-              <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:.5 }}>Date (facultatif)</label>
-              <input type="date" style={{ width:'100%', background:'var(--a-bg)', border:'1.5px solid var(--a-border)', color:'var(--a-fg)', borderRadius:12, padding:'12px 16px', fontSize:14, outline:'none', boxSizing:'border-box' }}
+            <div className="mb-7">
+              <label className="block text-[11px] font-bold text-a-fg-mid mb-2 uppercase tracking-[0.5px]">Date (facultatif)</label>
+              <input type="date" className="w-full bg-a-bg text-a-fg rounded-xl text-sm outline-none box-border" style={{ border:'1.5px solid var(--a-border)', padding:'12px 16px' }}
                 value={fDate} onChange={e=>setFDate(e.target.value)}/>
             </div>
 
-            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              <button onClick={()=>setModal(null)} style={{ padding:'10px 22px', borderRadius:24, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:13 }}>
+            <div className="flex justify-end gap-2.5">
+              <button onClick={()=>setModal(null)} className="rounded-3xl border border-a-border bg-transparent text-a-fg-mid cursor-pointer text-[13px]" style={{ padding:'10px 22px' }}>
                 Annuler
               </button>
-              <button onClick={handleSaveEval} disabled={saving||!fTitre.trim()} style={{ padding:'10px 24px', borderRadius:24, border:'none', background:'var(--a-gold)', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13, opacity: saving||!fTitre.trim() ? .6 : 1 }}>
+              <button onClick={handleSaveEval} disabled={saving||!fTitre.trim()} className="rounded-3xl border-none bg-a-gold text-black font-bold cursor-pointer text-[13px]" style={{ padding:'10px 24px', opacity: saving||!fTitre.trim() ? .6 : 1 }}>
                 {saving ? 'Enregistrement…' : modal.mode==='create' ? 'Créer' : 'Enregistrer'}
               </button>
             </div>
@@ -609,15 +595,15 @@ export default function EnseignantNotes() {
 
       {/* ── Confirmation suppression ── */}
       {confirmDel && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.65)', zIndex:1100, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-          <div style={{ background:'var(--a-bg-card)', borderRadius:16, padding:28, maxWidth:380, width:'100%', boxShadow:'0 20px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontFamily:'var(--a-font-display)', fontSize:16, fontWeight:700, color:'var(--a-fg)', marginBottom:10 }}>Supprimer cette évaluation ?</div>
-            <div style={{ fontSize:13, color:'var(--a-fg-mid)', marginBottom:24, lineHeight:1.6 }}>
-              <strong style={{color:'var(--a-fg)'}}>{confirmDel.titre}</strong> et toutes les appréciations associées seront supprimées définitivement.
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-5" style={{ background:'rgba(0,0,0,.65)' }}>
+          <div className="bg-a-bg-card rounded-2xl max-w-[380px] w-full" style={{ padding:28, boxShadow:'0 20px 60px rgba(0,0,0,.5)' }}>
+            <div className="a-display text-base font-bold text-a-fg mb-2.5">Supprimer cette évaluation ?</div>
+            <div className="text-[13px] text-a-fg-mid mb-6 leading-relaxed">
+              <strong className="text-a-fg">{confirmDel.titre}</strong> et toutes les appréciations associées seront supprimées définitivement.
             </div>
-            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
-              <button onClick={()=>setConfirmDel(null)} style={{ padding:'9px 20px', borderRadius:24, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:13 }}>Annuler</button>
-              <button onClick={handleDeleteEval} style={{ padding:'9px 20px', borderRadius:24, border:'none', background:'var(--a-red)', color:'#fff', fontWeight:700, cursor:'pointer', fontSize:13 }}>Supprimer</button>
+            <div className="flex justify-end gap-2.5">
+              <button onClick={()=>setConfirmDel(null)} className="rounded-3xl border border-a-border bg-transparent text-a-fg-mid cursor-pointer text-[13px]" style={{ padding:'9px 20px' }}>Annuler</button>
+              <button onClick={handleDeleteEval} className="rounded-3xl border-none bg-a-red text-white font-bold cursor-pointer text-[13px]" style={{ padding:'9px 20px' }}>Supprimer</button>
             </div>
           </div>
         </div>

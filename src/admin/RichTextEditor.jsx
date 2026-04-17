@@ -375,7 +375,7 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
       <div style={S.tabBar}>
         <button style={S.tabBtn(tab==='editor')} onClick={() => setTab('editor')}>✏ Éditeur</button>
         <button style={S.tabBtn(tab==='preview')} onClick={() => setTab('preview')}>👁 Aperçu</button>
-        <div style={{ flex:1 }} />
+        <div className="flex-1" />
         <button title={fullscreen?'Réduire':'Plein écran'} style={{ ...S.toolBtn(fullscreen), margin:'0 6px' }}
           onClick={() => setFullscreen(f => !f)}
           onMouseEnter={e => { e.currentTarget.style.background='rgba(191,138,48,.12)'; e.currentTarget.style.color='var(--a-fg)'; }}
@@ -412,7 +412,7 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
             onMouseEnter={e => { e.currentTarget.style.background='rgba(191,138,48,.12)'; }}
             onMouseLeave={e => { e.currentTarget.style.background=''; }}
           ><IcoColor /></button>
-          <input ref={colorRef} type="color" value={color} style={{ display:'none' }} onChange={e => applyColor(e.target.value)} />
+          <input ref={colorRef} type="color" value={color} className="hidden" onChange={e => applyColor(e.target.value)} />
           <span style={S.sep} />
           <button title="LTR" style={S.toolBtn(false)}
             onMouseDown={e => { e.preventDefault(); toggleDir('ltr'); }}
@@ -440,20 +440,20 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
         {/* ── Panneau image ── */}
         {showImgPanel && (
           <div style={S.imgPanel}>
-            <button style={{ padding:'5px 12px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color:'var(--a-fg-mid)', fontSize:12, fontWeight:600, cursor:'pointer', flexShrink:0 }}
+            <button className="px-3 py-[5px] rounded-[980px] border border-a-border bg-a-bg-card text-a-fg-mid text-xs font-semibold cursor-pointer shrink-0"
               onClick={() => imgFileRef.current?.click()}
             >{imgUploading ? '⏳ Upload…' : '📁 Choisir un fichier'}</button>
-            <input ref={imgFileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={e => { if(e.target.files[0]) handleImgFile(e.target.files[0]); }} />
-            <span style={{ color:'var(--a-fg-light)', fontSize:12, flexShrink:0 }}>ou URL :</span>
+            <input ref={imgFileRef} type="file" accept="image/*" className="hidden" onChange={e => { if(e.target.files[0]) handleImgFile(e.target.files[0]); }} />
+            <span className="text-a-fg-light text-xs shrink-0">ou URL :</span>
             <input value={imgUrl} onChange={e => setImgUrl(e.target.value)}
               onKeyDown={e => { if(e.key==='Enter') { e.preventDefault(); insertImage(imgUrl); } }}
               placeholder="https://..."
-              style={{ flex:1, padding:'5px 10px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:13, outline:'none' }}
+              className="flex-1 px-2.5 py-[5px] rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-[13px] outline-none"
             />
-            <button style={{ padding:'5px 14px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', flexShrink:0 }}
+            <button className="px-3.5 py-[5px] rounded-[980px] border-none bg-a-gold text-white text-xs font-semibold cursor-pointer shrink-0"
               onClick={() => insertImage(imgUrl)}
             >Insérer</button>
-            <button style={{ background:'none', border:'none', color:'var(--a-fg-light)', cursor:'pointer', fontSize:16, flexShrink:0 }}
+            <button className="bg-transparent border-none text-a-fg-light cursor-pointer text-base shrink-0"
               onClick={() => setShowImgPanel(false)}
             >✕</button>
           </div>
@@ -509,7 +509,7 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
               ))}
               <span style={miniSep} />
               <input type="number" min="40" max="2000" value={Math.round(selImg.w)}
-                style={{ width:58, padding:'2px 6px', borderRadius:5, border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:12, outline:'none', textAlign:'center' }}
+                className="w-[58px] px-1.5 py-0.5 rounded-[5px] border border-a-border bg-a-bg-input text-a-fg text-xs outline-none text-center"
                 onChange={e => {
                   const w = parseInt(e.target.value, 10);
                   if (w >= 40 && selImg?.el) {
@@ -521,7 +521,7 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
                   }
                 }}
               />
-              <span style={{ fontSize:11, color:'var(--a-fg-light)', marginLeft:2 }}>px</span>
+              <span className="text-[11px] text-a-fg-light ml-0.5">px</span>
               <span style={miniSep} />
               <button title="Supprimer l'image" style={{ ...miniBtn, color:'var(--a-red)' }}
                 onMouseDown={e => { e.preventDefault(); deleteSelImg(); }}
@@ -551,10 +551,10 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
                   transition: 'background .12s, border .12s',
                 }}>
                   {dragZone===zone && (<>
-                    <span style={{ fontSize:20, opacity:.7 }}>
+                    <span className="text-xl opacity-70">
                       {zone==='left' ? '⬅' : zone==='right' ? '➡' : '↔'}
                     </span>
-                    <span style={{ fontSize:10, fontWeight:700, color:'var(--a-gold)', letterSpacing:'.5px' }}>
+                    <span className="text-[10px] font-bold text-a-gold tracking-wider">
                       {zone==='left' ? 'GAUCHE' : zone==='right' ? 'DROITE' : 'CENTRÉ'}
                     </span>
                   </>)}
@@ -574,7 +574,7 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
               boxShadow:'0 8px 32px rgba(0,0,0,0.45)',
               overflow:'hidden', cursor:'grabbing',
             }}>
-              <img src={selImg.el?.src} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+              <img src={selImg.el?.src} alt="" className="w-full h-full object-cover block" />
             </div>
           </>)}
         </div>

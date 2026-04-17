@@ -1,6 +1,5 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import ADMIN_STYLES from './adminStyles';
 import { logoutAdmin, fetchInscriptions, fetchMessages, verifyAdminSession } from './supabaseAdmin';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
@@ -68,18 +67,6 @@ export default function AdminApp() {
     return saved ? saved === 'dark' : true; // dark par défaut
   });
 
-  // Injecter les styles (toujours mettre à jour pour que les changements soient visibles sans rechargement complet)
-  useLayoutEffect(() => {
-    const id = 'admin-styles';
-    let style = document.getElementById(id);
-    if (!style) {
-      style = document.createElement('style');
-      style.id = id;
-      document.head.appendChild(style);
-    }
-    style.textContent = ADMIN_STYLES;
-  }, []);
-
   // Appliquer le thème
   useEffect(() => {
     const root = document.querySelector('.admin-root');
@@ -135,9 +122,9 @@ export default function AdminApp() {
       {/* ── Sidebar ── */}
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
+          <span className="arabic flex flex-col leading-snug w-full">
             <span>Institut As-Safaa</span>
-            <span style={{textAlign:'right'}}>الصفاء</span>
+            <span className="text-right">الصفاء</span>
           </span>
           <span className="label">Espace Admin</span>
         </div>
@@ -175,7 +162,7 @@ export default function AdminApp() {
             )}
           </NavLink>
 
-          <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Portail</div>
+          <div className="admin-nav-section mt-6">Portail</div>
 
           <NavLink
             to="/admin/cours"
@@ -227,7 +214,7 @@ export default function AdminApp() {
             <IconEye /> Surveillance
           </NavLink>
 
-          <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>
+          <div className="admin-nav-section mt-6">Site</div>
           <a href="/" className="admin-nav-link" target="_blank" rel="noreferrer" onClick={() => setSidebarOpen(false)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>

@@ -18,18 +18,14 @@ function gradeFromScore(score) {
 }
 function GradeBadge({ score }) {
   const grade = gradeFromScore(score);
-  if (!grade) return <span style={{ color: 'var(--a-fg-mid)' }}>—</span>;
+  if (!grade) return <span className="text-a-fg-mid">—</span>;
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        minWidth: 40, padding: '3px 10px', borderRadius: 8,
-        background: grade.color + '22', color: grade.color,
-        fontSize: 13, fontWeight: 800, letterSpacing: 0.5,
-      }}>
+    <span className="inline-flex items-center gap-2">
+      <span className="inline-flex items-center justify-center min-w-[40px] px-2.5 py-[3px] rounded-lg text-[13px] font-[800] tracking-[0.5px]"
+        style={{ background: grade.color + '22', color: grade.color }}>
         {grade.label}
       </span>
-      <span style={{ fontSize: 12, color: 'var(--a-fg-mid)' }}>{grade.libelle}</span>
+      <span className="text-xs text-a-fg-mid">{grade.libelle}</span>
     </span>
   );
 }
@@ -52,11 +48,11 @@ function PieChart({ dist, total }) {
     return { ...seg, d, lx, ly, pct };
   });
   return (
-    <div style={{ marginTop: 24, background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius)', padding: '20px 24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
-      <div style={{ width: '100%', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--a-fg-light)', marginBottom: 4 }}>
+    <div className="mt-6 bg-a-bg-card border border-a-border rounded-a p-5 px-6 flex flex-wrap items-center gap-6">
+      <div className="w-full text-[11px] font-bold uppercase tracking-[1px] text-a-fg-light mb-1">
         Récapitulatif des appréciations
       </div>
-      <svg width="180" height="180" viewBox="0 0 180 180" style={{ flexShrink: 0 }}>
+      <svg width="180" height="180" viewBox="0 0 180 180" className="shrink-0">
         <filter id="ps2"><feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.12"/></filter>
         <g filter="url(#ps2)">
           {paths.map((seg, i) => <path key={i} d={seg.d} fill={seg.color} stroke="var(--a-bg-card)" strokeWidth="2"/>)}
@@ -65,17 +61,17 @@ function PieChart({ dist, total }) {
           <text key={i} x={seg.lx} y={seg.ly} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="11" fontWeight="800">{seg.pct}%</text>
         ))}
       </svg>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minWidth: 140 }}>
+      <div className="flex flex-col gap-2.5 flex-1 min-w-[140px]">
         {paths.map((seg, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ width: 12, height: 12, borderRadius: 3, background: seg.color, flexShrink: 0 }}/>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--a-fg)', minWidth: 34 }}>{seg.label}</span>
-            <span style={{ fontSize: 12, color: 'var(--a-fg-mid)', flex: 1 }}>{seg.libelle}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, background: seg.color + '22', color: seg.color, padding: '2px 8px', borderRadius: 6 }}>{seg.count} · {seg.pct}%</span>
+          <div key={i} className="flex items-center gap-2.5">
+            <span className="w-3 h-3 rounded-[3px] shrink-0" style={{ background: seg.color }}/>
+            <span className="text-[13px] font-bold text-a-fg min-w-[34px]">{seg.label}</span>
+            <span className="text-xs text-a-fg-mid flex-1">{seg.libelle}</span>
+            <span className="text-xs font-bold px-2 py-[2px] rounded-[6px]" style={{ background: seg.color + '22', color: seg.color }}>{seg.count} · {seg.pct}%</span>
           </div>
         ))}
-        <div style={{ marginTop: 2, fontSize: 12, color: 'var(--a-fg-mid)', borderTop: '1px solid var(--a-border)', paddingTop: 8 }}>
-          Total : <strong style={{ color: 'var(--a-fg)' }}>{total}</strong> évaluation{total > 1 ? 's' : ''}
+        <div className="mt-0.5 text-xs text-a-fg-mid border-t border-a-border pt-2">
+          Total : <strong className="text-a-fg">{total}</strong> évaluation{total > 1 ? 's' : ''}
         </div>
       </div>
     </div>
@@ -107,38 +103,38 @@ const OBS_COLORS = {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
-  page:    { minHeight: '100%', display: 'flex', flexDirection: 'column', gap: 20 },
-  backBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--a-fg-mid)', fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: 0, marginBottom: 4 },
+  page:    'min-h-full flex flex-col gap-5',
+  backBtn: 'inline-flex items-center gap-1.5 bg-transparent border-none text-a-fg-mid text-[13px] font-medium cursor-pointer p-0 mb-1',
   // Header card
-  headerCard: { background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius)', border: '1px solid var(--a-border)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' },
-  avatar: { width: 56, height: 56, borderRadius: '50%', background: 'var(--a-gold)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, flexShrink: 0, letterSpacing: '-0.5px' },
-  headerInfo: { flex: 1, minWidth: 0 },
+  headerCard: 'bg-a-bg-card rounded-a border border-a-border py-5 px-6 flex items-center gap-5 flex-wrap',
+  avatar: 'w-14 h-14 rounded-full bg-a-gold text-white flex items-center justify-center text-xl font-[800] shrink-0 tracking-[-0.5px]',
+  headerInfo: 'flex-1 min-w-0',
   headerName: { fontFamily: 'var(--a-font-display)', fontSize: 20, fontWeight: 800, color: 'var(--a-fg)', letterSpacing: '-0.4px' },
-  headerMeta: { display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 6 },
-  metaItem:   { fontSize: 13, color: 'var(--a-fg-mid)', display: 'flex', alignItems: 'center', gap: 4 },
+  headerMeta: 'flex flex-wrap gap-x-4 gap-y-1.5 mt-1.5',
+  metaItem:   'text-[13px] text-a-fg-mid flex items-center gap-1',
   identifiant:{ fontFamily: 'var(--a-font-mono)', fontWeight: 700, color: 'var(--a-gold)', fontSize: 14, background: 'rgba(191,138,48,.1)', padding: '2px 8px', borderRadius: 6 },
   badge: (actif) => ({ padding: '3px 10px', borderRadius: 980, fontSize: 11, fontWeight: 700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
   // Tabs
-  tabsRow:  { display: 'flex', gap: 4, borderBottom: '1px solid var(--a-border)', flexWrap: 'wrap' },
+  tabsRow:  'flex gap-1 border-b border-a-border flex-wrap',
   tab: (active) => ({ padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none', background: 'transparent', color: active ? 'var(--a-gold)' : 'var(--a-fg-mid)', borderBottom: active ? '2px solid var(--a-gold)' : '2px solid transparent', marginBottom: -1, transition: 'color .15s' }),
   // Common
-  empty:   { textAlign: 'center', padding: '50px 20px', color: 'var(--a-fg-mid)', fontSize: 14 },
-  loading: { textAlign: 'center', padding: '50px 20px', color: 'var(--a-fg-mid)', fontSize: 14 },
-  sectionTitle: { fontSize: 13, fontWeight: 700, color: 'var(--a-fg-light)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 14 },
-  statsRow: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 },
-  statCard: { background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius-sm)', padding: '14px 20px', flex: '1 1 120px', minWidth: 120 },
+  empty:   'text-center py-[50px] px-5 text-a-fg-mid text-sm',
+  loading: 'text-center py-[50px] px-5 text-a-fg-mid text-sm',
+  sectionTitle: 'text-[13px] font-bold text-a-fg-light uppercase tracking-[0.8px] mb-3.5',
+  statsRow: 'flex gap-3 flex-wrap mb-5',
+  statCard: 'bg-a-bg-card border border-a-border rounded-a-sm py-3.5 px-5 flex-[1_1_120px] min-w-[120px]',
   statNum:  (c) => ({ fontFamily: 'var(--a-font-display)', fontSize: 26, fontWeight: 800, color: c }),
-  statLabel:{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 2 },
+  statLabel:'text-xs text-a-fg-mid mt-0.5',
   // Progression
-  globalBarWrap: { background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', borderRadius: 'var(--a-radius)', padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 },
+  globalBarWrap: 'bg-a-bg-card border border-a-border rounded-a py-4 px-5 mb-5 flex items-center gap-4',
   globalBarTrack:{ flex: 1, height: 10, background: 'rgba(127,127,127,.12)', borderRadius: 5, overflow: 'hidden' },
   globalBarFill: (pct) => ({ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #30d158, #7DCFA0)', borderRadius: 5, transition: 'width .6s ease-out' }),
-  globalPct: { fontSize: 16, fontWeight: 800, color: 'var(--a-green)', flexShrink: 0, minWidth: 44, textAlign: 'right' },
-  tableWrap: { background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius)', border: '1px solid var(--a-border)', overflow: 'hidden' },
+  globalPct: 'text-base font-[800] text-a-green shrink-0 min-w-[44px] text-right',
+  tableWrap: 'bg-a-bg-card rounded-a border border-a-border overflow-hidden',
   tableHead: (cols) => ({ display: 'grid', gridTemplateColumns: cols, padding: '10px 20px', borderBottom: '1px solid var(--a-border)', fontSize: 11, fontWeight: 700, color: 'var(--a-fg-light)', textTransform: 'uppercase', letterSpacing: '.7px' }),
   tableRow:  (cols, i) => ({ display: 'grid', gridTemplateColumns: cols, padding: '13px 20px', borderBottom: '1px solid var(--a-border)', alignItems: 'center', background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }),
-  cell:      { fontSize: 13, color: 'var(--a-fg)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  cellMid:   { fontSize: 13, color: 'var(--a-fg-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  cell:      'text-[13px] text-a-fg overflow-hidden text-ellipsis whitespace-nowrap',
+  cellMid:   'text-[13px] text-a-fg-mid overflow-hidden text-ellipsis whitespace-nowrap',
   statusBadge: (status) => {
     const map = { 'Terminé': ['rgba(48,209,88,.1)', 'var(--a-green)'], 'En cours': ['rgba(191,138,48,.12)', 'var(--a-gold)'], 'Non commencé': ['rgba(127,127,127,.1)', 'var(--a-fg-light)'], 'Sans QCM': ['rgba(127,127,127,.06)', 'var(--a-fg-light)'] };
     const [bg, color] = map[status] || map['Sans QCM'];
@@ -149,14 +145,14 @@ const S = {
   // Notes
   absentBadge: { display: 'inline-block', padding: '3px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: 'rgba(255,69,58,.12)', color: '#ff453a' },
   // Présence
-  presenceItem: { display: 'flex', gap: 14, alignItems: 'flex-start', padding: '14px 20px', borderBottom: '1px solid var(--a-border)' },
+  presenceItem: 'flex gap-3.5 items-start py-3.5 px-5 border-b border-a-border',
   presenceBadge: (type) => ({ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, flexShrink: 0, background: type === 'retard' ? 'rgba(240,180,41,.15)' : 'rgba(255,69,58,.1)', color: type === 'retard' ? 'var(--a-gold)' : 'var(--a-red)' }),
   // Observations
-  obsItem:  { padding: '16px 20px', borderBottom: '1px solid var(--a-border)', display: 'flex', gap: 14, alignItems: 'flex-start' },
-  obsLeft:  { flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
+  obsItem:  'py-4 px-5 border-b border-a-border flex gap-3.5 items-start',
+  obsLeft:  'shrink-0 flex flex-col items-center gap-1',
   obsBadge: (type) => { const c = OBS_COLORS[type] || OBS_COLORS['Général']; return { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: 'nowrap' }; },
-  obsContenu: { fontSize: 14, color: 'var(--a-fg)', lineHeight: 1.6, flex: 1 },
-  obsDate:    { fontSize: 12, color: 'var(--a-fg-light)', marginTop: 4 },
+  obsContenu: 'text-sm text-a-fg leading-relaxed flex-1',
+  obsDate:    'text-xs text-a-fg-light mt-1',
 };
 
 const TABS = [
@@ -292,34 +288,34 @@ export default function EnseignantEleveProfile() {
   const backUrl = stateClasseId ? `/enseignant/classe/${stateClasseId}` : '/enseignant/classes';
 
   return (
-    <div style={S.page}>
+    <div className={S.page}>
 
       {/* Bouton retour */}
-      <button style={S.backBtn} onClick={() => navigate(backUrl)}>
+      <button className={S.backBtn} onClick={() => navigate(backUrl)}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         Retour {stateClasse ? `— ${stateClasse.nom}` : 'à la classe'}
       </button>
 
       {/* Header élève */}
-      <div style={S.headerCard}>
-        <div style={S.avatar}>{initiales || '?'}</div>
-        <div style={S.headerInfo}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+      <div className={S.headerCard}>
+        <div className={S.avatar}>{initiales || '?'}</div>
+        <div className={S.headerInfo}>
+          <div className="flex items-center gap-2.5 flex-wrap">
             <span style={S.headerName}>{nomComplet}</span>
             {eleve.actif !== undefined && <span style={S.badge(eleve.actif)}>{eleve.actif ? 'Actif' : 'Inactif'}</span>}
           </div>
-          <div style={S.headerMeta}>
-            {eleve.identifiant && <span style={S.metaItem}><span style={S.identifiant}>{eleve.identifiant.toUpperCase()}</span></span>}
-            {stateClasse && <span style={S.metaItem}>🏫 {stateClasse.nom}</span>}
-            {dateInscrit  && <span style={S.metaItem}>📅 Inscrit le {dateInscrit}</span>}
-            {eleve.telephone    && <span style={S.metaItem}>📞 {eleve.telephone}</span>}
-            {eleve.email_contact && <span style={S.metaItem}>✉️ {eleve.email_contact}</span>}
+          <div className={S.headerMeta}>
+            {eleve.identifiant && <span className={S.metaItem}><span style={S.identifiant}>{eleve.identifiant.toUpperCase()}</span></span>}
+            {stateClasse && <span className={S.metaItem}>🏫 {stateClasse.nom}</span>}
+            {dateInscrit  && <span className={S.metaItem}>📅 Inscrit le {dateInscrit}</span>}
+            {eleve.telephone    && <span className={S.metaItem}>📞 {eleve.telephone}</span>}
+            {eleve.email_contact && <span className={S.metaItem}>✉️ {eleve.email_contact}</span>}
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={S.tabsRow}>
+      <div className={S.tabsRow}>
         {TABS.map(t => (
           <button key={t.key} style={S.tab(activeTab === t.key)} onClick={() => setActiveTab(t.key)}>
             {t.label}
@@ -329,30 +325,30 @@ export default function EnseignantEleveProfile() {
 
       {/* Contenu */}
       {loading ? (
-        <div style={S.loading}>Chargement...</div>
+        <div className={S.loading}>Chargement...</div>
       ) : (
         <>
           {/* ── TAB PROGRESSION ──────────────────────────────────── */}
           {activeTab === 'progression' && (
             <div>
               {/* Barre globale */}
-              <div style={S.sectionTitle}>Progression globale</div>
-              <div style={S.globalBarWrap}>
-                <div style={{ fontSize: 13, color: 'var(--a-fg-mid)', flexShrink: 0 }}>
+              <div className={S.sectionTitle}>Progression globale</div>
+              <div className={S.globalBarWrap}>
+                <div className="text-[13px] text-a-fg-mid shrink-0">
                   {totalReussi} / {totalQCM} niveau{totalQCM > 1 ? 'x' : ''} réussi{totalReussi > 1 ? 's' : ''}
                 </div>
                 <div style={S.globalBarTrack}>
                   <div style={S.globalBarFill(globalPct)} />
                 </div>
-                <span style={S.globalPct}>{globalPct}%</span>
+                <span className={S.globalPct}>{globalPct}%</span>
               </div>
 
               {/* Table par module */}
-              <div style={S.sectionTitle}>Détail par module</div>
+              <div className={S.sectionTitle}>Détail par module</div>
               {moduleStats.length === 0 ? (
-                <div style={S.empty}>Aucun module disponible.</div>
+                <div className={S.empty}>Aucun module disponible.</div>
               ) : (
-                <div style={S.tableWrap}>
+                <div className={S.tableWrap}>
                   <div style={S.tableHead(PROG_COLS)}>
                     {PROG_COLS_HEAD.map(h => <span key={h}>{h}</span>)}
                   </div>
@@ -360,10 +356,10 @@ export default function EnseignantEleveProfile() {
                     const pct = nivsAvecQCM > 0 ? Math.round((reussis / nivsAvecQCM) * 100) : 0;
                     return (
                       <div key={m.id} style={S.tableRow(PROG_COLS, i)}>
-                        <span style={S.cell}>{m.titre}</span>
-                        <span style={{ ...S.cellMid, textAlign: 'center' }}>{nivsAvecQCM}</span>
-                        <span style={{ ...S.cellMid, textAlign: 'center' }}>
-                          {reussis > 0 ? <span style={{ color: 'var(--a-green)', fontWeight: 700 }}>{reussis}</span> : reussis}
+                        <span className={S.cell}>{m.titre}</span>
+                        <span className={`${S.cellMid} text-center`}>{nivsAvecQCM}</span>
+                        <span className={`${S.cellMid} text-center`}>
+                          {reussis > 0 ? <span className="text-a-green font-bold">{reussis}</span> : reussis}
                         </span>
                         <span>
                           {nivsAvecQCM > 0 ? (
@@ -371,9 +367,9 @@ export default function EnseignantEleveProfile() {
                               <div style={{ ...S.miniBarWrap, marginBottom: 3 }}>
                                 <div style={S.miniBarFill(pct, scoreColor(pct))} />
                               </div>
-                              <span style={{ fontSize: 11, color: scoreColor(pct), fontWeight: 600 }}>{moyScore}%</span>
+                              <span className="text-[11px] font-semibold" style={{ color: scoreColor(pct) }}>{moyScore}%</span>
                             </div>
-                          ) : <span style={S.cellMid}>—</span>}
+                          ) : <span className={S.cellMid}>—</span>}
                         </span>
                         <span><span style={S.statusBadge(status)}>{status}</span></span>
                       </div>
@@ -389,32 +385,32 @@ export default function EnseignantEleveProfile() {
             <div>
               {/* Résumé */}
               {notesWithEval.length > 0 && (
-                <div style={S.statsRow}>
-                  <div style={S.statCard}>
+                <div className={S.statsRow}>
+                  <div className={S.statCard}>
                     <div style={S.statNum('var(--a-fg)')}>{notesWithEval.length}</div>
-                    <div style={S.statLabel}>Évaluation{notesWithEval.length > 1 ? 's' : ''}</div>
+                    <div className={S.statLabel}>Évaluation{notesWithEval.length > 1 ? 's' : ''}</div>
                   </div>
-                  <div style={S.statCard}>
+                  <div className={S.statCard}>
                     <div style={S.statNum('var(--a-red)')}>{notesWithEval.filter(n => n.absent).length}</div>
-                    <div style={S.statLabel}>Absence{notesWithEval.filter(n => n.absent).length > 1 ? 's' : ''} éval.</div>
+                    <div className={S.statLabel}>Absence{notesWithEval.filter(n => n.absent).length > 1 ? 's' : ''} éval.</div>
                   </div>
                   {GRADES.filter(g => gradeDist[g.value] > 0).map(g => (
-                    <div key={g.value} style={S.statCard}>
-                      <div style={{ fontSize: 26, fontWeight: 800, color: g.color }}>{gradeDist[g.value]}</div>
-                      <div style={S.statLabel}>{g.label} — {g.libelle}</div>
+                    <div key={g.value} className={S.statCard}>
+                      <div className="text-[26px] font-[800]" style={{ color: g.color }}>{gradeDist[g.value]}</div>
+                      <div className={S.statLabel}>{g.label} — {g.libelle}</div>
                     </div>
                   ))}
                 </div>
               )}
 
               {notesWithEval.length === 0 ? (
-                <div style={S.empty}>
-                  <div style={{ fontSize: 36, marginBottom: 10 }}>📝</div>
+                <div className={S.empty}>
+                  <div className="text-4xl mb-2.5">📝</div>
                   {stateClasseId ? 'Aucune note enregistrée pour cet élève.' : 'Navigue depuis la fiche classe pour voir les notes.'}
                 </div>
               ) : (
                 <>
-                  <div style={S.tableWrap}>
+                  <div className={S.tableWrap}>
                     <div style={S.tableHead(NOTES_COLS)}>
                       {NOTES_COLS_HEAD.map(h => <span key={h}>{h}</span>)}
                     </div>
@@ -422,8 +418,8 @@ export default function EnseignantEleveProfile() {
                       const score = n.score != null ? parseInt(n.score, 10) : null;
                       return (
                         <div key={`${n.evaluation_id}-${i}`} style={S.tableRow(NOTES_COLS, i)}>
-                          <span style={S.cellMid}>{formatDate(n.eval.date_evaluation)}</span>
-                          <span style={S.cell}>{n.eval.titre}</span>
+                          <span className={S.cellMid}>{formatDate(n.eval.date_evaluation)}</span>
+                          <span className={S.cell}>{n.eval.titre}</span>
                           <span>
                             {n.absent
                               ? <span style={S.absentBadge}>Absent</span>
@@ -444,39 +440,39 @@ export default function EnseignantEleveProfile() {
           {activeTab === 'presence' && (
             <div>
               {/* Stats */}
-              <div style={S.statsRow}>
-                <div style={S.statCard}>
+              <div className={S.statsRow}>
+                <div className={S.statCard}>
                   <div style={S.statNum('var(--a-gold)')}>{nbRetards}</div>
-                  <div style={S.statLabel}>Retard{nbRetards > 1 ? 's' : ''}</div>
+                  <div className={S.statLabel}>Retard{nbRetards > 1 ? 's' : ''}</div>
                 </div>
-                <div style={S.statCard}>
+                <div className={S.statCard}>
                   <div style={S.statNum('var(--a-red)')}>{nbAbsences}</div>
-                  <div style={S.statLabel}>Absence{nbAbsences > 1 ? 's' : ''}</div>
+                  <div className={S.statLabel}>Absence{nbAbsences > 1 ? 's' : ''}</div>
                 </div>
-                <div style={S.statCard}>
+                <div className={S.statCard}>
                   <div style={S.statNum('var(--a-fg)')}>{presence.length}</div>
-                  <div style={S.statLabel}>Total</div>
+                  <div className={S.statLabel}>Total</div>
                 </div>
               </div>
 
               {presence.length === 0 ? (
-                <div style={S.empty}>
-                  <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
+                <div className={S.empty}>
+                  <div className="text-4xl mb-2.5">✅</div>
                   Aucun retard ni absence enregistré pour cet élève.
                 </div>
               ) : (
-                <div style={S.tableWrap}>
+                <div className={S.tableWrap}>
                   {presence.map((p, i) => (
-                    <div key={p.id} style={{ ...S.presenceItem, background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }}>
+                    <div key={p.id} className={S.presenceItem} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }}>
                       <span style={S.presenceBadge(p.type)}>
                         {p.type === 'retard' ? '⏰ Retard' : '🚫 Absence'}
                       </span>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--a-fg)' }}>
+                      <div className="flex-1">
+                        <span className="text-[13px] font-semibold text-a-fg">
                           {formatDate(p.date)}
                         </span>
                         {p.commentaire && (
-                          <div style={{ fontSize: 13, color: 'var(--a-fg-mid)', marginTop: 3 }}>{p.commentaire}</div>
+                          <div className="text-[13px] text-a-fg-mid mt-[3px]">{p.commentaire}</div>
                         )}
                       </div>
                     </div>
@@ -490,20 +486,20 @@ export default function EnseignantEleveProfile() {
           {activeTab === 'observations' && (
             <div>
               {observations.length === 0 ? (
-                <div style={S.empty}>
-                  <div style={{ fontSize: 36, marginBottom: 10 }}>💬</div>
+                <div className={S.empty}>
+                  <div className="text-4xl mb-2.5">💬</div>
                   Aucune observation enregistrée pour cet élève.
                 </div>
               ) : (
-                <div style={S.tableWrap}>
+                <div className={S.tableWrap}>
                   {observations.map((o, i) => (
-                    <div key={o.id} style={{ ...S.obsItem, background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }}>
-                      <div style={S.obsLeft}>
+                    <div key={o.id} className={S.obsItem} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }}>
+                      <div className={S.obsLeft}>
                         <span style={S.obsBadge(o.type)}>{o.type}</span>
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={S.obsContenu}>{o.contenu}</div>
-                        <div style={S.obsDate}>{formatDateTime(o.created_at)}</div>
+                      <div className="flex-1">
+                        <div className={S.obsContenu}>{o.contenu}</div>
+                        <div className={S.obsDate}>{formatDateTime(o.created_at)}</div>
                       </div>
                     </div>
                   ))}

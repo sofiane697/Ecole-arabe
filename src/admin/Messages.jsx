@@ -159,7 +159,7 @@ export default function Messages() {
 
   if (loading) {
     return (
-      <div style={{ textAlign:'center', padding:'4rem', color:'var(--a-fg-light)' }}>
+      <div className="text-center p-16 text-a-fg-light">
         Chargement des messages...
       </div>
     );
@@ -178,27 +178,22 @@ export default function Messages() {
       </div>
 
       {/* Stats */}
-      <div style={{ display:'flex', gap:10, marginBottom:'1.25rem', flexWrap:'wrap' }}>
+      <div className="flex gap-2.5 mb-5 flex-wrap">
         {[
           { label:'Total',    value: data.length,  color:'var(--a-fg-mid)' },
           { label:'Non lus',  value: nonLus,        color: nonLus > 0 ? 'var(--a-red)' : 'var(--a-fg-mid)' },
           { label:"Aujourd'hui", value: todayCount, color: todayCount > 0 ? 'var(--a-gold)' : 'var(--a-fg-mid)' },
         ].map(s => (
-          <div key={s.label} style={{
-            display:'flex', alignItems:'center', gap:8,
-            padding:'8px 16px', borderRadius:980,
-            background:'var(--a-bg-card)', border:'1px solid var(--a-border)',
-            fontSize:12,
-          }}>
-            <span style={{ fontSize:18, fontWeight:700, color:s.color, lineHeight:1 }}>{s.value}</span>
-            <span style={{ color:'var(--a-fg-light)', fontWeight:500 }}>{s.label}</span>
+          <div key={s.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-a-bg-card border border-a-border text-xs">
+            <span className="text-lg font-bold leading-none" style={{ color:s.color }}>{s.value}</span>
+            <span className="text-a-fg-light font-medium">{s.label}</span>
           </div>
         ))}
       </div>
 
       {/* Filtres */}
       <div className="msg-filters">
-        <div style={{ display:'flex', gap:8, alignItems:'center', flexWrap:'wrap', flex:1 }}>
+        <div className="flex gap-2 items-center flex-wrap flex-1">
           <div className="msg-filter-tabs">
             {[
               { key: 'tous',  label: 'Tous',     count: data.length },
@@ -215,28 +210,21 @@ export default function Messages() {
               </button>
             ))}
           </div>
-          <select className="admin-filter-select" value={filtreCours} onChange={e => { setFiltreCours(e.target.value); setPage(0); }}
-            style={{ maxWidth:220 }}>
+          <select className="admin-filter-select max-w-[220px]" value={filtreCours} onChange={e => { setFiltreCours(e.target.value); setPage(0); }}>
             <option value="tous">Tous les cours</option>
             {COURS.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         {/* Recherche */}
-        <div style={{ position:'relative', flexShrink:0 }}>
-          <span style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)', color:'var(--a-fg-light)', pointerEvents:'none', display:'flex' }}>
+        <div className="relative shrink-0">
+          <span className="absolute left-[11px] top-1/2 -translate-y-1/2 text-a-fg-light pointer-events-none flex">
             <IconSearch />
           </span>
           <input
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(0); }}
             placeholder="Rechercher…"
-            style={{
-              paddingLeft:32, paddingRight:12, paddingTop:7, paddingBottom:7,
-              border:'1px solid var(--a-border)', borderRadius:980,
-              background:'var(--a-bg-card)', color:'var(--a-fg)',
-              fontSize:12, outline:'none', width:180, boxSizing:'border-box',
-              fontFamily:'inherit',
-            }}
+            className="pl-8 pr-3 py-[7px] border border-a-border rounded-full bg-a-bg-card text-a-fg text-xs outline-none w-[180px] box-border font-[inherit]"
           />
         </div>
       </div>
@@ -272,12 +260,9 @@ export default function Messages() {
                     <span className="msg-item-name">{m.prenom} {m.nom}</span>
                     <span className="msg-item-time" title={formatFullDate(m.created_at)}>{formatDate(m.created_at)}</span>
                   </div>
-                  <div style={{ marginBottom:'0.25rem' }}>
-                    <span style={{
-                      display:'inline-block', fontSize:'0.68rem', fontWeight:600,
-                      padding:'2px 8px', borderRadius:980,
-                      background: cStyle.bg, color: cStyle.color,
-                    }}>
+                  <div className="mb-1">
+                    <span className="inline-block text-[0.68rem] font-semibold px-2 py-[2px] rounded-full"
+                      style={{ background: cStyle.bg, color: cStyle.color }}>
                       {getCoursLabel(m.cours)}
                     </span>
                   </div>
@@ -286,7 +271,7 @@ export default function Messages() {
                 <button
                   onClick={e => { e.stopPropagation(); handleDelete(m); }}
                   aria-label="Supprimer"
-                  style={{ flexShrink:0, background:'none', border:'none', cursor:'pointer', color:'var(--a-fg-light)', padding:'4px 6px', borderRadius:6, opacity:0.6, transition:'opacity .15s, color .15s', alignSelf:'center' }}
+                  className="shrink-0 bg-none border-none cursor-pointer text-a-fg-light px-1.5 py-1 rounded-md opacity-60 transition-[opacity,color] duration-150 self-center"
                   onMouseEnter={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.color='var(--a-red)'; }}
                   onMouseLeave={e => { e.currentTarget.style.opacity='0.6'; e.currentTarget.style.color='var(--a-fg-light)'; }}
                 >
@@ -296,17 +281,19 @@ export default function Messages() {
             );
           })}
           {totalPages > 1 && (
-            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:12, padding:'16px 0', borderTop:'1px solid var(--a-border)', marginTop:8 }}>
+            <div className="flex justify-center items-center gap-3 py-4 border-t border-a-border mt-2">
               <button
                 disabled={safePage === 0}
                 onClick={() => setPage(p => Math.max(0, p - 1))}
-                style={{ padding:'6px 14px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color: safePage === 0 ? 'var(--a-fg-light)' : 'var(--a-fg)', fontSize:12, fontWeight:600, cursor: safePage === 0 ? 'default' : 'pointer', opacity: safePage === 0 ? 0.5 : 1 }}
+                className="px-3.5 py-1.5 rounded-full border border-a-border bg-a-bg-card text-xs font-semibold"
+                style={{ color: safePage === 0 ? 'var(--a-fg-light)' : 'var(--a-fg)', cursor: safePage === 0 ? 'default' : 'pointer', opacity: safePage === 0 ? 0.5 : 1 }}
               >← Précédent</button>
-              <span style={{ fontSize:12, color:'var(--a-fg-mid)', fontWeight:600 }}>Page {safePage + 1} / {totalPages}</span>
+              <span className="text-xs text-a-fg-mid font-semibold">Page {safePage + 1} / {totalPages}</span>
               <button
                 disabled={safePage >= totalPages - 1}
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                style={{ padding:'6px 14px', borderRadius:980, border:'1px solid var(--a-border)', background:'var(--a-bg-card)', color: safePage >= totalPages - 1 ? 'var(--a-fg-light)' : 'var(--a-fg)', fontSize:12, fontWeight:600, cursor: safePage >= totalPages - 1 ? 'default' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.5 : 1 }}
+                className="px-3.5 py-1.5 rounded-full border border-a-border bg-a-bg-card text-xs font-semibold"
+                style={{ color: safePage >= totalPages - 1 ? 'var(--a-fg-light)' : 'var(--a-fg)', cursor: safePage >= totalPages - 1 ? 'default' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.5 : 1 }}
               >Suivant →</button>
             </div>
           )}
@@ -325,9 +312,8 @@ export default function Messages() {
             </div>
           ) : (
             <motion.div
-              className="msg-reader-content"
               key={selected?.id}
-              style={{ maxHeight:'calc(100vh - 220px)', overflowY:'auto' }}
+              className="msg-reader-content max-h-[calc(100vh-220px)] overflow-y-auto"
               variants={panelVariants}
               initial="hidden" animate="visible" exit="exit"
             >
@@ -340,12 +326,11 @@ export default function Messages() {
                   <span className="msg-reader-name">{selected.prenom} {selected.nom}</span>
                   <span className="msg-reader-email">{selected.email}</span>
                 </div>
-                <span style={{
-                  fontSize:'0.7rem', fontWeight:600, padding:'3px 10px', borderRadius:980,
-                  background: selected.lu ? 'rgba(48,209,88,.12)' : 'rgba(255,69,58,.12)',
-                  color: selected.lu ? 'var(--a-green)' : 'var(--a-red)',
-                  flexShrink:0,
-                }}>
+                <span className="text-[0.7rem] font-semibold px-2.5 py-[3px] rounded-full shrink-0"
+                  style={{
+                    background: selected.lu ? 'rgba(48,209,88,.12)' : 'rgba(255,69,58,.12)',
+                    color: selected.lu ? 'var(--a-green)' : 'var(--a-red)',
+                  }}>
                   {selected.lu ? '✓ Lu' : '● Non lu'}
                 </span>
               </div>
@@ -363,10 +348,8 @@ export default function Messages() {
                   {(() => {
                     const cStyle = getCourseStyle(selected.cours);
                     return (
-                      <span style={{
-                        fontSize:'0.7rem', fontWeight:600, padding:'2px 8px', borderRadius:980,
-                        background: cStyle.bg, color: cStyle.color,
-                      }}>
+                      <span className="text-[0.7rem] font-semibold px-2 py-[2px] rounded-full"
+                        style={{ background: cStyle.bg, color: cStyle.color }}>
                         {selected.cours || 'Renseignement'}
                       </span>
                     );
@@ -375,18 +358,7 @@ export default function Messages() {
               </div>
 
               {/* Corps du message */}
-              <div style={{
-                background:'var(--a-bg)',
-                border:'1px solid var(--a-border)',
-                borderLeft:'3px solid var(--a-gold)',
-                borderRadius:'0 var(--a-radius-sm) var(--a-radius-sm) 0',
-                padding:'1.3rem 1.4rem',
-                fontSize:'0.92rem',
-                lineHeight:1.8,
-                color:'var(--a-fg)',
-                marginBottom:'1.5rem',
-                whiteSpace:'pre-wrap',
-              }}>
+              <div className="bg-a-bg border border-a-border border-l-[3px] border-l-a-gold rounded-r-a-sm px-[1.4rem] py-[1.3rem] text-[0.92rem] leading-[1.8] text-a-fg mb-6 whitespace-pre-wrap">
                 {selected.message}
               </div>
 
@@ -405,9 +377,8 @@ export default function Messages() {
                   {selected.lu ? 'Marquer non lu' : 'Marquer comme lu'}
                 </button>
                 <button
-                  className="msg-action-secondary"
+                  className="msg-action-secondary text-a-red border-[rgba(255,69,58,.3)]"
                   onClick={() => handleDelete(selected)}
-                  style={{ color:'var(--a-red)', borderColor:'rgba(255,69,58,.3)' }}
                 >
                   <IconTrash /> Supprimer
                 </button>

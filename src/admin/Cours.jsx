@@ -26,50 +26,50 @@ const IconPPT   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 const TYPE_ICONS = { video: <IconVideo />, pdf: <IconFile />, texte: <IconText />, word: <IconWord />, ppt: <IconPPT /> };
 const TYPE_COLORS = { video: 'var(--a-red)', pdf: 'var(--a-blue)', texte: 'var(--a-green)', word: '#2b579a', ppt: '#c43e1c' };
 
-// ─── Styles inline ───────────────────────────────────────────────────────────
+// ─── Classes Tailwind ────────────────────────────────────────────────────────
 const S = {
-  page: { minHeight: '100%' },
-  breadcrumb: { display:'flex', alignItems:'center', gap:8, marginBottom:24, cursor:'pointer', color:'var(--a-fg-mid)', fontSize:14, fontWeight:500 },
-  breadcrumbText: { transition:'color .2s' },
-  grid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:16 },
-  card: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', padding:20, cursor:'pointer', transition:'transform .2s var(--a-ease-out), box-shadow .2s' },
-  cardHeader: { display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 },
-  cardTitle: { fontSize:16, fontWeight:600, color:'var(--a-fg)', margin:0 },
-  cardDesc: { fontSize:13, color:'var(--a-fg-mid)', margin:0, lineHeight:1.5 },
-  cardFooter: { display:'flex', gap:8, marginTop:16 },
+  page: 'min-h-full',
+  breadcrumb: 'flex items-center gap-2 mb-6 cursor-pointer text-a-fg-mid text-sm font-medium',
+  breadcrumbText: 'transition-colors duration-200',
+  grid: 'grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4',
+  card: 'bg-a-bg-card rounded-a border border-a-border p-5 cursor-pointer transition-[transform,box-shadow] duration-200 ease-[var(--a-ease-out)]',
+  cardHeader: 'flex justify-between items-start mb-3',
+  cardTitle: 'text-base font-semibold text-a-fg m-0',
+  cardDesc: 'text-[13px] text-a-fg-mid m-0 leading-normal',
+  cardFooter: 'flex gap-2 mt-4',
   badge: (c) => ({ display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600, padding:'3px 8px', borderRadius:20, background:`${c}18`, color:c }),
-  actions: { display:'flex', gap:6 },
-  actionBtn: { background:'none', border:'none', color:'var(--a-fg-mid)', cursor:'pointer', padding:4, borderRadius:6, display:'inline-flex', transition:'color .2s' },
-  addCard: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'2px dashed var(--a-border)', padding:20, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, color:'var(--a-fg-mid)', fontSize:14, fontWeight:500, minHeight:120, transition:'border-color .2s, color .2s' },
+  actions: 'flex gap-1.5',
+  actionBtn: 'bg-transparent border-none text-a-fg-mid cursor-pointer p-1 rounded-[6px] inline-flex transition-colors duration-200',
+  addCard: 'bg-a-bg-card rounded-a border-2 border-dashed border-a-border p-5 cursor-pointer flex items-center justify-center gap-2 text-a-fg-mid text-sm font-medium min-h-[120px] transition-[border-color,color] duration-200',
   // Modal
-  overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
-  modal: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:500, maxHeight:'85vh', overflowY:'auto', border:'1px solid var(--a-border)' },
-  modalTitle: { fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
-  field: { marginBottom:16 },
-  label: { display:'block', fontSize:12, fontWeight:600, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
-  input: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
-  textarea: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', minHeight:80, resize:'vertical', boxSizing:'border-box', fontFamily:'inherit' },
-  select: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
-  btnRow: { display:'flex', gap:10, justifyContent:'flex-end', marginTop:20 },
-  btnCancel: { padding:'9px 20px', borderRadius:980, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnSave: { padding:'9px 20px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnDanger: { padding:'9px 20px', borderRadius:980, border:'none', background:'var(--a-red)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' },
+  overlay: 'fixed inset-0 flex items-center justify-center z-[1000]',
+  modal: 'bg-a-bg-card rounded-a p-7 w-full max-w-[500px] max-h-[85vh] overflow-y-auto border border-a-border',
+  modalTitle: 'font-a-display text-lg font-bold text-a-fg mb-5',
+  field: 'mb-4',
+  label: 'block text-xs font-semibold text-a-fg-mid mb-1.5 uppercase tracking-[.5px]',
+  input: 'w-full px-3.5 py-2.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
+  textarea: 'w-full px-3.5 py-2.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none min-h-[80px] resize-y box-border font-[inherit]',
+  select: 'w-full px-3.5 py-2.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
+  btnRow: 'flex gap-2.5 justify-end mt-5',
+  btnCancel: 'px-5 py-[9px] rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer',
+  btnSave: 'px-5 py-[9px] rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer',
+  btnDanger: 'px-5 py-[9px] rounded-full border-none bg-a-red text-white text-[13px] font-semibold cursor-pointer',
   // Tabs
-  tabs: { display:'flex', gap:4, marginBottom:20, background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:3 },
-  tab: (active) => ({ padding:'8px 16px', borderRadius:8, border:'none', background: active ? 'var(--a-bg-card)' : 'transparent', color: active ? 'var(--a-fg)' : 'var(--a-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all .2s' }),
+  tabs: 'flex gap-1 mb-5 bg-a-bg rounded-a-sm p-[3px]',
+  tab: (active) => `px-4 py-2 rounded-lg border-none text-[13px] font-semibold cursor-pointer transition-all duration-200 ${active ? 'bg-a-bg-card text-a-fg' : 'bg-transparent text-a-fg-mid'}`,
   // List item
-  listItem: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', background:'var(--a-bg-card)', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', marginBottom:8, transition:'transform .15s' },
-  listLeft: { display:'flex', alignItems:'center', gap:12, flex:1, minWidth:0 },
-  listNum: { width:28, height:28, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, flexShrink:0 },
-  empty: { textAlign:'center', padding:'48px 20px', color:'var(--a-fg-mid)', fontSize:14 },
+  listItem: 'flex items-center justify-between px-4 py-3.5 bg-a-bg-card rounded-a-sm border border-a-border mb-2 transition-transform duration-150',
+  listLeft: 'flex items-center gap-3 flex-1 min-w-0',
+  listNum: 'w-7 h-7 rounded-full bg-a-gold text-white flex items-center justify-center text-xs font-bold shrink-0',
+  empty: 'text-center py-12 px-5 text-a-fg-mid text-sm',
 };
 
 // ─── Modal générique ─────────────────────────────────────────────────────────
 function Modal({ title, onClose, children, maxWidth }) {
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={{ ...S.modal, ...(maxWidth ? { maxWidth } : {}) }} onClick={e => e.stopPropagation()}>
-        <div style={S.modalTitle}>{title}</div>
+    <div className={`${S.overlay} bg-black/60 backdrop-blur-[6px]`} onClick={onClose}>
+      <div className={S.modal} style={maxWidth ? { maxWidth } : undefined} onClick={e => e.stopPropagation()}>
+        <div className={S.modalTitle}>{title}</div>
         {children}
       </div>
     </div>
@@ -254,7 +254,7 @@ export default function Cours() {
   const handleDeleteModule = (id, titre) => {
     setConfirm({
       title: 'Supprimer ce module ?',
-      message: <span>Le module <strong>"{titre}"</strong> et tout son contenu (niveaux, cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>Le module <strong>"{titre}"</strong> et tout son contenu (niveaux, cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try {
@@ -280,7 +280,7 @@ export default function Cours() {
   const handleDeleteThematique = (id, titre) => {
     setConfirm({
       title: 'Supprimer cette thématique ?',
-      message: <span>La thématique <strong>"{titre}"</strong> et tous ses niveaux (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>La thématique <strong>"{titre}"</strong> et tous ses niveaux (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try {
@@ -308,7 +308,7 @@ export default function Cours() {
   const handleDeleteNiveau = (id, titre) => {
     setConfirm({
       title: 'Supprimer ce niveau ?',
-      message: <span>Le niveau <strong>"{titre}"</strong> et tout son contenu (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>Le niveau <strong>"{titre}"</strong> et tout son contenu (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try {
@@ -336,7 +336,7 @@ export default function Cours() {
   const handleDeleteLecon = (id, titre) => {
     setConfirm({
       title: 'Supprimer cette leçon ?',
-      message: <span>La leçon <strong>"{titre}"</strong> et tous ses niveaux (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>La leçon <strong>"{titre}"</strong> et tous ses niveaux (cours, QCM, fichiers) seront supprimés définitivement.<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try {
@@ -361,7 +361,7 @@ export default function Cours() {
   const handleDeleteContenu = (id) => {
     setConfirm({
       title: 'Supprimer ce contenu ?',
-      message: <span>Ce fichier/contenu sera supprimé définitivement.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>Ce fichier/contenu sera supprimé définitivement.<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try { await deleteContenu(id); await loadContenus(selNiveau.id); } catch(e) { alert(e.message); }
@@ -392,7 +392,7 @@ export default function Cours() {
   const handleDeleteAllQuestions = () => {
     setConfirm({
       title: 'Supprimer tout le QCM ?',
-      message: <span>Toutes les questions de ce QCM seront supprimées définitivement.<br/><br/>La progression des élèves pour ce niveau sera <strong>automatiquement réinitialisée</strong> pour éviter les faux "réussis".<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>,
+      message: <span>Toutes les questions de ce QCM seront supprimées définitivement.<br/><br/>La progression des élèves pour ce niveau sera <strong>automatiquement réinitialisée</strong> pour éviter les faux "réussis".<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>,
       onConfirm: async () => {
         setConfirm(null);
         try {
@@ -427,33 +427,33 @@ export default function Cours() {
   // ─── VUE MODULES ───────────────────────────────────────────────────
   if (view === 'modules') {
     return (
-      <div style={S.page}>
-        <div style={S.grid}>
+      <div className={S.page}>
+        <div className={S.grid}>
           {modules.map(m => (
-            <div key={m.id} style={{ ...S.card, padding:0, overflow:'hidden' }} onClick={() => openModule(m)}
+            <div key={m.id} className={`${S.card} p-0 overflow-hidden`} onClick={() => openModule(m)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {/* Image de couverture */}
               {m.image_url ? (
-                <div style={{ width:'100%', height:140, overflow:'hidden', position:'relative', background:'var(--a-bg)' }}>
-                  <img src={m.image_url} alt={m.titre} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
-                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
+                <div className="w-full h-[140px] overflow-hidden relative bg-a-bg">
+                  <img src={m.image_url} alt={m.titre} className="w-full h-full object-cover block" />
+                  <div className="absolute inset-0" style={{ background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
                 </div>
               ) : (
-                <div style={{ width:'100%', height:80, background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>
+                <div className="w-full h-20 flex items-center justify-center text-[32px]" style={{ background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)' }}>
                   📚
                 </div>
               )}
-              <div style={{ padding:16 }}>
-                <div style={S.cardHeader}>
-                  <h3 style={S.cardTitle}>{m.titre}</h3>
-                  <div style={S.actions}>
-                    <button style={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id, m.titre); }}><IconTrash /></button>
+              <div className="p-4">
+                <div className={S.cardHeader}>
+                  <h3 className={S.cardTitle}>{m.titre}</h3>
+                  <div className={S.actions}>
+                    <button className={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'module', data:m }); }}><IconEdit /></button>
+                    <button className={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteModule(m.id, m.titre); }}><IconTrash /></button>
                   </div>
                 </div>
-                {m.description && <p style={S.cardDesc}>{m.description}</p>}
-                <div style={S.cardFooter}>
+                {m.description && <p className={S.cardDesc}>{m.description}</p>}
+                <div className={S.cardFooter}>
                   <span style={S.badge('var(--a-gold)')}>Ordre : {m.ordre}</span>
                   <span style={S.badge(m.actif ? 'var(--a-green)' : 'var(--a-red)')}>{m.actif ? 'Actif' : 'Inactif'}</span>
                   {m.niveaux_scolaires_ids?.length > 0
@@ -467,7 +467,7 @@ export default function Cours() {
               </div>
             </div>
           ))}
-          <div style={S.addCard} onClick={() => setModal({ type:'module' })}
+          <div className={S.addCard} onClick={() => setModal({ type:'module' })}
             onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
             <IconPlus /> Ajouter un module
@@ -485,37 +485,37 @@ export default function Cours() {
   // ─── VUE THÉMATIQUES ───────────────────────────────────────────────
   if (view === 'thematiques') {
     return (
-      <div style={S.page}>
-        <div style={S.breadcrumb} onClick={goBack}>
-          <IconBack /> <span style={S.breadcrumbText}>Retour aux modules</span>
-          <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre}</span>
+      <div className={S.page}>
+        <div className={S.breadcrumb} onClick={goBack}>
+          <IconBack /> <span className={S.breadcrumbText}>Retour aux modules</span>
+          <span className="text-a-fg ml-2 font-semibold">{selModule?.titre}</span>
         </div>
 
-        <div style={S.grid}>
+        <div className={S.grid}>
           {thematiques.map(th => (
-            <div key={th.id} style={{ ...S.card, padding:0, overflow:'hidden' }} onClick={() => openThematique(th)}
+            <div key={th.id} className={`${S.card} p-0 overflow-hidden`} onClick={() => openThematique(th)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {th.image_url ? (
-                <div style={{ width:'100%', height:140, overflow:'hidden', position:'relative', background:'var(--a-bg)' }}>
-                  <img src={th.image_url} alt={th.titre} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
-                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
+                <div className="w-full h-[140px] overflow-hidden relative bg-a-bg">
+                  <img src={th.image_url} alt={th.titre} className="w-full h-full object-cover block" />
+                  <div className="absolute inset-0" style={{ background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
                 </div>
               ) : (
-                <div style={{ width:'100%', height:80, background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>
+                <div className="w-full h-20 flex items-center justify-center text-[32px]" style={{ background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)' }}>
                   📖
                 </div>
               )}
-              <div style={{ padding:16 }}>
-                <div style={S.cardHeader}>
-                  <h3 style={S.cardTitle}>{th.titre}</h3>
-                  <div style={S.actions}>
-                    <button style={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'thematique', data:th }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteThematique(th.id, th.titre); }}><IconTrash /></button>
+              <div className="p-4">
+                <div className={S.cardHeader}>
+                  <h3 className={S.cardTitle}>{th.titre}</h3>
+                  <div className={S.actions}>
+                    <button className={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'thematique', data:th }); }}><IconEdit /></button>
+                    <button className={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteThematique(th.id, th.titre); }}><IconTrash /></button>
                   </div>
                 </div>
-                {th.description && <p style={S.cardDesc}>{th.description}</p>}
-                <div style={S.cardFooter}>
+                {th.description && <p className={S.cardDesc}>{th.description}</p>}
+                <div className={S.cardFooter}>
                   <span style={S.badge('var(--a-gold)')}>Ordre : {th.ordre}</span>
                   {th.niveaux_scolaires_ids?.length > 0
                     ? th.niveaux_scolaires_ids.map(nsId => {
@@ -528,7 +528,7 @@ export default function Cours() {
               </div>
             </div>
           ))}
-          <div style={S.addCard} onClick={() => setModal({ type:'thematique' })}
+          <div className={S.addCard} onClick={() => setModal({ type:'thematique' })}
             onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
             <IconPlus /> Ajouter une thématique
@@ -546,43 +546,43 @@ export default function Cours() {
   // ─── VUE LEÇONS ────────────────────────────────────────────────────
   if (view === 'lecons') {
     return (
-      <div style={S.page}>
-        <div style={S.breadcrumb} onClick={goBack}>
-          <IconBack /> <span style={S.breadcrumbText}>Retour aux thématiques</span>
-          <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre}</span>
+      <div className={S.page}>
+        <div className={S.breadcrumb} onClick={goBack}>
+          <IconBack /> <span className={S.breadcrumbText}>Retour aux thématiques</span>
+          <span className="text-a-fg ml-2 font-semibold">{selModule?.titre} → {selThematique?.titre}</span>
         </div>
 
-        <div style={S.grid}>
+        <div className={S.grid}>
           {lecons.map(lec => (
-            <div key={lec.id} style={{ ...S.card, padding:0, overflow:'hidden' }} onClick={() => openLecon(lec)}
+            <div key={lec.id} className={`${S.card} p-0 overflow-hidden`} onClick={() => openLecon(lec)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {lec.image_url ? (
-                <div style={{ width:'100%', height:140, overflow:'hidden', position:'relative', background:'var(--a-bg)' }}>
-                  <img src={lec.image_url} alt={lec.titre} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
-                  <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
+                <div className="w-full h-[140px] overflow-hidden relative bg-a-bg">
+                  <img src={lec.image_url} alt={lec.titre} className="w-full h-full object-cover block" />
+                  <div className="absolute inset-0" style={{ background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.45) 100%)' }} />
                 </div>
               ) : (
-                <div style={{ width:'100%', height:80, background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32 }}>
+                <div className="w-full h-20 flex items-center justify-center text-[32px]" style={{ background:'linear-gradient(135deg, var(--a-gold)22 0%, var(--a-gold)08 100%)' }}>
                   📖
                 </div>
               )}
-              <div style={{ padding:16 }}>
-                <div style={S.cardHeader}>
-                  <h3 style={S.cardTitle}>{lec.titre}</h3>
-                  <div style={S.actions}>
-                    <button style={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'lecon', data:lec }); }}><IconEdit /></button>
-                    <button style={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteLecon(lec.id, lec.titre); }}><IconTrash /></button>
+              <div className="p-4">
+                <div className={S.cardHeader}>
+                  <h3 className={S.cardTitle}>{lec.titre}</h3>
+                  <div className={S.actions}>
+                    <button className={S.actionBtn} title="Modifier" aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'lecon', data:lec }); }}><IconEdit /></button>
+                    <button className={S.actionBtn} title="Supprimer" aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteLecon(lec.id, lec.titre); }}><IconTrash /></button>
                   </div>
                 </div>
-                {lec.description && <p style={S.cardDesc}>{lec.description}</p>}
-                <div style={S.cardFooter}>
+                {lec.description && <p className={S.cardDesc}>{lec.description}</p>}
+                <div className={S.cardFooter}>
                   <span style={S.badge('var(--a-gold)')}>Ordre : {lec.ordre}</span>
                 </div>
               </div>
             </div>
           ))}
-          <div style={S.addCard} onClick={() => setModal({ type:'lecon' })}
+          <div className={S.addCard} onClick={() => setModal({ type:'lecon' })}
             onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
             <IconPlus /> Ajouter une leçon
@@ -600,30 +600,30 @@ export default function Cours() {
   // ─── VUE NIVEAUX ───────────────────────────────────────────────────
   if (view === 'niveaux') {
     return (
-      <div style={S.page}>
-        <div style={S.breadcrumb} onClick={goBack}>
-          <IconBack /> <span style={S.breadcrumbText}>Retour aux leçons</span>
-          <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>{selModule?.titre} → {selThematique?.titre} → {selLecon?.titre}</span>
+      <div className={S.page}>
+        <div className={S.breadcrumb} onClick={goBack}>
+          <IconBack /> <span className={S.breadcrumbText}>Retour aux leçons</span>
+          <span className="text-a-fg ml-2 font-semibold">{selModule?.titre} → {selThematique?.titre} → {selLecon?.titre}</span>
         </div>
 
         {niveaux.map(n => (
-          <div key={n.id} style={S.listItem} onClick={() => openNiveau(n)}>
-            <div style={S.listLeft}>
-              <div style={S.listNum}>{n.ordre}</div>
+          <div key={n.id} className={S.listItem} onClick={() => openNiveau(n)}>
+            <div className={S.listLeft}>
+              <div className={S.listNum}>{n.ordre}</div>
               <div>
-                <div style={{ fontWeight:600, color:'var(--a-fg)', fontSize:14 }}>{n.titre}</div>
-                {n.description && <div style={{ fontSize:12, color:'var(--a-fg-mid)', marginTop:2 }}>{n.description}</div>}
+                <div className="font-semibold text-a-fg text-sm">{n.titre}</div>
+                {n.description && <div className="text-xs text-a-fg-mid mt-0.5">{n.description}</div>}
               </div>
             </div>
-            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div className="flex items-center gap-2">
               <span style={S.badge('var(--a-blue)')}>Score requis : {n.score_requis}%</span>
-              <button style={S.actionBtn} aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}><IconEdit /></button>
-              <button style={S.actionBtn} aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteNiveau(n.id, n.titre); }}><IconTrash /></button>
+              <button className={S.actionBtn} aria-label="Modifier" onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}><IconEdit /></button>
+              <button className={S.actionBtn} aria-label="Supprimer" onClick={e => { e.stopPropagation(); handleDeleteNiveau(n.id, n.titre); }}><IconTrash /></button>
             </div>
           </div>
         ))}
 
-        <div style={{ ...S.addCard, minHeight:50, marginTop:8 }} onClick={() => setModal({ type:'niveau' })}>
+        <div className={`${S.addCard} min-h-[50px] mt-2`} onClick={() => setModal({ type:'niveau' })}>
           <IconPlus /> Ajouter un niveau
         </div>
 
@@ -637,37 +637,37 @@ export default function Cours() {
 
   // ─── VUE DÉTAIL NIVEAU (Contenus + QCM) ────────────────────────────
   return (
-    <div style={S.page}>
-      <div style={S.breadcrumb} onClick={goBack}>
-        <IconBack /> <span style={S.breadcrumbText}>{selLecon ? 'Retour aux leçons' : 'Retour aux niveaux'}</span>
-        <span style={{ color:'var(--a-fg)', marginLeft:8, fontWeight:600 }}>
+    <div className={S.page}>
+      <div className={S.breadcrumb} onClick={goBack}>
+        <IconBack /> <span className={S.breadcrumbText}>{selLecon ? 'Retour aux leçons' : 'Retour aux niveaux'}</span>
+        <span className="text-a-fg ml-2 font-semibold">
           {selLecon
             ? `${selModule?.titre} → ${selThematique?.titre} → ${selLecon?.titre}`
             : `${selModule?.titre} → ${selThematique?.titre} → ${selNiveau?.titre}`}
         </span>
       </div>
 
-      <div style={S.tabs}>
-        <button style={S.tab(tab === 'contenus')} onClick={() => setTab('contenus')}>Contenus ({contenus.length})</button>
-        <button style={S.tab(tab === 'qcm')} onClick={() => setTab('qcm')}>QCM ({questions.length})</button>
+      <div className={S.tabs}>
+        <button className={S.tab(tab === 'contenus')} onClick={() => setTab('contenus')}>Contenus ({contenus.length})</button>
+        <button className={S.tab(tab === 'qcm')} onClick={() => setTab('qcm')}>QCM ({questions.length})</button>
       </div>
 
       {tab === 'contenus' && (
         <>
-          {contenus.length === 0 && <div style={S.empty}>Aucun contenu pour ce niveau. Ajoutez des vidéos, PDF ou textes.</div>}
+          {contenus.length === 0 && <div className={S.empty}>Aucun contenu pour ce niveau. Ajoutez des vidéos, PDF ou textes.</div>}
           {contenus.map(c => (
-            <div key={c.id} style={S.listItem}>
-              <div style={S.listLeft}>
+            <div key={c.id} className={S.listItem}>
+              <div className={S.listLeft}>
                 <span style={{ ...S.badge(TYPE_COLORS[c.type] || 'var(--a-fg-mid)'), gap:5 }}>{TYPE_ICONS[c.type]} {c.type}</span>
-                <span style={{ fontWeight:500, color:'var(--a-fg)', fontSize:14, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.titre}</span>
+                <span className="font-medium text-a-fg text-sm overflow-hidden text-ellipsis whitespace-nowrap">{c.titre}</span>
               </div>
-              <div style={S.actions}>
-                <button style={S.actionBtn} aria-label="Modifier" onClick={() => setModal({ type:'contenu', data:c })}><IconEdit /></button>
-                <button style={S.actionBtn} aria-label="Supprimer" onClick={() => handleDeleteContenu(c.id)}><IconTrash /></button>
+              <div className={S.actions}>
+                <button className={S.actionBtn} aria-label="Modifier" onClick={() => setModal({ type:'contenu', data:c })}><IconEdit /></button>
+                <button className={S.actionBtn} aria-label="Supprimer" onClick={() => handleDeleteContenu(c.id)}><IconTrash /></button>
               </div>
             </div>
           ))}
-          <div style={{ ...S.addCard, minHeight:50, marginTop:8 }} onClick={() => setModal({ type:'contenu' })}>
+          <div className={`${S.addCard} min-h-[50px] mt-2`} onClick={() => setModal({ type:'contenu' })}>
             <IconPlus /> Ajouter un contenu
           </div>
         </>
@@ -675,41 +675,41 @@ export default function Cours() {
 
       {tab === 'qcm' && (
         <>
-          {questions.length === 0 && <div style={S.empty}>Aucune question QCM. Cliquez ci-dessous pour commencer.</div>}
+          {questions.length === 0 && <div className={S.empty}>Aucune question QCM. Cliquez ci-dessous pour commencer.</div>}
           {questions.map((q, i) => {
             const corrects = Array.isArray(q.reponse_correcte) ? q.reponse_correcte : [q.reponse_correcte];
             return (
-              <div key={q.id} style={S.listItem}>
-                <div style={{ ...S.listLeft, cursor:'pointer', flex:1 }} onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}>
-                  <div style={S.listNum}>{i + 1}</div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontWeight:500, color:'var(--a-fg)', fontSize:14 }}>{q.question}</div>
-                    <div style={{ fontSize:12, color:'var(--a-fg-mid)', marginTop:4 }}>
+              <div key={q.id} className={S.listItem}>
+                <div className={`${S.listLeft} cursor-pointer flex-1`} onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}>
+                  <div className={S.listNum}>{i + 1}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-a-fg text-sm">{q.question}</div>
+                    <div className="text-xs text-a-fg-mid mt-1">
                       {(q.choix || []).map((ch, ci) => (
-                        <span key={ci} style={{ marginRight:12, color: corrects.includes(ci) ? 'var(--a-green)' : 'var(--a-fg-mid)', fontWeight: corrects.includes(ci) ? 600 : 400 }}>
+                        <span key={ci} className="mr-3" style={{ color: corrects.includes(ci) ? 'var(--a-green)' : 'var(--a-fg-mid)', fontWeight: corrects.includes(ci) ? 600 : 400 }}>
                           {corrects.includes(ci) ? '✓ ' : ''}{String.fromCharCode(65+ci)}. {ch}
                         </span>
                       ))}
                     </div>
                   </div>
                 </div>
-                <div style={{ display:'flex', gap:6, flexShrink:0 }}>
-                  <button style={S.actionBtn} aria-label="Modifier" onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}><IconEdit /></button>
-                  <button style={{ ...S.actionBtn, color:'var(--a-red)', borderColor:'rgba(255,69,58,.2)', background:'rgba(255,69,58,.08)' }} aria-label="Supprimer" onClick={() => handleDeleteQuestion(q.id, q.question)}><IconTrash /></button>
+                <div className="flex gap-1.5 shrink-0">
+                  <button className={S.actionBtn} aria-label="Modifier" onClick={() => setModal({ type:'qcm-carousel', startIndex: i })}><IconEdit /></button>
+                  <button className={`${S.actionBtn} text-a-red border-[rgba(255,69,58,.2)] bg-[rgba(255,69,58,.08)]`} aria-label="Supprimer" onClick={() => handleDeleteQuestion(q.id, q.question)}><IconTrash /></button>
                 </div>
               </div>
             );
           })}
-          <div style={{ display:'flex', gap:10, marginTop:8 }}>
-            <div style={{ ...S.addCard, flex:1, minHeight:50 }} onClick={() => setModal({ type:'qcm-carousel', startIndex: questions.length, addNew: true })}>
+          <div className="flex gap-2.5 mt-2">
+            <div className={`${S.addCard} flex-1 min-h-[50px]`} onClick={() => setModal({ type:'qcm-carousel', startIndex: questions.length, addNew: true })}>
               <IconPlus /> {questions.length > 0 ? 'Gérer / ajouter des questions' : 'Créer les questions du QCM'}
             </div>
-            <div style={{ ...S.addCard, minHeight:50, flex:'0 0 auto', paddingLeft:20, paddingRight:20, color:'var(--a-blue)', borderColor:'var(--a-blue)' }}
+            <div className={`${S.addCard} min-h-[50px] flex-none px-5 text-a-blue border-a-blue`}
               onClick={() => setModal({ type:'import-qcm' })}>
               ⬆ Importer CSV
             </div>
             {questions.length > 0 && (
-              <div style={{ ...S.addCard, minHeight:50, flex:'0 0 auto', paddingLeft:20, paddingRight:20, color:'var(--a-red)', borderColor:'var(--a-red)' }}
+              <div className={`${S.addCard} min-h-[50px] flex-none px-5 text-a-red border-a-red`}
                 onClick={handleDeleteAllQuestions}>
                 🗑 Tout supprimer
               </div>
@@ -785,74 +785,75 @@ function ModuleModal({ data, onSave, onClose, loading }) {
 
   return (
     <Modal title={data ? 'Modifier le module' : 'Nouveau module'} onClose={onClose}>
-      <div style={S.field}><label htmlFor="mod_titre" style={S.label}>Titre *</label><input id="mod_titre" style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Cours de Coran" /></div>
-      <div style={S.field}><label htmlFor="mod_description" style={S.label}>Description</label><textarea id="mod_description" style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description du module..." /></div>
+      <div className={S.field}><label htmlFor="mod_titre" className={S.label}>Titre *</label><input id="mod_titre" className={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Cours de Coran" /></div>
+      <div className={S.field}><label htmlFor="mod_description" className={S.label}>Description</label><textarea id="mod_description" className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description du module..." /></div>
 
       {/* Zone upload image */}
-      <div style={S.field}>
-        <label style={S.label}>Image de couverture</label>
+      <div className={S.field}>
+        <label className={S.label}>Image de couverture</label>
         <div
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
           onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
-          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent', position:'relative', overflow:'hidden' }}>
+          className="rounded-a-sm p-3 cursor-pointer text-center transition-all duration-200 relative overflow-hidden"
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, background: dragOver ? 'var(--a-gold)0a' : 'transparent' }}>
           {image_url ? (
-            <div style={{ position:'relative' }}>
-              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
-              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+            <div className="relative">
+              <img src={image_url} alt="aperçu" className="w-full h-[120px] object-cover rounded-md block" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-md opacity-0 transition-opacity duration-200"
                 onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
-                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+                <span className="text-white text-[13px] font-semibold">🖼 Changer l'image</span>
               </div>
             </div>
           ) : (
-            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
-              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            <div className="py-4 text-a-fg-mid text-[13px]">
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span className="text-[11px] opacity-70">JPG, PNG, WebP — max 5 Mo</span></>}
             </div>
           )}
         </div>
-        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {uploadErr && <div className="text-a-red text-xs mt-1">{uploadErr}</div>}
         {image_url && (
-          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
-            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          <div className="flex justify-end mt-1">
+            <button className="bg-transparent border-none text-a-red text-xs cursor-pointer py-0.5 px-0" onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
           </div>
         )}
       </div>
 
       {/* Niveaux scolaires autorisés */}
-      <div style={S.field}>
-        <label style={S.label}>Niveaux scolaires autorisés</label>
-        <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4 }}>
+      <div className={S.field}>
+        <label className={S.label}>Niveaux scolaires autorisés</label>
+        <div className="flex flex-wrap gap-2 mt-1">
           {niveauxScolairesList.map(ns => (
-            <label key={ns.id} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer',
+            <label key={ns.id} className="flex items-center gap-1.5 cursor-pointer rounded-a-sm px-2.5 py-1 text-[13px] transition-all duration-150 select-none"
+              style={{
                 background: selectedNsIds.includes(ns.id) ? 'rgba(191,138,48,.13)' : 'var(--a-bg)',
                 border:`1px solid ${selectedNsIds.includes(ns.id) ? 'var(--a-gold)' : 'var(--a-border)'}`,
-                borderRadius:'var(--a-radius-sm)', padding:'4px 10px', fontSize:13, transition:'all .15s',
-                userSelect:'none' }}>
-              <input type="checkbox" checked={selectedNsIds.includes(ns.id)} onChange={() => toggleNs(ns.id)} style={{ accentColor:'var(--a-gold)', cursor:'pointer' }} />
+              }}>
+              <input type="checkbox" checked={selectedNsIds.includes(ns.id)} onChange={() => toggleNs(ns.id)} className="cursor-pointer" style={{ accentColor:'var(--a-gold)' }} />
               {ns.nom}
             </label>
           ))}
           {niveauxScolairesList.length === 0 && (
-            <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>Chargement…</span>
+            <span className="text-xs text-a-fg-mid">Chargement…</span>
           )}
         </div>
         {selectedNsIds.length === 0 && niveauxScolairesList.length > 0 && (
-          <div style={{ color:'var(--a-red)', fontSize:12, marginTop:6 }}>⚠ Aucun niveau sélectionné → module invisible pour tous les élèves (obligatoire)</div>
+          <div className="text-a-red text-xs mt-1.5">⚠ Aucun niveau sélectionné → module invisible pour tous les élèves (obligatoire)</div>
         )}
       </div>
 
-      <div style={{ display:'flex', gap:12 }}>
-        <div style={{ ...S.field, flex:1 }}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
-        <div style={{ ...S.field, flex:1 }}><label style={S.label}>Actif</label>
-          <select style={S.select} value={actif ? 'true' : 'false'} onChange={e => setActif(e.target.value === 'true')}>
+      <div className="flex gap-3">
+        <div className={`${S.field} flex-1`}><label className={S.label}>Ordre</label><input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
+        <div className={`${S.field} flex-1`}><label className={S.label}>Actif</label>
+          <select className={S.select} value={actif ? 'true' : 'false'} onChange={e => setActif(e.target.value === 'true')}>
             <option value="true">Oui</option><option value="false">Non</option>
           </select>
         </div>
       </div>
-      <div style={S.btnRow}>
-        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, actif, niveaux_scolaires_ids: selectedNsIds })}>
+      <div className={S.btnRow}>
+        <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, actif, niveaux_scolaires_ids: selectedNsIds })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -899,67 +900,68 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
 
   return (
     <Modal title={data ? 'Modifier la thématique' : 'Nouvelle thématique'} onClose={onClose}>
-      <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Grammaire arabe" /></div>
-      <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la thématique..." /></div>
+      <div className={S.field}><label className={S.label}>Titre *</label><input className={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Grammaire arabe" /></div>
+      <div className={S.field}><label className={S.label}>Description</label><textarea className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la thématique..." /></div>
 
       {/* Zone upload image */}
-      <div style={S.field}>
-        <label style={S.label}>Image de couverture</label>
+      <div className={S.field}>
+        <label className={S.label}>Image de couverture</label>
         <div
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
           onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
-          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent', position:'relative', overflow:'hidden' }}>
+          className="rounded-a-sm p-3 cursor-pointer text-center transition-all duration-200 relative overflow-hidden"
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, background: dragOver ? 'var(--a-gold)0a' : 'transparent' }}>
           {image_url ? (
-            <div style={{ position:'relative' }}>
-              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
-              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+            <div className="relative">
+              <img src={image_url} alt="aperçu" className="w-full h-[120px] object-cover rounded-md block" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-md opacity-0 transition-opacity duration-200"
                 onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
-                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+                <span className="text-white text-[13px] font-semibold">🖼 Changer l'image</span>
               </div>
             </div>
           ) : (
-            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
-              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            <div className="py-4 text-a-fg-mid text-[13px]">
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span className="text-[11px] opacity-70">JPG, PNG, WebP — max 5 Mo</span></>}
             </div>
           )}
         </div>
-        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {uploadErr && <div className="text-a-red text-xs mt-1">{uploadErr}</div>}
         {image_url && (
-          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
-            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          <div className="flex justify-end mt-1">
+            <button className="bg-transparent border-none text-a-red text-xs cursor-pointer py-0.5 px-0" onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
           </div>
         )}
       </div>
 
       {/* Niveaux scolaires autorisés */}
-      <div style={S.field}>
-        <label style={S.label}>Niveaux scolaires autorisés</label>
-        <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4 }}>
+      <div className={S.field}>
+        <label className={S.label}>Niveaux scolaires autorisés</label>
+        <div className="flex flex-wrap gap-2 mt-1">
           {niveauxScolairesList.map(ns => (
-            <label key={ns.id} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer',
+            <label key={ns.id} className="flex items-center gap-1.5 cursor-pointer rounded-a-sm px-2.5 py-1 text-[13px] transition-all duration-150 select-none"
+              style={{
                 background: selectedNsIds.includes(ns.id) ? 'rgba(191,138,48,.13)' : 'var(--a-bg)',
                 border:`1px solid ${selectedNsIds.includes(ns.id) ? 'var(--a-gold)' : 'var(--a-border)'}`,
-                borderRadius:'var(--a-radius-sm)', padding:'4px 10px', fontSize:13, transition:'all .15s',
-                userSelect:'none' }}>
-              <input type="checkbox" checked={selectedNsIds.includes(ns.id)} onChange={() => toggleNs(ns.id)} style={{ accentColor:'var(--a-gold)', cursor:'pointer' }} />
+              }}>
+              <input type="checkbox" checked={selectedNsIds.includes(ns.id)} onChange={() => toggleNs(ns.id)} className="cursor-pointer" style={{ accentColor:'var(--a-gold)' }} />
               {ns.nom}
             </label>
           ))}
           {niveauxScolairesList.length === 0 && (
-            <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>Chargement…</span>
+            <span className="text-xs text-a-fg-mid">Chargement…</span>
           )}
         </div>
         {selectedNsIds.length === 0 && niveauxScolairesList.length > 0 && (
-          <div style={{ color:'var(--a-red)', fontSize:12, marginTop:6 }}>⚠ Aucun niveau sélectionné → thématique invisible pour tous les élèves</div>
+          <div className="text-a-red text-xs mt-1.5">⚠ Aucun niveau sélectionné → thématique invisible pour tous les élèves</div>
         )}
       </div>
 
-      <div style={S.field}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
-      <div style={S.btnRow}>
-        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, niveaux_scolaires_ids: selectedNsIds })}>
+      <div className={S.field}><label className={S.label}>Ordre</label><input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
+      <div className={S.btnRow}>
+        <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, niveaux_scolaires_ids: selectedNsIds })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -994,43 +996,44 @@ function LeconModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTit
 
   return (
     <Modal title={data ? 'Modifier la leçon' : 'Nouvelle leçon'} onClose={onClose}>
-      <div style={S.field}><label style={S.label}>Titre *</label><input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Leçon 1 - Les voyelles" /></div>
-      <div style={S.field}><label style={S.label}>Description</label><textarea style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la leçon..." /></div>
+      <div className={S.field}><label className={S.label}>Titre *</label><input className={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Leçon 1 - Les voyelles" /></div>
+      <div className={S.field}><label className={S.label}>Description</label><textarea className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la leçon..." /></div>
 
-      <div style={S.field}>
-        <label style={S.label}>Image de couverture</label>
+      <div className={S.field}>
+        <label className={S.label}>Image de couverture</label>
         <div
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
           onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
-          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent', position:'relative', overflow:'hidden' }}>
+          className="rounded-a-sm p-3 cursor-pointer text-center transition-all duration-200 relative overflow-hidden"
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, background: dragOver ? 'var(--a-gold)0a' : 'transparent' }}>
           {image_url ? (
-            <div style={{ position:'relative' }}>
-              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
-              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+            <div className="relative">
+              <img src={image_url} alt="aperçu" className="w-full h-[120px] object-cover rounded-md block" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-md opacity-0 transition-opacity duration-200"
                 onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
-                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+                <span className="text-white text-[13px] font-semibold">🖼 Changer l'image</span>
               </div>
             </div>
           ) : (
-            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
-              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            <div className="py-4 text-a-fg-mid text-[13px]">
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span className="text-[11px] opacity-70">JPG, PNG, WebP — max 5 Mo</span></>}
             </div>
           )}
         </div>
-        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {uploadErr && <div className="text-a-red text-xs mt-1">{uploadErr}</div>}
         {image_url && (
-          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
-            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          <div className="flex justify-end mt-1">
+            <button className="bg-transparent border-none text-a-red text-xs cursor-pointer py-0.5 px-0" onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
           </div>
         )}
       </div>
 
-      <div style={S.field}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
-      <div style={S.btnRow}>
-        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre })}>
+      <div className={S.field}><label className={S.label}>Ordre</label><input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
+      <div className={S.btnRow}>
+        <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -1066,47 +1069,48 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
 
   return (
     <Modal title={data ? 'Modifier le niveau' : 'Nouveau niveau'} onClose={onClose}>
-      <div style={S.field}><label htmlFor="niv_titre" style={S.label}>Titre *</label><input id="niv_titre" style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Niveau 1 - Introduction" /></div>
-      <div style={S.field}><label htmlFor="niv_description" style={S.label}>Description</label><textarea id="niv_description" style={S.textarea} value={description} onChange={e => setDescription(e.target.value)} /></div>
+      <div className={S.field}><label htmlFor="niv_titre" className={S.label}>Titre *</label><input id="niv_titre" className={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Ex: Niveau 1 - Introduction" /></div>
+      <div className={S.field}><label htmlFor="niv_description" className={S.label}>Description</label><textarea id="niv_description" className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} /></div>
 
       {/* Zone upload image */}
-      <div style={S.field}>
-        <label style={S.label}>Image de couverture</label>
+      <div className={S.field}>
+        <label className={S.label}>Image de couverture</label>
         <div
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFile(e.dataTransfer.files[0]); }}
           onClick={() => { const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.onchange=ev=>handleImageFile(ev.target.files[0]); i.click(); }}
-          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:12, cursor:'pointer', textAlign:'center', transition:'all .2s', background: dragOver ? 'var(--a-gold)0a' : 'transparent' }}>
+          className="rounded-a-sm p-3 cursor-pointer text-center transition-all duration-200"
+          style={{ border:`2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`, background: dragOver ? 'var(--a-gold)0a' : 'transparent' }}>
           {image_url ? (
-            <div style={{ position:'relative' }}>
-              <img src={image_url} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
-              <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.4)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
+            <div className="relative">
+              <img src={image_url} alt="aperçu" className="w-full h-[120px] object-cover rounded-md block" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-md opacity-0 transition-opacity duration-200"
                 onMouseEnter={e => e.currentTarget.style.opacity=1} onMouseLeave={e => e.currentTarget.style.opacity=0}>
-                <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
+                <span className="text-white text-[13px] font-semibold">🖼 Changer l'image</span>
               </div>
             </div>
           ) : (
-            <div style={{ padding:'16px 0', color:'var(--a-fg-mid)', fontSize:13 }}>
-              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.7 }}>JPG, PNG, WebP — max 5 Mo</span></>}
+            <div className="py-4 text-a-fg-mid text-[13px]">
+              {uploading ? '⏳ Upload en cours...' : <>🖼 <strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span className="text-[11px] opacity-70">JPG, PNG, WebP — max 5 Mo</span></>}
             </div>
           )}
         </div>
-        {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
+        {uploadErr && <div className="text-a-red text-xs mt-1">{uploadErr}</div>}
         {image_url && (
-          <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
-            <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', padding:'2px 0' }} onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
+          <div className="flex justify-end mt-1">
+            <button className="bg-transparent border-none text-a-red text-xs cursor-pointer py-0.5 px-0" onClick={() => setImageUrl('')}>✕ Supprimer l'image</button>
           </div>
         )}
       </div>
 
-      <div style={{ display:'flex', gap:12 }}>
-        <div style={{ ...S.field, flex:1 }}><label style={S.label}>Ordre</label><input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
-        <div style={{ ...S.field, flex:1 }}><label htmlFor="niv_score_requis" style={S.label}>Score requis (%)</label><input id="niv_score_requis" style={S.input} type="number" min="0" max="100" value={score_requis} onChange={e => setScoreRequis(+e.target.value)} /></div>
+      <div className="flex gap-3">
+        <div className={`${S.field} flex-1`}><label className={S.label}>Ordre</label><input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} /></div>
+        <div className={`${S.field} flex-1`}><label htmlFor="niv_score_requis" className={S.label}>Score requis (%)</label><input id="niv_score_requis" className={S.input} type="number" min="0" max="100" value={score_requis} onChange={e => setScoreRequis(+e.target.value)} /></div>
       </div>
-      <div style={S.btnRow}>
-        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, score_requis })}>
+      <div className={S.btnRow}>
+        <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()} onClick={() => onSave({ id: data?.id, titre, description, image_url, ordre, score_requis })}>
           {loading ? '...' : 'Enregistrer'}
         </button>
       </div>
@@ -1163,9 +1167,9 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
 
   return (
     <Modal title={data ? 'Modifier le contenu' : 'Nouveau contenu'} onClose={onClose} maxWidth={type === 'texte' ? 680 : 500}>
-      <div style={S.field}>
-        <label style={S.label}>Type *</label>
-        <select style={S.select} value={type} onChange={e => { setType(e.target.value); setContenu(''); setUploadError(''); }}>
+      <div className={S.field}>
+        <label className={S.label}>Type *</label>
+        <select className={S.select} value={type} onChange={e => { setType(e.target.value); setContenu(''); setUploadError(''); }}>
           <option value="video">Vidéo YouTube</option>
           <option value="pdf">PDF</option>
           <option value="texte">Texte</option>
@@ -1174,15 +1178,15 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
         </select>
       </div>
 
-      <div style={S.field}>
-        <label style={S.label}>Titre</label>
-        <input style={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Titre du contenu (optionnel)" />
+      <div className={S.field}>
+        <label className={S.label}>Titre</label>
+        <input className={S.input} value={titre} onChange={e => setTitre(e.target.value)} placeholder="Titre du contenu (optionnel)" />
       </div>
 
       {/* ─── Zone fichier : PDF / Word / PowerPoint — drag & drop + URL ─── */}
       {(type === 'pdf' || type === 'word' || type === 'ppt') && (
-        <div style={S.field}>
-          <label style={S.label}>
+        <div className={S.field}>
+          <label className={S.label}>
             {type === 'pdf' ? 'Fichier PDF *' : type === 'word' ? 'Fichier Word (.docx) *' : 'Fichier PowerPoint (.pptx) *'}
           </label>
 
@@ -1192,15 +1196,10 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
             onClick={() => document.getElementById('doc-file-input').click()}
+            className="rounded-a-sm py-6 px-4 text-center cursor-pointer transition-all duration-200 mb-2.5"
             style={{
               border: `2px dashed ${dragOver ? 'var(--a-gold)' : contenu ? 'var(--a-green)' : 'var(--a-border)'}`,
-              borderRadius: 'var(--a-radius-sm)',
-              padding: '24px 16px',
-              textAlign: 'center',
-              cursor: 'pointer',
               background: dragOver ? 'rgba(191,138,48,.05)' : contenu ? 'rgba(48,209,88,.04)' : 'var(--a-bg)',
-              transition: 'all .2s',
-              marginBottom: 10,
             }}>
             <input
               id="doc-file-input"
@@ -1210,52 +1209,52 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
                 type === 'word' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
               }
-              style={{ display:'none' }}
+              className="hidden"
               onChange={e => e.target.files[0] && handleFile(e.target.files[0])}
             />
             {uploading ? (
-              <div style={{ color:'var(--a-gold)', fontSize:14 }}>⏳ Upload en cours...</div>
+              <div className="text-a-gold text-sm">⏳ Upload en cours...</div>
             ) : contenu ? (
-              <div style={{ color:'var(--a-green)', fontSize:13 }}>
+              <div className="text-a-green text-[13px]">
                 ✅ Fichier uploadé avec succès
-                <div style={{ fontSize:11, color:'var(--a-fg-mid)', marginTop:4, wordBreak:'break-all' }}>{contenu.split('/').pop()}</div>
-                <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2 }}>Cliquer pour remplacer</div>
+                <div className="text-[11px] text-a-fg-mid mt-1 break-all">{contenu.split('/').pop()}</div>
+                <div className="text-[11px] text-a-fg-light mt-0.5">Cliquer pour remplacer</div>
               </div>
             ) : (
-              <div style={{ color:'var(--a-fg-mid)', fontSize:13 }}>
-                <div style={{ fontSize:28, marginBottom:8 }}>
+              <div className="text-a-fg-mid text-[13px]">
+                <div className="text-[28px] mb-2">
                   {type === 'pdf' ? '📄' : type === 'word' ? '📃' : '📊'}
                 </div>
                 <strong>
                   Glisser-déposer votre {type === 'pdf' ? 'PDF' : type === 'word' ? 'fichier Word' : 'PowerPoint'} ici
                 </strong>
-                <div style={{ fontSize:12, marginTop:4 }}>
+                <div className="text-xs mt-1">
                   ou cliquer pour parcourir — max {type === 'ppt' ? '20' : '10'} Mo
                 </div>
               </div>
             )}
           </div>
 
-          {uploadError && <div style={{ fontSize:12, color:'var(--a-red)', marginBottom:8 }}>{uploadError}</div>}
+          {uploadError && <div className="text-xs text-a-red mb-2">{uploadError}</div>}
 
           {/* Saisie URL manuelle en fallback */}
-          <div style={{ fontSize:11, color:'var(--a-fg-light)', marginBottom:4 }}>Ou saisir une URL directement :</div>
-          <input style={S.input} value={contenu} onChange={e => setContenu(e.target.value)} placeholder="https://..." />
+          <div className="text-[11px] text-a-fg-light mb-1">Ou saisir une URL directement :</div>
+          <input className={S.input} value={contenu} onChange={e => setContenu(e.target.value)} placeholder="https://..." />
         </div>
       )}
 
       {/* ─── Vidéo ─── */}
       {type === 'video' && (
-        <div style={S.field}>
-          <label style={S.label}>URL YouTube *</label>
-          <input style={S.input} value={contenu} onChange={e => setContenu(e.target.value)} placeholder="https://youtube.com/watch?v=..." />
+        <div className={S.field}>
+          <label className={S.label}>URL YouTube *</label>
+          <input className={S.input} value={contenu} onChange={e => setContenu(e.target.value)} placeholder="https://youtube.com/watch?v=..." />
         </div>
       )}
 
       {/* ─── Texte ─── */}
       {type === 'texte' && (
-        <div style={S.field}>
-          <label style={S.label}>Contenu *</label>
+        <div className={S.field}>
+          <label className={S.label}>Contenu *</label>
           <RichTextEditor
             value={contenu}
             onChange={setContenu}
@@ -1264,14 +1263,14 @@ function ContenuModal({ data, onSave, onClose, loading, moduleTitre, thematiqueT
         </div>
       )}
 
-      <div style={{ ...S.field, maxWidth:120 }}>
-        <label style={S.label}>Ordre</label>
-        <input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} />
+      <div className={`${S.field} max-w-[120px]`}>
+        <label className={S.label}>Ordre</label>
+        <input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} />
       </div>
 
-      <div style={S.btnRow}>
-        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button style={S.btnSave} disabled={loading || uploading || !contenu.replace(/<[^>]*>/g, '').trim()} onClick={() => onSave({ id: data?.id, type, titre, contenu, ordre })}>
+      <div className={S.btnRow}>
+        <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+        <button className={S.btnSave} disabled={loading || uploading || !contenu.replace(/<[^>]*>/g, '').trim()} onClick={() => onSave({ id: data?.id, type, titre, contenu, ordre })}>
           {loading ? 'Enregistrement...' : 'Enregistrer'}
         </button>
       </div>
@@ -1306,110 +1305,113 @@ function ImportQCMModal({ existingCount, onLoad, onClose }) {
     reader.readAsText(file, 'UTF-8');
   };
 
-  const dropZoneStyle = {
-    border: `2px dashed ${dragOver ? 'var(--a-blue)' : 'var(--a-border)'}`,
-    borderRadius: 'var(--a-radius-sm)', padding: '28px 20px', textAlign: 'center',
-    background: dragOver ? 'rgba(10,132,255,.06)' : 'var(--a-bg)',
-    cursor: 'pointer', transition: 'all .2s', marginBottom: 16,
-  };
+  const tdBase = 'py-1 px-2 border border-a-border';
+  const tdGreenBg = 'py-1 px-2 border border-a-border text-a-green font-semibold bg-[rgba(48,209,88,.08)]';
+  const tdGreenAnswer = 'py-1 px-2 border border-a-border text-a-green font-bold text-center';
 
   return (
     <Modal title="⬆ Importer des questions QCM" onClose={onClose}>
 
       {/* ─── Guide format ─── */}
-      <div style={{ marginBottom:16, padding:'12px 14px', background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', fontSize:12 }}>
-        <div style={{ fontWeight:700, color:'var(--a-fg)', marginBottom:8 }}>📋 Format du fichier CSV</div>
-        <div style={{ overflowX:'auto' }}>
-          <table style={{ borderCollapse:'collapse', width:'100%', fontSize:11 }}>
+      <div className="mb-4 py-3 px-3.5 bg-a-bg rounded-a-sm text-xs">
+        <div className="font-bold text-a-fg mb-2">📋 Format du fichier CSV</div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px] border-collapse">
             <thead>
               <tr>
                 {['Question','Choix A','Choix B','Choix C','Choix D','Bonne(s) réponse(s)'].map(h => (
-                  <th key={h} style={{ padding:'4px 8px', background:'var(--a-bg-card)', border:'1px solid var(--a-border)', color:'var(--a-fg-mid)', fontWeight:600, whiteSpace:'nowrap' }}>{h}</th>
+                  <th key={h} className="py-1 px-2 bg-a-bg-card border border-a-border text-a-fg-mid font-semibold whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-fg)' }}>Combien de lettres en arabe ?</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-fg-mid)' }}>24</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-fg-mid)' }}>26</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', background:'rgba(48,209,88,.08)', color:'var(--a-green)', fontWeight:600 }}>28</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-fg-mid)' }}>32</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-green)', fontWeight:700, textAlign:'center' }}>C</td>
+                <td className={`${tdBase} text-a-fg`}>Combien de lettres en arabe ?</td>
+                <td className={`${tdBase} text-a-fg-mid`}>24</td>
+                <td className={`${tdBase} text-a-fg-mid`}>26</td>
+                <td className={tdGreenBg}>28</td>
+                <td className={`${tdBase} text-a-fg-mid`}>32</td>
+                <td className={tdGreenAnswer}>C</td>
               </tr>
               <tr>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-fg)' }}>Voyelles longues ? (plusieurs)</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', background:'rgba(48,209,88,.08)', color:'var(--a-green)', fontWeight:600 }}>أ</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', background:'rgba(48,209,88,.08)', color:'var(--a-green)', fontWeight:600 }}>و</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', background:'rgba(48,209,88,.08)', color:'var(--a-green)', fontWeight:600 }}>ي</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-fg-mid)' }}>ب</td>
-                <td style={{ padding:'4px 8px', border:'1px solid var(--a-border)', color:'var(--a-green)', fontWeight:700, textAlign:'center' }}>A,B,C</td>
+                <td className={`${tdBase} text-a-fg`}>Voyelles longues ? (plusieurs)</td>
+                <td className={tdGreenBg}>أ</td>
+                <td className={tdGreenBg}>و</td>
+                <td className={tdGreenBg}>ي</td>
+                <td className={`${tdBase} text-a-fg-mid`}>ب</td>
+                <td className={tdGreenAnswer}>A,B,C</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div style={{ marginTop:8, color:'var(--a-fg-mid)', lineHeight:1.6 }}>
-          → Colonne <strong>Bonne(s) réponse(s)</strong> : écris <strong style={{color:'var(--a-green)'}}>C</strong> pour une seule bonne réponse, ou <strong style={{color:'var(--a-green)'}}>A,B,C</strong> pour plusieurs.
+        <div className="mt-2 text-a-fg-mid leading-relaxed">
+          → Colonne <strong>Bonne(s) réponse(s)</strong> : écris <strong className="text-a-green">C</strong> pour une seule bonne réponse, ou <strong className="text-a-green">A,B,C</strong> pour plusieurs.
         </div>
       </div>
 
       {/* ─── Zone A : modèle ─── */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, padding:'10px 14px', background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)' }}>
+      <div className="flex items-center justify-between mb-4 py-2.5 px-3.5 bg-a-bg rounded-a-sm">
         <div>
-          <div style={{ fontSize:13, fontWeight:600, color:'var(--a-fg)' }}>Télécharger le modèle Excel</div>
-          <div style={{ fontSize:12, color:'var(--a-fg-mid)', marginTop:2 }}>Fichier pré-rempli avec les bonnes colonnes et des exemples.</div>
+          <div className="text-[13px] font-semibold text-a-fg">Télécharger le modèle Excel</div>
+          <div className="text-xs text-a-fg-mid mt-0.5">Fichier pré-rempli avec les bonnes colonnes et des exemples.</div>
         </div>
-        <button style={{ ...S.btnSave, fontSize:12, padding:'8px 14px', flexShrink:0, marginLeft:12 }} onClick={downloadTemplate}>
+        <button className={`${S.btnSave} text-xs py-2 px-3.5 shrink-0 ml-3`} onClick={downloadTemplate}>
           ⬇ Modèle CSV
         </button>
       </div>
 
       {/* ─── Zone B : sélection fichier ─── */}
-      <input ref={fileRef} type="file" accept=".csv" style={{ display:'none' }} onChange={e => handleFile(e.target.files[0])} />
-      <div style={dropZoneStyle}
+      <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={e => handleFile(e.target.files[0])} />
+      <div
+        className="rounded-a-sm py-7 px-5 text-center cursor-pointer transition-all duration-200 mb-4"
+        style={{
+          border: `2px dashed ${dragOver ? 'var(--a-blue)' : 'var(--a-border)'}`,
+          background: dragOver ? 'rgba(10,132,255,.06)' : 'var(--a-bg)',
+        }}
         onClick={() => fileRef.current.click()}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
-        <div style={{ fontSize:28, marginBottom:6 }}>📂</div>
-        <div style={{ fontSize:13, fontWeight:600, color:'var(--a-fg-mid)' }}>Glissez votre fichier CSV ici</div>
-        <div style={{ fontSize:12, color:'var(--a-fg-light)', marginTop:4 }}>ou cliquez pour parcourir</div>
+        <div className="text-[28px] mb-1.5">📂</div>
+        <div className="text-[13px] font-semibold text-a-fg-mid">Glissez votre fichier CSV ici</div>
+        <div className="text-xs text-a-fg-light mt-1">ou cliquez pour parcourir</div>
       </div>
 
       {/* ─── Zone C : aperçu résultat ─── */}
       {parsed && (
-        <div style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:16, marginBottom:16 }}>
-          <div style={{ display:'flex', gap:12, marginBottom:12, flexWrap:'wrap' }}>
-            <span style={{ fontSize:13, fontWeight:600, color:'var(--a-green)' }}>
+        <div className="bg-a-bg rounded-a-sm p-4 mb-4">
+          <div className="flex gap-3 mb-3 flex-wrap">
+            <span className="text-[13px] font-semibold text-a-green">
               ✅ {parsed.questions.length} question{parsed.questions.length > 1 ? 's' : ''} détectée{parsed.questions.length > 1 ? 's' : ''}
             </span>
             {parsed.skipped > 0 && (
-              <span style={{ fontSize:13, fontWeight:600, color:'var(--a-red)' }}>
+              <span className="text-[13px] font-semibold text-a-red">
                 ⚠️ {parsed.skipped} ligne{parsed.skipped > 1 ? 's' : ''} ignorée{parsed.skipped > 1 ? 's' : ''} (format invalide)
               </span>
             )}
           </div>
           {/* Aperçu des 3 premières questions */}
           {parsed.questions.slice(0, 3).map((q, i) => (
-            <div key={i} style={{ fontSize:12, color:'var(--a-fg-mid)', marginBottom:6, paddingLeft:8, borderLeft:'2px solid var(--a-gold)' }}>
-              <span style={{ fontWeight:600, color:'var(--a-fg)' }}>{i+1}. {q.question}</span>
-              <span style={{ marginLeft:8 }}>{q.choix.length} choix — Bonne(s) : {q.reponse_correcte.map(r => String.fromCharCode(65+r)).join(', ')}</span>
+            <div key={i} className="text-xs text-a-fg-mid mb-1.5 pl-2 border-l-2 border-a-gold">
+              <span className="font-semibold text-a-fg">{i+1}. {q.question}</span>
+              <span className="ml-2">{q.choix.length} choix — Bonne(s) : {q.reponse_correcte.map(r => String.fromCharCode(65+r)).join(', ')}</span>
             </div>
           ))}
           {parsed.questions.length > 3 && (
-            <div style={{ fontSize:12, color:'var(--a-fg-light)', paddingLeft:8, marginTop:4 }}>… et {parsed.questions.length - 3} autre{parsed.questions.length - 3 > 1 ? 's' : ''}</div>
+            <div className="text-xs text-a-fg-light pl-2 mt-1">… et {parsed.questions.length - 3} autre{parsed.questions.length - 3 > 1 ? 's' : ''}</div>
           )}
 
           {/* Mode fusion */}
           {existingCount > 0 && (
-            <div style={{ marginTop:14, paddingTop:14, borderTop:'1px solid var(--a-border)' }}>
-              <div style={{ fontSize:12, fontWeight:600, color:'var(--a-fg-mid)', marginBottom:8, textTransform:'uppercase', letterSpacing:'.5px' }}>
+            <div className="mt-3.5 pt-3.5 border-t border-a-border">
+              <div className="text-xs font-semibold text-a-fg-mid mb-2 uppercase tracking-[.5px]">
                 {existingCount} question{existingCount > 1 ? 's' : ''} déjà existante{existingCount > 1 ? 's' : ''} dans ce QCM :
               </div>
-              <div style={{ display:'flex', gap:8 }}>
+              <div className="flex gap-2">
                 {['remplacer', 'ajouter'].map(m => (
                   <button key={m} onClick={() => setMode(m)}
-                    style={{ padding:'7px 14px', borderRadius:980, border:'1px solid var(--a-border)', fontSize:12, fontWeight:600, cursor:'pointer', background: mode===m ? 'var(--a-gold)' : 'transparent', color: mode===m ? '#fff' : 'var(--a-fg-mid)', borderColor: mode===m ? 'var(--a-gold)' : 'var(--a-border)' }}>
+                    className="py-[7px] px-3.5 rounded-full border text-xs font-semibold cursor-pointer"
+                    style={{ background: mode===m ? 'var(--a-gold)' : 'transparent', color: mode===m ? '#fff' : 'var(--a-fg-mid)', borderColor: mode===m ? 'var(--a-gold)' : 'var(--a-border)' }}>
                     {m === 'remplacer' ? '🔄 Remplacer' : '➕ Ajouter aux existantes'}
                   </button>
                 ))}
@@ -1419,10 +1421,11 @@ function ImportQCMModal({ existingCount, onLoad, onClose }) {
         </div>
       )}
 
-      <div style={S.btnRow}>
-        <button style={S.btnCancel} onClick={onClose}>Annuler</button>
+      <div className={S.btnRow}>
+        <button className={S.btnCancel} onClick={onClose}>Annuler</button>
         <button
-          style={{ ...S.btnSave, opacity: (!parsed || parsed.questions.length === 0) ? .4 : 1 }}
+          className={S.btnSave}
+          style={{ opacity: (!parsed || parsed.questions.length === 0) ? .4 : 1 }}
           disabled={!parsed || parsed.questions.length === 0}
           onClick={() => onLoad(parsed.questions, mode)}>
           Charger dans le carrousel →
@@ -1503,77 +1506,77 @@ function QCMCarouselModal({ initialQuestions, startIndex, addNew, onSaveAll, onC
   return (
     <Modal title="Éditeur de QCM" onClose={onClose}>
       {/* ─── Navigation carrousel ─── */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'8px 14px', marginBottom:20 }}>
+      <div className="flex items-center justify-between bg-a-bg rounded-a-sm py-2 px-3.5 mb-5">
         <button onClick={() => setCurrent(c => Math.max(0, c-1))} disabled={current === 0}
-          style={{ ...S.actionBtn, fontSize:18, padding:'2px 8px', opacity: current === 0 ? .3 : 1 }}>‹</button>
-        <span style={{ fontSize:13, fontWeight:700, color:'var(--a-fg)' }}>
-          Question {current + 1} <span style={{ color:'var(--a-fg-mid)', fontWeight:400 }}>/ {questions.length}</span>
+          className={`${S.actionBtn} text-lg py-0.5 px-2`} style={{ opacity: current === 0 ? .3 : 1 }}>‹</button>
+        <span className="text-[13px] font-bold text-a-fg">
+          Question {current + 1} <span className="text-a-fg-mid font-normal">/ {questions.length}</span>
         </span>
         <button onClick={() => setCurrent(c => Math.min(questions.length-1, c+1))} disabled={current === questions.length-1}
-          style={{ ...S.actionBtn, fontSize:18, padding:'2px 8px', opacity: current === questions.length-1 ? .3 : 1 }}>›</button>
+          className={`${S.actionBtn} text-lg py-0.5 px-2`} style={{ opacity: current === questions.length-1 ? .3 : 1 }}>›</button>
       </div>
 
       {/* ─── Question ─── */}
-      <div style={S.field}>
-        <label style={S.label}>Question *</label>
-        <textarea style={S.textarea} value={q.question}
+      <div className={S.field}>
+        <label className={S.label}>Question *</label>
+        <textarea className={S.textarea} value={q.question}
           onChange={e => updateQ('question', e.target.value)}
           placeholder="Ex: Quelle est la première sourate du Coran ?" rows={3} />
       </div>
 
       {/* ─── Choix ─── */}
-      <div style={S.field}>
-        <label style={S.label}>
+      <div className={S.field}>
+        <label className={S.label}>
           Choix de réponses *
-          <span style={{ fontWeight:400, textTransform:'none', marginLeft:6, fontSize:11, color:'var(--a-fg-light)' }}>
+          <span className="font-normal normal-case ml-1.5 text-[11px] text-a-fg-light">
             — cochez la ou les bonnes réponses
           </span>
         </label>
         {q.choix.map((ch, ci) => {
           const isCorrect = (q.reponse_correcte || []).includes(ci);
           return (
-            <div key={ci} style={{ display:'flex', gap:8, alignItems:'center', marginBottom:7 }}>
-              <span style={{ fontSize:13, fontWeight:700, color: isCorrect ? 'var(--a-green)' : 'var(--a-fg-light)', width:22, flexShrink:0 }}>
+            <div key={ci} className="flex gap-2 items-center mb-[7px]">
+              <span className="text-[13px] font-bold w-[22px] shrink-0" style={{ color: isCorrect ? 'var(--a-green)' : 'var(--a-fg-light)' }}>
                 {String.fromCharCode(65+ci)}.
               </span>
-              <input style={{ ...S.input, flex:1, borderColor: isCorrect ? 'var(--a-green)' : '' }}
+              <input className={`${S.input} flex-1`} style={{ borderColor: isCorrect ? 'var(--a-green)' : '' }}
                 value={ch} onChange={e => updateChoix(ci, e.target.value)}
                 placeholder={`Choix ${String.fromCharCode(65+ci)}`} />
               <input type="checkbox" checked={isCorrect} onChange={() => toggleCorrect(ci)}
-                style={{ width:17, height:17, cursor:'pointer', accentColor:'var(--a-green)', flexShrink:0 }} />
+                className="w-[17px] h-[17px] cursor-pointer shrink-0" style={{ accentColor:'var(--a-green)' }} />
               {q.choix.length > 2 && (
-                <button style={{ ...S.actionBtn, color:'var(--a-red)', padding:2 }} onClick={() => removeChoix(ci)}>✕</button>
+                <button className={`${S.actionBtn} text-a-red p-0.5`} onClick={() => removeChoix(ci)}>✕</button>
               )}
             </div>
           );
         })}
         {q.choix.length < 6 && (
-          <button style={{ ...S.btnCancel, fontSize:12, padding:'5px 12px', marginTop:4 }} onClick={addChoix}>
+          <button className={`${S.btnCancel} text-xs py-[5px] px-3 mt-1`} onClick={addChoix}>
             + Ajouter un choix
           </button>
         )}
         {!isCurrentValid && q.question.trim() && (q.reponse_correcte || []).length === 0 && (
-          <div style={{ fontSize:11, color:'var(--a-red)', marginTop:6 }}>⚠ Cochez au moins une bonne réponse</div>
+          <div className="text-[11px] text-a-red mt-1.5">⚠ Cochez au moins une bonne réponse</div>
         )}
         {!isCurrentValid && q.question.trim() && (q.reponse_correcte || []).length > 0
           && !(q.reponse_correcte || []).every(r => r >= 0 && r < q.choix.length) && (
-          <div style={{ fontSize:11, color:'var(--a-red)', marginTop:6 }}>⚠ Une bonne réponse cochée correspond à un choix supprimé — décochez-la ou recochez un choix valide</div>
+          <div className="text-[11px] text-a-red mt-1.5">⚠ Une bonne réponse cochée correspond à un choix supprimé — décochez-la ou recochez un choix valide</div>
         )}
       </div>
 
       {/* ─── Actions ─── */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:16, borderTop:'1px solid var(--a-border)', marginTop:4 }}>
-        <div style={{ display:'flex', gap:8 }}>
-          <button style={{ ...S.btnDanger, fontSize:12, padding:'7px 14px' }} onClick={deleteQuestion}>
+      <div className="flex justify-between items-center pt-4 border-t border-a-border mt-1">
+        <div className="flex gap-2">
+          <button className={`${S.btnDanger} text-xs py-[7px] px-3.5`} onClick={deleteQuestion}>
             🗑 Supprimer
           </button>
-          <button style={{ ...S.btnCancel, fontSize:12, padding:'7px 14px' }} onClick={addQuestion}>
+          <button className={`${S.btnCancel} text-xs py-[7px] px-3.5`} onClick={addQuestion}>
             + Nouvelle question
           </button>
         </div>
-        <div style={{ display:'flex', gap:8 }}>
-          <button style={S.btnCancel} onClick={onClose}>Fermer</button>
-          <button style={S.btnSave} disabled={saving || loading || !allValid} onClick={handleSave}>
+        <div className="flex gap-2">
+          <button className={S.btnCancel} onClick={onClose}>Fermer</button>
+          <button className={S.btnSave} disabled={saving || loading || !allValid} onClick={handleSave}>
             {saving || loading ? 'Sauvegarde...' : 'Enregistrer et fermer'}
           </button>
         </div>

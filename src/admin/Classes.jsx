@@ -13,67 +13,68 @@ const IconTrash = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const IconUsers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
 const S = {
-  page: { minHeight: '100%' },
+  page: 'min-h-full',
 
   // Breadcrumb
-  breadcrumb: { display:'flex', alignItems:'center', gap:6, marginBottom:28, cursor:'pointer', color:'var(--a-fg-mid)', fontSize:13, fontWeight:500, userSelect:'none' },
-  breadcrumbSep: { color:'var(--a-border)', margin:'0 2px' },
-  breadcrumbActive: { color:'var(--a-fg)', fontWeight:600 },
+  breadcrumb: 'flex items-center gap-1.5 mb-7 cursor-pointer text-a-fg-mid text-[13px] font-medium select-none',
+  breadcrumbSep: 'text-a-border mx-0.5',
+  breadcrumbActive: 'text-a-fg font-semibold',
 
   // Header
-  header: { display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:28 },
-  headerLeft: { display:'flex', flexDirection:'column', gap:4 },
-  headerTitle: { fontSize:26, fontWeight:800, color:'var(--a-gold)', letterSpacing:'-0.5px' },
-  headerSub: { fontSize:13, color:'var(--a-fg-mid)' },
-  addBtn: { display:'inline-flex', alignItems:'center', gap:7, padding:'10px 20px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', boxShadow:'0 2px 12px rgba(191,138,48,.3)' },
+  header: 'flex items-center justify-between mb-7',
+  headerLeft: 'flex flex-col gap-1',
+  headerTitle: 'text-[26px] font-extrabold text-a-gold tracking-tight',
+  headerSub: 'text-[13px] text-a-fg-mid',
+  addBtn: 'inline-flex items-center gap-[7px] px-5 py-2.5 rounded-full border-none bg-a-gold text-white text-[13px] font-bold cursor-pointer whitespace-nowrap shadow-[0_2px_12px_rgba(191,138,48,.3)]',
 
   // Grille niveaux
-  niveauGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:16 },
-  niveauCard: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', padding:'28px 24px 18px', cursor:'pointer', transition:'transform .2s, box-shadow .2s, border-color .2s', display:'flex', flexDirection:'column', boxSizing:'border-box', minHeight:160 },
-  niveauName: { fontSize:42, fontWeight:900, color:'var(--a-gold)', letterSpacing:'-2px', lineHeight:1, flex:1 },
-  niveauStats: { display:'flex', gap:16, marginBottom:14 },
-  niveauStat: { display:'flex', flexDirection:'column' },
-  niveauStatVal: { fontSize:18, fontWeight:800, color:'var(--a-fg)' },
-  niveauStatLabel: { fontSize:11, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:'.5px' },
-  niveauFooter: { display:'flex', gap:8, paddingTop:14, borderTop:'1px solid var(--a-border)' },
-  addNiveauCard: { background:'transparent', borderRadius:'var(--a-radius)', border:'2px dashed var(--a-border)', padding:24, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10, cursor:'pointer', color:'var(--a-fg-mid)', fontSize:13, fontWeight:600, transition:'border-color .2s, color .2s', minHeight:160, boxSizing:'border-box' },
+  niveauGrid: 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4',
+  niveauCard: 'bg-a-bg-card rounded-a border border-a-border pt-7 px-6 pb-[18px] cursor-pointer transition-[transform,box-shadow,border-color] duration-200 flex flex-col box-border min-h-[160px]',
+  niveauName: 'text-[42px] font-black text-a-gold tracking-[-2px] leading-none flex-1',
+  niveauStats: 'flex gap-4 mb-3.5',
+  niveauStat: 'flex flex-col',
+  niveauStatVal: 'text-lg font-extrabold text-a-fg',
+  niveauStatLabel: 'text-[11px] text-a-fg-mid uppercase tracking-wide',
+  niveauFooter: 'flex gap-2 pt-3.5 border-t border-a-border',
+  addNiveauCard: 'bg-transparent rounded-a border-2 border-dashed border-a-border p-6 flex flex-col items-center justify-center gap-2.5 cursor-pointer text-a-fg-mid text-[13px] font-semibold transition-[border-color,color] duration-200 min-h-[160px] box-border',
 
   // Grille classes
-  classeGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:14 },
-  classeCard: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', padding:'22px 20px 16px', cursor:'pointer', transition:'transform .2s, box-shadow .2s, border-color .2s', display:'flex', flexDirection:'column', boxSizing:'border-box', minHeight:140 },
-  classeName: { fontSize:28, fontWeight:900, color:'var(--a-fg)', letterSpacing:'-1px', lineHeight:1, flex:1 },
-  classeCount: { fontSize:13, color:'var(--a-fg-mid)', marginTop:6, marginBottom:14, display:'flex', alignItems:'center', gap:5 },
-  classeFooter: { display:'flex', gap:8, paddingTop:12, borderTop:'1px solid var(--a-border)' },
-  addClasseCard: { background:'transparent', borderRadius:'var(--a-radius)', border:'2px dashed var(--a-border)', padding:20, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer', color:'var(--a-fg-mid)', fontSize:13, fontWeight:600, transition:'border-color .2s, color .2s', minHeight:140, boxSizing:'border-box' },
+  classeGrid: 'grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5',
+  classeCard: 'bg-a-bg-card rounded-a border border-a-border pt-[22px] px-5 pb-4 cursor-pointer transition-[transform,box-shadow,border-color] duration-200 flex flex-col box-border min-h-[140px]',
+  classeName: 'text-[28px] font-black text-a-fg tracking-tight leading-none flex-1',
+  classeCount: 'text-[13px] text-a-fg-mid mt-1.5 mb-3.5 flex items-center gap-[5px]',
+  classeFooter: 'flex gap-2 pt-3 border-t border-a-border',
+  addClasseCard: 'bg-transparent rounded-a border-2 border-dashed border-a-border p-5 flex flex-col items-center justify-center gap-2 cursor-pointer text-a-fg-mid text-[13px] font-semibold transition-[border-color,color] duration-200 min-h-[140px] box-border',
 
   // Cards élèves
-  eleveGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:14 },
-  eleveCard: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', padding:'18px 20px', display:'flex', flexDirection:'column', gap:12 },
-  eleveTop: { display:'flex', alignItems:'center', gap:14 },
-  eleveAvatar: { width:48, height:48, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:800, flexShrink:0, letterSpacing:'-0.5px' },
-  eleveName: { fontSize:15, fontWeight:700, color:'var(--a-fg)', lineHeight:1.2 },
-  eleveId: { fontSize:12, color:'var(--a-gold)', fontWeight:700, fontFamily:'var(--a-font-mono)', marginTop:3 },
-  eleveBody: { display:'flex', flexDirection:'column', gap:6, paddingTop:12, borderTop:'1px solid var(--a-border)' },
-  eleveRow: { display:'flex', justifyContent:'space-between', alignItems:'center' },
-  eleveLabel: { fontSize:11, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:'.5px' },
-  eleveVal: { fontSize:12, color:'var(--a-fg)', fontWeight:500 },
+  eleveGrid: 'grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5',
+  eleveCard: 'bg-a-bg-card rounded-a border border-a-border px-5 py-[18px] flex flex-col gap-3',
+  eleveTop: 'flex items-center gap-3.5',
+  eleveAvatar: 'w-12 h-12 rounded-full bg-a-gold text-white flex items-center justify-center text-base font-extrabold shrink-0 tracking-tight',
+  eleveName: 'text-[15px] font-bold text-a-fg leading-tight',
+  eleveId: 'text-xs text-a-gold font-bold font-a-mono mt-[3px]',
+  eleveBody: 'flex flex-col gap-1.5 pt-3 border-t border-a-border',
+  eleveRow: 'flex justify-between items-center',
+  eleveLabel: 'text-[11px] text-a-fg-mid uppercase tracking-wide',
+  eleveVal: 'text-xs text-a-fg font-medium',
   badge: (actif) => ({ padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
 
   // Actions
   actionBtn: (color) => ({ padding:'5px 12px', borderRadius:6, border:`1px solid ${color}20`, background:`${color}12`, color, fontSize:11, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:5, fontWeight:600 }),
 
   // Misc
-  overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 },
-  modal: { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:420, border:'1px solid var(--a-border)' },
-  modalTitle: { fontFamily:'var(--a-font-display)', fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:20 },
-  field: { marginBottom:16 },
-  label: { display:'block', fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'.5px' },
-  input: { width:'100%', padding:'10px 14px', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:14, outline:'none', boxSizing:'border-box' },
-  btnRow: { display:'flex', gap:10, justifyContent:'flex-end', marginTop:20 },
-  btnCancel: { padding:'9px 20px', borderRadius:980, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnSave: { padding:'9px 20px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnDanger: { padding:'9px 20px', borderRadius:980, border:'none', background:'var(--a-red)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' },
-  empty: { textAlign:'center', padding:'60px 20px', color:'var(--a-fg-mid)', fontSize:14, lineHeight:2 },
+  overlay: 'fixed inset-0 flex items-center justify-center z-[1000]',
+  overlayBg: 'rgba(0,0,0,.6)',
+  modal: 'bg-a-bg-card rounded-a p-7 w-full max-w-[420px] border border-a-border',
+  modalTitle: 'font-a-display text-lg font-bold text-a-fg mb-5',
+  field: 'mb-4',
+  label: 'block text-[11px] font-bold text-a-fg-mid mb-1.5 uppercase tracking-wide',
+  input: 'w-full px-3.5 py-2.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
+  btnRow: 'flex gap-2.5 justify-end mt-5',
+  btnCancel: 'px-5 py-[9px] rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer',
+  btnSave: 'px-5 py-[9px] rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer',
+  btnDanger: 'px-5 py-[9px] rounded-full border-none bg-a-red text-white text-[13px] font-semibold cursor-pointer',
+  empty: 'text-center py-[60px] px-5 text-a-fg-mid text-sm leading-loose',
 };
 
 export default function Classes() {
@@ -152,7 +153,7 @@ export default function Classes() {
             onClick={() => setModal({ type:'niveau' })}
             onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
-            <div style={{ fontSize:32, opacity:.3 }}>＋</div>
+            <div className="text-[32px] opacity-30">＋</div>
             <div>Ajouter un niveau</div>
           </motion.div>
         </motion.div>
@@ -253,7 +254,7 @@ export default function Classes() {
             onClick={() => setModal({ type:'classe' })}
             onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
-            <div style={{ fontSize:28, opacity:.3 }}>＋</div>
+            <div className="text-[28px] opacity-30">＋</div>
             <div>Ajouter une classe</div>
           </div>
         </div>
@@ -300,12 +301,12 @@ export default function Classes() {
   return (
     <div style={S.page}>
       {/* Breadcrumb */}
-      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:28, fontSize:13, fontWeight:500, color:'var(--a-fg-mid)', userSelect:'none' }}>
-        <span style={{ cursor:'pointer', display:'flex', alignItems:'center', gap:4 }} onClick={goToNiveaux}>
+      <div className="flex items-center gap-1.5 mb-7 text-[13px] font-medium text-a-fg-mid select-none">
+        <span className="cursor-pointer flex items-center gap-1" onClick={goToNiveaux}>
           <IconBack /> Niveaux
         </span>
         <span style={S.breadcrumbSep}>›</span>
-        <span style={{ cursor:'pointer' }} onClick={goToClasses}>{selNiveau.nom}</span>
+        <span className="cursor-pointer" onClick={goToClasses}>{selNiveau.nom}</span>
         <span style={S.breadcrumbSep}>›</span>
         <span style={S.breadcrumbActive}>{selClasse.nom}</span>
       </div>
@@ -372,9 +373,9 @@ function EleveInfoModal({ eleve, onClose }) {
     : '—';
 
   const Row = ({ label, value }) => (
-    <div style={{ display:'flex', flexDirection:'column', gap:4, padding:'12px 0', borderBottom:'1px solid var(--a-border)' }}>
-      <span style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-mid)', textTransform:'uppercase', letterSpacing:'.5px' }}>{label}</span>
-      <span style={{ fontSize:14, color: value ? 'var(--a-fg)' : 'var(--a-fg-light)', fontStyle: value ? 'normal' : 'italic' }}>
+    <div className="flex flex-col gap-1 py-3 border-b border-a-border">
+      <span className="text-[11px] font-bold text-a-fg-mid uppercase tracking-wide">{label}</span>
+      <span className="text-sm" style={{ color: value ? 'var(--a-fg)' : 'var(--a-fg-light)', fontStyle: value ? 'normal' : 'italic' }}>
         {value || 'Non renseigné'}
       </span>
     </div>
@@ -384,27 +385,27 @@ function EleveInfoModal({ eleve, onClose }) {
     <div style={S.overlay} onClick={onClose}>
       <div style={{ ...S.modal, maxWidth:420 }} onClick={e => e.stopPropagation()}>
         {/* En-tête */}
-        <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:24, paddingBottom:20, borderBottom:'1px solid var(--a-border)' }}>
-          <div style={{ width:56, height:56, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, fontWeight:800, flexShrink:0 }}>
+        <div className="flex items-center gap-4 mb-6 pb-5 border-b border-a-border">
+          <div className="w-14 h-14 rounded-full bg-a-gold text-white flex items-center justify-center text-xl font-extrabold shrink-0">
             {initiales}
           </div>
           <div>
-            <div style={{ fontSize:18, fontWeight:700, color:'var(--a-fg)' }}>{eleve.prenom} {eleve.nom}</div>
-            <div style={{ fontSize:13, color:'var(--a-gold)', fontWeight:700, fontFamily:'var(--a-font-mono)', marginTop:3 }}>{identifiant}</div>
-            <span style={{ display:'inline-block', marginTop:6, padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: eleve.actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: eleve.actif ? 'var(--a-green)' : 'var(--a-red)' }}>
+            <div className="text-lg font-bold text-a-fg">{eleve.prenom} {eleve.nom}</div>
+            <div className="text-[13px] text-a-gold font-bold font-a-mono mt-[3px]">{identifiant}</div>
+            <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-[980px] text-[11px] font-bold" style={{ background: eleve.actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: eleve.actif ? 'var(--a-green)' : 'var(--a-red)' }}>
               {eleve.actif ? 'Actif' : 'Inactif'}
             </span>
           </div>
         </div>
 
         {/* Informations */}
-        <div style={{ display:'flex', flexDirection:'column' }}>
+        <div className="flex flex-col">
           <Row label="Inscrit le" value={dateInscription} />
           <Row label="Téléphone" value={eleve.telephone} />
           <Row label="Email de contact" value={eleve.email_contact} />
         </div>
 
-        <div style={{ marginTop:20, display:'flex', justifyContent:'flex-end' }}>
+        <div className="mt-5 flex justify-end">
           <button style={S.btnCancel} onClick={onClose}>Fermer</button>
         </div>
       </div>
@@ -466,9 +467,9 @@ function ConfirmModal({ message, onConfirm, onClose }) {
   return (
     <div style={S.overlay} onClick={onClose}>
       <div style={{ ...S.modal, maxWidth:400 }} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize:18, fontWeight:700, color:'var(--a-fg)', marginBottom:12 }}>⚠️ Confirmation</div>
-        <p style={{ fontSize:14, color:'var(--a-fg-mid)', marginBottom:24, lineHeight:1.7 }}>{message}</p>
-        <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+        <div className="text-lg font-bold text-a-fg mb-3">⚠️ Confirmation</div>
+        <p className="text-sm text-a-fg-mid mb-6 leading-loose">{message}</p>
+        <div className="flex gap-2.5 justify-end">
           <button style={S.btnCancel} onClick={onClose}>Annuler</button>
           <button style={S.btnDanger} onClick={() => { onConfirm(); onClose(); }}>Supprimer</button>
         </div>
