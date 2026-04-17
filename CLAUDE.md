@@ -3,13 +3,13 @@
 ## Projet
 
 ENT (Espace Numérique de Travail) pour une école d'arabe. Site vitrine + 3 portails (admin, enseignant, élève).
-Stack : **React 18** (CRA), **React Router v6**, CSS-in-JS, **Supabase** (REST + Storage), **DOMPurify**.
+Stack : **React 18** (CRACO + CRA), **React Router v6**, **Tailwind CSS 3** + CSS variables, **Supabase** (REST + Storage), **DOMPurify**, **Framer Motion**.
 
 ## Structure
 
 ```
 src/
-├── App.jsx / data.js / hooks.js / styles.js / index.js   # Site public
+├── App.jsx / data.js / hooks.js / styles.js / index.js   # Site public (styles.js à migrer — Phase 3)
 ├── admin/
 │   ├── AdminApp.jsx        # Layout (sidebar, topbar, Outlet)
 │   ├── Dashboard.jsx       # Stats + résumés
@@ -21,7 +21,6 @@ src/
 │   ├── Cours.jsx           # Modules → Thématiques → Leçons → Niveaux → Contenus + QCM
 │   ├── AdminSurveillance.jsx # Surveillance chat élève↔enseignant (read-only)
 │   ├── supabaseAdmin.js    # API Supabase admin (authFetch, CRUD, storage)
-│   ├── adminStyles.js      # CSS admin (dark/light)
 │   └── adminUtils.js       # generateIdentifiant, generateTempPassword
 ├── enseignant/
 │   ├── EnseignantApp.jsx   # Layout (sidebar, topbar, présence Teams-like)
@@ -123,11 +122,27 @@ const isOwn = item.enseignant_id === user.id;
 Scores stockés comme entiers : **A+**=4, **A**=3, **ECA**=2, **NA**=1. Pas de notes numériques /20.
 Composants : `NoteLetterInput` (saisie enseignant), `GradeBadge` (affichage), camembert SVG (portail élève).
 
-## Variables CSS
+## CSS Architecture
 
-- Admin/Enseignant : préfixe `--a-` (ex: `--a-bg`, `--a-gold #bf8a30`, `--a-green #30d158`)
-- Portail élève : préfixe `--p-` (ex: `--p-bg`, `--p-gold`, `--p-sidebar-w 260px`)
+**Tailwind CSS 3** (via CRACO) + CSS variables comme pont de thème.
+
+| Fichier | Contenu |
+|---------|---------|
+| `src/styles/admin-overrides.css` | Variables `--a-*`, dark/light admin+enseignant, composants `.admin-*` |
+| `src/styles/portail-overrides.css` | Variables `--p-*`, dark/light portail élève, composants `.portail-*` |
+| `src/styles.js` | CSS site public (2305 lignes — **pas encore migré, Phase 3**) |
+
+**Classes Tailwind mappées sur CSS variables :**
+- Admin/Enseignant : `bg-a-bg`, `text-a-fg`, `text-a-gold`, `border-a-border`, `shadow-a-sm`…
+- Portail élève : `bg-p-bg`, `text-p-fg`, `text-p-gold`, `border-p-border`…
+- Site public : `bg-site-bg`, `text-site-fg`, `text-site-gold`…
+
+**Variables CSS :**
+- Admin/Enseignant : préfixe `--a-` (`--a-bg`, `--a-gold #bf8a30`, `--a-green #30d158`)
+- Portail élève : préfixe `--p-` (`--p-bg`, `--p-gold`, `--p-sidebar-w 260px`)
 - Site public : sans préfixe (`--bg`, `--fg`, `--gold`), 6 palettes via ThemeSwitcher
+
+**Règle importante :** Ne jamais modifier les `className="admin-*"` ou `className="portail-*"` — ces classes sont ciblées par les overrides CSS. Les ~204 `style={{}}` restants dans les portails admin/enseignant sont **dynamiques** (légitimes).
 
 ## Commandes
 
