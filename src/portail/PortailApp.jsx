@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
-import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession } from './supabasePortail';
+import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession, verifyEleveSession } from './supabasePortail';
 import { AnimatePresence, motion, pageVariants, staggerContainer } from '../animations';
 
 const LETTER_SPRING = { type: 'spring', stiffness: 280, damping: 20, mass: 0.6 };
@@ -143,11 +143,13 @@ export default function PortailApp() {
     localStorage.setItem('portail_theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
-  // Garde auth
+  // Garde auth (vérification côté serveur)
   useEffect(() => {
-    if (!sessionStorage.getItem('eleve_user')) {
-      navigate('/portail/login');
-    }
+    const user = (() => { try { return JSON.parse(sessionStorage.getItem('eleve_user')); } catch { return null; } })();
+    if (!user?.id) { navigate('/portail/login'); return; }
+    verifyEleveSession(user.id).then(valid => {
+      if (!valid) { sessionStorage.clear(); navigate('/portail/login'); }
+    }).catch(() => { sessionStorage.clear(); navigate('/portail/login'); });
   }, [navigate]);
 
   // ─── Tracking de session ────────────────────────────────────────────

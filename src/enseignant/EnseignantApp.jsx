@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from '../admin/adminStyles';
-import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence } from './supabaseEnseignant';
+import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence, verifyEnseignantSession } from './supabaseEnseignant';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconClasses = () => (
@@ -166,7 +166,11 @@ export default function EnseignantApp() {
   }, [darkMode]);
 
   useEffect(() => {
-    if (!sessionStorage.getItem('enseignant_user')) navigate('/enseignant/login');
+    const user = (() => { try { return JSON.parse(sessionStorage.getItem('enseignant_user')); } catch { return null; } })();
+    if (!user?.id) { navigate('/enseignant/login'); return; }
+    verifyEnseignantSession(user.id).then(valid => {
+      if (!valid) { sessionStorage.clear(); navigate('/enseignant/login'); }
+    }).catch(() => { sessionStorage.clear(); navigate('/enseignant/login'); });
   }, [navigate]);
 
   // Présence — En ligne à la connexion, Déconnecté(e) à la fermeture

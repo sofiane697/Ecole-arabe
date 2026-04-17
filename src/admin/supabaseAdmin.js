@@ -62,8 +62,16 @@ export async function loginAdmin(identifiant, password) {
   const admin = await res.json();
   if (!admin || !admin.id) throw new Error('Identifiant ou mot de passe incorrect');
   sessionStorage.setItem('admin_session', JSON.stringify(admin));
-  sessionStorage.setItem('admin_auth', 'true');
   return admin;
+}
+
+export async function verifyAdminSession(adminId) {
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/rpc/verify_admin_session`,
+    { method: 'POST', body: JSON.stringify({ p_id: adminId }) }
+  );
+  if (!res.ok) return false;
+  return await res.json();
 }
 
 /** Déconnexion */

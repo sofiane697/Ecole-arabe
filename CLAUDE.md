@@ -68,8 +68,8 @@ const isOwn = item.enseignant_id === user.id;
 
 ## Supabase
 
-- **URL :** `https://nsdnzqdbpdncrksgxtar.supabase.co`
-- **Clé anon :** `sb_publishable_gy6LoTbs3JCS4v77W2Oomg_weoSRhWL`
+- **URL :** `https://<SUPABASE_PROJECT_ID>.supabase.co`
+- **Clé anon :** `<SUPABASE_ANON_KEY>`
 - **Plan :** Gratuit (Nano) — région Irlande
 
 ### Tables principales

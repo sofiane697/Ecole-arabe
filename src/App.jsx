@@ -362,6 +362,35 @@ function CarouselCards({ onInscribe }) {
 const SUPABASE_URL  = process.env.REACT_APP_SUPABASE_URL;
 const SUPABASE_ANON = process.env.REACT_APP_SUPABASE_ANON;
 
+// Rate-limiting côté client — stocké dans localStorage pour persister entre sessions
+function checkRateLimit(key) {
+  const now = Date.now();
+  const storageKey = `rl_${key}`;
+  let record;
+  try { record = JSON.parse(localStorage.getItem(storageKey)) || { attempts: 0, firstAttempt: now, blockedUntil: 0 }; }
+  catch { record = { attempts: 0, firstAttempt: now, blockedUntil: 0 }; }
+
+  // Si bloqué, vérifier si le délai est passé
+  if (record.blockedUntil > now) {
+    const remaining = Math.ceil((record.blockedUntil - now) / 60000);
+    return { allowed: false, message: `Trop de tentatives. Réessayez dans ${remaining} minute(s).` };
+  }
+
+  // Réinitialiser le compteur si fenêtre d'1h dépassée
+  if (now - record.firstAttempt > 3600000) {
+    record = { attempts: 0, firstAttempt: now, blockedUntil: 0 };
+  }
+
+  record.attempts += 1;
+
+  // Après 3 tentatives → blocage 10 min ; après 5 → blocage 1h
+  if (record.attempts >= 5) record.blockedUntil = now + 3600000;
+  else if (record.attempts >= 3) record.blockedUntil = now + 600000;
+
+  try { localStorage.setItem(storageKey, JSON.stringify(record)); } catch {}
+  return { allowed: true };
+}
+
 function calcAge(dateStr) {
   if (!dateStr) return null;
   const today = new Date();
@@ -375,12 +404,19 @@ function calcAge(dateStr) {
 function PreInscriptionModal({ cours, onClose }) {
   const [data, setData]     = useState({ nom: '', prenom: '', date_naissance: '', telephone: '', email: '', annees: '' });
   const [status, setStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
+  const [error, setError]   = useState(null);
 
   const handleChange = (e) =>
     setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const rl = checkRateLimit('inscription');
+    if (!rl.allowed) {
+      setError(rl.message);
+      return;
+    }
+    setError(null);
     setStatus('loading');
     try {
       const age = calcAge(data.date_naissance);
@@ -468,6 +504,9 @@ function PreInscriptionModal({ cours, onClose }) {
                   value={data.annees} onChange={handleChange} />
               </div>
             </div>
+            {error && (
+              <div className="modal-error">✕ &nbsp; {error}</div>
+            )}
             {status === 'err' && (
               <div className="modal-error">✕ &nbsp; Une erreur est survenue. Réessayez.</div>
             )}
@@ -511,8 +550,7 @@ export default function App() {
   const [menuOpen, setMenuOpen]     = useState(false);
   const [formData, setFormData]     = useState({ prenom: '', nom: '', telephone: '', email: '', cours: '', message: '' });
   const [formStatus, setFormStatus] = useState(null); // null | 'loading' | 'ok' | 'err'
-  const [cooldown, setCooldown]     = useState(0); // secondes restantes avant prochain envoi
-  const cooldownRef                 = useRef(null);
+  const [contactRlMsg, setContactRlMsg] = useState(null);
   const [modalCours, setModalCours] = useState(null); // null | string (nom du cours)
   const [darkMode, setDarkMode]     = useState(() => localStorage.getItem('theme') === 'dark');
   const [themeId, setThemeId]       = useState(() => parseInt(localStorage.getItem('site_palette') || '1'));
@@ -556,9 +594,6 @@ export default function App() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  /* — Nettoyer le timer cooldown au démontage — */
-  useEffect(() => () => clearInterval(cooldownRef.current), []);
-
   /* — Scroll fluide vers une section (avec offset du header) — */
   const goTo = useCallback((id) => {
     setMenuOpen(false);
@@ -576,7 +611,12 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (cooldown > 0) return;
+    const rl = checkRateLimit('contact');
+    if (!rl.allowed) {
+      setContactRlMsg(rl.message);
+      return;
+    }
+    setContactRlMsg(null);
 
     // Validation
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim());
@@ -606,14 +646,6 @@ export default function App() {
       setFormStatus('ok');
       setFormData({ prenom: '', nom: '', telephone: '', email: '', cours: '', message: '' });
       setTimeout(() => setFormStatus(null), 5000);
-      // Cooldown 30s
-      setCooldown(30);
-      cooldownRef.current = setInterval(() => {
-        setCooldown(prev => {
-          if (prev <= 1) { clearInterval(cooldownRef.current); return 0; }
-          return prev - 1;
-        });
-      }, 1000);
     } catch {
       setFormStatus('err');
     }
@@ -1061,15 +1093,16 @@ export default function App() {
             <button
               type="submit"
               className="form-submit"
-              disabled={formStatus === 'loading' || cooldown > 0}
+              disabled={formStatus === 'loading'}
             >
-              {formStatus === 'loading'
-                ? 'Envoi en cours…'
-                : cooldown > 0
-                  ? `Patienter ${cooldown}s avant un nouvel envoi`
-                  : 'Envoyer le message'}
+              {formStatus === 'loading' ? 'Envoi en cours…' : 'Envoyer le message'}
             </button>
 
+            {contactRlMsg && (
+              <div className="form-msg err">
+                ✕ &nbsp; {contactRlMsg}
+              </div>
+            )}
             {formStatus === 'ok'  && (
               <div className="form-msg ok">
                 ✓ &nbsp; Message envoyé — nous vous répondrons sous 24h.

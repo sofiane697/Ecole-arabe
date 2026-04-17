@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import ADMIN_STYLES from './adminStyles';
-import { logoutAdmin, fetchInscriptions, fetchMessages } from './supabaseAdmin';
+import { logoutAdmin, fetchInscriptions, fetchMessages, verifyAdminSession } from './supabaseAdmin';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconDashboard = () => (
@@ -95,11 +95,13 @@ export default function AdminApp() {
     return () => { document.body.style.background = ''; };
   }, [darkMode]);
 
-  // Garde : rediriger vers login si non connecté
+  // Garde : rediriger vers login si non connecté (vérification côté serveur)
   useEffect(() => {
-    if (sessionStorage.getItem('admin_auth') !== 'true') {
-      navigate('/admin/login');
-    }
+    const session = (() => { try { return JSON.parse(sessionStorage.getItem('admin_session')); } catch { return null; } })();
+    if (!session?.id) { navigate('/admin/login'); return; }
+    verifyAdminSession(session.id).then(valid => {
+      if (!valid) { sessionStorage.clear(); navigate('/admin/login'); }
+    }).catch(() => { sessionStorage.clear(); navigate('/admin/login'); });
   }, [navigate]);
 
   const handleLogout = () => {

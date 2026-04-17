@@ -26,6 +26,15 @@ export async function loginEleve(identifiant, password) {
   return data;
 }
 
+export async function verifyEleveSession(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/rpc/verify_eleve_session`,
+    { method: 'POST', headers: ANON_HEADERS, body: JSON.stringify({ p_id: eleveId }) }
+  );
+  if (!res.ok) return false;
+  return await res.json();
+}
+
 /** Déconnexion élève */
 export function logoutEleve() {
   sessionStorage.removeItem('eleve_user');

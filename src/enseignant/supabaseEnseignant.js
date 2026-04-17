@@ -22,6 +22,15 @@ export async function loginEnseignant(identifiant, password) {
   return data;
 }
 
+export async function verifyEnseignantSession(enseignantId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/rpc/verify_enseignant_session`,
+    { method: 'POST', headers: ANON_HEADERS, body: JSON.stringify({ p_id: enseignantId }) }
+  );
+  if (!res.ok) return false;
+  return await res.json();
+}
+
 export function logoutEnseignant() {
   sessionStorage.removeItem('enseignant_user');
 }
