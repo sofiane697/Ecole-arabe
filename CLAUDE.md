@@ -5,8 +5,6 @@
 ENT (Espace Numérique de Travail) pour une école d'arabe. Site vitrine + 3 portails (admin, enseignant, élève).
 Stack : **React 18** (CRA), **React Router v6**, CSS-in-JS, **Supabase** (REST + Storage), **DOMPurify**.
 
-Transformation SaaS multi-école en cours — voir `BRIEF_ENT_MULTI_ECOLE.md`, `plan.md`, `migration.sql`.
-
 ## Structure
 
 ```
