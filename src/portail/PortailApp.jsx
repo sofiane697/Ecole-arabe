@@ -2,7 +2,9 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import PORTAIL_STYLES from './portailStyles';
 import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession } from './supabasePortail';
-import { AnimatePresence, motion, pageVariants } from '../animations';
+import { AnimatePresence, motion, pageVariants, staggerContainer } from '../animations';
+
+const LETTER_SPRING = { type: 'spring', stiffness: 280, damping: 20, mass: 0.6 };
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -26,12 +28,6 @@ const BG_LETTERS = [
 ];
 
 const TOPBAR_KEYFRAMES = `
-@keyframes topbarLetterIn {
-  0%   { opacity:0; transform:translateY(-14px) scale(0.85); }
-  60%  { transform:translateY(3px) scale(1.05); }
-  80%  { transform:translateY(-1px) scale(0.98); }
-  100% { opacity:1; transform:translateY(0) scale(1); }
-}
 @keyframes topbarLetterFloat {
   0%,100% { transform:translateY(0); }
   50%      { transform:translateY(-4px); }
@@ -68,11 +64,12 @@ function TopbarFunTitle({ title, emoji }) {
   return (
     <>
       <style>{TOPBAR_KEYFRAMES}</style>
-      <span className="portail-topbar-fun-title" style={{
-        display:'inline-flex', alignItems:'center', gap:8,
-        fontFamily:"'Nunito','Inter',sans-serif",
-        fontSize:40, fontWeight:900,
-      }}>
+      <motion.span
+        className="portail-topbar-fun-title"
+        style={{ display:'inline-flex', alignItems:'center', gap:8, fontFamily:"'Nunito','Inter',sans-serif", fontSize:40, fontWeight:900 }}
+        variants={{ hidden:{}, visible:{ transition:{ staggerChildren: 0.04, delayChildren: 0.05 } } }}
+        initial="hidden" animate="visible"
+      >
         {/* Emoji gauche */}
         <span style={{ fontSize:28, display:'inline-block', animation:'topbarBubble 2.5s ease-in-out infinite' }}>{emoji}</span>
         {/* Lettres animées */}
@@ -80,15 +77,22 @@ function TopbarFunTitle({ title, emoji }) {
           <span key={wi} style={{ display:'inline-flex', gap:0 }}>
             {word.split('').map((char) => {
               const color = FUN_COLORS[ci % FUN_COLORS.length];
-              const delay = `${ci * 0.04}s`;
+              const floatDur = `${2.2 + (ci % 3) * 0.4}s`;
               ci++;
               return (
-                <span key={ci} style={{
-                  color,
-                  textShadow:`0 2px 10px ${color}55`,
-                  display:'inline-block',
-                  animation:`topbarLetterIn 0.5s cubic-bezier(0.22,1,0.36,1) ${delay} both, topbarLetterFloat ${2.2 + (ci % 3) * 0.4}s ease-in-out ${delay} infinite`,
-                }}>{char}</span>
+                /* motion.span gère l'entrée (opacity+y+scale), span interne gère le float CSS sans conflit */
+                <motion.span
+                  key={ci}
+                  style={{ display:'inline-block', color, textShadow:`0 2px 10px ${color}55` }}
+                  variants={{
+                    hidden:  { opacity: 0, y: -14, scale: 0.85 },
+                    visible: { opacity: 1, y: 0,   scale: 1, transition: LETTER_SPRING },
+                  }}
+                >
+                  <span style={{ display:'inline-block', animation:`topbarLetterFloat ${floatDur} ease-in-out infinite` }}>
+                    {char}
+                  </span>
+                </motion.span>
               );
             })}
           </span>
@@ -96,7 +100,7 @@ function TopbarFunTitle({ title, emoji }) {
         {/* Étoiles droite */}
         <span className="portail-topbar-fun-stars" style={{ fontSize:22, display:'inline-block', animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
         <span className="portail-topbar-fun-stars" style={{ fontSize:18, display:'inline-block', animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
-      </span>
+      </motion.span>
     </>
   );
 }

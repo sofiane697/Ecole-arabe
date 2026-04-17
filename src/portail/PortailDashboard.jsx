@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchModulesEleve, fetchEleveNiveauScolaireId } from './supabasePortail';
-import { motion, staggerContainer, fadeUp, cardHover, tapScale } from '../animations';
+import { motion, AnimatePresence, staggerContainer, fadeUp, cardHover, tapScale } from '../animations';
+
+const DASH_SPRING = { type: 'spring', stiffness: 80, damping: 18, mass: 0.8 };
+const EASE_OUT = [0.22, 1, 0.36, 1];
 
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
 
 const FUN_KEYFRAMES = `
-@keyframes funTitleIn {
-  0%   { opacity:0; transform:translateY(-18px) scale(0.92); }
-  60%  { transform:translateY(4px) scale(1.02); }
-  80%  { transform:translateY(-2px) scale(0.99); }
-  100% { opacity:1; transform:translateY(0) scale(1); }
-}
 @keyframes starSpin {
   0%   { transform:rotate(0deg) scale(1); }
   50%  { transform:rotate(180deg) scale(1.3); }
@@ -32,11 +29,12 @@ function FunTitle() {
   return (
     <>
       <style>{FUN_KEYFRAMES}</style>
-      <div style={{
-        fontFamily:"'Nunito', 'Inter', sans-serif",
-        marginBottom: 24,
-        animation: 'funTitleIn 0.75s cubic-bezier(0.22,1,0.36,1) both',
-      }}>
+      <motion.div
+        style={{ fontFamily:"'Nunito', 'Inter', sans-serif", marginBottom: 24 }}
+        initial={{ opacity: 0, y: -18, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0,   scale: 1    }}
+        transition={{ ...DASH_SPRING }}
+      >
         <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
           <span style={{ fontSize:20, animation:'bubbleFloat 2.5s ease-in-out infinite' }}>📚</span>
           {/* "Mes" lettre par lettre en couleurs rotatives */}
@@ -72,7 +70,7 @@ function FunTitle() {
             }}>●</span>
           ))}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -93,25 +91,15 @@ const S = {
 };
 
 const GREETING_KEYFRAMES = `
-@keyframes salamSpreadArabic {
-  0%   { opacity:0; transform: translateX(60px); filter: blur(6px); }
-  40%  { opacity:1; filter: blur(0); }
-  100% { opacity:1; transform: translateX(0); }
-}
-@keyframes salamSpreadName {
-  0%   { opacity:0; transform: translateX(-60px); filter: blur(6px); }
-  40%  { opacity:1; filter: blur(0); }
-  100% { opacity:1; transform: translateX(0); }
-}
 @keyframes salamGlow {
   0%,100% { text-shadow: 0 0 0px transparent; }
   50%      { text-shadow: 0 0 20px rgba(91,168,122,.5); }
 }
 `;
 
+const salamTransition = { duration: 0.75, ease: EASE_OUT };
+
 function SalamGreeting({ prenom }) {
-  // useState lazy init : lu une seule fois au montage du composant
-  // _salamHasAnimated persiste pendant la navigation React Router mais reset au refresh
   const [shouldAnimate] = useState(() => {
     if (_salamHasAnimated) return false;
     _salamHasAnimated = true;
@@ -123,32 +111,29 @@ function SalamGreeting({ prenom }) {
       <style>{GREETING_KEYFRAMES}</style>
       <div style={{ display:'flex', alignItems:'baseline', gap:12, flexWrap:'wrap', overflow:'hidden' }}>
         {prenom && (
-          <span style={{
-            fontFamily: 'var(--p-font-display)', fontSize: 22, fontWeight: 700, color: 'var(--p-fg)',
-            display: 'inline-block',
-            animation: shouldAnimate
-              ? 'salamSpreadName .75s cubic-bezier(0.22,1,0.36,1) .1s both'
-              : 'none',
-          }}>
+          <motion.span
+            style={{ fontFamily:'var(--p-font-display)', fontSize:22, fontWeight:700, color:'var(--p-fg)', display:'inline-block' }}
+            initial={shouldAnimate ? { opacity:0, x:-60, filter:'blur(6px)' } : false}
+            animate={{ opacity:1, x:0, filter:'blur(0px)' }}
+            transition={{ ...salamTransition, delay: 0.1 }}
+          >
             {prenom}
-          </span>
+          </motion.span>
         )}
-        <span style={{
-          fontFamily: "'Scheherazade New', serif",
-          fontSize: 36, fontWeight: 700,
-          color: '#5BA87A',
-          lineHeight: 1.3, direction: 'rtl',
-          display: 'inline-block',
-          animation: shouldAnimate
-            ? 'salamSpreadArabic .75s cubic-bezier(0.22,1,0.36,1) .1s both, salamGlow 3s ease-in-out 1s infinite'
-            : 'salamGlow 3s ease-in-out infinite',
-        }}>
+        <motion.span
+          style={{ fontFamily:"'Scheherazade New', serif", fontSize:36, fontWeight:700, color:'#5BA87A', lineHeight:1.3, direction:'rtl', display:'inline-block', animation:'salamGlow 3s ease-in-out 1s infinite' }}
+          initial={shouldAnimate ? { opacity:0, x:60, filter:'blur(6px)' } : false}
+          animate={{ opacity:1, x:0, filter:'blur(0px)' }}
+          transition={{ ...salamTransition, delay: 0.1 }}
+        >
           السلام عليكم
-        </span>
-        <span style={{
-          fontSize: 28, display: 'inline-block',
-          animation: shouldAnimate ? 'salamSpreadArabic .75s cubic-bezier(0.22,1,0.36,1) .25s both' : 'none',
-        }}>👋</span>
+        </motion.span>
+        <motion.span
+          style={{ fontSize:28, display:'inline-block' }}
+          initial={shouldAnimate ? { opacity:0, x:60, filter:'blur(6px)' } : false}
+          animate={{ opacity:1, x:0, filter:'blur(0px)' }}
+          transition={{ ...salamTransition, delay: 0.25 }}
+        >👋</motion.span>
       </div>
     </>
   );

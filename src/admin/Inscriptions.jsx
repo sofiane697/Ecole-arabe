@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence, panelVariants } from '../animations';
 import {
   fetchInscriptions, updateInscriptionStatut,
   fetchAllClasses,
@@ -315,7 +316,12 @@ export default function Inscriptions() {
             const next = STATUT_NEXT[selected.statut] || 'nouveau';
             const nextCfg = STATUT_CFG[next] || { label: next };
             return (
-              <div className="insc-detail-content">
+              <motion.div
+                className="insc-detail-content"
+                key={selected.id}
+                variants={panelVariants}
+                initial="hidden" animate="visible" exit="exit"
+              >
                 {/* Header */}
                 <div className="insc-detail-header">
                   <div className="insc-detail-avatar">
@@ -504,7 +510,7 @@ export default function Inscriptions() {
                   </div>
                 )}
 
-              </div>
+              </motion.div>
             );
           })()}
         </div>

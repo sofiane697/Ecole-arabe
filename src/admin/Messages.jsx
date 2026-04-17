@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchMessages, updateMessageLu, deleteMessage } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
+import { motion, AnimatePresence, panelVariants } from '../animations';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 const PAGE_SIZE = 25;
@@ -323,7 +324,13 @@ export default function Messages() {
               <p className="msg-reader-empty-sub">Cliquez sur un message pour le lire</p>
             </div>
           ) : (
-            <div className="msg-reader-content" style={{ maxHeight:'calc(100vh - 220px)', overflowY:'auto' }}>
+            <motion.div
+              className="msg-reader-content"
+              key={selected?.id}
+              style={{ maxHeight:'calc(100vh - 220px)', overflowY:'auto' }}
+              variants={panelVariants}
+              initial="hidden" animate="visible" exit="exit"
+            >
               {/* Header */}
               <div className="msg-reader-header">
                 <div className="msg-reader-avatar">
@@ -405,7 +412,7 @@ export default function Messages() {
                   <IconTrash /> Supprimer
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

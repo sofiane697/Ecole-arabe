@@ -743,20 +743,6 @@ const PORTAIL_STYLES = `
     transform: scale(0.97);
   }
 
-  /* ─── Animation d'entrée — stagger contenu ─── */
-  @keyframes portailSlideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .portail-content > * {
-    animation: portailSlideUp 0.4s var(--p-ease-out) both;
-  }
-  .portail-content > *:nth-child(1) { animation-delay: 0s; }
-  .portail-content > *:nth-child(2) { animation-delay: 0.06s; }
-  .portail-content > *:nth-child(3) { animation-delay: 0.12s; }
-  .portail-content > *:nth-child(4) { animation-delay: 0.18s; }
-  .portail-content > *:nth-child(5) { animation-delay: 0.24s; }
-
   /* ─── Module cards hover shadow ─── */
   .portail-module-card {
     box-shadow: var(--p-shadow-sm);

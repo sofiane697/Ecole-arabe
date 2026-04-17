@@ -1140,7 +1140,6 @@ const ADMIN_STYLES = `
 
   .insc-detail-content {
     padding: 1.8rem;
-    animation: adminFadeIn 0.3s var(--a-ease-out);
   }
 
   .insc-detail-header {
@@ -1495,11 +1494,6 @@ const ADMIN_STYLES = `
 
   .msg-reader-content {
     padding: 1.8rem;
-    animation: adminFadeIn 0.3s var(--a-ease-out);
-  }
-  @keyframes adminFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
   }
 
   .msg-reader-header {
@@ -1884,35 +1878,7 @@ const ADMIN_STYLES = `
     transform: scale(0.97);
   }
 
-  /* ─── Animation d'entree — stagger contenu ─── */
-  @keyframes adminSlideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .admin-content > * {
-    animation: adminSlideUp 0.4s var(--a-ease-out) both;
-  }
-  .admin-content > *:nth-child(1) { animation-delay: 0s; }
-  .admin-content > *:nth-child(2) { animation-delay: 0.06s; }
-  .admin-content > *:nth-child(3) { animation-delay: 0.06s; }
-  .admin-content > *:nth-child(4) { animation-delay: 0.12s; }
-  .admin-content > *:nth-child(5) { animation-delay: 0.18s; }
-
-  /* ─── Modal animations ─── */
-  @keyframes adminOverlayIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes adminModalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(12px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  .admin-modal-overlay {
-    animation: adminOverlayIn 0.2s ease-out;
-  }
-  .admin-modal-card {
-    animation: adminModalIn 0.3s var(--a-ease-out);
-  }
+  /* ─── Skeleton loading ─── */
 
   /* ─── Skeleton loading ─── */
   @keyframes adminShimmer {

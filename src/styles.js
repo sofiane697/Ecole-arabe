@@ -129,6 +129,14 @@ const STYLES = `
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
+  @keyframes slideDownFade {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pageFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
 
   /* ─── Scroll reveal ─── */
   .sr {
@@ -466,7 +474,6 @@ const STYLES = `
     padding: 0.45rem 1.1rem 0.45rem 0.9rem;
     border-radius: 980px;
     margin-bottom: 1.2rem;
-    animation: scaleIn 0.8s 0.1s var(--ease-out) both;
   }
   .hero-eyebrow::before {
     content: '';
@@ -482,7 +489,6 @@ const STYLES = `
     align-items: flex-start;
     gap: 0.2rem;
     margin-bottom: 0.4rem;
-    animation: fadeUp 1s 0.15s var(--ease-out) both;
   }
   .hero-title-fr-name {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
@@ -512,7 +518,6 @@ const STYLES = `
     font-style: italic;
     color: var(--fg-mid);
     margin-bottom: 2rem;
-    animation: fadeUp 1s 0.3s var(--ease-out) both;
   }
   html.dark .hero-title-fr { color: var(--fg-mid); }
   .hero-desc {
@@ -521,14 +526,12 @@ const STYLES = `
     color: var(--fg-mid);
     max-width: 480px;
     margin-bottom: 1.8rem;
-    animation: fadeUp 1s 0.45s var(--ease-out) both;
   }
   html.dark .hero-desc { color: var(--fg-mid); }
   .hero-actions {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
-    animation: fadeUp 1s 0.6s var(--ease-out) both;
   }
 
   .scroll-hint {
@@ -539,7 +542,7 @@ const STYLES = `
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    animation: float 2.5s ease infinite;
+    animation: float 2.5s ease 1.8s infinite;
   }
   .scroll-hint-line {
     width: 1px;

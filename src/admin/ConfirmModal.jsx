@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion, AnimatePresence, overlayVariants, modalVariants } from '../animations';
 
 /* ─── Icône SVG poubelle ───────────────────────────────────────────────────── */
 const IconTrash = () => (
@@ -20,11 +21,6 @@ const IconWarn = () => (
   </svg>
 );
 
-const KEYFRAMES = `
-@keyframes cmOverlayIn  { from { opacity:0 }          to { opacity:1 } }
-@keyframes cmCardIn     { from { opacity:0; transform:scale(.92) translateY(12px) } to { opacity:1; transform:scale(1) translateY(0) } }
-`;
-
 /* ─── Styles ────────────────────────────────────────────────────────────────── */
 const S = {
   overlay: {
@@ -34,7 +30,6 @@ const S = {
     WebkitBackdropFilter: 'blur(8px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     zIndex: 2000,
-    animation: 'cmOverlayIn .18s ease',
   },
   card: {
     background: 'var(--a-bg-card)',
@@ -44,7 +39,6 @@ const S = {
     width: '100%', maxWidth: 400,
     textAlign: 'center',
     boxShadow: '0 24px 60px rgba(0,0,0,.4)',
-    animation: 'cmCardIn .22s cubic-bezier(0.22,1,0.36,1)',
   },
   iconWrap: (color) => ({
     width: 64, height: 64, borderRadius: '50%',
@@ -124,10 +118,14 @@ export default function ConfirmModal({
   const color = danger ? 'var(--a-red)' : 'var(--a-gold)';
 
   return (
-    <>
-      <style>{KEYFRAMES}</style>
-      <div style={S.overlay} onClick={onCancel}>
-        <div style={S.card} onClick={e => e.stopPropagation()}>
+    <AnimatePresence>
+      <motion.div
+        style={S.overlay}
+        variants={overlayVariants}
+        initial="hidden" animate="visible" exit="exit"
+        onClick={onCancel}
+      >
+        <motion.div style={S.card} variants={modalVariants} onClick={e => e.stopPropagation()}>
 
           {/* Icône */}
           <div style={S.iconWrap(color)}>
@@ -152,8 +150,8 @@ export default function ConfirmModal({
             </button>
           </div>
 
-        </div>
-      </div>
-    </>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

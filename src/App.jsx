@@ -2,7 +2,6 @@ import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react
 import STYLES from './styles';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
-import CinematicIntro from './CinematicIntro';
 import { motion, Reveal, staggerContainer, fadeUp, tapScale, cardHover } from './animations';
 
 // ─── Palettes de couleurs ─────────────────────────────────────────────────────
@@ -480,13 +479,34 @@ function PreInscriptionModal({ cours, onClose }) {
   );
 }
 
+// ─── Variantes d'entrée page ──────────────────────────────────────────────────
+const SPRING = { type: 'spring', stiffness: 60, damping: 18, mass: 0.8 };
+const EASE_OUT = [0.22, 1, 0.36, 1];
+
+const navVariants = {
+  hidden:  { opacity: 0, y: -24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } },
+};
+
+const heroContainer = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.13, delayChildren: 0.15 } },
+};
+
+const heroItem = {
+  hidden:  { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { ...SPRING } },
+};
+
+const heroItemScale = {
+  hidden:  { opacity: 0, scale: 0.88, y: 10 },
+  visible: { opacity: 1, scale: 1,    y: 0,  transition: { ...SPRING } },
+};
+
 /* ══════════════════════════════════════════════════════
    APP
 ══════════════════════════════════════════════════════ */
 export default function App() {
-  /* — Intro cinématique — */
-  const [introPlayed, setIntroPlayed] = useState(false);
-
   /* — État global — */
   const [menuOpen, setMenuOpen]     = useState(false);
   const [formData, setFormData]     = useState({ prenom: '', nom: '', telephone: '', email: '', cours: '', message: '' });
@@ -604,13 +624,10 @@ export default function App() {
   ════════════════════════════════════════════════ */
   return (
     <>
-      {/* ── Intro cinématique ── */}
-      {!introPlayed && <CinematicIntro onComplete={() => setIntroPlayed(true)} />}
-
       {/* ─────────────────────────────
           NAVIGATION
       ───────────────────────────── */}
-      <nav className="nav">
+      <motion.nav className="nav" variants={navVariants} initial="hidden" animate="visible">
 
         {/* Logo */}
         <button className="logo" onClick={() => goTo('accueil')}>
@@ -656,7 +673,7 @@ export default function App() {
           </button>
         </div>
 
-      </nav>
+      </motion.nav>
 
 
       {/* ─────────────────────────────
@@ -688,27 +705,32 @@ export default function App() {
         <div className="hero-glow" />
         <HeroDeco />
 
-        <div className="hero-inner">
-          <div className="hero-eyebrow">Bienvenue à l'Institut As-Safaa</div>
-          <div className="hero-title-row">
+        <motion.div className="hero-inner" variants={heroContainer} initial="hidden" animate="visible">
+          <motion.div className="hero-eyebrow" variants={heroItemScale}>Bienvenue à l'Institut As-Safaa</motion.div>
+          <motion.div className="hero-title-row" variants={heroItem}>
             <span className="hero-title-fr-name">Institut As-Safaa</span>
             <h1 className="hero-title-ar">الصفاء</h1>
-          </div>
-          <p  className="hero-title-fr">Transmettre le savoir, éclairer les cœurs</p>
-          <p  className="hero-desc">
+          </motion.div>
+          <motion.p className="hero-title-fr" variants={heroItem}>Transmettre le savoir, éclairer les cœurs</motion.p>
+          <motion.p className="hero-desc" variants={heroItem}>
             Une institution d'excellence dédiée à l'enseignement de la lecture du Coran,
             aux sciences islamiques et à la langue arabe — pour enfants et adultes.
-          </p>
-          <div className="hero-actions">
+          </motion.p>
+          <motion.div className="hero-actions" variants={heroItem}>
             <motion.button className="btn-fill" onClick={() => goTo('tarifs')} {...tapScale}>Découvrir les cours</motion.button>
             <motion.a href="/portail/login" className="btn-outline" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center'}} {...tapScale}>Mon portail</motion.a>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="scroll-hint">
+        <motion.div
+          className="scroll-hint"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1.1, ease: EASE_OUT }}
+        >
           <div className="scroll-hint-line" />
           <span className="scroll-hint-text">Défiler</span>
-        </div>
+        </motion.div>
       </section>
 
 

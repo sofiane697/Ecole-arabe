@@ -40,6 +40,37 @@ export const staggerContainer = {
   visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
 };
 
+// ─── Entrée contenu de page (remplace adminSlideUp / portailSlideUp CSS) ────
+export const contentContainer = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
+
+export const slideUp = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+};
+
+// ─── Modales (remplace adminOverlayIn / adminModalIn / cmOverlayIn / cmCardIn) ─
+export const overlayVariants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.18, ease: 'easeOut' } },
+  exit:    { opacity: 0, transition: { duration: 0.15, ease: 'easeIn'  } },
+};
+
+export const modalVariants = {
+  hidden:  { opacity: 0, scale: 0.92, y: 12 },
+  visible: { opacity: 1, scale: 1,    y: 0,  transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, scale: 0.95, y: 8,  transition: { duration: 0.15, ease: 'easeIn'  } },
+};
+
+// ─── Panneau détail latéral (remplace adminFadeIn CSS) ──────────────────────
+export const panelVariants = {
+  hidden:  { opacity: 0, y: 8  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, y: 4, transition: { duration: 0.2, ease: 'easeIn'  } },
+};
+
 // ─── Composants prêts à l'emploi ────────────────────────────────────────────
 export function PageTransition({ children, style, className }) {
   return (
