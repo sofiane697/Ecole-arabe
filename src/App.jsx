@@ -646,7 +646,7 @@ export default function App() {
      RENDU
   ════════════════════════════════════════════════ */
   return (
-    <>
+    <div className="site-root">
       {/* ─────────────────────────────
           NAVIGATION
       ───────────────────────────── */}
@@ -1143,6 +1143,6 @@ export default function App() {
         onChange={(t) => { applyTheme(t); setThemeId(t.id); }}
       />
 
-    </>
+    </div>
   );
 }

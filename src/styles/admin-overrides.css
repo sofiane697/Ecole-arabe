@@ -167,6 +167,16 @@
   gap: 1rem;
 }
 
+/* ─── Enseignant Login — wrapper racine deux colonnes ─── */
+/* Le div racine porte admin-root + h-screen + flex (Tailwind).
+   On force flex-direction:row ici pour éviter tout écrasement par cascade. */
+.admin-root.ens-login-root {
+  display: flex !important;
+  flex-direction: row !important;
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* ─── Login Page ─── */
 .admin-login-page {
   min-height: 100vh;
@@ -519,6 +529,7 @@
 /* ─── Layout Admin ─── */
 .admin-layout {
   display: flex;
+  flex-direction: row; /* Sidebar gauche + main droite — ne jamais laisser au défaut implicite */
   min-height: 100vh;
   background: var(--a-bg);
   background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(var(--a-gold-rgb),0.03) 0%, transparent 60%);

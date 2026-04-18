@@ -428,6 +428,7 @@ html.dark .btn-fill:hover { box-shadow: 0 8px 25px rgba(191,138,48,0.25); }
   border-radius: 980px;
   cursor: pointer;
   transition: all 0.35s var(--ease);
+  text-decoration: none;
 }
 .btn-outline:hover {
   border-color: var(--gold);

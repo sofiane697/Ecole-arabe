@@ -781,3 +781,44 @@
 .portail-bg-letter[data-anim="4"] { animation: bgFloat4 var(--dur) ease-in-out var(--delay) infinite; }
 .portail-root:not(.portail-light) .portail-bg-letter { opacity: 0 !important; }
 .portail-root:not(.portail-light) .portail-module-bg-letter { opacity: 0 !important; }
+
+/* ─── Correctif migration CSS-in-JS → Tailwind ─── */
+/* Force le layout côte-à-côte sur la page login du portail élève.
+   La classe Tailwind `flex` peut être purgée ou écrasée par un reset global ;
+   on garantit ici les propriétés critiques via des sélecteurs CSS ciblés. */
+
+/* Div racine de PortailLogin : flex-row garanti */
+.admin-root.h-screen,
+div.admin-root[class*="h-screen"] {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+/* Panneau gauche (BrandPanel) : 50 % en largeur, jamais en colonne */
+.portail-brand-panel {
+  flex-shrink: 0;
+  width: 50% !important;
+  min-height: 100vh;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Panneau droit (formulaire) : occupe l'espace restant */
+.portail-form-panel {
+  flex: 1 1 0% !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile (≤ 767px) : BrandPanel caché, form pleine largeur */
+@media (max-width: 767px) {
+  .portail-brand-panel { display: none !important; }
+  .portail-form-panel  {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    padding: 24px 20px !important;
+  }
+}

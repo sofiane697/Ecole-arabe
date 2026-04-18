@@ -58,14 +58,23 @@ html.theme-transition *::after {
 /* ─── Base ─── */
 html { scroll-behavior: smooth; }
 body {
+  /* Styles neutres uniquement — ne pas mettre background/color ici :
+     ils interféreraient avec les portails admin/enseignant/élève
+     qui ont leurs propres variables CSS (--a-bg, --a-fg, etc.).
+     Les styles visuels du site public sont scopés sous .site-root. */
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Site public uniquement — scopé sous .site-root ─── */
+.site-root {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 400;
   background: var(--bg);
   color: var(--fg);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
+  min-height: 100vh;
 }
 
 ::-webkit-scrollbar { width: 6px; }

@@ -198,7 +198,7 @@ export default function EnseignantLogin() {
 
   // Classes Tailwind pour styles statiques
   const CL = {
-    page:       'h-screen flex overflow-hidden',
+    page:       'h-screen flex flex-row overflow-hidden',
     card:       'rounded-[18px] py-10 px-9 w-full max-w-[400px] box-border overflow-hidden',
     brand:      'text-center mb-8',
     brandArabic:'block font-arabic text-[28px] leading-[1.3]',
@@ -228,7 +228,7 @@ export default function EnseignantLogin() {
   if (mustChange) {
     const allValid = pwdErrors.length === 0 && newPwd.length > 0 && newPwd === confirmPwd;
     return (
-      <div className={`admin-root ${CL.page}`} style={S.page}>
+      <div className={`admin-root ens-login-root ${CL.page}`} style={S.page}>
         <BrandPanel subtitle="Première connexion" />
         <div
           className="ens-form-panel flex-1 flex items-center justify-center p-10"
@@ -290,7 +290,7 @@ export default function EnseignantLogin() {
 
   /* ── Vue connexion normale ── */
   return (
-    <div className={`admin-root ${CL.page}`} style={S.page}>
+    <div className={`admin-root ens-login-root ${CL.page}`} style={S.page}>
       <BrandPanel subtitle="Portail Enseignant" />
       <div
         className="ens-form-panel flex-1 flex items-center justify-center p-10"
