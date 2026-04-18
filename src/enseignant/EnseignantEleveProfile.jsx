@@ -18,14 +18,13 @@ function gradeFromScore(score) {
 }
 function GradeBadge({ score }) {
   const grade = gradeFromScore(score);
-  if (!grade) return <span className="text-a-fg-mid">—</span>;
+  if (!grade) return <span style={{ color:'var(--a-fg-mid)' }}>—</span>;
   return (
-    <span className="inline-flex items-center gap-2">
-      <span className="inline-flex items-center justify-center min-w-[40px] px-2.5 py-[3px] rounded-lg text-[13px] font-[800] tracking-[0.5px]"
-        style={{ background: grade.color + '22', color: grade.color }}>
+    <span style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
+      <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', minWidth:40, padding:'3px 10px', borderRadius:8, fontSize:13, fontWeight:800, letterSpacing:'0.5px', background: grade.color + '22', color: grade.color }}>
         {grade.label}
       </span>
-      <span className="text-xs text-a-fg-mid">{grade.libelle}</span>
+      <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>{grade.libelle}</span>
     </span>
   );
 }
@@ -48,11 +47,11 @@ function PieChart({ dist, total }) {
     return { ...seg, d, lx, ly, pct };
   });
   return (
-    <div className="mt-6 bg-a-bg-card border border-a-border rounded-a p-5 px-6 flex flex-wrap items-center gap-6">
-      <div className="w-full text-[11px] font-bold uppercase tracking-[1px] text-a-fg-light mb-1">
+    <div style={{ marginTop:16, background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius)', padding:'20px 24px', display:'flex', flexWrap:'wrap', alignItems:'center', gap:24 }}>
+      <div style={{ width:'100%', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'1px', color:'var(--a-fg-light)', marginBottom:4 }}>
         Récapitulatif des appréciations
       </div>
-      <svg width="180" height="180" viewBox="0 0 180 180" className="shrink-0">
+      <svg width="180" height="180" viewBox="0 0 180 180" style={{ flexShrink:0 }}>
         <filter id="ps2"><feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.12"/></filter>
         <g filter="url(#ps2)">
           {paths.map((seg, i) => <path key={i} d={seg.d} fill={seg.color} stroke="var(--a-bg-card)" strokeWidth="2"/>)}
@@ -61,17 +60,17 @@ function PieChart({ dist, total }) {
           <text key={i} x={seg.lx} y={seg.ly} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="11" fontWeight="800">{seg.pct}%</text>
         ))}
       </svg>
-      <div className="flex flex-col gap-2.5 flex-1 min-w-[140px]">
+      <div style={{ display:'flex', flexDirection:'column', gap:10, flex:1, minWidth:140 }}>
         {paths.map((seg, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-[3px] shrink-0" style={{ background: seg.color }}/>
-            <span className="text-[13px] font-bold text-a-fg min-w-[34px]">{seg.label}</span>
-            <span className="text-xs text-a-fg-mid flex-1">{seg.libelle}</span>
-            <span className="text-xs font-bold px-2 py-[2px] rounded-[6px]" style={{ background: seg.color + '22', color: seg.color }}>{seg.count} · {seg.pct}%</span>
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{ width:12, height:12, borderRadius:3, flexShrink:0, background: seg.color }}/>
+            <span style={{ fontSize:13, fontWeight:700, color:'var(--a-fg)', minWidth:34 }}>{seg.label}</span>
+            <span style={{ fontSize:12, color:'var(--a-fg-mid)', flex:1 }}>{seg.libelle}</span>
+            <span style={{ fontSize:12, fontWeight:700, padding:'2px 8px', borderRadius:6, background: seg.color + '22', color: seg.color }}>{seg.count} · {seg.pct}%</span>
           </div>
         ))}
-        <div className="mt-0.5 text-xs text-a-fg-mid border-t border-a-border pt-2">
-          Total : <strong className="text-a-fg">{total}</strong> évaluation{total > 1 ? 's' : ''}
+        <div style={{ marginTop:4, fontSize:12, color:'var(--a-fg-mid)', borderTop:'1px solid var(--a-border)', paddingTop:8 }}>
+          Total : <strong style={{ color:'var(--a-fg)' }}>{total}</strong> évaluation{total > 1 ? 's' : ''}
         </div>
       </div>
     </div>
@@ -88,7 +87,6 @@ function formatDateTime(str) {
   const d = new Date(str);
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-// Utilisé uniquement pour la progression (barres QCM)
 function scoreColor(pct) {
   if (pct >= 70) return 'var(--a-green)';
   if (pct >= 50) return 'var(--a-gold)';
@@ -96,63 +94,80 @@ function scoreColor(pct) {
 }
 
 const OBS_COLORS = {
-  'Général':       { bg: 'rgba(10,132,255,.1)',   color: '#0a84ff' },
-  'Comportement':  { bg: 'rgba(255,159,10,.12)',  color: 'var(--a-gold)' },
-  'Progression':   { bg: 'rgba(48,209,88,.1)',    color: 'var(--a-green)' },
+  'general':      { bg: 'rgba(10,132,255,.1)',  color: 'var(--a-blue)' },
+  'comportement': { bg: 'rgba(255,69,58,.1)',   color: 'var(--a-red)' },
+  'progression':  { bg: 'rgba(48,209,88,.1)',   color: 'var(--a-green)' },
 };
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles — 100% inline ─────────────────────────────────────────────────────
 const S = {
-  page:    'min-h-full flex flex-col gap-5',
-  backBtn: 'inline-flex items-center gap-1.5 bg-transparent border-none text-a-fg-mid text-[13px] font-medium cursor-pointer p-0 mb-1',
+  page:     { minHeight:'100%', display:'flex', flexDirection:'column', gap:16 },
+  backBtn:  { display:'inline-flex', alignItems:'center', gap:6, border:'none', background:'none', padding:0, cursor:'pointer', fontSize:13, fontWeight:500, color:'var(--a-fg-mid)', marginBottom:4, transition:'color .15s', fontFamily:'inherit' },
+
   // Header card
-  headerCard: 'bg-a-bg-card rounded-a border border-a-border py-5 px-6 flex items-center gap-5 flex-wrap',
-  avatar: 'w-14 h-14 rounded-full bg-a-gold text-white flex items-center justify-center text-xl font-[800] shrink-0 tracking-[-0.5px]',
-  headerInfo: 'flex-1 min-w-0',
-  headerName: { fontFamily: 'var(--a-font-display)', fontSize: 20, fontWeight: 800, color: 'var(--a-fg)', letterSpacing: '-0.4px' },
-  headerMeta: 'flex flex-wrap gap-x-4 gap-y-1.5 mt-1.5',
-  metaItem:   'text-[13px] text-a-fg-mid flex items-center gap-1',
-  identifiant:{ fontFamily: 'var(--a-font-mono)', fontWeight: 700, color: 'var(--a-gold)', fontSize: 14, background: 'rgba(191,138,48,.1)', padding: '2px 8px', borderRadius: 6 },
-  badge: (actif) => ({ padding: '3px 10px', borderRadius: 980, fontSize: 11, fontWeight: 700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
+  headerCard:   { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', overflow:'hidden', boxShadow:'0 2px 8px rgba(0,0,0,.06)' },
+  headerTop:    { display:'flex', alignItems:'center', gap:16, padding:'20px 24px' },
+  avatar:       { width:60, height:60, minWidth:60, borderRadius:'50%', background:'linear-gradient(135deg, var(--a-gold), #e8a93e)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:800, flexShrink:0, letterSpacing:'-0.03em', boxShadow:'0 4px 16px rgba(212,151,43,.3)' },
+  headerInfo:   { flex:1, minWidth:0 },
+  headerName:   { fontFamily:'var(--a-font-display)', fontSize:22, fontWeight:800, color:'var(--a-fg)', letterSpacing:'-0.5px', lineHeight:1.2 },
+  headerIdLine: { fontFamily:'var(--a-font-mono)', fontSize:12, color:'var(--a-fg-light)', letterSpacing:'0.05em', marginTop:4 },
+  badge: (actif) => ({ padding:'3px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(48,209,88,.12)' : 'rgba(255,69,58,.10)', color: actif ? 'var(--a-green)' : 'var(--a-red)', border:`1px solid ${actif ? 'rgba(48,209,88,.25)' : 'rgba(255,69,58,.22)'}`, flexShrink:0 }),
+  headerBottom: { display:'flex', flexWrap:'wrap', gap:8, padding:'12px 24px', background:'var(--a-bg)', borderTop:'1px solid var(--a-border)' },
+  metaItem:     { display:'inline-flex', alignItems:'center', gap:5, fontSize:13, color:'var(--a-fg-mid)', padding:'4px 12px', borderRadius:8, background:'var(--a-bg-card)', border:'1px solid var(--a-border)' },
+  metaItemGold: { display:'inline-flex', alignItems:'center', gap:5, fontSize:13, fontWeight:600, color:'var(--a-gold)', padding:'4px 12px', borderRadius:8, background:'rgba(191,138,48,.08)', border:'1px solid rgba(191,138,48,.22)' },
+
   // Tabs
-  tabsRow:  'flex gap-1 border-b border-a-border flex-wrap',
-  tab: (active) => ({ padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none', background: 'transparent', color: active ? 'var(--a-gold)' : 'var(--a-fg-mid)', borderBottom: active ? '2px solid var(--a-gold)' : '2px solid transparent', marginBottom: -1, transition: 'color .15s' }),
-  // Common
-  empty:   'text-center py-[50px] px-5 text-a-fg-mid text-sm',
-  loading: 'text-center py-[50px] px-5 text-a-fg-mid text-sm',
-  sectionTitle: 'text-[13px] font-bold text-a-fg-light uppercase tracking-[0.8px] mb-3.5',
-  statsRow: 'flex gap-3 flex-wrap mb-5',
-  statCard: 'bg-a-bg-card border border-a-border rounded-a-sm py-3.5 px-5 flex-[1_1_120px] min-w-[120px]',
-  statNum:  (c) => ({ fontFamily: 'var(--a-font-display)', fontSize: 26, fontWeight: 800, color: c }),
-  statLabel:'text-xs text-a-fg-mid mt-0.5',
-  // Progression
-  globalBarWrap: 'bg-a-bg-card border border-a-border rounded-a py-4 px-5 mb-5 flex items-center gap-4',
-  globalBarTrack:{ flex: 1, height: 10, background: 'rgba(127,127,127,.12)', borderRadius: 5, overflow: 'hidden' },
-  globalBarFill: (pct) => ({ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #30d158, #7DCFA0)', borderRadius: 5, transition: 'width .6s ease-out' }),
-  globalPct: 'text-base font-[800] text-a-green shrink-0 min-w-[44px] text-right',
-  tableWrap: 'bg-a-bg-card rounded-a border border-a-border overflow-hidden',
-  tableHead: (cols) => ({ display: 'grid', gridTemplateColumns: cols, padding: '10px 20px', borderBottom: '1px solid var(--a-border)', fontSize: 11, fontWeight: 700, color: 'var(--a-fg-light)', textTransform: 'uppercase', letterSpacing: '.7px' }),
-  tableRow:  (cols, i) => ({ display: 'grid', gridTemplateColumns: cols, padding: '13px 20px', borderBottom: '1px solid var(--a-border)', alignItems: 'center', background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }),
-  cell:      'text-[13px] text-a-fg overflow-hidden text-ellipsis whitespace-nowrap',
-  cellMid:   'text-[13px] text-a-fg-mid overflow-hidden text-ellipsis whitespace-nowrap',
+  tabsRow: { display:'flex', borderBottom:'1px solid var(--a-border)', background:'var(--a-bg-card)', borderRadius:'var(--a-radius) var(--a-radius) 0 0', padding:'0 8px', gap:0 },
+  tab: (active) => ({ padding:'12px 20px', fontSize:13, fontWeight:600, cursor:'pointer', border:'none', background:'transparent', color: active ? 'var(--a-gold)' : 'var(--a-fg-mid)', borderBottom: active ? '2px solid var(--a-gold)' : '2px solid transparent', marginBottom:-1, transition:'color .15s', fontFamily:'inherit' }),
+
+  // Section
+  sectionTitle: { fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 },
+  empty: { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'56px 24px', fontSize:14, color:'var(--a-fg-mid)', textAlign:'center', background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)' },
+  loading: { padding:40, textAlign:'center', fontSize:14, color:'var(--a-fg-mid)' },
+
+  // Stats grid
+  statsGrid: { display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10, marginBottom:16 },
+  statCard:  { background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'16px 20px', textAlign:'center' },
+  statNum: (c) => ({ fontFamily:'var(--a-font-display)', fontSize:28, fontWeight:800, color:c, lineHeight:1, letterSpacing:'-0.03em' }),
+  statLabel: { fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.07em', color:'var(--a-fg-light)', marginTop:5 },
+
+  // Global progression bar
+  globalBarCard: { background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius)', padding:'20px 24px', display:'flex', alignItems:'center', gap:24, marginBottom:16 },
+  globalPctBlock: { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minWidth:80 },
+  globalPctNum: (pct) => ({ fontSize:36, fontWeight:800, letterSpacing:'-0.04em', lineHeight:1, color: pct >= 100 ? 'var(--a-green)' : pct > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' }),
+  globalPctLabel: { fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--a-fg-light)', marginTop:4 },
+  globalBarTrack: { flex:1, height:8, background:'rgba(127,127,127,.1)', borderRadius:4, overflow:'hidden' },
+  globalBarFill: (pct) => ({ height:'100%', width:`${pct}%`, background: pct >= 100 ? 'var(--a-green)' : 'linear-gradient(90deg, var(--a-gold), #e8a93e)', borderRadius:4, transition:'width .6s ease-out' }),
+  globalBarText: { fontSize:13, color:'var(--a-fg-mid)' },
+
+  // Table
+  tableWrap: { background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius)', overflow:'hidden' },
+  tHead: (cols) => ({ display:'grid', gridTemplateColumns:cols, padding:'10px 20px', borderBottom:'1px solid var(--a-border)', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'.7px', background:'var(--a-bg)' }),
+  tRow:  (cols) => ({ display:'grid', gridTemplateColumns:cols, padding:'14px 20px', borderBottom:'1px solid var(--a-border)', alignItems:'center' }),
+
+  // Badges
   statusBadge: (status) => {
-    const map = { 'Terminé': ['rgba(48,209,88,.1)', 'var(--a-green)'], 'En cours': ['rgba(191,138,48,.12)', 'var(--a-gold)'], 'Non commencé': ['rgba(127,127,127,.1)', 'var(--a-fg-light)'], 'Sans QCM': ['rgba(127,127,127,.06)', 'var(--a-fg-light)'] };
-    const [bg, color] = map[status] || map['Sans QCM'];
-    return { display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: bg, color };
+    const map = {
+      'Terminé':      ['rgba(48,209,88,.10)',  'var(--a-green)',    'rgba(48,209,88,.22)'],
+      'En cours':     ['rgba(191,138,48,.10)', 'var(--a-gold)',     'rgba(191,138,48,.25)'],
+      'Non commencé': ['var(--a-bg)',          'var(--a-fg-light)', 'var(--a-border)'],
+      'Sans QCM':     ['var(--a-bg)',          'var(--a-fg-light)', 'var(--a-border)'],
+    };
+    const [bg, color, border] = map[status] || map['Sans QCM'];
+    return { display:'inline-block', padding:'3px 10px', borderRadius:20, fontSize:12, fontWeight:700, background:bg, color, border:`1px solid ${border}`, whiteSpace:'nowrap' };
   },
-  miniBarWrap: { height: 6, background: 'rgba(127,127,127,.12)', borderRadius: 3, overflow: 'hidden', width: '100%' },
-  miniBarFill: (pct, c) => ({ height: '100%', width: `${pct}%`, background: c, borderRadius: 3 }),
-  // Notes
-  absentBadge: { display: 'inline-block', padding: '3px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: 'rgba(255,69,58,.12)', color: '#ff453a' },
-  // Présence
-  presenceItem: 'flex gap-3.5 items-start py-3.5 px-5 border-b border-a-border',
-  presenceBadge: (type) => ({ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, flexShrink: 0, background: type === 'retard' ? 'rgba(240,180,41,.15)' : 'rgba(255,69,58,.1)', color: type === 'retard' ? 'var(--a-gold)' : 'var(--a-red)' }),
-  // Observations
-  obsItem:  'py-4 px-5 border-b border-a-border flex gap-3.5 items-start',
-  obsLeft:  'shrink-0 flex flex-col items-center gap-1',
-  obsBadge: (type) => { const c = OBS_COLORS[type] || OBS_COLORS['Général']; return { padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: c.bg, color: c.color, whiteSpace: 'nowrap' }; },
-  obsContenu: 'text-sm text-a-fg leading-relaxed flex-1',
-  obsDate:    'text-xs text-a-fg-light mt-1',
+  miniBar:  { height:5, background:'rgba(127,127,127,.1)', borderRadius:3, overflow:'hidden', width:'100%' },
+  miniBarF: (pct, c) => ({ height:'100%', width:`${pct}%`, background:c, borderRadius:3 }),
+  absentBadge: { display:'inline-block', padding:'3px 10px', borderRadius:8, fontSize:12, fontWeight:700, background:'rgba(255,69,58,.08)', color:'#ff453a', border:'1px solid rgba(255,69,58,.2)' },
+  presenceBadge: (type) => ({ display:'inline-flex', alignItems:'center', gap:5, padding:'4px 12px', borderRadius:20, fontSize:12, fontWeight:700, flexShrink:0, background: type === 'retard' ? 'rgba(240,180,41,.10)' : 'rgba(255,69,58,.08)', color: type === 'retard' ? 'var(--a-gold)' : 'var(--a-red)', border:`1px solid ${type === 'retard' ? 'rgba(240,180,41,.25)' : 'rgba(255,69,58,.2)'}` }),
+  obsBadge: (type) => { const c = OBS_COLORS[(type || '').toLowerCase()] || OBS_COLORS['general']; return { padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:700, background:c.bg, color:c.color, whiteSpace:'nowrap', border:`1px solid ${c.color}33`, flexShrink:0 }; },
+
+  // Rows
+  presenceItem: { display:'flex', alignItems:'flex-start', gap:14, padding:'14px 20px', borderBottom:'1px solid var(--a-border)' },
+  obsCard:      { padding:'16px 20px', borderBottom:'1px solid var(--a-border)', display:'flex', flexDirection:'column', gap:8 },
+  obsCardTop:   { display:'flex', alignItems:'center', gap:10 },
+  obsContenu:   { fontSize:14, color:'var(--a-fg)', lineHeight:1.6 },
+  obsDate:      { fontSize:12, color:'var(--a-fg-light)' },
 };
 
 const TABS = [
@@ -162,7 +177,7 @@ const TABS = [
   { key: 'observations',label: '💬 Observations' },
 ];
 
-const PROG_COLS = '2fr 80px 80px 110px 110px';
+const PROG_COLS = '2fr 90px 80px 120px 130px';
 const NOTES_COLS = '100px 1fr 220px';
 const PROG_COLS_HEAD = ['Module', 'Niveaux QCM', 'Réussis', 'Moy. score', 'Statut'];
 const NOTES_COLS_HEAD = ['Date', 'Évaluation', 'Appréciation'];
@@ -173,31 +188,26 @@ export default function EnseignantEleveProfile() {
   const navigate    = useNavigate();
   const location    = useLocation();
 
-  // Données passées via navigate state
   const stateClasseId = location.state?.classeId;
   const stateClasse   = location.state?.classe;
   const stateEleve    = location.state?.eleve;
 
-  const [activeTab,     setActiveTab]     = useState('progression');
-  const [loading,       setLoading]       = useState(true);
-  // Progression
-  const [progression,   setProgression]   = useState([]);
-  const [modules,       setModules]       = useState([]);
-  const [niveauxMap,    setNiveauxMap]    = useState({});
-  const [niveauxWithQCM,setNiveauxWithQCM]= useState(new Set());
-  // Notes
-  const [notes,         setNotes]         = useState([]);
-  const [evaluations,   setEvaluations]   = useState([]);
-  // Présence & Observations
-  const [presence,      setPresence]      = useState([]);
-  const [observations,  setObservations]  = useState([]);
+  const [activeTab,      setActiveTab]      = useState('progression');
+  const [loading,        setLoading]        = useState(true);
+  const [progression,    setProgression]    = useState([]);
+  const [modules,        setModules]        = useState([]);
+  const [niveauxMap,     setNiveauxMap]     = useState({});
+  const [niveauxWithQCM, setNiveauxWithQCM] = useState(new Set());
+  const [notes,          setNotes]          = useState([]);
+  const [evaluations,    setEvaluations]    = useState([]);
+  const [presence,       setPresence]       = useState([]);
+  const [observations,   setObservations]   = useState([]);
 
   useEffect(() => {
     if (!eleveId) return;
     let cancelled = false;
     (async () => {
       try {
-        // Chargement en parallèle : progression, modules, notes, présence, observations
         const [prog, mods, rawNotes, pres, obs, evals] = await Promise.all([
           fetchProgressionEleve(eleveId).catch(() => []),
           fetchModulesEnseignant().catch(() => []),
@@ -214,7 +224,6 @@ export default function EnseignantEleveProfile() {
         setObservations(obs);
         setEvaluations(evals);
 
-        // Pour chaque module : récupérer la hiérarchie niveaux
         const nivMap = {};
         await Promise.all(mods.map(async (m) => {
           try { nivMap[m.id] = await fetchAllNiveauxForModuleEns(m.id); }
@@ -223,7 +232,6 @@ export default function EnseignantEleveProfile() {
         if (cancelled) return;
         setNiveauxMap(nivMap);
 
-        // Batch QCM existence
         const allNivIds = Object.values(nivMap).flat().map(n => n.id);
         if (allNivIds.length > 0) {
           const withQCM = await fetchQCMExistenceEns(allNivIds);
@@ -235,23 +243,23 @@ export default function EnseignantEleveProfile() {
     return () => { cancelled = true; };
   }, [eleveId, stateClasseId]);
 
-  // ── Header élève ──────────────────────────────────────────────────────────
-  const eleve = stateEleve || {};
-  const initiales = ((eleve.prenom?.[0] || '') + (eleve.nom?.[0] || '')).toUpperCase();
+  // ── Données ──────────────────────────────────────────────────────────────────
+  const eleve      = stateEleve || {};
+  const initiales  = ((eleve.prenom?.[0] || '') + (eleve.nom?.[0] || '')).toUpperCase();
   const nomComplet = `${eleve.prenom || ''} ${eleve.nom || ''}`.trim() || '—';
   const dateInscrit = eleve.created_at
-    ? new Date(eleve.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? new Date(eleve.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
     : null;
 
-  // ── Calculs Progression ────────────────────────────────────────────────────
+  // ── Calculs Progression ───────────────────────────────────────────────────
   const isPassed = (nivId) =>
     niveauxWithQCM.has(nivId) && progression.some(p => p.niveau_id === nivId && p.reussi === true);
 
   const moduleStats = modules.map(m => {
-    const nivs = niveauxMap[m.id] || [];
-    const nivsAvecQCM = nivs.filter(n => niveauxWithQCM.has(n.id));
-    const reussis = nivsAvecQCM.filter(n => isPassed(n.id));
-    const scores  = reussis.map(n => {
+    const nivs         = niveauxMap[m.id] || [];
+    const nivsAvecQCM  = nivs.filter(n => niveauxWithQCM.has(n.id));
+    const reussis      = nivsAvecQCM.filter(n => isPassed(n.id));
+    const scores       = reussis.map(n => {
       const p = progression.find(p => p.niveau_id === n.id && p.reussi);
       return p?.score ?? 0;
     });
@@ -268,12 +276,11 @@ export default function EnseignantEleveProfile() {
   const globalPct   = totalQCM > 0 ? Math.round((totalReussi / totalQCM) * 100) : 0;
 
   // ── Calculs Notes ─────────────────────────────────────────────────────────
-  const evalMap = Object.fromEntries(evaluations.map(e => [e.id, e]));
+  const evalMap       = Object.fromEntries(evaluations.map(e => [e.id, e]));
   const notesWithEval = notes.map(n => ({ ...n, eval: evalMap[n.evaluation_id] }))
     .filter(n => n.eval)
     .sort((a, b) => new Date(b.eval.date_evaluation) - new Date(a.eval.date_evaluation));
 
-  // Distribution des appréciations pour le camembert
   const gradeDist = {};
   notesWithEval.filter(n => !n.absent && n.score != null).forEach(n => {
     const v = parseInt(n.score, 10);
@@ -288,34 +295,43 @@ export default function EnseignantEleveProfile() {
   const backUrl = stateClasseId ? `/enseignant/classe/${stateClasseId}` : '/enseignant/classes';
 
   return (
-    <div className={S.page}>
+    <div style={S.page}>
 
       {/* Bouton retour */}
-      <button className={S.backBtn} onClick={() => navigate(backUrl)}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <button style={S.backBtn} onClick={() => navigate(backUrl)}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         Retour {stateClasse ? `— ${stateClasse.nom}` : 'à la classe'}
       </button>
 
-      {/* Header élève */}
-      <div className={S.headerCard}>
-        <div className={S.avatar}>{initiales || '?'}</div>
-        <div className={S.headerInfo}>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span style={S.headerName}>{nomComplet}</span>
-            {eleve.actif !== undefined && <span style={S.badge(eleve.actif)}>{eleve.actif ? 'Actif' : 'Inactif'}</span>}
-          </div>
-          <div className={S.headerMeta}>
-            {eleve.identifiant && <span className={S.metaItem}><span style={S.identifiant}>{eleve.identifiant.toUpperCase()}</span></span>}
-            {stateClasse && <span className={S.metaItem}>🏫 {stateClasse.nom}</span>}
-            {dateInscrit  && <span className={S.metaItem}>📅 Inscrit le {dateInscrit}</span>}
-            {eleve.telephone    && <span className={S.metaItem}>📞 {eleve.telephone}</span>}
-            {eleve.email_contact && <span className={S.metaItem}>✉️ {eleve.email_contact}</span>}
+      {/* ── Header élève ─────────────────────────────────────────────────────── */}
+      <div style={S.headerCard}>
+        {/* Zone haute : avatar + nom + badge */}
+        <div style={S.headerTop}>
+          <div style={S.avatar}>{initiales || '?'}</div>
+          <div style={S.headerInfo}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+              <span style={S.headerName}>{nomComplet}</span>
+              {eleve.actif !== undefined && <span style={S.badge(eleve.actif)}>{eleve.actif ? 'Actif' : 'Inactif'}</span>}
+            </div>
+            {eleve.identifiant && (
+              <div style={S.headerIdLine}>{eleve.identifiant.toUpperCase()}</div>
+            )}
           </div>
         </div>
+
+        {/* Zone basse : méta-données */}
+        {(stateClasse || dateInscrit || eleve.telephone || eleve.email_contact) && (
+          <div style={S.headerBottom}>
+            {stateClasse         && <span style={S.metaItemGold}>🏫 {stateClasse.nom}</span>}
+            {dateInscrit         && <span style={S.metaItem}>📅 Inscrit le {dateInscrit}</span>}
+            {eleve.telephone     && <span style={S.metaItem}>📞 {eleve.telephone}</span>}
+            {eleve.email_contact && <span style={S.metaItem}>✉️ {eleve.email_contact}</span>}
+          </div>
+        )}
       </div>
 
-      {/* Tabs */}
-      <div className={S.tabsRow}>
+      {/* ── Tabs ─────────────────────────────────────────────────────────────── */}
+      <div style={S.tabsRow}>
         {TABS.map(t => (
           <button key={t.key} style={S.tab(activeTab === t.key)} onClick={() => setActiveTab(t.key)}>
             {t.label}
@@ -323,53 +339,64 @@ export default function EnseignantEleveProfile() {
         ))}
       </div>
 
-      {/* Contenu */}
+      {/* ── Contenu ──────────────────────────────────────────────────────────── */}
       {loading ? (
-        <div className={S.loading}>Chargement...</div>
+        <div style={S.loading}>Chargement...</div>
       ) : (
         <>
-          {/* ── TAB PROGRESSION ──────────────────────────────────── */}
+          {/* ── TAB PROGRESSION ──────────────────────────────────────────────── */}
           {activeTab === 'progression' && (
-            <div>
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+
               {/* Barre globale */}
-              <div className={S.sectionTitle}>Progression globale</div>
-              <div className={S.globalBarWrap}>
-                <div className="text-[13px] text-a-fg-mid shrink-0">
-                  {totalReussi} / {totalQCM} niveau{totalQCM > 1 ? 'x' : ''} réussi{totalReussi > 1 ? 's' : ''}
+              <div style={S.globalBarCard}>
+                <div style={S.globalPctBlock}>
+                  <div style={S.globalPctNum(globalPct)}>{globalPct}%</div>
+                  <div style={S.globalPctLabel}>progression</div>
                 </div>
-                <div style={S.globalBarTrack}>
-                  <div style={S.globalBarFill(globalPct)} />
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ marginBottom:8 }}>
+                    <span style={S.globalBarText}>
+                      {totalReussi} / {totalQCM} niveau{totalQCM > 1 ? 'x' : ''} réussi{totalReussi !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div style={S.globalBarTrack}>
+                    <div style={S.globalBarFill(globalPct)} />
+                  </div>
                 </div>
-                <span className={S.globalPct}>{globalPct}%</span>
               </div>
 
               {/* Table par module */}
-              <div className={S.sectionTitle}>Détail par module</div>
+              <div style={S.sectionTitle}>Détail par module</div>
               {moduleStats.length === 0 ? (
-                <div className={S.empty}>Aucun module disponible.</div>
+                <div style={S.empty}>Aucun module disponible.</div>
               ) : (
-                <div className={S.tableWrap}>
-                  <div style={S.tableHead(PROG_COLS)}>
+                <div style={S.tableWrap}>
+                  <div style={S.tHead(PROG_COLS)}>
                     {PROG_COLS_HEAD.map(h => <span key={h}>{h}</span>)}
                   </div>
-                  {moduleStats.map(({ m, nivsAvecQCM, reussis, moyScore, status }, i) => {
+                  {moduleStats.map(({ m, nivsAvecQCM, reussis, moyScore, status }) => {
                     const pct = nivsAvecQCM > 0 ? Math.round((reussis / nivsAvecQCM) * 100) : 0;
                     return (
-                      <div key={m.id} style={S.tableRow(PROG_COLS, i)}>
-                        <span className={S.cell}>{m.titre}</span>
-                        <span className={`${S.cellMid} text-center`}>{nivsAvecQCM}</span>
-                        <span className={`${S.cellMid} text-center`}>
-                          {reussis > 0 ? <span className="text-a-green font-bold">{reussis}</span> : reussis}
+                      <div key={m.id} style={S.tRow(PROG_COLS)}>
+                        <span style={{ fontSize:13, fontWeight:600, color:'var(--a-fg)' }}>{m.titre}</span>
+                        <span style={{ textAlign:'center', fontSize:13, color:'var(--a-fg-mid)' }}>
+                          {nivsAvecQCM > 0 ? nivsAvecQCM : <span style={{ color:'var(--a-fg-light)' }}>—</span>}
+                        </span>
+                        <span style={{ textAlign:'center', fontSize:13 }}>
+                          {reussis > 0
+                            ? <span style={{ fontWeight:700, color:'var(--a-green)' }}>{reussis}</span>
+                            : <span style={{ color:'var(--a-fg-light)' }}>0</span>}
                         </span>
                         <span>
                           {nivsAvecQCM > 0 ? (
                             <div>
-                              <div style={{ ...S.miniBarWrap, marginBottom: 3 }}>
-                                <div style={S.miniBarFill(pct, scoreColor(pct))} />
+                              <div style={{ ...S.miniBar, marginBottom:4 }}>
+                                <div style={S.miniBarF(pct, scoreColor(pct))} />
                               </div>
-                              <span className="text-[11px] font-semibold" style={{ color: scoreColor(pct) }}>{moyScore}%</span>
+                              <span style={{ fontSize:11, fontWeight:700, color: scoreColor(pct) }}>{moyScore}%</span>
                             </div>
-                          ) : <span className={S.cellMid}>—</span>}
+                          ) : <span style={{ color:'var(--a-fg-light)' }}>—</span>}
                         </span>
                         <span><span style={S.statusBadge(status)}>{status}</span></span>
                       </div>
@@ -380,46 +407,46 @@ export default function EnseignantEleveProfile() {
             </div>
           )}
 
-          {/* ── TAB NOTES ────────────────────────────────────────── */}
+          {/* ── TAB NOTES ────────────────────────────────────────────────────── */}
           {activeTab === 'notes' && (
-            <div>
-              {/* Résumé */}
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+
               {notesWithEval.length > 0 && (
-                <div className={S.statsRow}>
-                  <div className={S.statCard}>
+                <div style={{ ...S.statsGrid, gridTemplateColumns:`repeat(${Math.min(2 + GRADES.filter(g => gradeDist[g.value] > 0).length, 5)}, 1fr)` }}>
+                  <div style={S.statCard}>
                     <div style={S.statNum('var(--a-fg)')}>{notesWithEval.length}</div>
-                    <div className={S.statLabel}>Évaluation{notesWithEval.length > 1 ? 's' : ''}</div>
+                    <div style={S.statLabel}>Évaluation{notesWithEval.length > 1 ? 's' : ''}</div>
                   </div>
-                  <div className={S.statCard}>
+                  <div style={S.statCard}>
                     <div style={S.statNum('var(--a-red)')}>{notesWithEval.filter(n => n.absent).length}</div>
-                    <div className={S.statLabel}>Absence{notesWithEval.filter(n => n.absent).length > 1 ? 's' : ''} éval.</div>
+                    <div style={S.statLabel}>Absence{notesWithEval.filter(n => n.absent).length !== 1 ? 's' : ''} éval.</div>
                   </div>
                   {GRADES.filter(g => gradeDist[g.value] > 0).map(g => (
-                    <div key={g.value} className={S.statCard}>
-                      <div className="text-[26px] font-[800]" style={{ color: g.color }}>{gradeDist[g.value]}</div>
-                      <div className={S.statLabel}>{g.label} — {g.libelle}</div>
+                    <div key={g.value} style={S.statCard}>
+                      <div style={{ ...S.statNum(g.color) }}>{gradeDist[g.value]}</div>
+                      <div style={S.statLabel}>{g.label} — {g.libelle}</div>
                     </div>
                   ))}
                 </div>
               )}
 
               {notesWithEval.length === 0 ? (
-                <div className={S.empty}>
-                  <div className="text-4xl mb-2.5">📝</div>
+                <div style={S.empty}>
+                  <div style={{ fontSize:36, marginBottom:10 }}>📝</div>
                   {stateClasseId ? 'Aucune note enregistrée pour cet élève.' : 'Navigue depuis la fiche classe pour voir les notes.'}
                 </div>
               ) : (
                 <>
-                  <div className={S.tableWrap}>
-                    <div style={S.tableHead(NOTES_COLS)}>
+                  <div style={S.tableWrap}>
+                    <div style={S.tHead(NOTES_COLS)}>
                       {NOTES_COLS_HEAD.map(h => <span key={h}>{h}</span>)}
                     </div>
                     {notesWithEval.map((n, i) => {
                       const score = n.score != null ? parseInt(n.score, 10) : null;
                       return (
-                        <div key={`${n.evaluation_id}-${i}`} style={S.tableRow(NOTES_COLS, i)}>
-                          <span className={S.cellMid}>{formatDate(n.eval.date_evaluation)}</span>
-                          <span className={S.cell}>{n.eval.titre}</span>
+                        <div key={`${n.evaluation_id}-${i}`} style={S.tRow(NOTES_COLS)}>
+                          <span style={{ fontSize:13, color:'var(--a-fg-mid)' }}>{formatDate(n.eval.date_evaluation)}</span>
+                          <span style={{ fontSize:13, fontWeight:600, color:'var(--a-fg)' }}>{n.eval.titre}</span>
                           <span>
                             {n.absent
                               ? <span style={S.absentBadge}>Absent</span>
@@ -436,43 +463,43 @@ export default function EnseignantEleveProfile() {
             </div>
           )}
 
-          {/* ── TAB PRÉSENCE ─────────────────────────────────────── */}
+          {/* ── TAB PRÉSENCE ─────────────────────────────────────────────────── */}
           {activeTab === 'presence' && (
-            <div>
-              {/* Stats */}
-              <div className={S.statsRow}>
-                <div className={S.statCard}>
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+
+              <div style={{ ...S.statsGrid, gridTemplateColumns:'repeat(3,1fr)' }}>
+                <div style={S.statCard}>
                   <div style={S.statNum('var(--a-gold)')}>{nbRetards}</div>
-                  <div className={S.statLabel}>Retard{nbRetards > 1 ? 's' : ''}</div>
+                  <div style={S.statLabel}>Retard{nbRetards !== 1 ? 's' : ''}</div>
                 </div>
-                <div className={S.statCard}>
+                <div style={S.statCard}>
                   <div style={S.statNum('var(--a-red)')}>{nbAbsences}</div>
-                  <div className={S.statLabel}>Absence{nbAbsences > 1 ? 's' : ''}</div>
+                  <div style={S.statLabel}>Absence{nbAbsences !== 1 ? 's' : ''}</div>
                 </div>
-                <div className={S.statCard}>
+                <div style={S.statCard}>
                   <div style={S.statNum('var(--a-fg)')}>{presence.length}</div>
-                  <div className={S.statLabel}>Total</div>
+                  <div style={S.statLabel}>Total</div>
                 </div>
               </div>
 
               {presence.length === 0 ? (
-                <div className={S.empty}>
-                  <div className="text-4xl mb-2.5">✅</div>
+                <div style={S.empty}>
+                  <div style={{ fontSize:36, marginBottom:10 }}>✅</div>
                   Aucun retard ni absence enregistré pour cet élève.
                 </div>
               ) : (
-                <div className={S.tableWrap}>
-                  {presence.map((p, i) => (
-                    <div key={p.id} className={S.presenceItem} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }}>
+                <div style={S.tableWrap}>
+                  {presence.map((p) => (
+                    <div key={p.id} style={S.presenceItem}>
                       <span style={S.presenceBadge(p.type)}>
                         {p.type === 'retard' ? '⏰ Retard' : '🚫 Absence'}
                       </span>
-                      <div className="flex-1">
-                        <span className="text-[13px] font-semibold text-a-fg">
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:600, color:'var(--a-fg)' }}>
                           {formatDate(p.date)}
-                        </span>
+                        </div>
                         {p.commentaire && (
-                          <div className="text-[13px] text-a-fg-mid mt-[3px]">{p.commentaire}</div>
+                          <div style={{ fontSize:13, color:'var(--a-fg-mid)', marginTop:3 }}>{p.commentaire}</div>
                         )}
                       </div>
                     </div>
@@ -482,25 +509,24 @@ export default function EnseignantEleveProfile() {
             </div>
           )}
 
-          {/* ── TAB OBSERVATIONS ─────────────────────────────────── */}
+          {/* ── TAB OBSERVATIONS ─────────────────────────────────────────────── */}
           {activeTab === 'observations' && (
-            <div>
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+
               {observations.length === 0 ? (
-                <div className={S.empty}>
-                  <div className="text-4xl mb-2.5">💬</div>
+                <div style={S.empty}>
+                  <div style={{ fontSize:36, marginBottom:10 }}>💬</div>
                   Aucune observation enregistrée pour cet élève.
                 </div>
               ) : (
-                <div className={S.tableWrap}>
-                  {observations.map((o, i) => (
-                    <div key={o.id} className={S.obsItem} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(127,127,127,.02)' }}>
-                      <div className={S.obsLeft}>
-                        <span style={S.obsBadge(o.type)}>{o.type}</span>
+                <div style={S.tableWrap}>
+                  {observations.map((o) => (
+                    <div key={o.id} style={S.obsCard}>
+                      <div style={S.obsCardTop}>
+                        <span style={S.obsBadge(o.type)}>{o.type ? o.type.charAt(0).toUpperCase() + o.type.slice(1) : ''}</span>
+                        <span style={S.obsDate}>{formatDateTime(o.created_at)}</span>
                       </div>
-                      <div className="flex-1">
-                        <div className={S.obsContenu}>{o.contenu}</div>
-                        <div className={S.obsDate}>{formatDateTime(o.created_at)}</div>
-                      </div>
+                      <div style={S.obsContenu}>{o.contenu}</div>
                     </div>
                   ))}
                 </div>

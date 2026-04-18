@@ -58,10 +58,55 @@ const IconAbsences = () => (
 );
 
 const PRESENCE_STATUTS = [
-  { key:'en_ligne',      label:'En ligne',       color:'#30d158' },
-  { key:'reunion',       label:'En réunion',     color:'#ff9f0a' },
-  { key:'non_joignable', label:'Pas joignable',  color:'#ff453a' },
-  { key:'deconnecte',    label:'Déconnecté(e)', color:'#636366' },
+  {
+    key: 'en_ligne',
+    label: 'En ligne',
+    desc: 'Disponible pour les élèves',
+    color: '#30d158',
+    pulse: true,
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'reunion',
+    label: 'En réunion',
+    desc: 'Occupé momentanément',
+    color: '#ff9f0a',
+    pulse: false,
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'non_joignable',
+    label: 'Pas joignable',
+    desc: 'Ne pas déranger',
+    color: '#ff453a',
+    pulse: false,
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'deconnecte',
+    label: 'Déconnecté(e)',
+    desc: 'Absent du portail',
+    color: '#636366',
+    pulse: false,
+    icon: (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+      </svg>
+    ),
+  },
 ];
 
 function PresencePicker({ presence, onChange }) {
@@ -77,43 +122,96 @@ function PresencePicker({ presence, onChange }) {
   }, [open]);
 
   return (
-    <div ref={ref} className="relative mb-2.5">
-      {/* Bouton statut actuel */}
+    <div ref={ref} style={{ position:'relative', marginBottom:10 }}>
+
+      {/* ── Trigger ── */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2 py-[7px] px-2.5 rounded-lg cursor-pointer text-left"
         style={{
-          border:`1px solid ${current.color}44`,
-          background:`${current.color}12`,
+          width:'100%', display:'flex', alignItems:'center', gap:9,
+          padding:'9px 12px', borderRadius:10, cursor:'pointer',
+          border:`1px solid ${current.color}40`,
+          background:`${current.color}10`,
+          fontFamily:'inherit', transition:'border-color .2s, background .2s',
         }}
       >
-        <span className="w-[9px] h-[9px] rounded-full flex-shrink-0" style={{ background:current.color }} />
-        <span className="flex-1 text-xs font-bold" style={{ color:current.color }}>{current.label}</span>
-        <span className="text-[9px] text-a-fg-light">▼</span>
+        <span
+          className={`presence-dot${current.pulse ? ' pulse' : ''}`}
+          style={{ '--pulse-color': current.color + '88', background: current.color }}
+        />
+        <span style={{ flex:1, textAlign:'left', fontSize:12, fontWeight:700, color:current.color, letterSpacing:'0.01em' }}>
+          {current.label}
+        </span>
+        <svg
+          width="10" height="10" viewBox="0 0 10 10"
+          style={{ color:'var(--a-fg-light)', flexShrink:0, transition:'transform .2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
+          <polyline points="2,3 5,7 8,3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
       </button>
 
-      {/* Liste déroulante */}
+      {/* ── Dropdown ── */}
       {open && (
-        <div className="absolute left-0 right-0 bg-a-bg-card border border-a-border rounded-lg overflow-hidden z-[200]"
+        <div
+          className="presence-dropdown"
           style={{
-            bottom:'calc(100% + 4px)',
-            boxShadow:'0 4px 16px rgba(0,0,0,.25)',
+            position:'absolute', left:0, right:0,
+            bottom:'calc(100% + 6px)',
+            background:'var(--a-bg-card)',
+            border:'1px solid var(--a-border)',
+            borderRadius:12, overflow:'hidden', zIndex:200,
+            boxShadow:'0 -8px 32px rgba(0,0,0,.28), 0 0 0 1px rgba(255,255,255,.04)',
+          }}
+        >
+          {/* En-tête */}
+          <div style={{
+            padding:'9px 14px 8px',
+            fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em',
+            color:'var(--a-fg-light)', borderBottom:'1px solid var(--a-border)',
           }}>
-          {PRESENCE_STATUTS.map(s => (
-            <button
-              key={s.key}
-              onClick={() => { onChange(s.key); setOpen(false); }}
-              className="w-full flex items-center gap-2 py-2 px-3 border-none cursor-pointer text-left transition-colors"
-              style={{
-                background: presence === s.key ? `${s.color}18` : 'transparent',
-              }}
-            >
-              <span className="w-[9px] h-[9px] rounded-full flex-shrink-0" style={{ background:s.color }} />
-              <span className="text-xs" style={{ fontWeight: presence === s.key ? 700 : 500, color:s.color }}>
-                {s.label}
-              </span>
-            </button>
-          ))}
+            Statut de présence
+          </div>
+
+          {/* Options */}
+          {PRESENCE_STATUTS.map(s => {
+            const isActive = presence === s.key;
+            return (
+              <button
+                key={s.key}
+                className="presence-option"
+                onClick={() => { onChange(s.key); setOpen(false); }}
+                style={{
+                  width:'100%', display:'flex', alignItems:'center', gap:11,
+                  padding:'10px 14px', border:'none',
+                  borderLeft: isActive ? `3px solid ${s.color}` : '3px solid transparent',
+                  background: isActive ? `${s.color}10` : 'transparent',
+                  cursor:'pointer', fontFamily:'inherit', textAlign:'left',
+                }}
+              >
+                {/* Icône statut */}
+                <span style={{ color: isActive ? s.color : 'var(--a-fg-light)', flexShrink:0, display:'flex' }}>
+                  {s.icon}
+                </span>
+
+                {/* Label + desc */}
+                <span style={{ flex:1, minWidth:0 }}>
+                  <span style={{ display:'block', fontSize:12, fontWeight: isActive ? 700 : 500, color: isActive ? s.color : 'var(--a-fg)' }}>
+                    {s.label}
+                  </span>
+                  <span style={{ display:'block', fontSize:10, color:'var(--a-fg-light)', marginTop:1 }}>
+                    {s.desc}
+                  </span>
+                </span>
+
+                {/* Check actif */}
+                {isActive && (
+                  <svg width="13" height="13" viewBox="0 0 13 13" style={{ color:s.color, flexShrink:0 }}>
+                    <polyline points="2,7 5,10 11,3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

@@ -10,8 +10,13 @@ const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().
 const fmtNom    = (s) => s.trim().toUpperCase();
 
 // ─── Icônes ──────────────────────────────────────────────────────────────────
-const IconPlus = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
-const IconBack = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
+const IconPlus  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const IconBack  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
+const IconEdit  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const IconKey   = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>;
+const IconPause = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>;
+const IconPlay  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>;
+const IconTrash = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>;
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 const CLS = {
@@ -246,54 +251,47 @@ export default function Eleves() {
         </div>
         {error && <p style={{ color:'var(--a-red)', fontSize:13, marginBottom:12 }}>{error}</p>}
 
-        <div className={CLS.detailHeader}>
-          <div className={CLS.detailAvatar}>{initials}</div>
-          <div className="flex-1">
-            <div className={CLS.detailName}>{fmtPrenom(selectedEleve.prenom || '')} {fmtNom(selectedEleve.nom || '')}</div>
-            <div className={CLS.detailEmail}>ID : {(selectedEleve.identifiant || '').toUpperCase()}</div>
-            {(selectedEleve.telephone || selectedEleve.email_contact || selectedEleve.classe_id) && (
-              <div className="flex gap-4 mt-1.5 flex-wrap">
-                {selectedEleve.classe_id && (() => {
-                  const cl = allClasses.find(c => c.id === selectedEleve.classe_id);
-                  const nv = cl ? niveauxScolaires.find(n => n.id === cl.niveau_id) : null;
-                  return cl ? (
-                    <span className="text-xs text-a-gold font-semibold">
-                      🏫 {nv ? `${nv.nom} — ` : ''}{cl.nom}
-                    </span>
-                  ) : null;
-                })()}
-                {selectedEleve.telephone && (
-                  <span className="text-xs text-a-fg-mid">
-                    📞 {selectedEleve.telephone}
-                  </span>
-                )}
-                {selectedEleve.email_contact && (
-                  <span className="text-xs text-a-fg-mid">
-                    ✉️ {selectedEleve.email_contact}
-                  </span>
-                )}
-              </div>
-            )}
+        <div className="elv-detail-header">
+          <div className="elv-detail-top">
+            <div className="elv-detail-avatar">{initials}</div>
+            <div className="elv-detail-body">
+              <div className="elv-detail-name">{fmtPrenom(selectedEleve.prenom || '')} {fmtNom(selectedEleve.nom || '')}</div>
+              <div className="elv-detail-id">ID · {(selectedEleve.identifiant || '').toUpperCase()}</div>
+              {(selectedEleve.classe_id || selectedEleve.telephone || selectedEleve.email_contact) && (
+                <div className="elv-detail-meta">
+                  {selectedEleve.classe_id && (() => {
+                    const cl = allClasses.find(c => c.id === selectedEleve.classe_id);
+                    const nv = cl ? niveauxScolaires.find(n => n.id === cl.niveau_id) : null;
+                    return cl ? (
+                      <span className="elv-detail-meta-item gold">🏫 {nv ? `${nv.nom} — ` : ''}{cl.nom}</span>
+                    ) : null;
+                  })()}
+                  {selectedEleve.telephone && (
+                    <span className="elv-detail-meta-item">📞 {selectedEleve.telephone}</span>
+                  )}
+                  {selectedEleve.email_contact && (
+                    <span className="elv-detail-meta-item">✉️ {selectedEleve.email_contact}</span>
+                  )}
+                </div>
+              )}
+            </div>
+            <span style={S.badge(selectedEleve.actif)}>{selectedEleve.actif ? 'Actif' : 'Inactif'}</span>
           </div>
-          <span className="inline-block text-[11px] font-semibold px-2.5 py-[3px] rounded-[20px]" style={S.badge(selectedEleve.actif)}>{selectedEleve.actif ? 'Actif' : 'Inactif'}</span>
-          <button className={CLS.toggleBtn} onClick={() => handleToggleActif(selectedEleve)}>
-            {selectedEleve.actif ? 'Désactiver' : 'Activer'}
-          </button>
-          <button
-            className={`${CLS.toggleBtn} !ml-0 !text-a-blue !border-a-blue`}
-            onClick={() => handleOpenEdit(selectedEleve)}>
-            ✏️ Modifier
-          </button>
-          <button
-            className={`${CLS.toggleBtn} !ml-0 !text-a-gold !border-a-gold`}
-            onClick={() => handleResetPassword(selectedEleve)}>
-            🔑 Réinitialiser le mot de passe
-          </button>
-          <button
-            className={`${CLS.toggleBtn} !ml-0 !text-a-red !border-a-red`}
-            onClick={() => setConfirmDelete(selectedEleve)}>
-            🗑 Supprimer
-          </button>
+          <div className="elv-detail-divider" />
+          <div className="elv-detail-actions">
+            <button className="elv-action-btn edit" onClick={() => handleOpenEdit(selectedEleve)}>
+              <IconEdit /> Modifier
+            </button>
+            <button className="elv-action-btn reset" onClick={() => handleResetPassword(selectedEleve)}>
+              <IconKey /> Réinitialiser le mot de passe
+            </button>
+            <button className="elv-action-btn toggle" onClick={() => handleToggleActif(selectedEleve)}>
+              {selectedEleve.actif ? <><IconPause /> Désactiver</> : <><IconPlay /> Activer</>}
+            </button>
+            <button className="elv-action-btn delete" onClick={() => setConfirmDelete(selectedEleve)}>
+              <IconTrash /> Supprimer
+            </button>
+          </div>
         </div>
 
         {/* ─── Modal modifier nom/prénom ─── */}
@@ -464,15 +462,15 @@ export default function Eleves() {
           }, 0);
           const pctGlobal = totalQCM > 0 ? Math.round((totalReussis / totalQCM) * 100) : 0;
           return (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'0.625rem', marginBottom:'1.25rem' }}>
+            <div className="elv-stats-grid">
               {[
-                { label:'Modules', value: modules.length },
-                { label:'Niveaux réussis', value: totalQCM > 0 ? `${totalReussis} / ${totalQCM}` : '—' },
-                { label:'Progression globale', value: totalQCM > 0 ? `${pctGlobal}%` : '—', color: pctGlobal >= 100 ? 'var(--a-green)' : pctGlobal > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' },
+                { label:'Modules', value: modules.length, color: null },
+                { label:'Niveaux réussis', value: totalQCM > 0 ? `${totalReussis} / ${totalQCM}` : '—', color: null },
+                { label:'Progression globale', value: totalQCM > 0 ? `${pctGlobal}%` : '—', color: pctGlobal >= 100 ? 'var(--a-green)' : pctGlobal > 0 ? 'var(--a-gold)' : null },
               ].map(s => (
-                <div key={s.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px', textAlign:'center' }}>
-                  <div style={{ fontSize:'1.25rem', fontWeight:700, color: s.color || 'var(--a-fg)' }}>{s.value}</div>
-                  <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2, textTransform:'uppercase', letterSpacing:'0.07em' }}>{s.label}</div>
+                <div key={s.label} className="elv-stat-card">
+                  <div className="elv-stat-value" style={s.color ? { color: s.color } : {}}>{s.value}</div>
+                  <div className="elv-stat-label">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -480,23 +478,30 @@ export default function Eleves() {
         })()}
 
         {/* ─── Tableau récapitulatif ─── */}
-        <h3 className="text-[15px] font-semibold text-a-fg mb-3">Progression par module</h3>
+        <div className="elv-section-title">Progression par module</div>
 
         <div className="flex gap-4 items-start">
 
           {/* Tableau */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 elv-table-card">
             <table className="w-full border-collapse text-[13px]">
               <thead>
-                <tr className="border-b border-a-border">
-                  {['Module','Niveaux QCM','Réussis','Moy. score','Statut',''].map(h => (
-                    <th key={h} className="px-2.5 py-2 text-left text-[11px] font-semibold text-a-fg-light uppercase tracking-wide whitespace-nowrap">{h}</th>
+                <tr className="border-b border-a-border" style={{ background: 'var(--a-bg)' }}>
+                  {[
+                    { label: 'Module',       align: 'left'   },
+                    { label: 'Niveaux QCM',  align: 'center' },
+                    { label: 'Réussis',      align: 'center' },
+                    { label: 'Moy. score',   align: 'center' },
+                    { label: 'Statut',       align: 'left'   },
+                    { label: '',             align: 'right'  },
+                  ].map(h => (
+                    <th key={h.label} style={{ padding:'10px 16px', textAlign: h.align, fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' }}>{h.label}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {modules.length === 0 && (
-                  <tr><td colSpan={6} className="p-6 text-center text-a-fg-light">Aucun module disponible.</td></tr>
+                  <tr><td colSpan={6} style={{ padding:'28px', textAlign:'center', color:'var(--a-fg-light)' }}>Aucun module disponible.</td></tr>
                 )}
                 {modules.map(m => {
                   const nivs = niveauxMap[m.id] || [];
@@ -508,41 +513,40 @@ export default function Eleves() {
                   const pct = totalN > 0 ? Math.round((reussis / totalN) * 100) : null;
                   const isOpen = detailModule?.id === m.id;
 
-                  let statutLabel, statutColor, statutBg;
-                  if (totalN === 0) { statutLabel = 'Sans QCM'; statutColor = 'var(--a-fg-light)'; statutBg = 'rgba(255,255,255,.05)'; }
-                  else if (pct === 100) { statutLabel = 'Terminé'; statutColor = 'var(--a-green)'; statutBg = 'rgba(48,209,88,.12)'; }
-                  else if (reussis > 0) { statutLabel = 'En cours'; statutColor = 'var(--a-gold)'; statutBg = 'rgba(191,138,48,.12)'; }
-                  else { statutLabel = 'Non commencé'; statutColor = 'var(--a-fg-light)'; statutBg = 'rgba(255,255,255,.05)'; }
+                  let statutLabel, statutColor, statutBg, statutBorder;
+                  if (totalN === 0)      { statutLabel = 'Sans QCM';      statutColor = 'var(--a-fg-light)'; statutBg = 'var(--a-bg)';           statutBorder = 'var(--a-border)'; }
+                  else if (pct === 100)  { statutLabel = 'Terminé';       statutColor = 'var(--a-green)';    statutBg = 'rgba(48,209,88,.10)';    statutBorder = 'rgba(48,209,88,.22)'; }
+                  else if (reussis > 0)  { statutLabel = 'En cours';      statutColor = 'var(--a-gold)';     statutBg = 'rgba(191,138,48,.10)';   statutBorder = 'rgba(191,138,48,.25)'; }
+                  else                   { statutLabel = 'Non commencé';  statutColor = 'var(--a-fg-light)'; statutBg = 'var(--a-bg)';           statutBorder = 'var(--a-border)'; }
 
                   return (
-                    <tr key={m.id} className="border-b border-a-border transition-colors duration-150" style={{ background: isOpen ? 'rgba(191,138,48,.06)' : 'transparent' }}>
-                      <td className="px-2.5 py-2.5 font-semibold text-a-fg">{m.titre}</td>
-                      <td className="px-2.5 py-2.5 text-a-fg-mid text-center">{totalN > 0 ? totalN : '—'}</td>
-                      <td className="px-2.5 py-2.5 text-center">
+                    <tr key={m.id} style={{ borderBottom:'1px solid var(--a-border)', background: isOpen ? 'rgba(191,138,48,.05)' : 'transparent', transition:'background .15s' }}>
+                      <td style={{ padding:'12px 16px', fontWeight:600, color:'var(--a-fg)' }}>{m.titre}</td>
+                      <td style={{ padding:'12px 16px', color:'var(--a-fg-mid)', textAlign:'center' }}>{totalN > 0 ? totalN : <span style={{ color:'var(--a-fg-light)' }}>—</span>}</td>
+                      <td style={{ padding:'12px 16px', textAlign:'center' }}>
                         {totalN > 0 ? (
-                          <span className="font-semibold" style={{ color: pct === 100 ? 'var(--a-green)' : pct > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' }}>
+                          <span style={{ fontWeight:700, color: pct === 100 ? 'var(--a-green)' : pct > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' }}>
                             {reussis} / {totalN}
                           </span>
-                        ) : '—'}
+                        ) : <span style={{ color:'var(--a-fg-light)' }}>—</span>}
                       </td>
-                      <td className="px-2.5 py-2.5 text-center">
+                      <td style={{ padding:'12px 16px', textAlign:'center' }}>
                         {moyScore != null ? (
-                          <span className="font-semibold" style={{ color: moyScore >= 80 ? 'var(--a-green)' : moyScore >= 60 ? 'var(--a-gold)' : 'var(--a-red)' }}>{moyScore}%</span>
-                        ) : '—'}
+                          <span style={{ fontWeight:700, color: moyScore >= 80 ? 'var(--a-green)' : moyScore >= 60 ? 'var(--a-gold)' : 'var(--a-red)' }}>{moyScore}%</span>
+                        ) : <span style={{ color:'var(--a-fg-light)' }}>—</span>}
                       </td>
-                      <td className="px-2.5 py-2.5">
-                        <span className="inline-block text-[11px] font-semibold px-2.5 py-[3px] rounded-[20px]" style={{ background: statutBg, color: statutColor }}>
+                      <td style={{ padding:'12px 16px' }}>
+                        <span style={{ display:'inline-block', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, background: statutBg, color: statutColor, border:`1px solid ${statutBorder}`, whiteSpace:'nowrap' }}>
                           {statutLabel}
                         </span>
                       </td>
-                      <td className="px-2.5 py-2.5">
+                      <td style={{ padding:'12px 16px', textAlign:'right' }}>
                         {totalN > 0 && (
                           <button
                             onClick={() => setDetailModule(isOpen ? null : { id: m.id, titre: m.titre, nivsAvecQCM })}
-                            className="px-3 py-[5px] rounded-full text-xs font-semibold cursor-pointer whitespace-nowrap"
-                            style={{ border:`1px solid ${isOpen ? 'var(--a-gold)' : 'var(--a-border)'}`, background: isOpen ? 'rgba(191,138,48,.12)' : 'transparent', color: isOpen ? 'var(--a-gold)' : 'var(--a-fg-mid)' }}
+                            style={{ padding:'5px 12px', borderRadius:8, border:`1px solid ${isOpen ? 'rgba(191,138,48,.4)' : 'var(--a-border)'}`, background: isOpen ? 'rgba(191,138,48,.10)' : 'transparent', color: isOpen ? 'var(--a-gold)' : 'var(--a-fg-mid)', fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', fontFamily:'inherit', transition:'all .15s' }}
                           >
-                            {isOpen ? 'Fermer' : 'Détail'}
+                            {isOpen ? 'Fermer ×' : 'Voir détail'}
                           </button>
                         )}
                       </td>
@@ -641,21 +645,14 @@ export default function Eleves() {
           ];
 
           return (
-            <div className="mt-8">
-              <div className="flex justify-between items-center mb-3.5">
-                <h3 className="text-[15px] font-semibold text-a-fg m-0">Activité sur le portail</h3>
-                <div className="flex gap-1.5">
+            <div style={{ marginTop:'2rem' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
+                <div className="elv-section-title" style={{ margin: 0 }}>Activité sur le portail</div>
+                <div style={S.filterSegment}>
                   {PERIODES.map(p => (
-                    <button
-                      key={p.key}
-                      onClick={() => setActivitePeriode(p.key)}
-                      className="px-3.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer border border-a-border transition-all duration-150"
-                      style={{
-                        background: activitePeriode === p.key ? 'var(--a-gold)' : 'transparent',
-                        color: activitePeriode === p.key ? '#fff' : 'var(--a-fg-mid)',
-                        borderColor: activitePeriode === p.key ? 'var(--a-gold)' : 'var(--a-border)',
-                      }}
-                    >{p.label}</button>
+                    <button key={p.key} onClick={() => setActivitePeriode(p.key)} style={S.filterOpt(activitePeriode === p.key)}>
+                      {p.label}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -663,14 +660,14 @@ export default function Eleves() {
               {/* Stats cards */}
               <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.625rem', marginBottom:'1rem' }}>
                 {[
-                  { label:'Visites',           value: activiteLoading ? '…' : totalVisites,              color:'var(--a-blue)' },
-                  { label:'Temps total',        value: activiteLoading ? '…' : fmtDuration(totalSecs),   color:'var(--a-gold)' },
-                  { label:'Durée moyenne',      value: activiteLoading ? '…' : fmtDuration(avgSecs),     color:'var(--a-green)' },
-                  { label:'Dernière session',   value: activiteLoading ? '…' : lastSession,              color:'var(--a-fg-mid)' },
+                  { label:'Visites',         value: activiteLoading ? '…' : totalVisites,            color:'var(--a-blue)' },
+                  { label:'Temps total',      value: activiteLoading ? '…' : fmtDuration(totalSecs), color:'var(--a-gold)' },
+                  { label:'Durée moyenne',    value: activiteLoading ? '…' : fmtDuration(avgSecs),   color:'var(--a-green)' },
+                  { label:'Dernière session', value: activiteLoading ? '…' : lastSession,             color:'var(--a-fg-mid)' },
                 ].map(card => (
-                  <div key={card.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 14px', textAlign:'center' }}>
-                    <div style={{ fontSize:'1.1rem', fontWeight:700, color: card.color }}>{card.value}</div>
-                    <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2, textTransform:'uppercase', letterSpacing:'0.07em' }}>{card.label}</div>
+                  <div key={card.label} className="elv-stat-card">
+                    <div className="elv-stat-value" style={{ color: card.color, fontSize:'1.1rem' }}>{card.value}</div>
+                    <div className="elv-stat-label">{card.label}</div>
                   </div>
                 ))}
               </div>
@@ -684,15 +681,15 @@ export default function Eleves() {
                 <div style={{ background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', overflow:'hidden' }}>
                   <table className="w-full border-collapse text-[13px]">
                     <thead>
-                      <tr style={{ borderBottom:'1px solid var(--a-border)' }}>
+                      <tr style={{ borderBottom:'1px solid var(--a-border)', background:'var(--a-bg)' }}>
                         {['Date & heure','Durée','Statut'].map(h => (
-                          <th key={h} style={{ padding:'8px 14px', textAlign:'left', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' }}>{h}</th>
+                          <th key={h} style={{ padding:'10px 16px', textAlign:'left', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {activiteLoading ? (
-                        <tr><td colSpan={3} style={{ padding:20, textAlign:'center', color:'var(--a-fg-light)' }}>Chargement…</td></tr>
+                        <tr><td colSpan={3} style={{ padding:24, textAlign:'center', color:'var(--a-fg-light)' }}>Chargement…</td></tr>
                       ) : activite.slice(0, 10).map(s => {
                         const duree = getDurationSec(s);
                         const termine = s.ended_at != null;
@@ -701,10 +698,10 @@ export default function Eleves() {
                         });
                         return (
                           <tr key={s.id} style={{ borderBottom:'1px solid var(--a-border)' }}>
-                            <td style={{ padding:'9px 14px', color:'var(--a-fg)' }}>{dateStr}</td>
-                            <td style={{ padding:'9px 14px', color:'var(--a-fg-mid)', fontWeight:600 }}>{fmtDuration(duree)}</td>
-                            <td style={{ padding:'9px 14px' }}>
-                              <span style={{ display:'inline-block', fontSize:11, fontWeight:600, padding:'2px 10px', borderRadius:20, background: termine ? 'rgba(52,212,114,.12)' : 'rgba(255,159,10,.12)', color: termine ? 'var(--a-green)' : 'var(--a-yellow)' }}>
+                            <td style={{ padding:'11px 16px', color:'var(--a-fg)', fontSize:13 }}>{dateStr}</td>
+                            <td style={{ padding:'11px 16px', color:'var(--a-fg-mid)', fontWeight:600, fontSize:13 }}>{fmtDuration(duree)}</td>
+                            <td style={{ padding:'11px 16px' }}>
+                              <span style={{ display:'inline-block', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, background: termine ? 'rgba(52,212,114,.10)' : 'rgba(255,159,10,.10)', color: termine ? 'var(--a-green)' : 'var(--a-yellow)', border:`1px solid ${termine ? 'rgba(52,212,114,.22)' : 'rgba(255,159,10,.25)'}` }}>
                                 {termine ? '✓ Terminée' : '~ Interrompue'}
                               </span>
                             </td>
