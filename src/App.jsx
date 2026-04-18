@@ -1,5 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
-import STYLES from './styles';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
 import { motion, Reveal, staggerContainer, fadeUp, tapScale, cardHover } from './animations';
@@ -316,7 +315,7 @@ function CarouselCards({ onInscribe }) {
             <p className="card-lvl">Spécialisation</p>
             <div className="card-ar">تحفيظ القرآن الكريم</div>
             <div className="card-fr">Lecture & Mémorisation Coranique</div>
-            <p style={{ fontSize: '0.83rem', color: 'var(--mid)', lineHeight: 1.75, marginTop: '0.5rem' }}>
+            <p className="text-[0.83rem] text-[var(--mid)] leading-[1.75] mt-2">
               Apprentissage du Tajwid, mémorisation des sourates et lecture du
               Coran avec beauté et exactitude. Pour enfants et adultes.
             </p>
@@ -326,7 +325,7 @@ function CarouselCards({ onInscribe }) {
                 <li key={i}><span className="card-dot" />{f}</li>
               ))}
             </ul>
-            <div className="card-price" style={{ marginTop: '1rem' }}>
+            <div className="card-price mt-4">
               <span className="card-amount">60</span>
               <span className="card-unit">€ / mois</span>
             </div>
@@ -479,7 +478,7 @@ function PreInscriptionModal({ cours, onClose }) {
               <div className="modal-field">
                 <label htmlFor="mi-dob">
                   Date de naissance
-                  {agePreview !== null && <span style={{ marginLeft: 8, fontWeight: 400, color: 'var(--gold)', fontSize: '0.82em' }}>({agePreview} ans)</span>}
+                  {agePreview !== null && <span className="ml-2 font-normal text-[var(--gold)] text-[0.82em]">({agePreview} ans)</span>}
                 </label>
                 <input id="mi-dob" name="date_naissance" type="date" required
                   max={new Date().toISOString().split('T')[0]}
@@ -579,14 +578,6 @@ export default function App() {
   /* — Hooks — */
   const active = useActiveSection();
   useScrollReveal();
-
-  /* — CSS global injecté une seule fois — */
-  useLayoutEffect(() => {
-    const tag = document.createElement('style');
-    tag.innerHTML = STYLES;
-    document.head.appendChild(tag);
-    return () => document.head.removeChild(tag);
-  }, []);
 
   /* — Bloquer le scroll quand le menu mobile est ouvert — */
   useEffect(() => {
@@ -750,7 +741,7 @@ export default function App() {
           </motion.p>
           <motion.div className="hero-actions" variants={heroItem}>
             <motion.button className="btn-fill" onClick={() => goTo('tarifs')} {...tapScale}>Découvrir les cours</motion.button>
-            <motion.a href="/portail/login" className="btn-outline" style={{textDecoration:'none',display:'inline-flex',alignItems:'center',justifyContent:'center'}} {...tapScale}>Mon portail</motion.a>
+            <motion.a href="/portail/login" className="btn-outline no-underline inline-flex items-center justify-content-center" {...tapScale}>Mon portail</motion.a>
           </motion.div>
         </motion.div>
 
@@ -784,7 +775,7 @@ export default function App() {
               cultures et les générations, l'Institut As-Safaa propose un enseignement
               structuré, progressif et adapté à chaque apprenant.
             </p>
-            <p className="s-body" style={{ marginTop: '1rem' }}>
+            <p className="s-body mt-4">
               Nos enseignants qualifiés accompagnent chaque élève avec patience et
               rigueur, du premier tracé de l'alphabet jusqu'à la maîtrise de la
               lecture et de l'expression écrite.
@@ -900,7 +891,7 @@ export default function App() {
               <p className="card-lvl">Spécialisation</p>
               <div className="card-ar">تحفيظ القرآن الكريم</div>
               <div className="card-fr">Lecture & Mémorisation Coranique</div>
-              <p style={{ fontSize: '0.83rem', color: 'var(--mid)', lineHeight: 1.75, marginTop: '0.5rem' }}>
+              <p className="text-[0.83rem] text-[var(--mid)] leading-[1.75] mt-2">
                 Apprentissage du Tajwid (règles de récitation), mémorisation des sourates
                 et lecture du Coran avec beauté et exactitude. Cours pour enfants et adultes,
                 en individuel ou en groupe.

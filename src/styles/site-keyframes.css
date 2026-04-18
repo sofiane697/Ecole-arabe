@@ -1,3 +1,105 @@
-/* ─── Site Public — Keyframes ─── */
-/* Ce fichier sera rempli lors de la Phase 3 de migration */
-/* Contiendra : 22 @keyframes du site public */
+/* ─── Keyframes ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes growX {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.12; transform: scale(1); }
+  50%      { opacity: 0.22; transform: scale(1.04); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%      { transform: translateY(-14px) rotate(1deg); }
+  66%      { transform: translateY(-6px) rotate(-1deg); }
+}
+@keyframes floatB {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%      { transform: translateY(12px) rotate(-2deg); }
+}
+@keyframes floatC {
+  0%, 100% { transform: translateY(0px); }
+  40%      { transform: translateY(-10px); }
+  80%      { transform: translateY(6px); }
+}
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); opacity: 0.2; }
+  50%      { transform: scale(1.2); opacity: 0.38; }
+}
+@keyframes orbPulse2 {
+  0%, 100% { transform: scale(1); opacity: 0.12; }
+  50%      { transform: scale(1.25); opacity: 0.25; }
+}
+@keyframes spinSlow {
+  from { transform: translate(-50%,-50%) rotate(0deg); }
+  to   { transform: translate(-50%,-50%) rotate(360deg); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Lettres arabes — 4 dérives asynchrones ─── */
+@keyframes letterDrift1 {
+  0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+  30%  { opacity:0.12; transform:translate(8px,-10px) scale(1); }
+  60%  { opacity:0.13; transform:translate(12px,-5px) scale(1.02); }
+  100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+}
+@keyframes letterDrift2 {
+  0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+  25%  { opacity:0.11; transform:translate(-6px,9px) scale(1.01); }
+  65%  { opacity:0.13; transform:translate(-10px,4px) scale(1); }
+  100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+}
+@keyframes letterDrift3 {
+  0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+  40%  { opacity:0.13; transform:translate(10px,8px) scale(1.02); }
+  70%  { opacity:0.11; transform:translate(5px,12px) scale(1); }
+  100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+}
+@keyframes letterDrift4 {
+  0%   { opacity:0;    transform:translate(0,0) scale(0.93); }
+  35%  { opacity:0.14; transform:translate(-8px,-7px) scale(1.02); }
+  75%  { opacity:0.12; transform:translate(-4px,-12px) scale(1); }
+  100% { opacity:0;    transform:translate(0,0) scale(0.93); }
+}
+
+/* ─── Modal ─── */
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Thème 4 ─── */
+@keyframes t4-shimmer {
+  0%, 100% { opacity: 0.06; }
+  50%       { opacity: 0.14; }
+}
+@keyframes t4-slow-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
