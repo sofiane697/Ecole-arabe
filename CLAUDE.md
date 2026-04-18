@@ -5,6 +5,8 @@
 ENT (Espace Numérique de Travail) pour une école d'arabe. Site vitrine + 3 portails (admin, enseignant, élève).
 Stack : **React 18** (CRACO + CRA), **React Router v6**, **Tailwind CSS 3** + CSS variables, **Supabase** (REST + Storage), **DOMPurify**, **Framer Motion**.
 
+> Migration CSS-in-JS → Tailwind terminée (Phases 0–4). Plus aucun fichier `*Styles.js` ni injection `useLayoutEffect`.
+
 ## Structure
 
 ```
@@ -130,7 +132,10 @@ Composants : `NoteLetterInput` (saisie enseignant), `GradeBadge` (affichage), ca
 |---------|---------|
 | `src/styles/admin-overrides.css` | Variables `--a-*`, dark/light admin+enseignant, composants `.admin-*` |
 | `src/styles/portail-overrides.css` | Variables `--p-*`, dark/light portail élève, composants `.portail-*` |
-| `src/styles.js` | CSS site public (2305 lignes — **pas encore migré, Phase 3**) |
+| `src/styles/site-base.css` | Variables `:root`, dark mode, reset, scrollbar (site public) |
+| `src/styles/site-keyframes.css` | 20 `@keyframes` du site public |
+| `src/styles/site-components.css` | Composants `.nav`, `.hero`, cartes, témoignages, footer, modal… |
+| `src/styles/site-themes.css` | Surcharges `html.theme-2` → `html.theme-6` (6 palettes) |
 
 **Classes Tailwind mappées sur CSS variables :**
 - Admin/Enseignant : `bg-a-bg`, `text-a-fg`, `text-a-gold`, `border-a-border`, `shadow-a-sm`…
