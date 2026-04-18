@@ -380,7 +380,6 @@ export async function fetchNewObsCount(eleveId, seenAt) {
 
 /** Récupère les notes de l'élève avec les détails de chaque évaluation */
 export async function fetchMesNotes(eleveId) {
-  // 1. Notes de l'élève
   const r1 = await fetch(
     `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&select=score,absent,evaluation_id`,
     { headers: ANON_HEADERS }
@@ -389,16 +388,15 @@ export async function fetchMesNotes(eleveId) {
   const notes = await r1.json();
   if (!notes.length) return [];
 
-  // 2. Détails des évaluations correspondantes
-  const evalIds = [...new Set(notes.map(n => n.evaluation_id))].join(',');
+  const evalIds = [...new Set(notes.map(n => n.evaluation_id).filter(Boolean))];
+  if (!evalIds.length) return notes.map(n => ({ ...n, evaluation: null }));
+
   const r2 = await fetch(
-    `${SUPABASE_URL}/rest/v1/evaluations?id=in.(${evalIds})&select=id,titre,date_evaluation,score_max`,
+    `${SUPABASE_URL}/rest/v1/evaluations?id=in.(${evalIds.join(',')})&select=id,titre,date_evaluation,score_max`,
     { headers: ANON_HEADERS }
   );
-  if (!r2.ok) return notes;
-  const evals = await r2.json();
+  const evals = r2.ok ? await r2.json() : [];
   const evalMap = Object.fromEntries(evals.map(e => [e.id, e]));
-
   return notes.map(n => ({ ...n, evaluation: evalMap[n.evaluation_id] || null }));
 }
 

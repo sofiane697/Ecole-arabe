@@ -14,56 +14,56 @@ const IconPlus = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="non
 const IconBack = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
-// Tailwind class strings (static styles migrated from inline)
 const CLS = {
   page: 'min-h-full',
-  header: 'flex justify-between items-center mb-6',
-  headerTitle: 'text-sm text-a-fg-mid font-medium',
-  addBtn: 'inline-flex items-center gap-1.5 px-[18px] py-[9px] rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer transition-opacity duration-200',
-  grid: 'grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-3',
-  card: 'bg-a-bg-card rounded-a border border-a-border p-[18px] flex items-center gap-3.5 cursor-pointer transition-[transform,box-shadow] duration-150',
-  avatar: 'w-[42px] h-[42px] rounded-full bg-a-gold text-white flex items-center justify-center text-base font-bold shrink-0 uppercase tracking-tight',
-  info: 'flex-1 min-w-0',
-  name: 'font-semibold text-a-fg text-sm',
-  email: 'text-xs text-a-fg-mid mt-0.5',
-  date: 'text-[11px] text-a-fg-light mt-1',
+  header: 'a-section-header',
+  headerLeft: 'a-section-meta',
+  headerActions: 'a-section-actions',
+  addBtn: 'a-add-btn',
+  exportBtn: 'a-btn-secondary',
+  grid: 'elv-grid',
+  card: 'elv-card',
+  avatar: 'elv-avatar',
+  info: 'elv-info',
+  name: 'elv-name',
+  email: 'elv-email',
+  date: 'elv-date',
   // Modal
-  overlay: 'fixed inset-0 flex items-center justify-center z-[1000]',
-  modal: 'bg-a-bg-card rounded-a p-7 w-full max-w-[460px] border border-a-border',
-  modalTitle: 'font-a-display text-lg font-bold text-a-fg mb-5',
-  field: 'mb-4',
-  label: 'block text-xs font-semibold text-a-fg-mid mb-1.5 uppercase tracking-wide',
-  input: 'w-full px-3.5 py-2.5 rounded-a-sm border border-a-border bg-[var(--a-bg-input)] text-a-fg text-sm outline-none box-border',
-  btnRow: 'flex gap-2.5 justify-end mt-5',
-  btnCancel: 'px-5 py-[9px] rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer',
-  btnSave: 'px-5 py-[9px] rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer',
-  error: 'text-a-red text-[13px] mt-2',
-  empty: 'text-center py-12 px-5 text-a-fg-mid text-sm',
-  // Barre recherche / filtres
-  toolbar: 'flex gap-2.5 items-center mb-5 flex-wrap',
-  searchWrap: 'relative flex-1 min-w-[200px]',
-  searchInput: 'w-full py-[9px] pr-3.5 pl-9 rounded-full border border-a-border bg-[var(--a-bg-input)] text-a-fg text-[13px] outline-none box-border',
-  searchIcon: 'absolute left-3 top-1/2 -translate-y-1/2 text-a-fg-light pointer-events-none',
-  sortSelect: 'px-3 py-2 rounded-full border border-a-border bg-[var(--a-bg-input)] text-a-fg-mid text-xs font-semibold cursor-pointer outline-none',
+  overlay: 'a-modal-overlay',
+  modal: 'a-modal',
+  modalTitle: 'a-modal-title',
+  field: 'a-modal-field',
+  label: 'a-modal-label',
+  input: 'a-modal-input',
+  btnRow: 'a-modal-btns',
+  btnCancel: 'a-modal-btn-cancel',
+  btnSave: 'a-modal-btn-save',
+  empty: 'a-empty',
+  // Toolbar
+  toolbar: 'a-toolbar',
+  searchWrap: 'a-search-wrap',
+  searchInput: 'a-search-input',
+  searchIcon: 'a-search-icon',
+  sortSelect: 'a-filter-select',
   // Detail
-  breadcrumb: 'flex items-center gap-2 mb-6 cursor-pointer text-a-fg-mid text-sm font-medium',
-  detailHeader: 'flex items-center gap-4 mb-7 p-5 bg-a-bg-card rounded-a border border-a-border',
-  detailAvatar: 'w-14 h-14 rounded-full bg-a-gold text-white flex items-center justify-center text-[22px] font-bold',
-  detailName: 'text-xl font-bold text-a-fg',
-  detailEmail: 'text-[13px] text-a-fg-mid mt-0.5',
-  progressCard: 'bg-a-bg-card rounded-a-sm border border-a-border p-4 mb-2.5',
-  progressTitle: 'font-semibold text-a-fg text-sm mb-2',
-  progressBar: 'h-1.5 rounded-sm bg-a-border overflow-hidden mt-2',
-  progressText: 'text-xs text-a-fg-mid mt-1.5 flex justify-between',
-  toggleBtn: 'px-4 py-2 rounded-full border border-a-border bg-transparent text-a-fg-mid text-xs font-semibold cursor-pointer ml-auto',
-  exportBtn: 'inline-flex items-center gap-1.5 px-[18px] py-[9px] rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer transition-all duration-200',
+  breadcrumb: 'a-breadcrumb',
+  detailHeader: 'elv-detail-header',
+  detailAvatar: 'elv-detail-avatar',
+  detailName: 'elv-detail-name',
+  detailEmail: 'elv-detail-email',
+  progressCard: 'elv-progress-card',
+  progressTitle: 'elv-progress-title',
+  progressBar: 'elv-progress-bar',
+  progressText: 'elv-progress-text',
+  toggleBtn: 'a-modal-btn-cancel',
 };
 // Dynamic styles that must remain inline
 const S = {
-  badge: (active) => ({ background: active ? 'rgba(48,209,88,.12)' : 'rgba(255,69,58,.12)', color: active ? 'var(--a-green)' : 'var(--a-red)' }),
+  badge: (active) => ({ background: active ? 'rgba(52,212,114,.12)' : 'rgba(240,85,85,.12)', color: active ? 'var(--a-green)' : 'var(--a-red)', border: `1px solid ${active ? 'rgba(52,212,114,.2)' : 'rgba(240,85,85,.2)'}`, padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700 }),
   overlay: { background:'rgba(0,0,0,.6)', backdropFilter:'blur(6px)' },
   progressFill: (pct) => ({ background: pct >= 100 ? 'var(--a-green)' : 'var(--a-gold)', width:`${pct}%`, transition:'width .4s var(--a-ease-out)' }),
-  filterBtn: (active) => ({ background: active ? 'var(--a-gold)' : 'transparent', color: active ? '#fff' : 'var(--a-fg-mid)', borderColor: active ? 'var(--a-gold)' : 'var(--a-border)' }),
+  filterSegment: { display:'inline-flex', alignItems:'center', background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:980, padding:3, gap:2 },
+  filterOpt: (active) => ({ display:'inline-flex', alignItems:'center', gap:5, padding:'5px 14px', borderRadius:980, border:'none', fontSize:12.5, fontWeight:700, cursor:'pointer', transition:'all .18s var(--a-ease)', background: active ? 'var(--a-gold)' : 'transparent', color: active ? '#fff' : 'var(--a-fg-mid)', boxShadow: active ? '0 2px 8px rgba(191,138,48,.35)' : 'none', letterSpacing:'-.01em' }),
 };
 
 export default function Eleves() {
@@ -244,7 +244,7 @@ export default function Eleves() {
         <div className={CLS.breadcrumb} onClick={() => setSelectedEleve(null)}>
           <IconBack /> <span>Retour à la liste</span>
         </div>
-        {error && <p className="text-a-red text-[13px] mb-3">{error}</p>}
+        {error && <p style={{ color:'var(--a-red)', fontSize:13, marginBottom:12 }}>{error}</p>}
 
         <div className={CLS.detailHeader}>
           <div className={CLS.detailAvatar}>{initials}</div>
@@ -320,8 +320,8 @@ export default function Eleves() {
                   placeholder="Nom"
                 />
               </div>
-              <div className="h-px bg-a-border my-2 mb-4" />
-              <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-3">Contact (optionnel)</div>
+              <div style={{ height:1, background:'var(--a-border)', margin:'0.5rem 0 1rem' }} />
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Contact (optionnel)</div>
               <div className={CLS.field}>
                 <label className={CLS.label}>Téléphone</label>
                 <input
@@ -342,8 +342,8 @@ export default function Eleves() {
                   type="email"
                 />
               </div>
-              <div className="h-px bg-a-border my-2 mb-4" />
-              <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-3">Classe (optionnel)</div>
+              <div style={{ height:1, background:'var(--a-border)', margin:'0.5rem 0 1rem' }} />
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Classe (optionnel)</div>
               <div className={CLS.field}>
                 <label className={CLS.label}>Classe</label>
                 <select className={`${CLS.input} cursor-pointer`} value={editForm.classe_id} onChange={e => setEditForm(f => ({ ...f, classe_id: e.target.value }))}>
@@ -359,7 +359,7 @@ export default function Eleves() {
                   })}
                 </select>
               </div>
-              <div className="text-xs text-a-fg-mid mb-4 leading-normal">
+              <div style={{ fontSize:12, color:'var(--a-fg-mid)', marginBottom:'1rem', lineHeight:1.5 }}>
                 ℹ️ L'identifiant de connexion reste inchangé.
               </div>
               <div className={CLS.btnRow}>
@@ -393,7 +393,7 @@ export default function Eleves() {
         {confirmDelete && (
           <ConfirmModal
             title="Supprimer cet élève ?"
-            message={<span>Le compte de <strong>{confirmDelete.prenom} {confirmDelete.nom}</strong> sera définitivement supprimé, ainsi que toute sa progression.<br/><br/><span className="text-a-red font-semibold">Cette action est irréversible.</span></span>}
+            message={<span>Le compte de <strong>{confirmDelete.prenom} {confirmDelete.nom}</strong> sera définitivement supprimé, ainsi que toute sa progression.<br/><br/><span style={{ color:'var(--a-red)', fontWeight:600 }}>Cette action est irréversible.</span></span>}
             confirmLabel="Supprimer définitivement"
             onConfirm={handleConfirmDelete}
             onCancel={() => setConfirmDelete(null)}
@@ -402,55 +402,51 @@ export default function Eleves() {
 
         {/* ─── Modal résultat reset mot de passe ─── */}
         {resetResult && (
-          <div className={CLS.overlay} style={S.overlay} onClick={() => setResetResult(null)}>
-            <div className={`${CLS.modal} !max-w-[440px]`} onClick={e => e.stopPropagation()}>
-              <div className="text-center mb-4">
-                <div className="text-4xl mb-2">🔑</div>
+          <div className={CLS.overlay} onClick={() => setResetResult(null)}>
+            <div className={CLS.modal} style={{ maxWidth:440 }} onClick={e => e.stopPropagation()}>
+              <div style={{ textAlign:'center', marginBottom:'1rem' }}>
+                <div style={{ fontSize:'2.5rem', marginBottom:'0.5rem' }}>🔑</div>
                 <div className={CLS.modalTitle}>Nouveau mot de passe généré</div>
               </div>
-              <div className="bg-a-bg rounded-a-sm p-5 mb-4">
-                <div className="mb-3.5">
-                  <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">Élève</div>
-                  <div className="text-[15px] font-semibold text-a-fg">{resetResult.prenom} {resetResult.nom}</div>
+              <div style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'1.25rem', marginBottom:'1rem' }}>
+                <div style={{ marginBottom:'0.875rem' }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Élève</div>
+                  <div style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)' }}>{resetResult.prenom} {resetResult.nom}</div>
                 </div>
-                <div className="mb-3.5">
-                  <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">Identifiant</div>
-                  <div className="text-lg font-bold text-a-gold font-a-mono tracking-wider">{resetResult.identifiant}</div>
+                <div style={{ marginBottom:'0.875rem' }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Identifiant</div>
+                  <div style={{ fontSize:'1.2rem', fontWeight:800, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em' }}>{resetResult.identifiant}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">Nouveau mot de passe provisoire</div>
-                  <div className="text-lg font-bold text-a-red font-a-mono tracking-wider">{resetResult.tempPassword}</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Nouveau mot de passe provisoire</div>
+                  <div style={{ fontSize:'1.2rem', fontWeight:800, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em' }}>{resetResult.tempPassword}</div>
                 </div>
               </div>
-              <div className="text-xs text-a-fg-mid leading-relaxed mb-3">
+              <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:12 }}>
                 ⚠️ L'élève devra changer ce mot de passe à sa prochaine connexion.
               </div>
               {resetResult.emailSent ? (
-                <div className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 mb-4 text-xs" style={{ background:'rgba(48,209,88,0.1)', border:'1px solid rgba(48,209,88,0.3)' }}>
-                  <span className="text-base">✉️</span>
-                  <span className="text-a-green leading-normal">
-                    Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                    <strong className="font-a-mono">{resetResult.emailSent}</strong>
-                  </span>
+                <div style={{ display:'flex', alignItems:'center', gap:8, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, background:'rgba(52,212,114,0.1)', border:'1px solid rgba(52,212,114,0.3)', color:'var(--a-green)' }}>
+                  <span>✉️</span>
+                  <span>Mail envoyé · <strong style={{ fontFamily:'var(--a-font-mono)' }}>{resetResult.emailSent}</strong></span>
                 </div>
               ) : resetResult.emailSent === null ? (
-                <div className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 mb-4 text-xs" style={{ background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', color:'var(--a-yellow)' }}>
-                  <span className="text-base">⚠️</span>
-                  Aucun email de contact — transmettez les identifiants manuellement.
+                <div style={{ display:'flex', alignItems:'center', gap:8, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', color:'var(--a-yellow)' }}>
+                  <span>⚠️</span> Aucun email — transmettez les identifiants manuellement.
                 </div>
               ) : null}
-              <div className="flex gap-2 justify-center flex-wrap">
-                <button className={`${CLS.btnSave} !text-xs !px-4 !py-[9px]`} onClick={() => {
+              <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+                <button className={CLS.btnSave} onClick={() => {
                   navigator.clipboard.writeText(`Identifiant : ${resetResult.identifiant}\nMot de passe : ${resetResult.tempPassword}`);
                   alert('Copié !');
                 }}>📋 Copier</button>
-                <button className="px-4 py-[9px] rounded-full border-none bg-[#25D366] text-white text-xs font-semibold cursor-pointer" onClick={() => {
+                <button style={{ padding:'8px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }} onClick={() => {
                   const msg = encodeURIComponent(
                     `🕌 Institut As-Safaa — Portail Élève\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/portail/login\n\n⚠️ Changez votre mot de passe à la connexion.`
                   );
                   window.open(`https://wa.me/?text=${msg}`, '_blank');
                 }}>💬 WhatsApp</button>
-                <button className={`${CLS.btnCancel} !text-xs !px-4 !py-[9px]`} onClick={() => setResetResult(null)}>Fermer</button>
+                <button className={CLS.btnCancel} onClick={() => setResetResult(null)}>Fermer</button>
               </div>
             </div>
           </div>
@@ -468,15 +464,15 @@ export default function Eleves() {
           }, 0);
           const pctGlobal = totalQCM > 0 ? Math.round((totalReussis / totalQCM) * 100) : 0;
           return (
-            <div className="grid grid-cols-3 gap-2.5 mb-5">
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'0.625rem', marginBottom:'1.25rem' }}>
               {[
                 { label:'Modules', value: modules.length },
                 { label:'Niveaux réussis', value: totalQCM > 0 ? `${totalReussis} / ${totalQCM}` : '—' },
                 { label:'Progression globale', value: totalQCM > 0 ? `${pctGlobal}%` : '—', color: pctGlobal >= 100 ? 'var(--a-green)' : pctGlobal > 0 ? 'var(--a-gold)' : 'var(--a-fg-light)' },
               ].map(s => (
-                <div key={s.label} className="bg-a-bg border border-a-border rounded-a-sm px-4 py-3 text-center">
-                  <div className="text-xl font-bold" style={{ color: s.color || 'var(--a-fg)' }}>{s.value}</div>
-                  <div className="text-[11px] text-a-fg-light mt-0.5 uppercase tracking-wide">{s.label}</div>
+                <div key={s.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px', textAlign:'center' }}>
+                  <div style={{ fontSize:'1.25rem', fontWeight:700, color: s.color || 'var(--a-fg)' }}>{s.value}</div>
+                  <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2, textTransform:'uppercase', letterSpacing:'0.07em' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -559,12 +555,12 @@ export default function Eleves() {
 
           {/* Panneau latéral détail */}
           {detailModule && (
-            <div className="w-[300px] shrink-0 bg-a-bg-card border border-a-border rounded-a-sm p-4">
-              <div className="flex justify-between items-center mb-3.5">
-                <div className="font-semibold text-a-fg text-[13px]">{detailModule.titre}</div>
-                <button onClick={() => setDetailModule(null)} className="bg-none border-none cursor-pointer text-a-fg-light text-lg leading-none p-0.5">×</button>
+            <div style={{ width:300, flexShrink:0, background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'1rem' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.875rem' }}>
+                <div style={{ fontWeight:600, color:'var(--a-fg)', fontSize:13 }}>{detailModule.titre}</div>
+                <button onClick={() => setDetailModule(null)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--a-fg-light)', fontSize:'1.2rem', lineHeight:1, padding:2 }}>×</button>
               </div>
-              <div className="flex flex-col gap-2">
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                 {detailModule.nivsAvecQCM.map(n => {
                   const prog = progression.find(p => p.niveau_id === n.id);
                   const score = prog?.score ?? null;
@@ -576,19 +572,19 @@ export default function Eleves() {
                   else                   { statusColor = 'var(--a-fg-light)'; statusLabel = 'Non commencé'; }
 
                   return (
-                    <div key={n.id} className="bg-a-bg rounded-a-sm px-3 py-2.5 border border-a-border">
-                      <div className="flex justify-between items-center" style={{ marginBottom: score != null ? 8 : 0 }}>
-                        <span className="text-xs font-semibold text-a-fg flex-1 mr-2">{n.titre}</span>
-                        <span className="text-[11px] font-semibold whitespace-nowrap" style={{ color: statusColor }}>{statusLabel}</span>
+                    <div key={n.id} style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'10px 12px', border:'1px solid var(--a-border)' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: score != null ? 8 : 0 }}>
+                        <span style={{ fontSize:12, fontWeight:600, color:'var(--a-fg)', flex:1, marginRight:8 }}>{n.titre}</span>
+                        <span style={{ fontSize:11, fontWeight:600, whiteSpace:'nowrap', color: statusColor }}>{statusLabel}</span>
                       </div>
                       {score != null && (
                         <>
-                          <div className="h-1 rounded-sm bg-a-border overflow-hidden mb-1.5">
-                            <div className="h-full rounded-sm" style={{ background: reussi ? 'var(--a-green)' : score >= 60 ? 'var(--a-gold)' : 'var(--a-red)', width:`${score}%`, transition:'width .3s' }} />
+                          <div style={{ height:4, borderRadius:4, background:'var(--a-border)', overflow:'hidden', marginBottom:6 }}>
+                            <div style={{ height:'100%', borderRadius:4, background: reussi ? 'var(--a-green)' : score >= 60 ? 'var(--a-gold)' : 'var(--a-red)', width:`${score}%`, transition:'width .3s' }} />
                           </div>
-                          <div className="flex justify-between text-[11px] text-a-fg-light">
+                          <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--a-fg-light)' }}>
                             <span>{tentatives} tentative{tentatives > 1 ? 's' : ''}</span>
-                            <span className="font-bold" style={{ color: reussi ? 'var(--a-green)' : score >= 60 ? 'var(--a-gold)' : 'var(--a-red)' }}>{score}%</span>
+                            <span style={{ fontWeight:700, color: reussi ? 'var(--a-green)' : score >= 60 ? 'var(--a-gold)' : 'var(--a-red)' }}>{score}%</span>
                           </div>
                         </>
                       )}
@@ -665,38 +661,38 @@ export default function Eleves() {
               </div>
 
               {/* Stats cards */}
-              <div className="grid grid-cols-4 gap-2.5 mb-4">
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.625rem', marginBottom:'1rem' }}>
                 {[
                   { label:'Visites',           value: activiteLoading ? '…' : totalVisites,              color:'var(--a-blue)' },
                   { label:'Temps total',        value: activiteLoading ? '…' : fmtDuration(totalSecs),   color:'var(--a-gold)' },
                   { label:'Durée moyenne',      value: activiteLoading ? '…' : fmtDuration(avgSecs),     color:'var(--a-green)' },
-                  { label:'Dernière déconnexion', value: activiteLoading ? '…' : lastSession,             color:'var(--a-fg-mid)' },
+                  { label:'Dernière session',   value: activiteLoading ? '…' : lastSession,              color:'var(--a-fg-mid)' },
                 ].map(card => (
-                  <div key={card.label} className="bg-a-bg border border-a-border rounded-a-sm px-3.5 py-3 text-center">
-                    <div className="text-lg font-bold" style={{ color: card.color }}>{card.value}</div>
-                    <div className="text-[11px] text-a-fg-light mt-0.5 uppercase tracking-wide">{card.label}</div>
+                  <div key={card.label} style={{ background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'12px 14px', textAlign:'center' }}>
+                    <div style={{ fontSize:'1.1rem', fontWeight:700, color: card.color }}>{card.value}</div>
+                    <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:2, textTransform:'uppercase', letterSpacing:'0.07em' }}>{card.label}</div>
                   </div>
                 ))}
               </div>
 
               {/* Tableau des sessions */}
               {!activiteLoading && activite.length === 0 ? (
-                <div className="text-center px-5 py-7 text-a-fg-light text-[13px] bg-a-bg rounded-a-sm border border-a-border">
+                <div style={{ textAlign:'center', padding:'28px 20px', color:'var(--a-fg-light)', fontSize:13, background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', border:'1px solid var(--a-border)' }}>
                   Aucune connexion sur cette période
                 </div>
               ) : (
-                <div className="bg-a-bg-card border border-a-border rounded-a-sm overflow-hidden">
+                <div style={{ background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', overflow:'hidden' }}>
                   <table className="w-full border-collapse text-[13px]">
                     <thead>
-                      <tr className="border-b border-a-border">
+                      <tr style={{ borderBottom:'1px solid var(--a-border)' }}>
                         {['Date & heure','Durée','Statut'].map(h => (
-                          <th key={h} className="px-3.5 py-2 text-left text-[11px] font-semibold text-a-fg-light uppercase tracking-wide">{h}</th>
+                          <th key={h} style={{ padding:'8px 14px', textAlign:'left', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {activiteLoading ? (
-                        <tr><td colSpan={3} className="p-5 text-center text-a-fg-light">Chargement…</td></tr>
+                        <tr><td colSpan={3} style={{ padding:20, textAlign:'center', color:'var(--a-fg-light)' }}>Chargement…</td></tr>
                       ) : activite.slice(0, 10).map(s => {
                         const duree = getDurationSec(s);
                         const termine = s.ended_at != null;
@@ -704,14 +700,11 @@ export default function Eleves() {
                           day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'
                         });
                         return (
-                          <tr key={s.id} className="border-b border-a-border">
-                            <td className="px-3.5 py-[9px] text-a-fg">{dateStr}</td>
-                            <td className="px-3.5 py-[9px] text-a-fg-mid font-semibold">{fmtDuration(duree)}</td>
-                            <td className="px-3.5 py-[9px]">
-                              <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-[20px]" style={{
-                                background: termine ? 'rgba(48,209,88,.12)' : 'rgba(255,159,10,.12)',
-                                color: termine ? 'var(--a-green)' : 'var(--a-yellow)',
-                              }}>
+                          <tr key={s.id} style={{ borderBottom:'1px solid var(--a-border)' }}>
+                            <td style={{ padding:'9px 14px', color:'var(--a-fg)' }}>{dateStr}</td>
+                            <td style={{ padding:'9px 14px', color:'var(--a-fg-mid)', fontWeight:600 }}>{fmtDuration(duree)}</td>
+                            <td style={{ padding:'9px 14px' }}>
+                              <span style={{ display:'inline-block', fontSize:11, fontWeight:600, padding:'2px 10px', borderRadius:20, background: termine ? 'rgba(52,212,114,.12)' : 'rgba(255,159,10,.12)', color: termine ? 'var(--a-green)' : 'var(--a-yellow)' }}>
                                 {termine ? '✓ Terminée' : '~ Interrompue'}
                               </span>
                             </td>
@@ -772,8 +765,10 @@ export default function Eleves() {
   return (
     <div className={CLS.page}>
       <div className={CLS.header}>
-        <span className={CLS.headerTitle}>{eleves.length} élève{eleves.length !== 1 ? 's' : ''} inscrit{eleves.length !== 1 ? 's' : ''}</span>
-        <div className="flex gap-2.5">
+        <div className={CLS.headerLeft}>
+          <span className="a-section-count">{eleves.length} élève{eleves.length !== 1 ? 's' : ''} inscrit{eleves.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div className={CLS.headerActions}>
           {elevesFiltered.length > 0 && (
             <button className={CLS.exportBtn} onClick={exportCSV}>⬇ Exporter CSV{elevesFiltered.length !== eleves.length ? ` (${elevesFiltered.length})` : ''}</button>
           )}
@@ -793,9 +788,11 @@ export default function Eleves() {
               onChange={e => { setSearch(e.target.value); setPage(0); }}
             />
           </div>
-          <button className="px-3 py-2 rounded-full border text-xs font-semibold cursor-pointer" style={S.filterBtn(filterActif === 'tous')}   onClick={() => { setFilterActif('tous'); setPage(0); }}>Tous</button>
-          <button className="px-3 py-2 rounded-full border text-xs font-semibold cursor-pointer" style={S.filterBtn(filterActif === 'actif')}  onClick={() => { setFilterActif('actif'); setPage(0); }}>Actifs</button>
-          <button className="px-3 py-2 rounded-full border text-xs font-semibold cursor-pointer" style={S.filterBtn(filterActif === 'inactif')} onClick={() => { setFilterActif('inactif'); setPage(0); }}>Inactifs</button>
+          <div style={S.filterSegment}>
+            <button style={S.filterOpt(filterActif === 'tous')}   onClick={() => { setFilterActif('tous');    setPage(0); }}>Tous</button>
+            <button style={S.filterOpt(filterActif === 'actif')}  onClick={() => { setFilterActif('actif');   setPage(0); }}>Actifs</button>
+            <button style={S.filterOpt(filterActif === 'inactif')} onClick={() => { setFilterActif('inactif'); setPage(0); }}>Inactifs</button>
+          </div>
           <select className={CLS.sortSelect} value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(0); }}>
             <option value="date">↓ Plus récents</option>
             <option value="nom">↑ Nom A→Z</option>
@@ -824,7 +821,7 @@ export default function Eleves() {
                     <div className={CLS.avatar}>{initials}</div>
                     <div className={CLS.info}>
                       <div className={CLS.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
-                      <div className={CLS.email}>ID : <span className="font-a-mono font-semibold text-a-gold">{(e.identifiant || '').toUpperCase()}</span></div>
+                      <div className={CLS.email}>ID : <span style={{ fontFamily:'var(--a-font-mono)', fontWeight:700, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>
                       <div className={CLS.date}>Inscrit le {new Date(e.created_at).toLocaleDateString('fr-FR')}</div>
                     </div>
                     <span className="inline-block text-[11px] font-semibold px-2.5 py-[3px] rounded-[20px]" style={S.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
@@ -833,20 +830,10 @@ export default function Eleves() {
               })}
             </div>
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <button disabled={safePage === 0} onClick={() => setPage(p => p - 1)}
-                  className="px-3.5 py-1.5 rounded-lg border border-a-border bg-a-bg-card text-[13px]"
-                  style={{ color:'var(--a-text)', cursor: safePage === 0 ? 'not-allowed' : 'pointer', opacity: safePage === 0 ? 0.4 : 1 }}>
-                  ← Précédent
-                </button>
-                <span className="text-xs" style={{ color:'var(--a-muted)' }}>
-                  Page {safePage + 1} / {totalPages} — {elevesFiltered.length} résultat{elevesFiltered.length !== 1 ? 's' : ''}
-                </span>
-                <button disabled={safePage >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-                  className="px-3.5 py-1.5 rounded-lg border border-a-border bg-a-bg-card text-[13px]"
-                  style={{ color:'var(--a-text)', cursor: safePage >= totalPages - 1 ? 'not-allowed' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.4 : 1 }}>
-                  Suivant →
-                </button>
+              <div className="a-pagination">
+                <button className="a-page-btn" disabled={safePage === 0} onClick={() => setPage(p => p - 1)}>← Précédent</button>
+                <span className="a-page-info">Page {safePage + 1} / {totalPages} — {elevesFiltered.length} résultat{elevesFiltered.length !== 1 ? 's' : ''}</span>
+                <button className="a-page-btn" disabled={safePage >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Suivant →</button>
               </div>
             )}
           </>
@@ -962,68 +949,58 @@ function CreateEleveModal({ onClose, onCreated }) {
   // ─── Vue résultat (après création) ─────────────────────────────────
   if (result) {
     return (
-      <div className={CLS.overlay} style={S.overlay} onClick={onClose}>
+      <div className={CLS.overlay} onClick={onClose}>
         <div className={`${CLS.modal} !max-w-[480px]`} onClick={e => e.stopPropagation()}>
           <div className="text-center mb-5">
             <div className="text-[40px] mb-2">{result.inactif ? '⏳' : '✅'}</div>
             <div className={CLS.modalTitle}>{result.inactif ? 'Compte créé — en attente' : 'Compte créé avec succès'}</div>
           </div>
-          <div className="bg-a-bg rounded-a-sm p-5 mb-4">
-            <div className="mb-3.5">
-              <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">Élève</div>
-              <div className="text-base font-semibold text-a-fg">{prenom} {nom}</div>
+          <div style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'1.25rem', marginBottom:'1rem' }}>
+            <div style={{ marginBottom:'0.875rem' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Élève</div>
+              <div style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)' }}>{prenom} {nom}</div>
             </div>
-            <div className="mb-3.5">
-              <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">Identifiant de connexion</div>
-              <div className="text-lg font-bold text-a-gold font-a-mono tracking-wider">{result.identifiant}</div>
+            <div style={{ marginBottom:'0.875rem' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Identifiant de connexion</div>
+              <div style={{ fontSize:'1.2rem', fontWeight:800, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em' }}>{result.identifiant}</div>
             </div>
             <div>
-              <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>
                 Mot de passe provisoire
-                {pwdVisible && <span className="ml-2 text-a-fg-mid font-normal text-[10px]">masqué dans {countdown}s</span>}
+                {pwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {countdown}s</span>}
               </div>
-              <div className="text-lg font-bold text-a-red font-a-mono tracking-wider"
-                style={{ cursor: pwdVisible ? 'default' : 'pointer' }}
+              <div style={{ fontSize:'1.2rem', fontWeight:800, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em', cursor: pwdVisible ? 'default' : 'pointer' }}
                 onClick={() => { if (!pwdVisible) { setPwdVisible(true); setCountdown(10); } }}>
-                {pwdVisible ? result.tempPassword : <span className="text-[13px] text-a-fg-mid font-normal">●●●●●●●● (cliquer pour afficher)</span>}
+                {pwdVisible ? result.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400, fontFamily:'inherit' }}>●●●●●●●● (cliquer pour afficher)</span>}
               </div>
             </div>
           </div>
-          <div className="text-xs text-a-fg-mid leading-relaxed mb-3 px-1">
+          <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.6, marginBottom:12 }}>
             ⚠️ <strong>Notez ces identifiants</strong> — le mot de passe provisoire ne sera plus visible après fermeture.
-            L'élève devra le modifier à sa première connexion.
           </div>
           {result.emailSent ? (
-            <div className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 mb-4 text-xs" style={{ background:'rgba(48,209,88,0.1)', border:'1px solid rgba(48,209,88,0.3)' }}>
-              <span className="text-base">✉️</span>
-              <span className="text-a-green leading-normal">
-                Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                <strong className="font-a-mono">{result.emailSent}</strong>
-              </span>
+            <div style={{ display:'flex', alignItems:'center', gap:8, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, background:'rgba(52,212,114,0.1)', border:'1px solid rgba(52,212,114,0.3)', color:'var(--a-green)' }}>
+              <span>✉️</span>
+              <span>Mail envoyé · <strong style={{ fontFamily:'var(--a-font-mono)' }}>{result.emailSent}</strong></span>
             </div>
           ) : result.inactif && result.emailContact ? (
-            <div className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 mb-4 text-xs text-a-yellow" style={{ background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)' }}>
-              <span className="text-base">⏳</span>
-              <span className="leading-normal">
-                Les identifiants et le mot de passe provisoire seront envoyés à<br />
-                <strong className="font-a-mono">{result.emailContact}</strong><br />
-                lors du passage au statut actif.
-              </span>
+            <div style={{ display:'flex', alignItems:'center', gap:8, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', color:'var(--a-yellow)' }}>
+              <span>⏳</span>
+              <span>Identifiants envoyés à <strong style={{ fontFamily:'var(--a-font-mono)' }}>{result.emailContact}</strong> lors du passage au statut actif.</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 mb-4 text-xs text-a-yellow" style={{ background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)' }}>
-              <span className="text-base">⚠️</span>
-              Aucun email de contact — transmettez les identifiants manuellement.
+            <div style={{ display:'flex', alignItems:'center', gap:8, borderRadius:10, padding:'10px 14px', marginBottom:16, fontSize:12, background:'rgba(255,159,10,0.08)', border:'1px solid rgba(255,159,10,0.3)', color:'var(--a-yellow)' }}>
+              <span>⚠️</span> Aucun email — transmettez les identifiants manuellement.
             </div>
           )}
-          <div className="flex gap-2 justify-center flex-wrap">
-            <button className={`${CLS.btnSave} !px-[18px] !py-2.5 !text-xs`} onClick={() => {
+          <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+            <button className={CLS.btnSave} onClick={() => {
               navigator.clipboard.writeText(`Identifiant : ${result.identifiant}\nMot de passe : ${result.tempPassword}`);
               alert('Copié dans le presse-papier !');
             }}>
               📋 Copier
             </button>
-            <button className="px-[18px] py-2.5 rounded-full border-none bg-[#25D366] text-white text-xs font-semibold cursor-pointer" onClick={() => {
+            <button style={{ padding:'8px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }} onClick={() => {
               const msg = encodeURIComponent(
                 `🕌 Institut As-Safaa — Portail Élève\n\n` +
                 `Bonjour ${prenom},\n\n` +
@@ -1038,7 +1015,7 @@ function CreateEleveModal({ onClose, onCreated }) {
             }}>
               💬 WhatsApp
             </button>
-            <button className="px-[18px] py-2.5 rounded-full border border-a-border bg-transparent text-a-fg-mid text-xs font-semibold cursor-pointer" onClick={() => {
+            <button className="a-modal-btn-cancel" onClick={() => {
               const printWin = window.open('', '_blank', 'width=400,height=500');
               printWin.document.write(`
                 <html><head><title>Fiche élève</title>
@@ -1078,7 +1055,7 @@ function CreateEleveModal({ onClose, onCreated }) {
             }}>
               🖨️ Imprimer
             </button>
-            <button className={`${CLS.btnCancel} !px-[18px] !py-2.5 !text-xs`} onClick={() => { onCreated(); }}>
+            <button className={CLS.btnCancel} onClick={() => { onCreated(); }}>
               Fermer
             </button>
           </div>
@@ -1089,7 +1066,7 @@ function CreateEleveModal({ onClose, onCreated }) {
 
   // ─── Vue formulaire ────────────────────────────────────────────────
   return (
-    <div className={CLS.overlay} style={S.overlay} onClick={onClose}>
+    <div className={CLS.overlay} onClick={onClose}>
       <div className={CLS.modal} onClick={e => e.stopPropagation()}>
         <div className={CLS.modalTitle}>Ajouter un élève</div>
         <div className="flex gap-3">
@@ -1097,10 +1074,10 @@ function CreateEleveModal({ onClose, onCreated }) {
           <div className={`${CLS.field} flex-1`}><label htmlFor="eleve_nom" className={CLS.label}>Nom *</label><input id="eleve_nom" className={CLS.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Nom" /></div>
         </div>
         {identifiant && (
-          <div className={`${CLS.field} bg-a-bg rounded-a-sm px-4 py-3`}>
-            <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wide mb-1">Identifiant généré automatiquement</div>
-            <div className="text-[17px] font-bold text-a-gold font-a-mono tracking-wider">{identifiant}</div>
-            <div className="text-[11px] text-a-fg-light mt-1">
+          <div className={CLS.field} style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px' }}>
+            <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Identifiant généré automatiquement</div>
+            <div style={{ fontSize:'1.1rem', fontWeight:800, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em' }}>{identifiant}</div>
+            <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:3 }}>
               {prenom[0]?.toUpperCase()} (prénom) + {nom[1]?.toLowerCase()} (2e lettre nom) + {nom[0]?.toUpperCase()} (nom) + 4 chiffres
             </div>
           </div>
@@ -1123,7 +1100,7 @@ function CreateEleveModal({ onClose, onCreated }) {
           </div>
         )}
         <div className={CLS.field}>
-          <label className={CLS.label}>Email de contact <span className="text-a-fg-light font-normal normal-case">(facultatif — pour envoi des identifiants)</span></label>
+          <label className={CLS.label}>Email de contact <span style={{ color:'var(--a-fg-light)', fontWeight:400, textTransform:'none' }}>(facultatif — pour envoi des identifiants)</span></label>
           <input
             className={CLS.input}
             type="email"
@@ -1132,7 +1109,7 @@ function CreateEleveModal({ onClose, onCreated }) {
             placeholder="parent@email.com"
           />
         </div>
-        <div className="text-xs text-a-fg-mid leading-normal mb-3">
+        <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.5, marginBottom:12 }}>
           Un mot de passe provisoire sera généré automatiquement. L'élève devra le modifier à sa première connexion.
         </div>
         <label className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-[13px] mb-3 transition-all duration-150"
@@ -1150,7 +1127,7 @@ function CreateEleveModal({ onClose, onCreated }) {
           />
           Inactif pour l'instant — l'élève ne pourra pas se connecter avant activation
         </label>
-        {error && <div className={CLS.error}>{error}</div>}
+        {error && <div style={{ color:'var(--a-red)', fontSize:13, marginTop:8 }}>{error}</div>}
         <div className={CLS.btnRow}>
           <button className={CLS.btnCancel} onClick={onClose}>Annuler</button>
           <button className={CLS.btnSave} disabled={loading || !valid} onClick={handleSubmit}>

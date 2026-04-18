@@ -12,69 +12,60 @@ const IconEdit  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const IconTrash = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
 const IconUsers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
+// CSS class strings — using dedicated classes from admin-overrides.css
 const S = {
   page: 'min-h-full',
+  breadcrumb: 'a-breadcrumb',
+  breadcrumbSep: 'a-breadcrumb-sep',
+  breadcrumbActive: 'a-breadcrumb-current',
+  header: 'a-section-header',
+  headerLeft: 'a-section-meta',
+  addBtn: 'a-add-btn',
 
-  // Breadcrumb
-  breadcrumb: 'flex items-center gap-1.5 mb-7 cursor-pointer text-a-fg-mid text-[13px] font-medium select-none',
-  breadcrumbSep: 'text-a-border mx-0.5',
-  breadcrumbActive: 'text-a-fg font-semibold',
+  // Niveau grid
+  niveauGrid: 'cls-niveau-grid',
+  niveauCard: 'cls-niveau-card',
+  niveauName: 'cls-niveau-name',
+  niveauFooter: 'cls-niveau-footer',
+  addNiveauCard: 'cls-add-card',
 
-  // Header
-  header: 'flex items-center justify-between mb-7',
-  headerLeft: 'flex flex-col gap-1',
-  headerTitle: 'text-[26px] font-extrabold text-a-gold tracking-tight',
-  headerSub: 'text-[13px] text-a-fg-mid',
-  addBtn: 'inline-flex items-center gap-[7px] px-5 py-2.5 rounded-full border-none bg-a-gold text-white text-[13px] font-bold cursor-pointer whitespace-nowrap shadow-[0_2px_12px_rgba(191,138,48,.3)]',
+  // Classe grid
+  classeGrid: 'cls-classe-grid',
+  classeCard: 'cls-classe-card',
+  classeName: 'cls-classe-name',
+  classeCount: 'cls-classe-count',
+  classeFooter: 'cls-classe-footer',
+  addClasseCard: 'cls-add-card',
 
-  // Grille niveaux
-  niveauGrid: 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4',
-  niveauCard: 'bg-a-bg-card rounded-a border border-a-border pt-7 px-6 pb-[18px] cursor-pointer transition-[transform,box-shadow,border-color] duration-200 flex flex-col box-border min-h-[160px]',
-  niveauName: 'text-[42px] font-black text-a-gold tracking-[-2px] leading-none flex-1',
-  niveauStats: 'flex gap-4 mb-3.5',
-  niveauStat: 'flex flex-col',
-  niveauStatVal: 'text-lg font-extrabold text-a-fg',
-  niveauStatLabel: 'text-[11px] text-a-fg-mid uppercase tracking-wide',
-  niveauFooter: 'flex gap-2 pt-3.5 border-t border-a-border',
-  addNiveauCard: 'bg-transparent rounded-a border-2 border-dashed border-a-border p-6 flex flex-col items-center justify-center gap-2.5 cursor-pointer text-a-fg-mid text-[13px] font-semibold transition-[border-color,color] duration-200 min-h-[160px] box-border',
+  // Élève grid
+  eleveGrid: 'cls-eleve-grid',
+  eleveCard: 'cls-eleve-card',
+  eleveTop: 'cls-eleve-top',
+  eleveAvatar: 'a-avatar sm',
+  eleveName: 'cls-eleve-name',
+  eleveId: 'cls-eleve-id',
+  eleveBody: 'cls-eleve-body',
+  eleveRow: 'cls-eleve-row',
+  eleveLabel: 'cls-eleve-label',
 
-  // Grille classes
-  classeGrid: 'grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5',
-  classeCard: 'bg-a-bg-card rounded-a border border-a-border pt-[22px] px-5 pb-4 cursor-pointer transition-[transform,box-shadow,border-color] duration-200 flex flex-col box-border min-h-[140px]',
-  classeName: 'text-[28px] font-black text-a-fg tracking-tight leading-none flex-1',
-  classeCount: 'text-[13px] text-a-fg-mid mt-1.5 mb-3.5 flex items-center gap-[5px]',
-  classeFooter: 'flex gap-2 pt-3 border-t border-a-border',
-  addClasseCard: 'bg-transparent rounded-a border-2 border-dashed border-a-border p-5 flex flex-col items-center justify-center gap-2 cursor-pointer text-a-fg-mid text-[13px] font-semibold transition-[border-color,color] duration-200 min-h-[140px] box-border',
+  // Modal
+  overlay: 'a-modal-overlay',
+  modal: 'a-modal',
+  modalTitle: 'a-modal-title',
+  field: 'a-modal-field',
+  label: 'a-modal-label',
+  input: 'a-modal-input',
+  btnRow: 'a-modal-btns',
+  btnCancel: 'a-modal-btn-cancel',
+  btnSave: 'a-modal-btn-save',
+  btnDanger: 'a-modal-btn-danger',
+  empty: 'a-empty',
+};
 
-  // Cards élèves
-  eleveGrid: 'grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3.5',
-  eleveCard: 'bg-a-bg-card rounded-a border border-a-border px-5 py-[18px] flex flex-col gap-3',
-  eleveTop: 'flex items-center gap-3.5',
-  eleveAvatar: 'w-12 h-12 rounded-full bg-a-gold text-white flex items-center justify-center text-base font-extrabold shrink-0 tracking-tight',
-  eleveName: 'text-[15px] font-bold text-a-fg leading-tight',
-  eleveId: 'text-xs text-a-gold font-bold font-a-mono mt-[3px]',
-  eleveBody: 'flex flex-col gap-1.5 pt-3 border-t border-a-border',
-  eleveRow: 'flex justify-between items-center',
-  eleveLabel: 'text-[11px] text-a-fg-mid uppercase tracking-wide',
-  eleveVal: 'text-xs text-a-fg font-medium',
-  badge: (actif) => ({ padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
-
-  // Actions
-  actionBtn: (color) => ({ padding:'5px 12px', borderRadius:6, border:`1px solid ${color}20`, background:`${color}12`, color, fontSize:11, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:5, fontWeight:600 }),
-
-  // Misc
-  overlay: 'fixed inset-0 flex items-center justify-center z-[1000]',
-  overlayBg: 'rgba(0,0,0,.6)',
-  modal: 'bg-a-bg-card rounded-a p-7 w-full max-w-[420px] border border-a-border',
-  modalTitle: 'font-a-display text-lg font-bold text-a-fg mb-5',
-  field: 'mb-4',
-  label: 'block text-[11px] font-bold text-a-fg-mid mb-1.5 uppercase tracking-wide',
-  input: 'w-full px-3.5 py-2.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
-  btnRow: 'flex gap-2.5 justify-end mt-5',
-  btnCancel: 'px-5 py-[9px] rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer',
-  btnSave: 'px-5 py-[9px] rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer',
-  btnDanger: 'px-5 py-[9px] rounded-full border-none bg-a-red text-white text-[13px] font-semibold cursor-pointer',
-  empty: 'text-center py-[60px] px-5 text-a-fg-mid text-sm leading-loose',
+// Dynamic inline styles (functions returning objects)
+const DS = {
+  badge: (actif) => ({ padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(52,212,114,.15)' : 'rgba(240,85,85,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
+  actionBtn: (color) => ({ padding:'5px 12px', borderRadius:6, border:`1px solid ${color}22`, background:`${color}12`, color, fontSize:11, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:5, fontWeight:600 }),
 };
 
 export default function Classes() {
@@ -108,46 +99,44 @@ export default function Classes() {
 
   const elevesDeClasse = (classeId) => eleves.filter(e => e.classe_id === classeId);
 
-  // ─── VUE 1 : Liste des niveaux scolaires ────────────────────────────────────
+  // ─── VUE 1 : Liste des niveaux scolaires ──────────────────────────────────────
   if (!selNiveau) {
     return (
-      <div style={S.page}>
-        <div style={S.header}>
-          <div style={S.headerLeft}>
-            <div style={S.headerSub}>{niveaux.length} niveau{niveaux.length > 1 ? 'x' : ''} scolaire{niveaux.length > 1 ? 's' : ''}</div>
+      <div className={S.page}>
+        <div className={S.header}>
+          <div className={S.headerLeft}>
+            <span className="a-section-count">{niveaux.length} niveau{niveaux.length > 1 ? 'x' : ''} scolaire{niveaux.length > 1 ? 's' : ''}</span>
           </div>
-          <button style={S.addBtn} onClick={() => setModal({ type:'niveau' })}>
+          <button className={S.addBtn} onClick={() => setModal({ type:'niveau' })}>
             <IconPlus /> Ajouter un niveau
           </button>
         </div>
 
         {niveaux.length === 0 && (
-          <div style={S.empty}>Aucun niveau créé.<br />Commencez par ajouter <strong>N1</strong>, <strong>N2</strong>…</div>
+          <div className={S.empty}>Aucun niveau créé.<br />Commencez par ajouter <strong>N1</strong>, <strong>N2</strong>…</div>
         )}
 
-        <motion.div style={S.niveauGrid} variants={staggerContainer} initial="hidden" animate="visible">
-          {niveaux.map(n => {
-            return (
-              <motion.div key={n.id} style={S.niveauCard}
-                variants={fadeUp}
-                {...cardHover}
-                onClick={() => openNiveau(n)}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
-                <div style={S.niveauName}>{n.nom}</div>
-                <div style={S.niveauFooter}>
-                  <button style={S.actionBtn('var(--a-blue)')} onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}>
-                    <IconEdit /> Renommer
-                  </button>
-                  <button style={S.actionBtn('var(--a-red)')} onClick={e => { e.stopPropagation(); setModal({ type:'confirm', data:n, target:'niveau' }); }}>
-                    <IconTrash /> Supprimer
-                  </button>
-                </div>
-              </motion.div>
-            );
-          })}
+        <motion.div className={S.niveauGrid} variants={staggerContainer} initial="hidden" animate="visible">
+          {niveaux.map(n => (
+            <motion.div key={n.id} className={S.niveauCard}
+              variants={fadeUp}
+              {...cardHover}
+              onClick={() => openNiveau(n)}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
+              <div className={S.niveauName}>{n.nom}</div>
+              <div className={S.niveauFooter}>
+                <button className="a-action-btn blue" onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}>
+                  <IconEdit /> Renommer
+                </button>
+                <button className="a-action-btn red" onClick={e => { e.stopPropagation(); setModal({ type:'confirm', data:n, target:'niveau' }); }}>
+                  <IconTrash /> Supprimer
+                </button>
+              </div>
+            </motion.div>
+          ))}
 
-          <motion.div style={S.addNiveauCard}
+          <motion.div className={S.addNiveauCard}
             variants={fadeUp}
             {...cardHover}
             onClick={() => setModal({ type:'niveau' })}
@@ -177,7 +166,6 @@ export default function Classes() {
             onClose={() => setModal(null)}
             onConfirm={async () => {
               try {
-                // Récupère toutes les classes de ce niveau depuis Supabase pour avoir les IDs exacts
                 const classesNiveau = await fetchClasses(modal.data.id);
                 const classesNiveauIds = new Set(classesNiveau.map(c => c.id));
                 const elevesAssignes = eleves.filter(e => classesNiveauIds.has(e.classe_id));
@@ -197,52 +185,53 @@ export default function Classes() {
     );
   }
 
-  // ─── VUE 2 : Classes du niveau ──────────────────────────────────────────────
+  // ─── VUE 2 : Classes du niveau ────────────────────────────────────────────────
   if (!selClasse) {
     return (
-      <div style={S.page}>
-        {/* Breadcrumb */}
-        <div style={S.breadcrumb} onClick={goToNiveaux}>
-          <IconBack /> <span>Niveaux</span>
-          <span style={S.breadcrumbSep}>›</span>
-          <span style={S.breadcrumbActive}>{selNiveau.nom}</span>
+      <div className={S.page}>
+        <div className={S.breadcrumb}>
+          <span className="cursor-pointer flex items-center gap-1" onClick={goToNiveaux}>
+            <IconBack /> Niveaux
+          </span>
+          <span className={S.breadcrumbSep}>›</span>
+          <span className={S.breadcrumbActive}>{selNiveau.nom}</span>
         </div>
 
-        <div style={S.header}>
-          <div style={S.headerLeft}>
-            <div style={S.headerTitle}>{selNiveau.nom}</div>
-            <div style={S.headerSub}>{classes.length} classe{classes.length > 1 ? 's' : ''}</div>
+        <div className={S.header}>
+          <div className={S.headerLeft}>
+            <div style={{ fontSize:'1.6rem', fontWeight:900, color:'var(--a-gold)', letterSpacing:'-0.04em' }}>{selNiveau.nom}</div>
+            <span className="a-section-count">{classes.length} classe{classes.length > 1 ? 's' : ''}</span>
           </div>
-          <button style={S.addBtn} onClick={() => setModal({ type:'classe' })}>
+          <button className={S.addBtn} onClick={() => setModal({ type:'classe' })}>
             <IconPlus /> Ajouter une classe
           </button>
         </div>
 
         {classes.length === 0 && (
-          <div style={S.empty}>
+          <div className={S.empty}>
             Aucune classe dans ce niveau.<br />
             Ajoutez <strong>{selNiveau.nom}-1</strong>, <strong>{selNiveau.nom}-2</strong>…
           </div>
         )}
 
-        <div style={S.classeGrid}>
+        <div className={S.classeGrid}>
           {classes.map(c => {
             const nb = elevesDeClasse(c.id).length;
             return (
-              <div key={c.id} style={S.classeCard}
+              <div key={c.id} className={S.classeCard}
                 onClick={() => openClasse(c)}
                 onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.18)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
-                <div style={S.classeName}>{c.nom}</div>
-                <div style={S.classeCount}>
+                <div className={S.classeName}>{c.nom}</div>
+                <div className={S.classeCount}>
                   <IconUsers />
                   {nb} élève{nb > 1 ? 's' : ''}
                 </div>
-                <div style={S.classeFooter}>
-                  <button style={S.actionBtn('var(--a-blue)')} onClick={e => { e.stopPropagation(); setModal({ type:'classe', data:c }); }}>
+                <div className={S.classeFooter}>
+                  <button className="a-action-btn blue" onClick={e => { e.stopPropagation(); setModal({ type:'classe', data:c }); }}>
                     <IconEdit /> Renommer
                   </button>
-                  <button style={S.actionBtn('var(--a-red)')} onClick={e => { e.stopPropagation(); setModal({ type:'confirm', data:c, target:'classe' }); }}>
+                  <button className="a-action-btn red" onClick={e => { e.stopPropagation(); setModal({ type:'confirm', data:c, target:'classe' }); }}>
                     <IconTrash /> Supprimer
                   </button>
                 </div>
@@ -250,7 +239,7 @@ export default function Classes() {
             );
           })}
 
-          <div style={S.addClasseCard}
+          <div className={S.addClasseCard}
             onClick={() => setModal({ type:'classe' })}
             onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
@@ -296,36 +285,35 @@ export default function Classes() {
     );
   }
 
-  // ─── VUE 3 : Élèves de la classe ────────────────────────────────────────────
+  // ─── VUE 3 : Élèves de la classe ──────────────────────────────────────────────
   const elevesClasse = elevesDeClasse(selClasse.id);
   return (
-    <div style={S.page}>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 mb-7 text-[13px] font-medium text-a-fg-mid select-none">
+    <div className={S.page}>
+      <div className={S.breadcrumb}>
         <span className="cursor-pointer flex items-center gap-1" onClick={goToNiveaux}>
           <IconBack /> Niveaux
         </span>
-        <span style={S.breadcrumbSep}>›</span>
+        <span className={S.breadcrumbSep}>›</span>
         <span className="cursor-pointer" onClick={goToClasses}>{selNiveau.nom}</span>
-        <span style={S.breadcrumbSep}>›</span>
-        <span style={S.breadcrumbActive}>{selClasse.nom}</span>
+        <span className={S.breadcrumbSep}>›</span>
+        <span className={S.breadcrumbActive}>{selClasse.nom}</span>
       </div>
 
-      <div style={S.header}>
-        <div style={S.headerLeft}>
-          <div style={S.headerTitle}>{selClasse.nom}</div>
-          <div style={S.headerSub}>{elevesClasse.length} élève{elevesClasse.length > 1 ? 's' : ''}</div>
+      <div className={S.header}>
+        <div className={S.headerLeft}>
+          <div style={{ fontSize:'1.6rem', fontWeight:900, color:'var(--a-fg)', letterSpacing:'-0.04em' }}>{selClasse.nom}</div>
+          <span className="a-section-count">{elevesClasse.length} élève{elevesClasse.length > 1 ? 's' : ''}</span>
         </div>
       </div>
 
       {elevesClasse.length === 0 && (
-        <div style={S.empty}>
+        <div className={S.empty}>
           Aucun élève dans cette classe.<br />
           Assignez des élèves depuis <strong>Gestion des élèves → fiche élève → Modifier</strong>.
         </div>
       )}
 
-      <div style={S.eleveGrid}>
+      <div className={S.eleveGrid}>
         {elevesClasse.map(e => {
           const initiales = (e.prenom?.[0] || '') + (e.nom?.[0] || '');
           const identifiant = (e.identifiant || '').toUpperCase() || '—';
@@ -333,25 +321,25 @@ export default function Classes() {
             ? new Date(e.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
             : '—';
           return (
-            <div key={e.id} style={{ ...S.eleveCard, cursor:'pointer' }}
+            <div key={e.id} className={S.eleveCard}
               onClick={() => setSelEleve(e)}
               onMouseEnter={ev => { ev.currentTarget.style.borderColor='var(--a-gold)'; ev.currentTarget.style.transform='translateY(-2px)'; }}
               onMouseLeave={ev => { ev.currentTarget.style.borderColor=''; ev.currentTarget.style.transform=''; }}>
-              <div style={S.eleveTop}>
-                <div style={S.eleveAvatar}>{initiales}</div>
+              <div className={S.eleveTop}>
+                <div className={S.eleveAvatar}>{initiales}</div>
                 <div>
-                  <div style={S.eleveName}>{e.prenom} {e.nom}</div>
-                  <div style={S.eleveId}>{identifiant}</div>
+                  <div className={S.eleveName}>{e.prenom} {e.nom}</div>
+                  <div className={S.eleveId}>{identifiant}</div>
                 </div>
               </div>
-              <div style={S.eleveBody}>
-                <div style={S.eleveRow}>
-                  <span style={S.eleveLabel}>Statut</span>
-                  <span style={S.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
+              <div className={S.eleveBody}>
+                <div className={S.eleveRow}>
+                  <span className={S.eleveLabel}>Statut</span>
+                  <span style={DS.badge(e.actif)}>{e.actif ? 'Actif' : 'Inactif'}</span>
                 </div>
-                <div style={S.eleveRow}>
-                  <span style={S.eleveLabel}>Inscrit le</span>
-                  <span style={S.eleveVal}>{dateInscription}</span>
+                <div className={S.eleveRow}>
+                  <span className={S.eleveLabel}>Inscrit le</span>
+                  <span style={{ fontSize:12, color:'var(--a-fg)', fontWeight:500 }}>{dateInscription}</span>
                 </div>
               </div>
             </div>
@@ -382,9 +370,8 @@ function EleveInfoModal({ eleve, onClose }) {
   );
 
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={{ ...S.modal, maxWidth:420 }} onClick={e => e.stopPropagation()}>
-        {/* En-tête */}
+    <div className={S.overlay} onClick={onClose}>
+      <div className={S.modal} style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-4 mb-6 pb-5 border-b border-a-border">
           <div className="w-14 h-14 rounded-full bg-a-gold text-white flex items-center justify-center text-xl font-extrabold shrink-0">
             {initiales}
@@ -392,21 +379,19 @@ function EleveInfoModal({ eleve, onClose }) {
           <div>
             <div className="text-lg font-bold text-a-fg">{eleve.prenom} {eleve.nom}</div>
             <div className="text-[13px] text-a-gold font-bold font-a-mono mt-[3px]">{identifiant}</div>
-            <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-[980px] text-[11px] font-bold" style={{ background: eleve.actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: eleve.actif ? 'var(--a-green)' : 'var(--a-red)' }}>
+            <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-[980px] text-[11px] font-bold"
+              style={{ background: eleve.actif ? 'rgba(52,212,114,.15)' : 'rgba(240,85,85,.15)', color: eleve.actif ? 'var(--a-green)' : 'var(--a-red)' }}>
               {eleve.actif ? 'Actif' : 'Inactif'}
             </span>
           </div>
         </div>
-
-        {/* Informations */}
         <div className="flex flex-col">
           <Row label="Inscrit le" value={dateInscription} />
           <Row label="Téléphone" value={eleve.telephone} />
           <Row label="Email de contact" value={eleve.email_contact} />
         </div>
-
         <div className="mt-5 flex justify-end">
-          <button style={S.btnCancel} onClick={onClose}>Fermer</button>
+          <button className={S.btnCancel} onClick={onClose}>Fermer</button>
         </div>
       </div>
     </div>
@@ -418,20 +403,20 @@ function NiveauModal({ data, onSave, onClose, loading }) {
   const [nom, setNom]     = useState(data?.nom || '');
   const [ordre, setOrdre] = useState(data?.ordre || 1);
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={S.modal} onClick={e => e.stopPropagation()}>
-        <div style={S.modalTitle}>{data ? 'Renommer le niveau' : 'Nouveau niveau scolaire'}</div>
-        <div style={S.field}>
-          <label style={S.label}>Nom du niveau *</label>
-          <input style={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="ex : N1, N2, Débutants…" autoFocus />
+    <div className={S.overlay} onClick={onClose}>
+      <div className={S.modal} style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div className={S.modalTitle}>{data ? 'Renommer le niveau' : 'Nouveau niveau scolaire'}</div>
+        <div className={S.field}>
+          <label className={S.label}>Nom du niveau *</label>
+          <input className={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="ex : N1, N2, Débutants…" autoFocus />
         </div>
-        <div style={S.field}>
-          <label style={S.label}>Ordre d'affichage</label>
-          <input style={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} min={1} />
+        <div className={S.field}>
+          <label className={S.label}>Ordre d'affichage</label>
+          <input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} min={1} />
         </div>
-        <div style={S.btnRow}>
-          <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-          <button style={{ ...S.btnSave, opacity: (!nom.trim() || loading) ? .5 : 1 }} disabled={!nom.trim() || loading} onClick={() => onSave(nom.trim(), ordre)}>
+        <div className={S.btnRow}>
+          <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+          <button className={S.btnSave} style={{ opacity: (!nom.trim() || loading) ? .5 : 1 }} disabled={!nom.trim() || loading} onClick={() => onSave(nom.trim(), ordre)}>
             {loading ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>
@@ -444,16 +429,16 @@ function NiveauModal({ data, onSave, onClose, loading }) {
 function ClasseModal({ data, niveauNom, onSave, onClose, loading }) {
   const [nom, setNom] = useState(data?.nom || '');
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={S.modal} onClick={e => e.stopPropagation()}>
-        <div style={S.modalTitle}>{data ? 'Renommer la classe' : `Nouvelle classe — ${niveauNom}`}</div>
-        <div style={S.field}>
-          <label style={S.label}>Nom de la classe *</label>
-          <input style={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder={`ex : ${niveauNom}-1, ${niveauNom}-2…`} autoFocus />
+    <div className={S.overlay} onClick={onClose}>
+      <div className={S.modal} style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div className={S.modalTitle}>{data ? 'Renommer la classe' : `Nouvelle classe — ${niveauNom}`}</div>
+        <div className={S.field}>
+          <label className={S.label}>Nom de la classe *</label>
+          <input className={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder={`ex : ${niveauNom}-1, ${niveauNom}-2…`} autoFocus />
         </div>
-        <div style={S.btnRow}>
-          <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-          <button style={{ ...S.btnSave, opacity: (!nom.trim() || loading) ? .5 : 1 }} disabled={!nom.trim() || loading} onClick={() => onSave(nom.trim())}>
+        <div className={S.btnRow}>
+          <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+          <button className={S.btnSave} style={{ opacity: (!nom.trim() || loading) ? .5 : 1 }} disabled={!nom.trim() || loading} onClick={() => onSave(nom.trim())}>
             {loading ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>
@@ -465,13 +450,13 @@ function ClasseModal({ data, niveauNom, onSave, onClose, loading }) {
 // ─── Modal Confirmation ───────────────────────────────────────────────────────
 function ConfirmModal({ message, onConfirm, onClose }) {
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={{ ...S.modal, maxWidth:400 }} onClick={e => e.stopPropagation()}>
+    <div className={S.overlay} onClick={onClose}>
+      <div className={S.modal} style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
         <div className="text-lg font-bold text-a-fg mb-3">⚠️ Confirmation</div>
         <p className="text-sm text-a-fg-mid mb-6 leading-loose">{message}</p>
         <div className="flex gap-2.5 justify-end">
-          <button style={S.btnCancel} onClick={onClose}>Annuler</button>
-          <button style={S.btnDanger} onClick={() => { onConfirm(); onClose(); }}>Supprimer</button>
+          <button className={S.btnCancel} onClick={onClose}>Annuler</button>
+          <button className={S.btnDanger} onClick={() => { onConfirm(); onClose(); }}>Supprimer</button>
         </div>
       </div>
     </div>

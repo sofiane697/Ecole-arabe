@@ -19,44 +19,41 @@ const IconPlus  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 const IconEdit  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 const IconTrash = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
 
-// ─── Styles Tailwind ──────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
   page: 'min-h-full',
-  header: 'flex items-center justify-between mb-7',
-  headerLeft: 'flex flex-col gap-1',
-  headerSub: 'text-[13px] text-a-fg-mid',
-  addBtn: 'inline-flex items-center gap-[7px] px-5 py-2.5 rounded-full border-none bg-a-gold text-white text-[13px] font-bold cursor-pointer whitespace-nowrap shadow-[0_2px_12px_rgba(191,138,48,.3)]',
-  grid: 'grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4',
-  card: 'bg-a-bg-card rounded-a border border-a-border p-5 flex flex-col gap-3.5 transition-[transform,box-shadow,border-color] duration-200',
-  cardTop: 'flex items-center gap-3.5',
-  avatar: 'w-12 h-12 rounded-full bg-a-gold text-white flex items-center justify-center text-[17px] font-extrabold shrink-0 tracking-tight',
-  name: 'text-base font-bold text-a-fg leading-tight',
-  sub: 'text-xs text-a-fg-mid mt-[3px] overflow-hidden text-ellipsis whitespace-nowrap',
-  badge: (actif) => ({ display:'inline-block', padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(48,209,88,.15)' : 'rgba(255,69,58,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)' }),
-  classesSection: 'pt-3.5 border-t border-a-border',
-  classesLabel: 'text-[11px] font-bold text-a-fg-mid uppercase tracking-wider mb-2',
-  classesTags: 'flex flex-wrap gap-1.5',
-  classeTag: 'px-2.5 py-[3px] rounded-full text-xs font-semibold text-a-blue border border-[rgba(10,132,255,.2)] bg-[rgba(10,132,255,.12)]',
-  noClasse: 'text-xs text-a-fg-light italic',
-  actions: 'flex gap-2 mt-1',
-  actionBtn: (color) => ({ padding:'6px 14px', borderRadius:6, border:`1px solid ${color}22`, background:`${color}12`, color, fontSize:12, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:5, fontWeight:600, transition:'background .15s' }),
-  empty: 'text-center py-[60px] px-5 text-a-fg-mid text-sm leading-loose',
-  // Modal
-  overlay: 'fixed inset-0 flex items-center justify-center z-[1000] bg-[rgba(0,0,0,.6)] backdrop-blur-[6px]',
-  modal: 'bg-a-bg-card rounded-a p-7 w-full max-w-[520px] max-h-[85vh] overflow-y-auto border border-a-border',
-  modalTitle: 'text-lg font-bold text-a-fg mb-5 font-a-display',
-  field: 'mb-4',
-  label: 'block text-[11px] font-bold text-a-fg-mid mb-1.5 uppercase tracking-wider',
-  input: 'w-full py-2.5 px-3.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
-  select: 'w-full py-2.5 px-3.5 rounded-a-sm border border-a-border bg-a-bg-input text-a-fg text-sm outline-none box-border',
-  btnRow: 'flex gap-2.5 justify-end mt-5',
-  btnCancel: 'py-[9px] px-5 rounded-full border border-a-border bg-transparent text-a-fg-mid text-[13px] font-semibold cursor-pointer',
-  btnSave: 'py-[9px] px-5 rounded-full border-none bg-a-gold text-white text-[13px] font-semibold cursor-pointer',
-  sectionLabel: 'text-xs font-bold text-a-fg-mid uppercase tracking-wider mb-2.5',
+  header: 'a-section-header',
+  headerLeft: 'a-section-meta',
+  addBtn: 'a-add-btn',
+  grid: 'ens-grid',
+  card: 'a-card',
+  cardTop: 'a-card-head',
+  avatar: 'a-avatar',
+  name: 'a-card-name',
+  sub: 'a-card-sub',
+  badge: (actif) => ({ display:'inline-block', padding:'2px 10px', borderRadius:980, fontSize:11, fontWeight:700, background: actif ? 'rgba(52,212,114,.15)' : 'rgba(240,85,85,.15)', color: actif ? 'var(--a-green)' : 'var(--a-red)', border: `1px solid ${actif ? 'rgba(52,212,114,.25)' : 'rgba(240,85,85,.25)'}` }),
+  classesSection: 'a-card-section',
+  classesLabel: 'a-card-section-label',
+  classesTags: 'a-tags',
+  classeTag: 'a-tag blue',
+  noClasse: 'a-tag none',
+  actions: 'a-card-actions',
+  empty: 'a-empty',
+  overlay: 'a-modal-overlay',
+  modal: 'a-modal',
+  modalTitle: 'a-modal-title',
+  field: 'a-modal-field',
+  label: 'a-modal-label',
+  input: 'a-modal-input',
+  select: 'a-modal-input',
+  btnRow: 'a-modal-btns',
+  btnCancel: 'a-modal-btn-cancel',
+  btnSave: 'a-modal-btn-save',
+  sectionLabel: 'a-card-section-label',
   niveauGroup: 'mb-3.5',
-  niveauGroupName: 'text-xs font-bold text-a-fg mb-1.5',
+  niveauGroupName: 'text-xs font-bold mb-1.5',
   checkboxRow: 'flex flex-wrap gap-2',
-  checkboxLabel: (checked) => ({ display:'flex', alignItems:'center', gap:6, cursor:'pointer', background: checked ? 'rgba(10,132,255,.12)' : 'var(--a-bg)', border:`1px solid ${checked ? 'var(--a-blue)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:'4px 10px', fontSize:13, transition:'all .15s', userSelect:'none', color:'var(--a-fg)' }),
+  checkboxLabel: (checked) => ({ display:'flex', alignItems:'center', gap:6, cursor:'pointer', background: checked ? 'rgba(85,150,247,.1)' : 'var(--a-bg)', border:`1px solid ${checked ? 'var(--a-blue)' : 'var(--a-border)'}`, borderRadius:'var(--a-radius-sm)', padding:'4px 10px', fontSize:13, transition:'all .15s', userSelect:'none', color:'var(--a-fg)' }),
 };
 
 // ─── Composant principal ───────────────────────────────────────────────────────
@@ -185,14 +182,14 @@ export default function Enseignants() {
     <div className={S.page}>
       <div className={S.header}>
         <div className={S.headerLeft}>
-          <div className={S.headerSub}>{enseignants.length} enseignant{enseignants.length > 1 ? 's' : ''}</div>
+          <span className="a-section-count">{enseignants.length} enseignant{enseignants.length > 1 ? 's' : ''}</span>
         </div>
         <button className={S.addBtn} onClick={() => setModal({ type:'add' })}>
           <IconPlus /> Ajouter un enseignant
         </button>
       </div>
 
-      {error && <p className="text-a-red text-[13px] mb-3">{error}</p>}
+      {error && <p style={{ color:'var(--a-red)', fontSize:13, marginBottom:12 }}>{error}</p>}
 
       {enseignants.length === 0 ? (
         <div className={S.empty}>Aucun enseignant créé.<br />Commencez par ajouter le premier enseignant.</div>
@@ -232,19 +229,19 @@ export default function Enseignants() {
                 </div>
 
                 {ens.identifiant && (
-                  <div className="text-xs text-a-fg-light font-a-mono tracking-[0.5px]">
+                  <div className="a-mono-id">
                     ID : {ens.identifiant.toUpperCase()}
                   </div>
                 )}
 
                 <div className={S.actions}>
-                  <button style={S.actionBtn('var(--a-blue)')} onClick={() => setModal({ type:'edit', data: ens })}>
+                  <button className="a-action-btn blue" onClick={() => setModal({ type:'edit', data: ens })}>
                     <IconEdit /> Modifier
                   </button>
-                  <button style={S.actionBtn('var(--a-gold)')} onClick={() => handleResetPassword(ens)}>
+                  <button className="a-action-btn gold" onClick={() => handleResetPassword(ens)}>
                     🔑 Reset MDP
                   </button>
-                  <button style={S.actionBtn('var(--a-red)')} onClick={() => handleDelete(ens)}>
+                  <button className="a-action-btn red" onClick={() => handleDelete(ens)}>
                     <IconTrash /> Supprimer
                   </button>
                 </div>
@@ -253,20 +250,10 @@ export default function Enseignants() {
           })}
         </motion.div>
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-3 py-5">
-            <button
-              disabled={safePage === 0}
-              onClick={() => setPage(p => Math.max(0, p - 1))}
-              className="py-1.5 px-3.5 rounded-full border border-a-border bg-a-bg-card text-xs font-semibold"
-              style={{ color: safePage === 0 ? 'var(--a-fg-light)' : 'var(--a-fg)', cursor: safePage === 0 ? 'default' : 'pointer', opacity: safePage === 0 ? 0.5 : 1 }}
-            >← Précédent</button>
-            <span className="text-xs text-a-fg-mid font-semibold">Page {safePage + 1} / {totalPages}</span>
-            <button
-              disabled={safePage >= totalPages - 1}
-              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-              className="py-1.5 px-3.5 rounded-full border border-a-border bg-a-bg-card text-xs font-semibold"
-              style={{ color: safePage >= totalPages - 1 ? 'var(--a-fg-light)' : 'var(--a-fg)', cursor: safePage >= totalPages - 1 ? 'default' : 'pointer', opacity: safePage >= totalPages - 1 ? 0.5 : 1 }}
-            >Suivant →</button>
+          <div className="a-pagination">
+            <button className="a-page-btn" disabled={safePage === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>← Précédent</button>
+            <span className="a-page-info">Page {safePage + 1} / {totalPages}</span>
+            <button className="a-page-btn" disabled={safePage >= totalPages - 1} onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}>Suivant →</button>
           </div>
         )}
         </>); })()}
@@ -288,44 +275,44 @@ export default function Enseignants() {
       {/* ─── Modal résultat création ─── */}
       {result && (
         <div className={S.overlay} onClick={() => setResult(null)}>
-          <div className={`${S.modal} !max-w-[440px]`} onClick={e => e.stopPropagation()}>
-            <div className="text-center mb-5">
-              <div className="text-4xl mb-2">🎓</div>
+          <div className={S.modal} style={{ maxWidth:440 }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign:'center', marginBottom:'1.25rem' }}>
+              <div style={{ fontSize:'2.5rem', marginBottom:'0.5rem' }}>🎓</div>
               <div className={S.modalTitle}>Compte enseignant créé</div>
             </div>
-            <div className="bg-a-bg rounded-a-sm p-5 mb-4">
-              <div className="mb-3.5">
-                <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wider mb-1">Enseignant</div>
-                <div className="text-[15px] font-semibold text-a-fg">{result.prenom} {result.nom}</div>
+            <div style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'1.25rem', marginBottom:'1rem' }}>
+              <div style={{ marginBottom:'0.875rem' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Enseignant</div>
+                <div style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)' }}>{result.prenom} {result.nom}</div>
               </div>
-              <div className="mb-3.5">
-                <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wider mb-1">Identifiant</div>
-                <div className="text-xl font-bold text-a-gold font-a-mono tracking-[1px]">{result.identifiant}</div>
+              <div style={{ marginBottom:'0.875rem' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Identifiant</div>
+                <div style={{ fontSize:'1.3rem', fontWeight:800, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em' }}>{result.identifiant}</div>
               </div>
               <div>
-                <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wider mb-1">
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>
                   Mot de passe provisoire
-                  {pwdVisible && <span className="ml-2 text-a-fg-mid font-normal text-[10px]">masqué dans {countdown}s</span>}
+                  {pwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {countdown}s</span>}
                 </div>
-                <div className="text-xl font-bold text-a-red font-a-mono tracking-[1px]" style={{ cursor: pwdVisible ? 'default' : 'pointer' }}
+                <div style={{ fontSize:'1.3rem', fontWeight:800, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em', cursor: pwdVisible ? 'default' : 'pointer' }}
                   onClick={() => { if (!pwdVisible) { setPwdVisible(true); setCountdown(10); } }}>
-                  {pwdVisible ? result.tempPassword : <span className="text-[13px] text-a-fg-mid font-normal">●●●●●●●● (cliquer pour afficher)</span>}
+                  {pwdVisible ? result.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400, fontFamily:'inherit' }}>●●●●●●●● (cliquer pour afficher)</span>}
                 </div>
               </div>
             </div>
-            <div className="text-xs text-a-fg-mid mb-4 leading-[1.6]">
-              ⚠️ <strong>Notez ces identifiants.</strong> Le mot de passe provisoire ne sera plus visible après fermeture. L'enseignant devra le modifier à sa première connexion.
+            <div style={{ fontSize:12, color:'var(--a-fg-mid)', marginBottom:'1rem', lineHeight:1.6 }}>
+              ⚠️ <strong>Notez ces identifiants.</strong> Le mot de passe provisoire ne sera plus visible après fermeture.
             </div>
-            <div className="flex gap-2 justify-center flex-wrap">
-              <button className={`${S.btnSave} !py-[9px] !px-4 !text-xs`} onClick={() => {
+            <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+              <button className={S.btnSave} onClick={() => {
                 navigator.clipboard.writeText(`Identifiant : ${result.identifiant}\nMot de passe : ${result.tempPassword}`);
                 alert('Copié !');
               }}>📋 Copier</button>
-              <button className="py-[9px] px-4 rounded-full border-none bg-[#25D366] text-white text-xs font-semibold cursor-pointer" onClick={() => {
+              <button style={{ padding:'8px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }} onClick={() => {
                 const msg = encodeURIComponent(`🕌 Institut As-Safaa — Portail Enseignant\n\nBonjour ${result.prenom},\n\nVoici vos identifiants :\n\n👤 Identifiant : ${result.identifiant}\n🔑 Mot de passe : ${result.tempPassword}\n\n📱 ${window.location.origin}/enseignant/login\n\n⚠️ Changez votre mot de passe à la première connexion.`);
                 window.open(`https://wa.me/?text=${msg}`, '_blank');
               }}>💬 WhatsApp</button>
-              <button className={`${S.btnCancel} !py-[9px] !px-4 !text-xs`} onClick={() => setResult(null)}>Fermer</button>
+              <button className={S.btnCancel} onClick={() => setResult(null)}>Fermer</button>
             </div>
           </div>
         </div>
@@ -334,41 +321,41 @@ export default function Enseignants() {
       {/* ─── Modal résultat reset MDP ─── */}
       {resetResult && (
         <div className={S.overlay} onClick={() => setResetResult(null)}>
-          <div className={`${S.modal} !max-w-[440px]`} onClick={e => e.stopPropagation()}>
-            <div className="text-center mb-5">
-              <div className="text-4xl mb-2">🔑</div>
+          <div className={S.modal} style={{ maxWidth:440 }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign:'center', marginBottom:'1.25rem' }}>
+              <div style={{ fontSize:'2.5rem', marginBottom:'0.5rem' }}>🔑</div>
               <div className={S.modalTitle}>Nouveau mot de passe généré</div>
             </div>
-            <div className="bg-a-bg rounded-a-sm p-5 mb-4">
-              <div className="mb-3.5">
-                <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wider mb-1">Enseignant</div>
-                <div className="text-[15px] font-semibold text-a-fg">{resetResult.prenom} {resetResult.nom}</div>
+            <div style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'1.25rem', marginBottom:'1rem' }}>
+              <div style={{ marginBottom:'0.875rem' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Enseignant</div>
+                <div style={{ fontSize:15, fontWeight:600, color:'var(--a-fg)' }}>{resetResult.prenom} {resetResult.nom}</div>
               </div>
-              <div className="mb-3.5">
-                <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wider mb-1">Identifiant</div>
-                <div className="text-xl font-bold text-a-gold font-a-mono tracking-[1px]">{resetResult.identifiant}</div>
+              <div style={{ marginBottom:'0.875rem' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Identifiant</div>
+                <div style={{ fontSize:'1.3rem', fontWeight:800, color:'var(--a-gold)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em' }}>{resetResult.identifiant}</div>
               </div>
               <div>
-                <div className="text-[11px] font-semibold text-a-fg-light uppercase tracking-wider mb-1">
+                <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>
                   Nouveau mot de passe provisoire
-                  {resetPwdVisible && <span className="ml-2 text-a-fg-mid font-normal text-[10px]">masqué dans {resetCountdown}s</span>}
+                  {resetPwdVisible && <span style={{ marginLeft:8, color:'var(--a-fg-mid)', fontWeight:400, fontSize:10 }}>masqué dans {resetCountdown}s</span>}
                 </div>
-                <div className="text-xl font-bold text-a-red font-a-mono tracking-[1px]" style={{ cursor: resetPwdVisible ? 'default' : 'pointer' }}
+                <div style={{ fontSize:'1.3rem', fontWeight:800, color:'var(--a-red)', fontFamily:'var(--a-font-mono)', letterSpacing:'0.06em', cursor: resetPwdVisible ? 'default' : 'pointer' }}
                   onClick={() => { if (!resetPwdVisible) { setResetPwdVisible(true); setResetCountdown(10); } }}>
-                  {resetPwdVisible ? resetResult.tempPassword : <span className="text-[13px] text-a-fg-mid font-normal">●●●●●●●● (cliquer pour afficher)</span>}
+                  {resetPwdVisible ? resetResult.tempPassword : <span style={{ fontSize:13, color:'var(--a-fg-mid)', fontWeight:400, fontFamily:'inherit' }}>●●●●●●●● (cliquer pour afficher)</span>}
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 justify-center flex-wrap">
-              <button className={`${S.btnSave} !py-[9px] !px-4 !text-xs`} onClick={() => {
+            <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+              <button className={S.btnSave} onClick={() => {
                 navigator.clipboard.writeText(`Identifiant : ${resetResult.identifiant}\nMot de passe : ${resetResult.tempPassword}`);
                 alert('Copié !');
               }}>📋 Copier</button>
-              <button className="py-[9px] px-4 rounded-full border-none bg-[#25D366] text-white text-xs font-semibold cursor-pointer" onClick={() => {
+              <button style={{ padding:'8px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }} onClick={() => {
                 const msg = encodeURIComponent(`🕌 Institut As-Safaa — Portail Enseignant\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/enseignant/login\n\n⚠️ Changez votre mot de passe à la connexion.`);
                 window.open(`https://wa.me/?text=${msg}`, '_blank');
               }}>💬 WhatsApp</button>
-              <button className={`${S.btnCancel} !py-[9px] !px-4 !text-xs`} onClick={() => setResetResult(null)}>Fermer</button>
+              <button className={S.btnCancel} onClick={() => setResetResult(null)}>Fermer</button>
             </div>
           </div>
         </div>
@@ -447,7 +434,7 @@ function EnseignantModal({ data, allClasses, niveaux, initialClasseIds, loading,
 
           {classesByNiveau.map(({ niveau, classes }) => (
             <div key={niveau.id} className={S.niveauGroup}>
-              <div className={S.niveauGroupName}>{niveau.nom}</div>
+              <div className={S.niveauGroupName} style={{ color:'var(--a-fg)' }}>{niveau.nom}</div>
               <div className={S.checkboxRow}>
                 {classes.map(c => (
                   <label key={c.id} style={S.checkboxLabel(classeIds.includes(c.id))}>
@@ -461,7 +448,7 @@ function EnseignantModal({ data, allClasses, niveaux, initialClasseIds, loading,
 
           {classesOrphelines.length > 0 && (
             <div className={S.niveauGroup}>
-              <div className={S.niveauGroupName}>Autres</div>
+              <div className={S.niveauGroupName} style={{ color:'var(--a-fg)' }}>Autres</div>
               <div className={S.checkboxRow}>
                 {classesOrphelines.map(c => (
                   <label key={c.id} style={S.checkboxLabel(classeIds.includes(c.id))}>

@@ -167,64 +167,71 @@ export default function Messages() {
 
   return (
     <>
-      <div className="admin-page-header">
-        <div>
-          <p className="admin-page-subtitle">
-            {nonLus > 0
-              ? `${nonLus} message${nonLus > 1 ? 's' : ''} non lu${nonLus > 1 ? 's' : ''}`
-              : 'Tous les messages ont été lus'}
-          </p>
-        </div>
-      </div>
-
       {/* Stats */}
-      <div className="flex gap-2.5 mb-5 flex-wrap">
+      <div className="msg-stats">
         {[
-          { label:'Total',    value: data.length,  color:'var(--a-fg-mid)' },
-          { label:'Non lus',  value: nonLus,        color: nonLus > 0 ? 'var(--a-red)' : 'var(--a-fg-mid)' },
-          { label:"Aujourd'hui", value: todayCount, color: todayCount > 0 ? 'var(--a-gold)' : 'var(--a-fg-mid)' },
+          {
+            key: 'total', label: 'Total', value: data.length,
+            iconBg: 'rgba(140,138,158,0.12)', iconColor: 'var(--a-fg-mid)',
+            icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+            valueColor: 'var(--a-fg)',
+          },
+          {
+            key: 'nonlu', label: 'Non lus', value: nonLus,
+            iconBg: nonLus > 0 ? 'rgba(240,85,85,0.12)' : 'rgba(140,138,158,0.1)',
+            iconColor: nonLus > 0 ? 'var(--a-red)' : 'var(--a-fg-mid)',
+            icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+            valueColor: nonLus > 0 ? 'var(--a-red)' : 'var(--a-fg-mid)',
+          },
+          {
+            key: 'today', label: "Aujourd'hui", value: todayCount,
+            iconBg: todayCount > 0 ? 'rgba(var(--a-gold-rgb),0.12)' : 'rgba(140,138,158,0.1)',
+            iconColor: todayCount > 0 ? 'var(--a-gold)' : 'var(--a-fg-mid)',
+            icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+            valueColor: todayCount > 0 ? 'var(--a-gold)' : 'var(--a-fg-mid)',
+          },
         ].map(s => (
-          <div key={s.label} className="flex items-center gap-2 px-4 py-2 rounded-full bg-a-bg-card border border-a-border text-xs">
-            <span className="text-lg font-bold leading-none" style={{ color:s.color }}>{s.value}</span>
-            <span className="text-a-fg-light font-medium">{s.label}</span>
+          <div key={s.key} className="msg-stat">
+            <div className="msg-stat-icon" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</div>
+            <div className="msg-stat-text">
+              <span className="msg-stat-value" style={{ color: s.valueColor }}>{s.value}</span>
+              <span className="msg-stat-label">{s.label}</span>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Filtres */}
-      <div className="msg-filters">
-        <div className="flex gap-2 items-center flex-wrap flex-1">
-          <div className="msg-filter-tabs">
+      {/* Toolbar filtres + recherche */}
+      <div className="msg-toolbar">
+        <div className="msg-toolbar-left">
+          <div className="msg-filter-pill">
             {[
-              { key: 'tous',  label: 'Tous',     count: data.length },
-              { key: 'nonlu', label: 'Non lus',  count: nonLus },
-              { key: 'lu',    label: 'Lus',      count: data.length - nonLus },
+              { key: 'tous',  label: 'Tous',    count: data.length },
+              { key: 'nonlu', label: 'Non lus', count: nonLus },
+              { key: 'lu',    label: 'Lus',     count: data.length - nonLus },
             ].map(f => (
               <button
                 key={f.key}
-                className={`msg-filter-tab ${filtreLu === f.key ? 'active' : ''}`}
+                className={`msg-filter-opt${filtreLu === f.key ? ' active' : ''}`}
                 onClick={() => { setFiltreLu(f.key); setPage(0); }}
               >
                 {f.label}
-                <span className="msg-filter-tab-count">{f.count}</span>
+                <span className="msg-filter-badge">{f.count}</span>
               </button>
             ))}
           </div>
-          <select className="admin-filter-select max-w-[220px]" value={filtreCours} onChange={e => { setFiltreCours(e.target.value); setPage(0); }}>
+          <select className="msg-course-select" value={filtreCours} onChange={e => { setFiltreCours(e.target.value); setPage(0); }}>
             <option value="tous">Tous les cours</option>
             {COURS.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        {/* Recherche */}
-        <div className="relative shrink-0">
-          <span className="absolute left-[11px] top-1/2 -translate-y-1/2 text-a-fg-light pointer-events-none flex">
-            <IconSearch />
-          </span>
+        <div className="msg-search-wrap">
+          <span className="msg-search-icon"><IconSearch /></span>
           <input
+            className="msg-search-input"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(0); }}
             placeholder="Rechercher…"
-            className="pl-8 pr-3 py-[7px] border border-a-border rounded-full bg-a-bg-card text-a-fg text-xs outline-none w-[180px] box-border font-[inherit]"
           />
         </div>
       </div>
@@ -271,9 +278,10 @@ export default function Messages() {
                 <button
                   onClick={e => { e.stopPropagation(); handleDelete(m); }}
                   aria-label="Supprimer"
-                  className="shrink-0 bg-none border-none cursor-pointer text-a-fg-light px-1.5 py-1 rounded-md opacity-60 transition-[opacity,color] duration-150 self-center"
-                  onMouseEnter={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.color='var(--a-red)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.opacity='0.6'; e.currentTarget.style.color='var(--a-fg-light)'; }}
+                  className="a-action-icon-btn"
+                  style={{ flexShrink:0, alignSelf:'center' }}
+                  onMouseEnter={e => { e.currentTarget.style.color='var(--a-red)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color=''; }}
                 >
                   <IconTrash />
                 </button>
@@ -358,7 +366,7 @@ export default function Messages() {
               </div>
 
               {/* Corps du message */}
-              <div className="bg-a-bg border border-a-border border-l-[3px] border-l-a-gold rounded-r-a-sm px-[1.4rem] py-[1.3rem] text-[0.92rem] leading-[1.8] text-a-fg mb-6 whitespace-pre-wrap">
+              <div className="msg-reader-body">
                 {selected.message}
               </div>
 

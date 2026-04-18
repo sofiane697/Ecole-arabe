@@ -212,11 +212,9 @@ export default function EnseignantApp() {
 
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <span className="arabic flex flex-col leading-snug w-full">
-            <span>Institut As-Safaa</span>
-            <span className="text-right">الصفاء</span>
-          </span>
-          <span className="label">Espace Enseignant</span>
+          <span className="admin-brand-logo">الصفاء</span>
+          <span className="admin-brand-name">Institut As-Safaa</span>
+          <span className="admin-brand-badge">Espace Enseignant</span>
         </div>
 
         <nav className="admin-nav">

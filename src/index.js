@@ -33,8 +33,6 @@ import PortailResultats from './portail/PortailResultats';
 import PortailObservations from './portail/PortailObservations';
 import PortailMessages     from './portail/PortailMessages';
 
-// AnimatePresence au niveau racine : anime les changements de route top-level
-// (les routes imbriquées sont animées depuis leur layout respectif via Outlet).
 function AnimatedRoutes() {
   const location = useLocation();
   return (
