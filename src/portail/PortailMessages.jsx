@@ -177,52 +177,63 @@ export default function PortailMessages() {
   const handleBack = () => { setSelEns(null); setViewBroadcasts(false); };
 
   return (
-    <div className={`portail-msg-layout${hasSelection ? ' has-selection' : ''} flex overflow-hidden rounded-p border border-p-border bg-p-bg-card`} style={{ height:'calc(100vh - 160px)', boxShadow:'0 4px 24px rgba(0,0,0,.06)' }}>
+    <div
+      className={`portail-msg-layout${hasSelection ? ' has-selection' : ''}`}
+      style={{
+        display:'flex', overflow:'hidden', height:'calc(100vh - 160px)',
+        borderRadius:16, border:'1px solid var(--p-border)',
+        background:'var(--p-bg-card)', boxShadow:'0 4px 32px rgba(0,0,0,.07)',
+      }}
+    >
 
       {/* ── Colonne gauche ── */}
-      <div className="portail-msg-sidebar flex flex-col overflow-hidden shrink-0 border-r border-p-border" style={{ width:270 }}>
-
+      <div
+        className="portail-msg-sidebar"
+        style={{ width:270, flexShrink:0, display:'flex', flexDirection:'column', overflow:'hidden', borderRight:'1px solid var(--p-border)' }}
+      >
         {/* En-tête sidebar */}
-        <div className="border-b border-p-border" style={{ padding:'18px 18px 14px' }}>
-          <div className="font-p-display text-[15px] font-bold text-p-fg mb-0.5" style={{ fontFamily:'var(--p-font-display)' }}>Messages</div>
-          <div className="text-xs text-p-fg-light">Contacte ton professeur</div>
+        <div style={{ padding:'20px 18px 16px', borderBottom:'1px solid var(--p-border)' }}>
+          <div style={{ fontFamily:'var(--p-font-display)', fontSize:16, fontWeight:800, color:'var(--p-fg)', marginBottom:2 }}>Messages</div>
+          <div style={{ fontSize:12, color:'var(--p-fg-light)' }}>Contacte ton professeur</div>
         </div>
 
         {/* Liste enseignants */}
-        <div className="flex-1 overflow-y-auto">
-          {/* Item épinglé : Annonces de la classe */}
+        <div style={{ flex:1, overflowY:'auto' }}>
+          {/* Annonces épinglées */}
           <div
             onClick={() => { setViewBroadcasts(true); setSelEns(null); }}
-            className="flex items-center gap-3 cursor-pointer border-b border-p-border transition-all duration-150"
             style={{
-              padding:'13px 16px',
-              background: viewBroadcasts
-                ? 'linear-gradient(90deg, rgba(191,138,48,.18) 0%, rgba(191,138,48,.04) 100%)'
-                : 'linear-gradient(90deg, rgba(191,138,48,.06) 0%, transparent 100%)',
+              display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+              padding:'13px 16px', borderBottom:'1px solid var(--p-border)',
               borderLeft: viewBroadcasts ? '3px solid var(--p-gold)' : '3px solid transparent',
+              background: viewBroadcasts ? 'rgba(191,138,48,.08)' : 'transparent',
+              transition:'background .15s',
             }}
           >
-            <div className="w-[42px] h-[42px] rounded-full flex items-center justify-center text-lg text-white shrink-0" style={{ background:'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)', boxShadow:'0 2px 8px rgba(191,138,48,.4)' }}>
-              📢
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-p-fg flex items-center gap-1.5">
-                Annonces de la classe
-                <span className="text-[9px] font-bold text-p-gold border border-p-gold rounded-sm" style={{ padding:'1px 5px', letterSpacing:0.5 }}>ÉPINGLÉ</span>
+            <div style={{
+              width:42, height:42, borderRadius:'50%', flexShrink:0,
+              display:'flex', alignItems:'center', justifyContent:'center', fontSize:18,
+              background:'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)',
+              boxShadow:'0 2px 8px rgba(191,138,48,.35)',
+            }}>📢</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, fontWeight:700, color:'var(--p-fg)' }}>
+                Annonces
+                <span style={{ fontSize:9, fontWeight:800, color:'var(--p-gold)', border:'1px solid var(--p-gold)', borderRadius:3, padding:'1px 4px', letterSpacing:.5 }}>ÉPINGLÉ</span>
               </div>
-              <div className="text-xs text-p-fg-light mt-px">Messages de tes professeurs</div>
+              <div style={{ fontSize:11, color:'var(--p-fg-light)', marginTop:1 }}>Communiqués officiels</div>
             </div>
             {unreadBroadcasts > 0 && (
-              <span className="bg-p-gold text-white text-[11px] font-extrabold rounded-full shrink-0" style={{ padding:'2px 8px', boxShadow:'0 1px 4px rgba(191,138,48,.4)' }}>
+              <span style={{ background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:800, borderRadius:20, padding:'2px 8px', flexShrink:0 }}>
                 {unreadBroadcasts}
               </span>
             )}
           </div>
 
           {enseignants.length === 0 && (
-            <div className="text-center text-p-fg-light text-[13px] leading-relaxed" style={{ padding:'32px 18px' }}>
-              <div className="text-[32px] mb-2.5">🎓</div>
-              Aucun enseignant assigné à ta classe pour le moment.
+            <div style={{ textAlign:'center', padding:'32px 18px', color:'var(--p-fg-light)', fontSize:13, lineHeight:1.6 }}>
+              <div style={{ fontSize:32, marginBottom:10 }}>🎓</div>
+              Aucun enseignant assigné à ta classe.
             </div>
           )}
           {enseignants.map(ens => {
@@ -234,28 +245,34 @@ export default function PortailMessages() {
               <div
                 key={ens.id}
                 onClick={() => { setSelEns(ens); setViewBroadcasts(false); }}
-                className="flex items-center gap-3 cursor-pointer border-b border-p-border transition-all duration-150"
                 style={{
-                  padding:'13px 16px',
-                  background: active
-                    ? 'linear-gradient(90deg, rgba(91,168,122,.15) 0%, rgba(91,168,122,.04) 100%)'
-                    : 'transparent',
+                  display:'flex', alignItems:'center', gap:12, cursor:'pointer',
+                  padding:'13px 16px', borderBottom:'1px solid var(--p-border)',
                   borderLeft: active ? '3px solid var(--p-green, #5BA87A)' : '3px solid transparent',
+                  background: active ? 'rgba(91,168,122,.08)' : 'transparent',
+                  transition:'background .15s',
                 }}
               >
-                {/* Avatar + pastille présence */}
-                <div className="relative shrink-0">
-                  <div className="w-[42px] h-[42px] rounded-full text-white flex items-center justify-center text-[15px] font-bold" style={{ background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)`, boxShadow:`0 2px 8px ${color}44` }}>
+                <div style={{ position:'relative', flexShrink:0 }}>
+                  <div style={{
+                    width:42, height:42, borderRadius:'50%', color:'#fff',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:15, fontWeight:700,
+                    background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)`,
+                    boxShadow:`0 2px 8px ${color}44`,
+                  }}>
                     {initiales(ens.prenom, ens.nom)}
                   </div>
-                  <div className="absolute bottom-px right-px w-[11px] h-[11px] rounded-full" style={{ background:presence.color, border:'2px solid var(--p-bg-card)' }} />
+                  <div style={{ position:'absolute', bottom:1, right:1, width:11, height:11, borderRadius:'50%', background:presence.color, border:'2px solid var(--p-bg-card)' }} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-p-fg">{fmtPrenom(ens.prenom)} {fmtNom(ens.nom)}</div>
-                  <div className="text-xs mt-px font-medium" style={{ color:presence.color }}>● {presence.label}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:'var(--p-fg)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    {fmtPrenom(ens.prenom)} {fmtNom(ens.nom)}
+                  </div>
+                  <div style={{ fontSize:11, marginTop:2, fontWeight:600, color:presence.color }}>● {presence.label}</div>
                 </div>
                 {unread > 0 && (
-                  <span className="bg-p-gold text-white text-[11px] font-extrabold rounded-full shrink-0" style={{ padding:'2px 8px', boxShadow:'0 1px 4px rgba(191,138,48,.4)' }}>
+                  <span style={{ background:'var(--p-gold)', color:'#fff', fontSize:11, fontWeight:800, borderRadius:20, padding:'2px 8px', flexShrink:0, boxShadow:'0 2px 6px rgba(191,138,48,.4)' }}>
                     {unread}
                   </span>
                 )}
@@ -266,7 +283,7 @@ export default function PortailMessages() {
       </div>
 
       {/* ── Zone chat ── */}
-      <div className="portail-msg-chat flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="portail-msg-chat" style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
         {viewBroadcasts ? (
           <>
             {/* En-tête officiel */}
@@ -442,11 +459,11 @@ export default function PortailMessages() {
             </div>
           </>
         ) : !selEns ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3.5 text-p-fg-light p-8">
-            <div className="w-[72px] h-[72px] rounded-full bg-p-border flex items-center justify-center text-[32px]">💬</div>
-            <div className="text-[15px] font-semibold text-p-fg" style={{ fontFamily:'var(--p-font-display)' }}>Tes messages</div>
-            <div className="text-[13px] text-center max-w-[240px] leading-relaxed">
-              Sélectionne un enseignant à gauche pour démarrer ou voir une conversation.
+          <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, padding:32, color:'var(--p-fg-light)' }}>
+            <div style={{ width:72, height:72, borderRadius:'50%', background:'var(--p-border)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:30 }}>💬</div>
+            <div style={{ fontSize:16, fontWeight:700, color:'var(--p-fg)', fontFamily:'var(--p-font-display)' }}>Tes messages</div>
+            <div style={{ fontSize:13, textAlign:'center', maxWidth:240, lineHeight:1.6 }}>
+              Sélectionne un enseignant à gauche pour démarrer une conversation.
             </div>
           </div>
         ) : (
@@ -454,68 +471,77 @@ export default function PortailMessages() {
             {/* Header chat */}
             {(() => {
               const presence = getPresence(presenceMap[selEns.id]);
+              const color = avatarColor(selEns.id);
               return (
-                <div className="flex items-center gap-3 border-b border-p-border bg-p-bg-card" style={{ padding:'12px 20px' }}>
-                  <button className="portail-msg-back hidden items-center justify-center w-[34px] h-[34px] rounded-lg border border-p-border text-p-fg-mid cursor-pointer shrink-0" onClick={handleBack} aria-label="Retour" style={{ background:'none' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 20px', borderBottom:'1px solid var(--p-border)', background:'var(--p-bg-card)' }}>
+                  <button
+                    className="portail-msg-back"
+                    onClick={handleBack} aria-label="Retour"
+                    style={{ display:'none', alignItems:'center', justifyContent:'center', width:34, height:34, borderRadius:10, border:'1px solid var(--p-border)', background:'transparent', color:'var(--p-fg-mid)', cursor:'pointer', flexShrink:0 }}
+                  >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                   </button>
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full text-white flex items-center justify-center text-sm font-bold" style={{ background:`linear-gradient(135deg, ${avatarColor(selEns.id)} 0%, ${avatarColor(selEns.id)}bb 100%)` }}>
+                  <div style={{ position:'relative', flexShrink:0 }}>
+                    <div style={{ width:42, height:42, borderRadius:'50%', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, background:`linear-gradient(135deg, ${color} 0%, ${color}bb 100%)` }}>
                       {initiales(selEns.prenom, selEns.nom)}
                     </div>
-                    <div className="absolute bottom-px right-px w-2.5 h-2.5 rounded-full" style={{ background:presence.color, border:'2px solid var(--p-bg-card)' }} />
+                    <div style={{ position:'absolute', bottom:1, right:1, width:11, height:11, borderRadius:'50%', background:presence.color, border:'2px solid var(--p-bg-card)' }} />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-p-fg">{fmtPrenom(selEns.prenom)} {fmtNom(selEns.nom)}</div>
-                    <div className="text-xs font-medium" style={{ color:presence.color }}>● {presence.label}</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:'var(--p-fg)' }}>{fmtPrenom(selEns.prenom)} {fmtNom(selEns.nom)}</div>
+                    <div style={{ fontSize:12, fontWeight:600, color:presence.color, marginTop:2 }}>● {presence.label}</div>
                   </div>
                 </div>
               );
             })()}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto flex flex-col gap-1 bg-p-bg" style={{ padding:'20px 20px 8px' }}>
+            <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:4, padding:'20px 20px 8px', background:'var(--p-bg)' }}>
               {messages.length === 0 && (
-                <div className="text-center text-p-fg-light text-[13px] mt-[60px] leading-relaxed">
-                  <div className="text-[36px] mb-2.5">👋</div>
+                <div style={{ textAlign:'center', color:'var(--p-fg-light)', fontSize:13, marginTop:60, lineHeight:1.7 }}>
+                  <div style={{ fontSize:36, marginBottom:10 }}>👋</div>
                   Aucun message pour l'instant.<br/>Envoie le premier message à ton professeur !
                 </div>
               )}
               {grouped.map((item, i) => {
                 if (item.type === 'date') return (
-                  <div key={`d-${i}`} className="flex items-center gap-2.5" style={{ margin:'12px 0 8px' }}>
-                    <div className="flex-1 h-px bg-p-border" />
-                    <span className="text-[11px] font-semibold text-p-fg-light whitespace-nowrap px-1">{item.label}</span>
-                    <div className="flex-1 h-px bg-p-border" />
+                  <div key={`d-${i}`} style={{ display:'flex', alignItems:'center', gap:10, margin:'12px 0 8px' }}>
+                    <div style={{ flex:1, height:1, background:'var(--p-border)' }} />
+                    <span style={{ fontSize:11, fontWeight:600, color:'var(--p-fg-light)', whiteSpace:'nowrap', padding:'0 4px' }}>{item.label}</span>
+                    <div style={{ flex:1, height:1, background:'var(--p-border)' }} />
                   </div>
                 );
                 const m = item.msg;
                 const mine = m.sender_role === 'eleve';
                 return (
-                  <div key={m.id} className={`flex flex-col mb-0.5 ${mine ? 'items-end' : 'items-start'}`}>
-                    {/* Nom expéditeur si message du prof */}
+                  <div key={m.id} style={{ display:'flex', flexDirection:'column', marginBottom:2, alignItems: mine ? 'flex-end' : 'flex-start' }}>
                     {!mine && (
-                      <div className="text-[11px] font-semibold text-p-fg-light mb-[3px] ml-11">
+                      <div style={{ fontSize:11, fontWeight:600, color:'var(--p-fg-light)', marginBottom:3, marginLeft:42 }}>
                         {fmtPrenom(selEns.prenom)}
                       </div>
                     )}
-                    <div className={`flex items-end gap-2 ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
-                      {/* Avatar */}
-                      <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold shrink-0" style={{ background: mine ? `linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)` : `linear-gradient(135deg, ${avatarColor(selEns.id)} 0%, ${avatarColor(selEns.id)}bb 100%)` }}>
+                    <div style={{ display:'flex', alignItems:'flex-end', gap:8, flexDirection: mine ? 'row-reverse' : 'row' }}>
+                      <div style={{
+                        width:32, height:32, borderRadius:'50%', color:'#fff',
+                        display:'flex', alignItems:'center', justifyContent:'center',
+                        fontSize:11, fontWeight:700, flexShrink:0,
+                        background: mine ? 'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)' : `linear-gradient(135deg, ${avatarColor(selEns.id)} 0%, ${avatarColor(selEns.id)}bb 100%)`,
+                      }}>
                         {mine ? eleveInitiales : initiales(selEns.prenom, selEns.nom)}
                       </div>
-                      <div className="max-w-[62%]">
-                        <div className="text-sm leading-relaxed break-words" style={{
+                      <div style={{ maxWidth:'62%' }}>
+                        <div style={{
+                          fontSize:14, lineHeight:1.55, wordBreak:'break-word',
                           padding:'10px 14px',
                           borderRadius: mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                          background: mine ? 'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)' : 'var(--p-bg-card)',
+                          background: mine ? 'linear-gradient(135deg, var(--p-gold) 0%, #c89030 100%)' : 'var(--p-bg-card)',
                           color: mine ? '#fff' : 'var(--p-fg)',
                           border: mine ? 'none' : '1px solid var(--p-border)',
-                          boxShadow: mine ? '0 2px 8px rgba(191,138,48,.25)' : '0 1px 3px rgba(0,0,0,.06)',
+                          boxShadow: mine ? '0 3px 10px rgba(191,138,48,.25)' : '0 1px 4px rgba(0,0,0,.05)',
                         }}>
                           {m.contenu}
                         </div>
-                        <div className={`text-[11px] text-p-fg-light mt-1 ${mine ? 'text-right pr-0.5' : 'text-left pl-0.5'}`}>
+                        <div style={{ fontSize:11, color:'var(--p-fg-light)', marginTop:4, textAlign: mine ? 'right' : 'left', padding:'0 2px' }}>
                           {fmtTime(m.created_at)}
                         </div>
                       </div>
@@ -527,13 +553,13 @@ export default function PortailMessages() {
             </div>
 
             {/* Zone de saisie */}
-            <div className="border-t border-p-border bg-p-bg-card" style={{ padding:'12px 16px' }}>
+            <div style={{ borderTop:'1px solid var(--p-border)', background:'var(--p-bg-card)', padding:'12px 16px' }}>
               {sendError && (
-                <div className="mb-2 rounded-lg text-p-red text-xs" style={{ padding:'8px 12px', background:'rgba(255,69,58,0.08)', border:'1px solid rgba(255,69,58,0.25)' }}>
+                <div style={{ marginBottom:8, padding:'8px 12px', borderRadius:10, background:'rgba(255,69,58,0.08)', border:'1px solid rgba(255,69,58,0.25)', color:'var(--p-red)', fontSize:12 }}>
                   {sendError}
                 </div>
               )}
-              <div className="flex items-end gap-2.5 bg-p-bg rounded-3xl border border-p-border transition-colors duration-200" style={{ padding:'6px 6px 6px 16px' }}>
+              <div style={{ display:'flex', alignItems:'flex-end', gap:10, background:'var(--p-bg)', borderRadius:24, border:'1px solid var(--p-border)', padding:'6px 6px 6px 16px' }}>
                 <textarea
                   ref={textareaRef}
                   placeholder="Écris ton message… (Entrée pour envoyer)"
@@ -541,27 +567,32 @@ export default function PortailMessages() {
                   onChange={e => setText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   rows={1}
-                  className="flex-1 bg-transparent border-none outline-none resize-none text-sm text-p-fg leading-normal"
-                  style={{ fontFamily:'inherit', maxHeight:100, padding:'4px 0', minHeight:24 }}
+                  style={{
+                    flex:1, background:'transparent', border:'none', outline:'none',
+                    resize:'none', fontSize:14, color:'var(--p-fg)', lineHeight:1.5,
+                    fontFamily:'inherit', maxHeight:100, padding:'4px 0', minHeight:24,
+                  }}
                 />
                 <button
                   onClick={handleSend}
                   disabled={!text.trim() || sending}
-                  className="w-[38px] h-[38px] rounded-full border-none shrink-0 flex items-center justify-center transition-all duration-200"
                   style={{
-                    background: (!text.trim() || sending) ? 'var(--p-border)' : 'linear-gradient(135deg, var(--p-gold) 0%, #d4a043 100%)',
+                    width:38, height:38, borderRadius:'50%', border:'none', flexShrink:0,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    background: (!text.trim() || sending) ? 'var(--p-border)' : 'linear-gradient(135deg, var(--p-gold) 0%, #c89030 100%)',
                     color: (!text.trim() || sending) ? 'var(--p-fg-light)' : '#fff',
                     cursor: (!text.trim() || sending) ? 'not-allowed' : 'pointer',
-                    boxShadow: (!text.trim() || sending) ? 'none' : '0 2px 8px rgba(191,138,48,.35)',
+                    boxShadow: (!text.trim() || sending) ? 'none' : '0 3px 10px rgba(191,138,48,.35)',
+                    transition:'all .2s',
                   }}
                 >
                   {sending
-                    ? <div className="w-3.5 h-3.5 rounded-full" style={{ border:'2px solid currentColor', borderTopColor:'transparent', animation:'spin .7s linear infinite' }} />
+                    ? <div style={{ width:14, height:14, borderRadius:'50%', border:'2px solid currentColor', borderTopColor:'transparent', animation:'spin .7s linear infinite' }} />
                     : <IconSend />
                   }
                 </button>
               </div>
-              <div className="text-[11px] text-p-fg-light mt-1.5 text-center">
+              <div style={{ fontSize:11, color:'var(--p-fg-light)', marginTop:6, textAlign:'center' }}>
                 Maj+Entrée pour aller à la ligne
               </div>
             </div>

@@ -77,7 +77,7 @@ export default function AdminApp() {
         root.classList.add('admin-light');
       }
     }
-    document.body.style.background = darkMode ? '#07112a' : '#f1f0ec';
+    document.body.style.background = darkMode ? '#0d1526' : '#f0ece5';
     localStorage.setItem('admin_theme', darkMode ? 'dark' : 'light');
     return () => { document.body.style.background = ''; };
   }, [darkMode]);
@@ -122,11 +122,9 @@ export default function AdminApp() {
       {/* ── Sidebar ── */}
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
-            <span>Institut As-Safaa</span>
-            <span style={{textAlign:'right'}}>الصفاء</span>
-          </span>
-          <span className="label">Espace Admin</span>
+          <span className="admin-brand-logo">الصفاء</span>
+          <span className="admin-brand-name">Institut As-Safaa</span>
+          <span className="admin-brand-badge">Espace Administrateur</span>
         </div>
 
         <nav className="admin-nav">
@@ -225,10 +223,19 @@ export default function AdminApp() {
         </nav>
 
         <div className="admin-sidebar-footer">
-          <div className="admin-sidebar-user">
+          <div className="admin-sidebar-user-row">
             {(() => {
               let s; try { s = JSON.parse(sessionStorage.getItem('admin_session') || '{}'); } catch { s = {}; }
-              return (<><strong>{s.display_name || 'Administrateur'}</strong><span>{s.identifiant || ''}</span></>);
+              const initials = (s.display_name || 'AD').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+              return (
+                <>
+                  <div className="admin-sidebar-avatar">{initials}</div>
+                  <div className="admin-sidebar-user-info">
+                    <strong>{s.display_name || 'Administrateur'}</strong>
+                    <span>{s.identifiant || ''}</span>
+                  </div>
+                </>
+              );
             })()}
           </div>
           <button className="admin-logout-btn" onClick={handleLogout}>
@@ -241,8 +248,12 @@ export default function AdminApp() {
       <main className="admin-main">
         <header className="admin-topbar">
           <div className="admin-topbar-left">
-            <button className="admin-hamburger" onClick={() => setSidebarOpen(o => !o)}>
-              ☰
+            <button className="admin-hamburger" onClick={() => setSidebarOpen(o => !o)} aria-label="Menu">
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+                <rect y="0" width="18" height="2" rx="1" fill="currentColor"/>
+                <rect y="5" width="13" height="2" rx="1" fill="currentColor"/>
+                <rect y="10" width="8" height="2" rx="1" fill="currentColor"/>
+              </svg>
             </button>
             <span className="admin-topbar-title">{currentTitle}</span>
           </div>

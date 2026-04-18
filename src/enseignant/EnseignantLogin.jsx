@@ -6,7 +6,6 @@ const EyeIcon = ({ open }) => open
   ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
   : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>;
 
-/* ── Icônes SVG pour le panneau de marque ── */
 const IconClasse = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#bf8a30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -15,7 +14,6 @@ const IconClasse = () => (
     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
   </svg>
 );
-
 const IconDevoir = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#bf8a30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -25,13 +23,11 @@ const IconDevoir = () => (
     <polyline points="10 9 9 9 8 9"/>
   </svg>
 );
-
 const IconNote = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#bf8a30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
   </svg>
 );
-
 const IconMessage = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#bf8a30" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -45,57 +41,66 @@ const FEATURES = [
   { icon: <IconMessage />, label: 'Messages & suivi' },
 ];
 
-/* ── Panneau gauche partagé entre les deux vues ── */
 function BrandPanel({ subtitle }) {
   return (
-    <div
-      className="ens-brand-panel w-1/2 h-screen flex flex-col items-center justify-center px-12 py-[60px] box-border relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(160deg, #0f0f0f 0%, #0a0a0a 60%, #111008 100%)',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-      }}
-    >
-      {/* Halo décoratif */}
-      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(191,138,48,0.10) 0%, transparent 70%)' }} />
+    <div style={{
+      width: '50%', height: '100vh', flexShrink: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '60px 48px', boxSizing: 'border-box',
+      position: 'relative', overflow: 'hidden',
+      background: 'linear-gradient(160deg, #0f0f0f 0%, #0a0a0a 60%, #111008 100%)',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    }}>
+      <div style={{
+        position: 'absolute', top: '30%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 340, height: 340, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(191,138,48,0.10) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
 
-      {/* Logo arabe */}
-      <div className="text-center mb-10 relative">
-        <span className="block font-arabic text-[52px] leading-[1.2] tracking-[1px] text-a-gold"
-          style={{ direction: 'rtl', textShadow: '0 0 40px rgba(191,138,48,0.30)' }}>
-          الصفاء
-        </span>
-        <span className="block text-[13px] tracking-[4px] uppercase mt-1.5 text-a-fg-light">
-          Institut As-Safaa
-        </span>
-        {/* Séparateur */}
-        <div className="w-12 h-[2px] rounded-sm mx-auto mt-5"
-          style={{ background: 'linear-gradient(90deg, transparent, #bf8a30, transparent)' }} />
+      <div style={{ textAlign: 'center', marginBottom: 40, position: 'relative' }}>
+        <span style={{
+          display: 'block', fontFamily: "'Scheherazade New', serif",
+          fontSize: 52, color: '#bf8a30', direction: 'rtl',
+          lineHeight: 1.2, letterSpacing: 1,
+          textShadow: '0 0 40px rgba(191,138,48,0.30)',
+        }}>الصفاء</span>
+        <span style={{
+          display: 'block', fontSize: 13, color: '#6e6e73',
+          letterSpacing: 4, textTransform: 'uppercase', marginTop: 6,
+        }}>Institut As-Safaa</span>
+        <div style={{
+          width: 48, height: 2,
+          background: 'linear-gradient(90deg, transparent, #bf8a30, transparent)',
+          margin: '20px auto 0', borderRadius: 2,
+        }} />
       </div>
 
-      {/* Titre portail */}
-      <h1 className="font-a-display text-[22px] font-bold text-center tracking-[0.3px] text-a-fg m-0 mb-3.5">
-        {subtitle}
-      </h1>
+      <h1 style={{
+        fontSize: 22, fontWeight: 700, color: '#f5f5f7',
+        textAlign: 'center', margin: '0 0 14px', letterSpacing: 0.3,
+      }}>{subtitle}</h1>
 
-      {/* Description */}
-      <p className="text-sm text-center leading-[1.7] max-w-[320px] text-a-fg-mid m-0 mb-12">
+      <p style={{
+        fontSize: 14, color: '#a1a1a6', textAlign: 'center',
+        lineHeight: 1.7, maxWidth: 320, margin: '0 0 48px',
+      }}>
         Suivez vos classes, gérez les devoirs, les notes et communiquez avec vos élèves.
       </p>
 
-      {/* Grille de fonctionnalités */}
-      <div className="grid grid-cols-2 gap-4 w-full max-w-[320px]">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', maxWidth: 320 }}>
         {FEATURES.map((f, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center gap-2.5 py-5 px-4 rounded-[14px] text-center"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.07)',
-            }}
-          >
+          <div key={i} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            gap: 10, padding: '20px 16px', borderRadius: 14,
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            textAlign: 'center',
+          }}>
             {f.icon}
-            <span className="text-xs font-medium leading-[1.4] text-a-fg-mid">
+            <span style={{ fontSize: 12, color: '#a1a1a6', fontWeight: 500, lineHeight: 1.4 }}>
               {f.label}
             </span>
           </div>
@@ -112,6 +117,26 @@ function validatePassword(pwd) {
   if (!/[!@#$%^&*?_\-+=]/.test(pwd)) errors.push('Au moins 1 caractère spécial (!@#$%&*?_-+=)');
   return errors;
 }
+
+const S = {
+  page:  { height: '100vh', display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#000' },
+  panel: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 },
+  card:  { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: '40px 36px', width: '100%', maxWidth: 400, boxSizing: 'border-box', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  brand: { textAlign: 'center', marginBottom: 28 },
+  brandArabic: { display: 'flex', flexDirection: 'column', fontFamily: "'Scheherazade New', serif", fontSize: 28, color: '#bf8a30', lineHeight: 1.4, margin: '0 auto' },
+  brandLabel:  { display: 'block', fontSize: 12, color: '#6e6e73', marginTop: 6, letterSpacing: 1, textTransform: 'uppercase' },
+  field: { marginBottom: 16 },
+  label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#a1a1a6', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '.5px' },
+  input: { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#2c2c2e', color: '#f5f5f7', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
+  inputPr: { width: '100%', padding: '12px 42px 12px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#2c2c2e', color: '#f5f5f7', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
+  eyeBtn: { position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#6e6e73', padding: 4, display: 'flex', alignItems: 'center' },
+  btn: (disabled) => ({ width: '100%', padding: '13px', borderRadius: 980, border: 'none', background: disabled ? '#3a3a3c' : '#bf8a30', color: disabled ? '#6e6e73' : '#fff', fontSize: 14, fontWeight: 700, cursor: disabled ? 'not-allowed' : 'pointer', marginTop: 8, transition: 'background .2s' }),
+  error: { marginTop: 12, color: '#ff453a', fontSize: 13, textAlign: 'center' },
+  hint:  { color: '#6e6e73', fontSize: 12, textAlign: 'center', marginTop: 20, lineHeight: 1.6, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 },
+  criteria: (ok, typed) => ({ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: typed ? (ok ? '#30d158' : '#ff453a') : '#6e6e73', marginBottom: 3 }),
+  mismatch: { fontSize: 11, color: '#ff453a', marginTop: 4 },
+  info: { fontSize: 13, color: '#a1a1a6', textAlign: 'center', marginBottom: 22, lineHeight: 1.6 },
+};
 
 export default function EnseignantLogin() {
   const navigate = useNavigate();
@@ -132,20 +157,18 @@ export default function EnseignantLogin() {
   const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   useLayoutEffect(() => {
-    /* Styles responsive pour le panneau de marque */
     const mediaId = 'ens-login-media';
     if (!document.getElementById(mediaId)) {
-      const mediaStyle = document.createElement('style');
-      mediaStyle.id = mediaId;
-      mediaStyle.textContent = `
+      const el = document.createElement('style');
+      el.id = mediaId;
+      el.textContent = `
         @media (max-width: 767px) {
           .ens-brand-panel { display: none !important; }
           .ens-form-panel  { padding: 24px 20px !important; }
         }
       `;
-      document.head.appendChild(mediaStyle);
+      document.head.appendChild(el);
     }
-
     document.body.style.background = '#000';
     document.body.style.overflow   = 'hidden';
     return () => {
@@ -169,11 +192,7 @@ export default function EnseignantLogin() {
     setError('');
     try {
       const data = await loginEnseignant(identifiant.trim().toLowerCase(), password);
-      if (data.must_change_password) {
-        setEnsData(data);
-        setMustChange(true);
-        return;
-      }
+      if (data.must_change_password) { setEnsData(data); setMustChange(true); return; }
       navigate('/enseignant');
     } catch(err) {
       setError(err.message || 'Identifiant ou mot de passe incorrect.');
@@ -196,92 +215,58 @@ export default function EnseignantLogin() {
     setChangeLoading(false);
   };
 
-  // Classes Tailwind pour styles statiques
-  const CL = {
-    page:       'h-screen flex flex-row overflow-hidden',
-    card:       'rounded-[18px] py-10 px-9 w-full max-w-[400px] box-border overflow-hidden',
-    brand:      'text-center mb-8',
-    brandArabic:'block font-arabic text-[28px] leading-[1.3]',
-    brandLabel: 'block text-xs mt-1.5 tracking-[1px] uppercase',
-    field:      'mb-[18px]',
-    label:      'block text-xs font-semibold mb-[7px] uppercase tracking-[.5px]',
-    input:      'w-full py-[11px] px-3.5 rounded-[10px] text-sm outline-none box-border',
-    error:      'mt-3.5 py-2.5 px-3.5 rounded-[10px] text-[13px] text-center',
-    hint:       'text-xs text-center mt-5 leading-[1.6] pt-4',
-  };
-
-  // Styles dynamiques ou avec couleurs brutes non-Tailwind
-  const S = {
-    page:       { background:'#000' },
-    card:       { background:'#1c1c1e', border:'1px solid rgba(255,255,255,0.08)' },
-    brandArabic:{ color:'#bf8a30', direction:'rtl' },
-    brandLabel: { color:'#6e6e73' },
-    label:      { color:'#a1a1a6' },
-    input:      { border:'1px solid rgba(255,255,255,0.1)', background:'#2c2c2e', color:'#f5f5f7' },
-    btn: (disabled) => ({ width:'100%', padding:'13px', borderRadius:980, border:'none', background: disabled ? '#3a3a3c' : '#bf8a30', color: disabled ? '#6e6e73' : '#fff', fontSize:14, fontWeight:700, cursor: disabled ? 'not-allowed' : 'pointer', marginTop:8, transition:'background .2s' }),
-    error:      { background:'rgba(255,69,58,.1)', border:'1px solid rgba(255,69,58,.25)', color:'#ff453a' },
-    hint:       { color:'#6e6e73', borderTop:'1px solid rgba(255,255,255,0.06)' },
-    criteria: (ok, typed) => ({ display:'flex', alignItems:'center', gap:6, fontSize:12, color: typed ? (ok ? '#30d158' : '#ff453a') : '#6e6e73', marginBottom:3 }),
-  };
+  const CRITERIA = [
+    { label: 'Minimum 8 caractères',         ok: newPwd.length >= 8 },
+    { label: 'Au moins 1 chiffre',            ok: /\d/.test(newPwd) },
+    { label: 'Au moins 1 caractère spécial',  ok: /[!@#$%^&*?_\-+=]/.test(newPwd) },
+  ];
 
   /* ── Vue changement de mot de passe ── */
   if (mustChange) {
     const allValid = pwdErrors.length === 0 && newPwd.length > 0 && newPwd === confirmPwd;
     return (
-      <div className={`admin-root ens-login-root ${CL.page}`} style={S.page}>
+      <div className="admin-root" style={S.page}>
         <BrandPanel subtitle="Première connexion" />
-        <div
-          className="ens-form-panel flex-1 flex items-center justify-center p-10"
-        >
-          <div className={CL.card} style={S.card}>
-            <div className={CL.brand}>
-              <span className={`${CL.brandArabic} flex flex-col leading-[1.4]`} style={S.brandArabic}>
+        <div className="ens-form-panel" style={S.panel}>
+          <div style={S.card}>
+            <div style={S.brand}>
+              <span style={S.brandArabic}>
                 <span>Institut As-Safaa</span>
-                <span>الصفاء</span>
+                <span style={{ textAlign: 'right' }}>الصفاء</span>
               </span>
-              <span className={CL.brandLabel} style={S.brandLabel}>Première connexion</span>
+              <span style={S.brandLabel}>Première connexion</span>
             </div>
-            <p className="text-[13px] text-center mb-[22px] leading-[1.6] text-a-fg-mid">
-              Créez votre mot de passe personnel.<br />Il remplacera le mot de passe provisoire.
-            </p>
-            <div className={`admin-field ${CL.field}`}>
-              <label className={CL.label} style={S.label}>Nouveau mot de passe</label>
-              <div className="relative">
-                <input className={`${CL.input} pr-[42px]`} style={S.input} type={showNewPwd ? 'text' : 'password'} value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Min. 8 caractères" autoComplete="new-password" />
-                <button type="button" onClick={() => setShowNewPwd(v => !v)} aria-label={showNewPwd ? 'Masquer' : 'Afficher'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer p-1 flex items-center text-a-fg-light">
-                  <EyeIcon open={showNewPwd} />
-                </button>
+            <p style={S.info}>Créez votre mot de passe personnel.<br />Il remplacera le mot de passe provisoire.</p>
+
+            <div style={S.field}>
+              <label style={S.label}>Nouveau mot de passe</label>
+              <div style={{ position: 'relative' }}>
+                <input style={S.inputPr} type={showNewPwd ? 'text' : 'password'} value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Min. 8 caractères" autoComplete="new-password" />
+                <button type="button" onClick={() => setShowNewPwd(v => !v)} aria-label={showNewPwd ? 'Masquer' : 'Afficher'} style={S.eyeBtn}><EyeIcon open={showNewPwd} /></button>
               </div>
             </div>
-            <div className="mb-4">
-              {[
-                { label:'Minimum 8 caractères', ok: newPwd.length >= 8 },
-                { label:'Au moins 1 chiffre', ok: /\d/.test(newPwd) },
-                { label:'Au moins 1 caractère spécial', ok: /[!@#$%^&*?_\-+=]/.test(newPwd) },
-              ].map((c, i) => (
+
+            <div style={{ marginBottom: 16 }}>
+              {CRITERIA.map((c, i) => (
                 <div key={i} style={S.criteria(c.ok, newPwd.length > 0)}>
                   <span>{newPwd ? (c.ok ? '✓' : '✕') : '○'}</span>{c.label}
                 </div>
               ))}
             </div>
-            <div className={`admin-field ${CL.field}`}>
-              <label className={CL.label} style={S.label}>Confirmer le mot de passe</label>
-              <div className="relative">
-                <input className={`${CL.input} pr-[42px]`} style={S.input} type={showConfirmPwd ? 'text' : 'password'} value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="Retapez votre mot de passe" autoComplete="new-password" />
-                <button type="button" onClick={() => setShowConfirmPwd(v => !v)} aria-label={showConfirmPwd ? 'Masquer' : 'Afficher'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer p-1 flex items-center text-a-fg-light">
-                  <EyeIcon open={showConfirmPwd} />
-                </button>
+
+            <div style={S.field}>
+              <label style={S.label}>Confirmer le mot de passe</label>
+              <div style={{ position: 'relative' }}>
+                <input style={S.inputPr} type={showConfirmPwd ? 'text' : 'password'} value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="Retapez votre mot de passe" autoComplete="new-password" />
+                <button type="button" onClick={() => setShowConfirmPwd(v => !v)} aria-label={showConfirmPwd ? 'Masquer' : 'Afficher'} style={S.eyeBtn}><EyeIcon open={showConfirmPwd} /></button>
               </div>
-              {confirmPwd && newPwd !== confirmPwd && (
-                <div className="text-[11px] mt-1 text-a-red">Les mots de passe ne correspondent pas</div>
-              )}
+              {confirmPwd && newPwd !== confirmPwd && <div style={S.mismatch}>Les mots de passe ne correspondent pas</div>}
             </div>
+
             <button style={S.btn(!allValid || changeLoading)} disabled={!allValid || changeLoading} onClick={handleChangePassword}>
               {changeLoading ? 'Modification...' : 'Valider mon mot de passe'}
             </button>
-            {changeError && <div className={CL.error} style={S.error}>{changeError}</div>}
+            {changeError && <div style={S.error}>{changeError}</div>}
           </div>
         </div>
       </div>
@@ -290,42 +275,36 @@ export default function EnseignantLogin() {
 
   /* ── Vue connexion normale ── */
   return (
-    <div className={`admin-root ens-login-root ${CL.page}`} style={S.page}>
+    <div className="admin-root" style={S.page}>
       <BrandPanel subtitle="Portail Enseignant" />
-      <div
-        className="ens-form-panel flex-1 flex items-center justify-center p-10"
-      >
-        <div className={CL.card} style={S.card}>
-          <div className={CL.brand}>
-            <span className={`${CL.brandArabic} flex flex-col leading-[1.4] w-full`} style={S.brandArabic}>
+      <div className="ens-form-panel" style={S.panel}>
+        <div style={S.card}>
+          <div style={S.brand}>
+            <span style={S.brandArabic}>
               <span>Institut As-Safaa</span>
-              <span className="text-right">الصفاء</span>
+              <span style={{ textAlign: 'right' }}>الصفاء</span>
             </span>
-            <span className={CL.brandLabel} style={S.brandLabel}>Portail Enseignant</span>
+            <span style={S.brandLabel}>Portail Enseignant</span>
           </div>
+
           <form onSubmit={handleSubmit}>
-            <div className={`admin-field ${CL.field}`}>
-              <label className={CL.label} style={S.label}>Identifiant</label>
-              <input className={`${CL.input} font-a-mono text-[15px] tracking-[1px]`} style={S.input} type="text" value={identifiant} onChange={e => setIdentifiant(e.target.value)} placeholder="Ex : SoD1234" autoComplete="username" required />
+            <div style={S.field}>
+              <label style={S.label}>Identifiant</label>
+              <input style={{ ...S.input, fontFamily: "'JetBrains Mono', monospace", fontSize: 15, letterSpacing: 1 }} type="text" value={identifiant} onChange={e => setIdentifiant(e.target.value)} placeholder="Ex : SoD1234" autoComplete="username" required />
             </div>
-            <div className={`admin-field ${CL.field}`}>
-              <label className={CL.label} style={S.label}>Mot de passe</label>
-              <div className="relative">
-                <input className={`${CL.input} pr-[42px]`} style={S.input} type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" required />
-                <button type="button" onClick={() => setShowPwd(v => !v)} aria-label={showPwd ? 'Masquer' : 'Afficher'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer p-1 flex items-center text-a-fg-light">
-                  <EyeIcon open={showPwd} />
-                </button>
+            <div style={S.field}>
+              <label style={S.label}>Mot de passe</label>
+              <div style={{ position: 'relative' }}>
+                <input style={S.inputPr} type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" required />
+                <button type="button" onClick={() => setShowPwd(v => !v)} aria-label={showPwd ? 'Masquer' : 'Afficher'} style={S.eyeBtn}><EyeIcon open={showPwd} /></button>
               </div>
             </div>
             <button style={S.btn(loading)} type="submit" disabled={loading}>
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
-            {error && <div className={CL.error} style={S.error}>{error}</div>}
+            {error && <div style={S.error}>{error}</div>}
           </form>
-          <div className={CL.hint} style={S.hint}>
-            Utilisez les identifiants fournis par l'administrateur.
-          </div>
+          <div style={S.hint}>Utilisez les identifiants fournis par l'administrateur.</div>
         </div>
       </div>
     </div>

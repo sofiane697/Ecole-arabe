@@ -9,70 +9,6 @@ const EASE_OUT = [0.22, 1, 0.36, 1];
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
 
-const FUN_KEYFRAMES = `
-@keyframes starSpin {
-  0%   { transform:rotate(0deg) scale(1); }
-  50%  { transform:rotate(180deg) scale(1.3); }
-  100% { transform:rotate(360deg) scale(1); }
-}
-@keyframes bubbleFloat {
-  0%,100% { transform:translateY(0); opacity:.7; }
-  50%      { transform:translateY(-5px); opacity:1; }
-}
-`;
-
-const LETTER_COLORS = ['#7EC8E3', '#7DCFA0', '#F4A896', '#F7D070'];
-
-function FunTitle() {
-  const word1 = 'Mes';
-  const word2 = 'Modules';
-  return (
-    <>
-      <style>{FUN_KEYFRAMES}</style>
-      <motion.div
-        style={{ fontFamily:"'Nunito', 'Inter', sans-serif" }}
-        className="mb-6"
-        initial={{ opacity: 0, y: -18, scale: 0.92 }}
-        animate={{ opacity: 1, y: 0,   scale: 1    }}
-        transition={{ ...DASH_SPRING }}
-      >
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <span style={{ animation:'bubbleFloat 2.5s ease-in-out infinite' }} className="text-xl">📚</span>
-          {/* "Mes" lettre par lettre en couleurs rotatives */}
-          <span className="text-[40px] font-black tracking-[2px] inline-flex gap-0">
-            {word1.split('').map((char, i) => (
-              <span key={i} style={{
-                color: LETTER_COLORS[i % LETTER_COLORS.length],
-                textShadow:`0 3px 10px ${LETTER_COLORS[i % LETTER_COLORS.length]}55`,
-              }} className="inline-block">{char}</span>
-            ))}
-          </span>
-          {/* "Modules" lettre par lettre en couleurs rotatives */}
-          <span className="text-[40px] font-black tracking-[2px] inline-flex gap-0">
-            {word2.split('').map((char, i) => (
-              <span key={i} style={{
-                color: LETTER_COLORS[i % LETTER_COLORS.length],
-                textShadow:`0 3px 10px ${LETTER_COLORS[i % LETTER_COLORS.length]}55`,
-              }} className="inline-block">{char}</span>
-            ))}
-          </span>
-          <span style={{ animation:'starSpin 5s linear infinite' }} className="text-lg inline-block">⭐</span>
-          <span style={{ animation:'bubbleFloat 3s ease-in-out 0.8s infinite' }} className="text-base inline-block">✨</span>
-        </div>
-        {/* Bulles décoratives */}
-        <div className="flex gap-[5px] items-center mt-1.5 pl-1">
-          {['#7EC8E3','#7DCFA0','#F4A896','#F7D070','#7EC8E3','#F4A896'].map((c, i) => (
-            <span key={i} style={{
-              color: c, fontSize: [8,11,7,10,9,8][i],
-              animation:`bubbleFloat ${2+i*0.3}s ease-in-out ${i*0.2}s infinite`,
-              display:'inline-block',
-            }}>●</span>
-          ))}
-        </div>
-      </motion.div>
-    </>
-  );
-}
 
 const CARD_PASTELS = [
   { bg:'#DAEEFF', btnGrad:'linear-gradient(135deg,#7EC8E3,#5BA8D4)', btnShadow:'rgba(91,168,212,0.3)' },
@@ -85,16 +21,9 @@ const S = {
   empty: 'text-center px-5 py-[60px] text-p-fg-mid',
   emptyTitle: 'font-[var(--p-font-display)] text-xl font-semibold text-p-fg mb-2',
   loading: 'text-center p-[60px] text-p-fg-mid text-sm',
-  welcome: 'mb-7',
-  welcomeSub: 'text-sm text-p-fg-mid mt-1.5',
+  welcome: { paddingBottom: 40, marginBottom: 8 },
+  welcomeSub: { fontSize: 15, color: 'var(--p-fg-mid)', marginTop: 14 },
 };
-
-const GREETING_KEYFRAMES = `
-@keyframes salamGlow {
-  0%,100% { text-shadow: 0 0 0px transparent; }
-  50%      { text-shadow: 0 0 20px rgba(91,168,122,.5); }
-}
-`;
 
 const salamTransition = { duration: 0.75, ease: EASE_OUT };
 
@@ -106,36 +35,22 @@ function SalamGreeting({ prenom }) {
   });
 
   return (
-    <>
-      <style>{GREETING_KEYFRAMES}</style>
-      <div className="flex items-baseline gap-3 flex-wrap overflow-hidden">
-        {prenom && (
-          <motion.span
-            className="font-[var(--p-font-display)] text-[22px] font-bold text-p-fg inline-block"
-            initial={shouldAnimate ? { opacity:0, x:-60, filter:'blur(6px)' } : false}
-            animate={{ opacity:1, x:0, filter:'blur(0px)' }}
-            transition={{ ...salamTransition, delay: 0.1 }}
-          >
-            {prenom}
-          </motion.span>
-        )}
-        <motion.span
-          style={{ fontFamily:"'Scheherazade New', serif", animation:'salamGlow 3s ease-in-out 1s infinite' }}
-          className="text-4xl font-bold text-[#5BA87A] leading-[1.3] [direction:rtl] inline-block"
-          initial={shouldAnimate ? { opacity:0, x:60, filter:'blur(6px)' } : false}
-          animate={{ opacity:1, x:0, filter:'blur(0px)' }}
-          transition={{ ...salamTransition, delay: 0.1 }}
-        >
-          السلام عليكم
-        </motion.span>
-        <motion.span
-          className="text-[28px] inline-block"
-          initial={shouldAnimate ? { opacity:0, x:60, filter:'blur(6px)' } : false}
-          animate={{ opacity:1, x:0, filter:'blur(0px)' }}
-          transition={{ ...salamTransition, delay: 0.25 }}
-        >👋</motion.span>
-      </div>
-    </>
+    <motion.div
+      style={{ display:'flex', alignItems:'baseline', gap:12, flexWrap:'wrap', overflow:'hidden' }}
+      initial={shouldAnimate ? { opacity:0, y:-16, filter:'blur(4px)' } : false}
+      animate={{ opacity:1, y:0, filter:'blur(0px)' }}
+      transition={{ ...salamTransition, delay: 0.05 }}
+    >
+      {prenom && (
+        <span style={{ fontFamily:'var(--p-font-display)', fontSize:34, fontWeight:800, color:'var(--p-fg)', lineHeight:1.2 }}>
+          {prenom}
+        </span>
+      )}
+      <span style={{ fontFamily:"'Scheherazade New', serif", fontSize:40, fontWeight:700, color:'#5BA87A', lineHeight:1.3, direction:'rtl' }}>
+        السلام عليكم
+      </span>
+      <span style={{ fontSize:30 }}>👋</span>
+    </motion.div>
   );
 };
 
@@ -186,9 +101,9 @@ export default function PortailDashboard() {
 
   return (
     <div>
-      <div className={S.welcome}>
+      <div style={S.welcome}>
         <SalamGreeting prenom={prenom} />
-        <div className={S.welcomeSub}>Démarre ton apprentissage en sélectionnant un module !</div>
+        <div style={S.welcomeSub}>Démarre ton apprentissage en sélectionnant un module !</div>
       </div>
 
       {modules.length === 0 ? (

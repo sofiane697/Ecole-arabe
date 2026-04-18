@@ -45,23 +45,15 @@ const FEATURES = [
 
 function BrandPanel() {
   return (
-    <div
-      className="admin-brand-panel"
-      style={{
-        width: '50%',
-        height: '100vh',
+    <div style={{
+        width: '50%', height: '100vh', flexShrink: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '60px 48px', boxSizing: 'border-box',
+        position: 'relative', overflow: 'hidden',
         background: 'linear-gradient(160deg, #0f0f0f 0%, #0a0a0a 60%, #111008 100%)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '60px 48px',
-        boxSizing: 'border-box',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      }}>
       {/* Halo décoratif */}
       <div style={{
         position: 'absolute', top: '30%', left: '50%',
@@ -93,7 +85,7 @@ function BrandPanel() {
 
       {/* Titre */}
       <h1 style={{
-        fontFamily: "var(--a-font-display)", fontSize: 22, fontWeight: 700, color: '#f5f5f7',
+        fontSize: 22, fontWeight: 700, color: '#f5f5f7',
         textAlign: 'center', margin: '0 0 14px', letterSpacing: 0.3,
       }}>Portail Administration</h1>
 
@@ -169,15 +161,15 @@ export default function AdminLogin() {
 
   const S = {
     page:  { height: '100vh', display: 'flex', background: '#000', overflow: 'hidden' },
-    card:  { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: '40px 36px', width: '100%', maxWidth: 400, boxSizing: 'border-box' },
-    brand: { textAlign: 'center', marginBottom: 32 },
-    brandArabic: { display: 'flex', flexDirection: 'column', fontFamily: "'Scheherazade New', serif", fontSize: 28, color: '#bf8a30', lineHeight: 1.4 },
+    card:  { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: '40px 36px', width: '100%', maxWidth: 400, boxSizing: 'border-box', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+    brand: { textAlign: 'center', marginBottom: 28 },
+    brandArabic: { display: 'flex', flexDirection: 'column', fontFamily: "'Scheherazade New', serif", fontSize: 28, color: '#bf8a30', lineHeight: 1.4, margin: '0 auto' },
     brandLabel:  { display: 'block', fontSize: 12, color: '#6e6e73', marginTop: 6, letterSpacing: 1, textTransform: 'uppercase' },
-    field: { marginBottom: 18 },
+    field: { marginBottom: 16 },
     label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#a1a1a6', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '.5px' },
-    input: { width: '100%', padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#2c2c2e', color: '#f5f5f7', fontSize: 14, outline: 'none', boxSizing: 'border-box' },
+    input: { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#2c2c2e', color: '#f5f5f7', fontSize: 14, outline: 'none', boxSizing: 'border-box' },
     btn: (disabled) => ({ width: '100%', padding: '13px', borderRadius: 980, border: 'none', background: disabled ? '#3a3a3c' : '#bf8a30', color: disabled ? '#6e6e73' : '#fff', fontSize: 14, fontWeight: 700, cursor: disabled ? 'not-allowed' : 'pointer', marginTop: 8, transition: 'background .2s' }),
-    error: { marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,69,58,.1)', border: '1px solid rgba(255,69,58,.25)', color: '#ff453a', fontSize: 13, textAlign: 'center' },
+    error: { marginTop: 12, color: '#ff453a', fontSize: 13, textAlign: 'center' },
     hint:  { color: '#6e6e73', fontSize: 12, textAlign: 'center', marginTop: 20, lineHeight: 1.6, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 },
   };
 

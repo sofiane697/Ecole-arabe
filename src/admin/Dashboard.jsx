@@ -111,7 +111,7 @@ export default function Dashboard() {
             <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--a-border)' }}>
               <button
                 onClick={() => navigate('/admin/inscriptions')}
-                style={{ background:'none', border:'none', color:'var(--a-gold)', fontSize:'0.82rem', cursor:'pointer', fontFamily:'Jost, sans-serif' }}
+                style={{ background:'none', border:'none', color:'var(--a-gold)', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}
               >
                 Voir toutes les inscriptions →
               </button>
@@ -162,7 +162,7 @@ export default function Dashboard() {
             <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--a-border)' }}>
               <button
                 onClick={() => navigate('/admin/messages')}
-                style={{ background:'none', border:'none', color:'var(--a-gold)', fontSize:'0.82rem', cursor:'pointer', fontFamily:'Jost, sans-serif' }}
+                style={{ background:'none', border:'none', color:'var(--a-gold)', fontSize:'0.82rem', cursor:'pointer', fontFamily:'inherit' }}
               >
                 Voir tous les messages →
               </button>
