@@ -167,6 +167,21 @@
   gap: 1rem;
 }
 
+/* ─── Admin Login — panneau de marque (colonne gauche) ─── */
+/* Styles visuels gérés par inline styles dans BrandPanel.
+   Cette entrée CSS sert de cible pour le media query mobile (useLayoutEffect). */
+.admin-brand-panel {
+  flex-shrink: 0;
+}
+
+/* ─── Admin Login — panneau formulaire (colonne droite) ─── */
+.admin-form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ─── Enseignant Login — wrapper racine deux colonnes ─── */
 /* Le div racine porte admin-root + h-screen + flex (Tailwind).
    On force flex-direction:row ici pour éviter tout écrasement par cascade. */

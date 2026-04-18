@@ -122,9 +122,9 @@ export default function AdminApp() {
       {/* ── Sidebar ── */}
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <span className="arabic flex flex-col leading-snug w-full">
+          <span className="arabic" style={{display:'flex', flexDirection:'column', lineHeight:1.4, width:'100%'}}>
             <span>Institut As-Safaa</span>
-            <span className="text-right">الصفاء</span>
+            <span style={{textAlign:'right'}}>الصفاء</span>
           </span>
           <span className="label">Espace Admin</span>
         </div>
@@ -162,7 +162,7 @@ export default function AdminApp() {
             )}
           </NavLink>
 
-          <div className="admin-nav-section mt-6">Portail</div>
+          <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Portail</div>
 
           <NavLink
             to="/admin/cours"
@@ -214,7 +214,7 @@ export default function AdminApp() {
             <IconEye /> Surveillance
           </NavLink>
 
-          <div className="admin-nav-section mt-6">Site</div>
+          <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>
           <a href="/" className="admin-nav-link" target="_blank" rel="noreferrer" onClick={() => setSidebarOpen(false)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>

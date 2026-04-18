@@ -72,7 +72,7 @@ function BrandPanel() {
       }} />
 
       {/* Logo arabe */}
-      <div className="text-center mb-10 relative">
+      <div style={{ textAlign: 'center', marginBottom: 40, position: 'relative' }}>
         <span style={{
           display: 'block',
           fontFamily: "'Scheherazade New', serif",
@@ -92,15 +92,21 @@ function BrandPanel() {
       </div>
 
       {/* Titre */}
-      <h1 className="font-a-display text-[22px] font-bold text-[#f5f5f7] text-center mb-3.5 tracking-tight" style={{ margin: '0 0 14px' }}>Portail Administration</h1>
+      <h1 style={{
+        fontFamily: "var(--a-font-display)", fontSize: 22, fontWeight: 700, color: '#f5f5f7',
+        textAlign: 'center', margin: '0 0 14px', letterSpacing: 0.3,
+      }}>Portail Administration</h1>
 
       {/* Description */}
-      <p className="text-sm text-[#a1a1a6] text-center leading-relaxed max-w-[320px]" style={{ margin: '0 0 48px' }}>
+      <p style={{
+        fontSize: 14, color: '#a1a1a6', textAlign: 'center',
+        lineHeight: 1.7, maxWidth: 320, margin: '0 0 48px',
+      }}>
         Gérez les élèves, les enseignants, les inscriptions et le contenu pédagogique.
       </p>
 
       {/* Grille 2×2 */}
-      <div className="grid grid-cols-2 gap-4 w-full max-w-[320px]">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', maxWidth: 320 }}>
         {FEATURES.map((f, i) => (
           <div key={i} style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -109,7 +115,7 @@ function BrandPanel() {
             textAlign: 'center',
           }}>
             {f.icon}
-            <span className="text-xs text-[#a1a1a6] font-medium leading-snug">{f.label}</span>
+            <span style={{ fontSize: 12, color: '#a1a1a6', fontWeight: 500, lineHeight: 1.4 }}>{f.label}</span>
           </div>
         ))}
       </div>
@@ -162,12 +168,12 @@ export default function AdminLogin() {
   };
 
   const S = {
-    page:  'h-screen flex bg-black overflow-hidden',
+    page:  { height: '100vh', display: 'flex', background: '#000', overflow: 'hidden' },
     card:  { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: '40px 36px', width: '100%', maxWidth: 400, boxSizing: 'border-box' },
-    brand: 'text-center mb-8',
+    brand: { textAlign: 'center', marginBottom: 32 },
     brandArabic: { display: 'flex', flexDirection: 'column', fontFamily: "'Scheherazade New', serif", fontSize: 28, color: '#bf8a30', lineHeight: 1.4 },
     brandLabel:  { display: 'block', fontSize: 12, color: '#6e6e73', marginTop: 6, letterSpacing: 1, textTransform: 'uppercase' },
-    field: 'mb-[18px]',
+    field: { marginBottom: 18 },
     label: { display: 'block', fontSize: 12, fontWeight: 600, color: '#a1a1a6', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '.5px' },
     input: { width: '100%', padding: '11px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#2c2c2e', color: '#f5f5f7', fontSize: 14, outline: 'none', boxSizing: 'border-box' },
     btn: (disabled) => ({ width: '100%', padding: '13px', borderRadius: 980, border: 'none', background: disabled ? '#3a3a3c' : '#bf8a30', color: disabled ? '#6e6e73' : '#fff', fontSize: 14, fontWeight: 700, cursor: disabled ? 'not-allowed' : 'pointer', marginTop: 8, transition: 'background .2s' }),
@@ -176,22 +182,23 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className={`admin-root ${S.page}`}>
+    <div className="admin-root" style={S.page}>
       <BrandPanel />
       <div
-        className="admin-form-panel flex-1 flex items-center justify-center p-10"
+        className="admin-form-panel"
+        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}
       >
         <div style={S.card}>
-          <div className={S.brand}>
+          <div style={S.brand}>
             <span style={S.brandArabic}>
               <span>Institut As-Safaa</span>
-              <span className="text-right">الصفاء</span>
+              <span style={{ textAlign: 'right' }}>الصفاء</span>
             </span>
             <span style={S.brandLabel}>Administration</span>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className={S.field}>
+            <div style={S.field}>
               <label style={S.label}>Identifiant</label>
               <input
                 style={S.input}
@@ -203,9 +210,9 @@ export default function AdminLogin() {
                 required
               />
             </div>
-            <div className={S.field}>
+            <div style={S.field}>
               <label style={S.label}>Mot de passe</label>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <input
                   style={{ ...S.input, paddingRight: 42 }}
                   type={showPwd ? 'text' : 'password'}
@@ -216,7 +223,7 @@ export default function AdminLogin() {
                   required
                 />
                 <button type="button" onClick={() => setShowPwd(v => !v)} aria-label={showPwd ? 'Masquer' : 'Afficher'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#6e6e73] p-1 flex items-center">
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#6e6e73', padding: 4, display: 'flex', alignItems: 'center' }}>
                   <EyeIcon open={showPwd} />
                 </button>
               </div>
