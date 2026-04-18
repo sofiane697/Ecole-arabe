@@ -244,7 +244,7 @@ export default function EnseignantLogin() {
             <p className="text-[13px] text-center mb-[22px] leading-[1.6] text-a-fg-mid">
               Créez votre mot de passe personnel.<br />Il remplacera le mot de passe provisoire.
             </p>
-            <div className={CL.field}>
+            <div className={`admin-field ${CL.field}`}>
               <label className={CL.label} style={S.label}>Nouveau mot de passe</label>
               <div className="relative">
                 <input className={`${CL.input} pr-[42px]`} style={S.input} type={showNewPwd ? 'text' : 'password'} value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Min. 8 caractères" autoComplete="new-password" />
@@ -265,7 +265,7 @@ export default function EnseignantLogin() {
                 </div>
               ))}
             </div>
-            <div className={CL.field}>
+            <div className={`admin-field ${CL.field}`}>
               <label className={CL.label} style={S.label}>Confirmer le mot de passe</label>
               <div className="relative">
                 <input className={`${CL.input} pr-[42px]`} style={S.input} type={showConfirmPwd ? 'text' : 'password'} value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)} placeholder="Retapez votre mot de passe" autoComplete="new-password" />
@@ -304,11 +304,11 @@ export default function EnseignantLogin() {
             <span className={CL.brandLabel} style={S.brandLabel}>Portail Enseignant</span>
           </div>
           <form onSubmit={handleSubmit}>
-            <div className={CL.field}>
+            <div className={`admin-field ${CL.field}`}>
               <label className={CL.label} style={S.label}>Identifiant</label>
               <input className={`${CL.input} font-a-mono text-[15px] tracking-[1px]`} style={S.input} type="text" value={identifiant} onChange={e => setIdentifiant(e.target.value)} placeholder="Ex : SoD1234" autoComplete="username" required />
             </div>
-            <div className={CL.field}>
+            <div className={`admin-field ${CL.field}`}>
               <label className={CL.label} style={S.label}>Mot de passe</label>
               <div className="relative">
                 <input className={`${CL.input} pr-[42px]`} style={S.input} type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" required />

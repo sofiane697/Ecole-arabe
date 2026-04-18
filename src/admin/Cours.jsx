@@ -430,7 +430,7 @@ export default function Cours() {
       <div className={S.page}>
         <div className={S.grid}>
           {modules.map(m => (
-            <div key={m.id} className={`${S.card} p-0 overflow-hidden`} onClick={() => openModule(m)}
+            <div key={m.id} className={S.card} style={{ padding: 0, overflow: 'hidden' }} onClick={() => openModule(m)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {/* Image de couverture */}
@@ -493,7 +493,7 @@ export default function Cours() {
 
         <div className={S.grid}>
           {thematiques.map(th => (
-            <div key={th.id} className={`${S.card} p-0 overflow-hidden`} onClick={() => openThematique(th)}
+            <div key={th.id} className={S.card} style={{ padding: 0, overflow: 'hidden' }} onClick={() => openThematique(th)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {th.image_url ? (
@@ -554,7 +554,7 @@ export default function Cours() {
 
         <div className={S.grid}>
           {lecons.map(lec => (
-            <div key={lec.id} className={`${S.card} p-0 overflow-hidden`} onClick={() => openLecon(lec)}
+            <div key={lec.id} className={S.card} style={{ padding: 0, overflow: 'hidden' }} onClick={() => openLecon(lec)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
               {lec.image_url ? (

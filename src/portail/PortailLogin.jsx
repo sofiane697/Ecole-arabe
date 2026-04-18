@@ -216,7 +216,7 @@ export default function PortailLogin() {
   if (mustChange) {
     const allValid = pwdErrors.length === 0 && newPwd.length > 0 && newPwd === confirmPwd;
     return (
-      <div className="admin-root" style={{ height: '100vh', display: 'flex', flexDirection: 'row', background: '#000', overflow: 'hidden' }}>
+      <div className="portail-root admin-root" style={{ height: '100vh', display: 'flex', flexDirection: 'row', background: '#000', overflow: 'hidden' }}>
         <BrandPanel subtitle="Première connexion" />
         <div className="portail-form-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
           <div className="portail-login-card">
@@ -275,7 +275,7 @@ export default function PortailLogin() {
 
   /* ── Écran de connexion ── */
   return (
-    <div className="admin-root" style={{ height: '100vh', display: 'flex', flexDirection: 'row', background: '#000', overflow: 'hidden' }}>
+    <div className="portail-root admin-root" style={{ height: '100vh', display: 'flex', flexDirection: 'row', background: '#000', overflow: 'hidden' }}>
       <BrandPanel subtitle="Portail Élève" />
       <div className="portail-form-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <div className="portail-login-card">

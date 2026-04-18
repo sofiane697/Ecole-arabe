@@ -188,7 +188,7 @@ export default function AdminLogin() {
         className="admin-form-panel"
         style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}
       >
-        <div style={S.card}>
+        <div className="admin-login-card" style={S.card}>
           <div style={S.brand}>
             <span style={S.brandArabic}>
               <span>Institut As-Safaa</span>
@@ -198,7 +198,7 @@ export default function AdminLogin() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div style={S.field}>
+            <div className="admin-field" style={S.field}>
               <label style={S.label}>Identifiant</label>
               <input
                 style={S.input}
@@ -210,7 +210,7 @@ export default function AdminLogin() {
                 required
               />
             </div>
-            <div style={S.field}>
+            <div className="admin-field" style={S.field}>
               <label style={S.label}>Mot de passe</label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -228,7 +228,7 @@ export default function AdminLogin() {
                 </button>
               </div>
             </div>
-            <button style={S.btn(loading)} type="submit" disabled={loading}>
+            <button className="admin-login-btn" style={S.btn(loading)} type="submit" disabled={loading}>
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
             {error && <div style={S.error}>{error}</div>}
