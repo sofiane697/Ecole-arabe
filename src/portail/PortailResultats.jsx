@@ -107,7 +107,7 @@ function EvalCard({ note, index }) {
       </div>
 
       {/* Contenu */}
-      <div style={{ flex: 1, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
+      <div style={{ flex: 1, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 16, minWidth: 0 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--p-fg)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {ev?.titre || '—'}
@@ -115,6 +115,23 @@ function EvalCard({ note, index }) {
           <div style={{ fontSize: 12, color: 'var(--p-fg-light)' }}>
             {formatDate(ev?.date_evaluation)}
           </div>
+          {note.commentaire && (
+            <div style={{
+              marginTop: 10,
+              padding: '10px 12px',
+              borderLeft: `3px solid ${grade ? grade.color : 'var(--p-border)'}`,
+              background: 'var(--p-bg)',
+              borderRadius: 6,
+              fontSize: 13,
+              color: 'var(--p-fg-mid)',
+              lineHeight: 1.5,
+              fontStyle: 'italic',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}>
+              {note.commentaire}
+            </div>
+          )}
         </div>
 
         {/* Badge note */}

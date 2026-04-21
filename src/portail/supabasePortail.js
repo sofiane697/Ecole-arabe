@@ -381,7 +381,7 @@ export async function fetchNewObsCount(eleveId, seenAt) {
 /** Récupère les notes de l'élève avec les détails de chaque évaluation */
 export async function fetchMesNotes(eleveId) {
   const r1 = await fetch(
-    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&select=score,absent,evaluation_id`,
+    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&select=score,absent,commentaire,evaluation_id`,
     { headers: ANON_HEADERS }
   );
   if (!r1.ok) return [];

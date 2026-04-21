@@ -326,7 +326,7 @@ export async function fetchNotesEvaluation(evaluationId) {
 }
 
 /** Upsert note via contrainte UNIQUE (evaluation_id, eleve_id) */
-export async function upsertNote(evaluationId, eleveId, score, absent) {
+export async function upsertNote(evaluationId, eleveId, score, absent, commentaire = null) {
   // on_conflict= indique à PostgREST quelle contrainte utiliser pour le ON CONFLICT DO UPDATE.
   // Sans ce paramètre, il tente un INSERT sur la PK (id UUID auto) qui échoue
   // silencieusement dès qu'une ligne existe déjà → la note n'est jamais mise à jour.
@@ -338,7 +338,7 @@ export async function upsertNote(evaluationId, eleveId, score, absent) {
         ...ANON_HEADERS,
         'Prefer': 'resolution=merge-duplicates,return=representation',
       },
-      body: JSON.stringify({ evaluation_id: evaluationId, eleve_id: eleveId, score, absent }),
+      body: JSON.stringify({ evaluation_id: evaluationId, eleve_id: eleveId, score, absent, commentaire }),
     }
   );
   if (!res.ok) {
@@ -346,7 +346,7 @@ export async function upsertNote(evaluationId, eleveId, score, absent) {
     throw new Error(`Erreur ${res.status} — ${err}`);
   }
   const arr = await res.json();
-  return arr[0] ?? { evaluation_id: evaluationId, eleve_id: eleveId, score, absent };
+  return arr[0] ?? { evaluation_id: evaluationId, eleve_id: eleveId, score, absent, commentaire };
 }
 
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
