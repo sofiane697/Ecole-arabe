@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto } from './supabaseAdmin';
+import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
+import { emptyBloc, isBlocUtilisable, processParentBlocs } from './parentsLogic';
+import ParentsSection, { ParentResults } from './ParentsSection';
 import { calcAge } from '../shared/dateUtils';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import EleveAvatar from '../shared/EleveAvatar';
@@ -1029,6 +1032,7 @@ function escapeHtml(text) {
 function CreateEleveModal({ onClose, onCreated }) {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
+  const [dateNaissance, setDateNaissance] = useState('');
   const [classeId, setClasseId] = useState('');
   const [emailContact, setEmailContact] = useState('');
   const [inactif, setInactif] = useState(false);
@@ -1039,6 +1043,17 @@ function CreateEleveModal({ onClose, onCreated }) {
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
   const [pwdVisible, setPwdVisible] = useState(true);
   const [countdown, setCountdown] = useState(30);
+
+  // ─── Section Parents (ensemble / séparés, détection doublon) ──────────
+  const [parentsMode, setParentsMode]   = useState('ensemble');
+  const [parentsBlocs, setParentsBlocs] = useState([emptyBloc()]);
+  const [parentResults, setParentResults] = useState([]);
+
+  // ─── Âge / majorité — détermine si les comptes parents sont requis ────
+  // Si l'élève est majeur, pas besoin de créer un compte parent : il gère
+  // son compte seul.
+  const age = calcAge(dateNaissance);
+  const isMajor = age !== null && age >= 18;
 
   useEffect(() => {
     Promise.all([fetchAllClasses(), fetchNiveauxScolaires()])
@@ -1072,37 +1087,52 @@ function CreateEleveModal({ onClose, onCreated }) {
       setError('Le nom contient des caractères non autorisés.');
       return;
     }
+    if (!dateNaissance) {
+      setError("Renseigne la date de naissance de l'élève.");
+      return;
+    }
+    // Les comptes parents sont obligatoires uniquement pour un élève mineur.
+    const blocsValides = isMajor ? [] : parentsBlocs.filter(isBlocUtilisable);
+    if (!isMajor && blocsValides.length === 0) {
+      setError("Renseigne au moins un parent (père ou mère) avec email et téléphone.");
+      return;
+    }
     setLoading(true);
     try {
       const tempPwd  = generateTempPassword();
       const idLogin  = identifiant.toLowerCase();
       const eleve    = await createEleve(fmtNom(nom), fmtPrenom(prenom), idLogin, tempPwd);
       const eleveId  = eleve?.id ?? await fetchEleveIdParIdentifiant(idLogin);
+      // Sans eleveId on ne peut ni patcher la classe/email, ni rattacher les parents.
+      // Mieux vaut remonter l'erreur que de laisser l'admin croire que tout s'est bien passé.
+      if (!eleveId) throw new Error('Compte élève créé mais ID introuvable — réessayez.');
 
-      if (eleveId) {
-        const patch = {};
-        if (classeId)              patch.classe_id    = classeId;
-        if (inactif)               patch.actif        = false;
-        if (emailContact.trim())   patch.email_contact = emailContact.trim();
-        if (Object.keys(patch).length) await updateEleve(eleveId, patch);
-        if (classeId) {
-          const niveauScolaireId = allClasses.find(c => c.id === classeId)?.niveau_id || null;
-          await updateEleveNiveauScolaire(eleveId, niveauScolaireId);
-        }
+      const patch = {};
+      if (classeId)              patch.classe_id    = classeId;
+      if (inactif)               patch.actif        = false;
+      if (emailContact.trim())   patch.email_contact = emailContact.trim();
+      if (dateNaissance)         patch.date_naissance = dateNaissance;
+      if (Object.keys(patch).length) await updateEleve(eleveId, patch);
+      if (classeId) {
+        const niveauScolaireId = allClasses.find(c => c.id === classeId)?.niveau_id || null;
+        await updateEleveNiveauScolaire(eleveId, niveauScolaireId);
       }
 
-      // Email uniquement si l'élève est actif
-      if (emailContact.trim() && !inactif) {
-        const classeNom = allClasses.find(c => c.id === classeId)?.nom || null;
-        sendWelcomeEmail({
-          email:        emailContact.trim(),
-          prenom:       fmtPrenom(prenom),
-          nom:          fmtNom(nom),
-          identifiant:  idLogin,
-          tempPassword: tempPwd,
-          classeNom,
-        }).catch(() => {});
-      }
+      // Créer / rattacher les parents (bloc par bloc, reporting partiel).
+      const pResults = await processParentBlocs(eleveId, blocsValides);
+      setParentResults(pResults);
+
+      const classeNom = allClasses.find(c => c.id === classeId)?.nom || null;
+      dispatchPostCreationEmails({
+        contactEmail:      emailContact,
+        elevePrenom:       fmtPrenom(prenom),
+        eleveNom:          fmtNom(nom),
+        eleveIdentifiant:  idLogin,
+        eleveTempPassword: tempPwd,
+        classeNom,
+        parentResults:     pResults,
+        sendWelcome:       !inactif,  // pas de welcome si l'élève reste inactif
+      });
 
       const emailTrimmed = emailContact.trim();
       setResult({
@@ -1118,12 +1148,26 @@ function CreateEleveModal({ onClose, onCreated }) {
     setLoading(false);
   };
 
-  const valid = nom.trim().length >= 2 && prenom.trim().length >= 2;
+  const hasValidParent = parentsBlocs.some(isBlocUtilisable);
+  // Un élève majeur n'a pas besoin de compte parent — on n'exige que nom/prénom/date.
+  // On calcule la liste des champs manquants pour l'afficher à l'admin plutôt que
+  // de le laisser deviner pourquoi le bouton est grisé.
+  const missingFields = [];
+  if (prenom.trim().length < 2)   missingFields.push('prénom');
+  if (nom.trim().length < 2)      missingFields.push('nom');
+  if (!dateNaissance)             missingFields.push('date de naissance');
+  if (!isMajor && !hasValidParent) {
+    missingFields.push('un parent complet (nom, prénom, email, téléphone)');
+  }
+  const valid = missingFields.length === 0;
 
   // ─── Vue résultat (après création) ─────────────────────────────────
   if (result) {
+    // Une fois l'élève créé, tout dismiss du modal doit rafraîchir la liste
+    // (onCreated = loadEleves + setShowModal(false)). Sinon, un clic hors modal
+    // ferme sans rafraîchir et le nouvel élève n'apparaît pas.
     return (
-      <div className={CLS.overlay} onClick={onClose}>
+      <div className={CLS.overlay} onClick={onCreated}>
         <div className={`${CLS.modal} !max-w-[480px]`} onClick={e => e.stopPropagation()}>
           <div className="text-center mb-5">
             <div className="text-[40px] mb-2">{result.inactif ? '⏳' : '✅'}</div>
@@ -1167,7 +1211,11 @@ function CreateEleveModal({ onClose, onCreated }) {
               <span>⚠️</span> Aucun email — transmettez les identifiants manuellement.
             </div>
           )}
-          <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+
+          {/* Identifiants des comptes parents créés / rattachés */}
+          <ParentResults results={parentResults} />
+
+          <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap', marginTop: 12 }}>
             <button className={CLS.btnSave} onClick={() => {
               navigator.clipboard.writeText(`Identifiant : ${result.identifiant}\nMot de passe : ${result.tempPassword}`);
               alert('Copié dans le presse-papier !');
@@ -1241,11 +1289,29 @@ function CreateEleveModal({ onClose, onCreated }) {
   // ─── Vue formulaire ────────────────────────────────────────────────
   return (
     <div className={CLS.overlay} onClick={onClose}>
-      <div className={CLS.modal} onClick={e => e.stopPropagation()}>
+      <div className={`${CLS.modal} max-h-[85vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
         <div className={CLS.modalTitle}>Ajouter un élève</div>
         <div className="flex gap-3">
           <div className={`${CLS.field} flex-1`}><label htmlFor="eleve_prenom" className={CLS.label}>Prénom *</label><input id="eleve_prenom" className={CLS.input} value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Prénom" /></div>
           <div className={`${CLS.field} flex-1`}><label htmlFor="eleve_nom" className={CLS.label}>Nom *</label><input id="eleve_nom" className={CLS.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Nom" /></div>
+        </div>
+        <div className={CLS.field}>
+          <label htmlFor="eleve_date_naissance" className={CLS.label}>
+            Date de naissance *
+            {age !== null && (
+              <span style={{ color:'var(--a-fg-light)', fontWeight:400, textTransform:'none', marginLeft:8 }}>
+                ({age} an{age > 1 ? 's' : ''}{isMajor ? ' — majeur' : ''})
+              </span>
+            )}
+          </label>
+          <input
+            id="eleve_date_naissance"
+            className={CLS.input}
+            type="date"
+            value={dateNaissance}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={e => setDateNaissance(e.target.value)}
+          />
         </div>
         {identifiant && (
           <div className={CLS.field} style={{ background:'var(--a-bg)', borderRadius:'var(--a-radius-sm)', padding:'12px 16px' }}>
@@ -1285,6 +1351,60 @@ function CreateEleveModal({ onClose, onCreated }) {
         </div>
         <div style={{ fontSize:12, color:'var(--a-fg-mid)', lineHeight:1.5, marginBottom:12 }}>
           Un mot de passe provisoire sera généré automatiquement. L'élève devra le modifier à sa première connexion.
+        </div>
+
+        {/* Section Parents — masquée si l'élève est majeur (il gère son compte seul). */}
+        <div className={CLS.field}>
+          {isMajor ? (
+            <>
+              <label className={CLS.label}>Parents</label>
+              <div style={{
+                marginTop: 8,
+                padding: '16px 18px',
+                borderRadius: 12,
+                background: 'var(--a-bg-card)',
+                border: '1px solid var(--a-border)',
+                display: 'flex', alignItems: 'center', gap: 14,
+              }}>
+                <span aria-hidden="true" style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'rgba(191,138,48,0.10)',
+                  color: 'var(--a-gold)',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <div style={{ flex: 1, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--a-fg)' }}>
+                    Élève majeur · {age} ans
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 2 }}>
+                    Aucun compte parent requis — l'élève gère sa scolarité seul.
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <label className={CLS.label}>
+                Parents *
+                <span style={{ color:'var(--a-fg-light)', fontWeight:400, textTransform:'none' }}>
+                  {' '}(au moins un parent requis pour créer un compte parent)
+                </span>
+              </label>
+              <ParentsSection
+                mode={parentsMode}
+                blocs={parentsBlocs}
+                onChange={({ mode, blocs }) => {
+                  setParentsMode(mode);
+                  setParentsBlocs(blocs);
+                }}
+              />
+            </>
+          )}
         </div>
         <label className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-[13px] mb-3 transition-all duration-150"
           style={{

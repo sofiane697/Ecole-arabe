@@ -1359,23 +1359,25 @@
 
 /* ═══════════════════════════════
    INSCRIPTIONS — CONVERSION
+   (utilise les variables --a-* pour cohabiter en light ET dark mode,
+    cf. modal CreateEleveModal qui l'intègre sur fond clair)
 ═══════════════════════════════ */
-.insc-convert-panel  { background:#1e2530; border:1px solid #2e3a4a; border-radius:10px; padding:18px 20px 20px; margin-top:4px; display:flex; flex-direction:column; gap:10px; }
-.insc-convert-title  { font-size:14px; font-weight:700; color:#e2e8f0; margin:0; letter-spacing:0.02em; }
-.insc-convert-label  { font-size:12px; color:#718096; margin:0; }
-.insc-convert-select { width:100%; background:#0f1923; border:1px solid #2e3a4a; border-radius:8px; padding:10px 12px; color:#e2e8f0; font-size:14px; cursor:pointer; }
-.insc-convert-select:focus { outline:none; border-color:#4f8ef7; }
-.insc-convert-btn    { background:#4f8ef7; color:#fff; border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer; width:100%; margin-top:2px; transition:opacity 0.15s; }
+.insc-convert-panel  { background:var(--a-bg-card); border:1px solid var(--a-border); border-radius:10px; padding:18px 20px 20px; margin-top:4px; display:flex; flex-direction:column; gap:10px; }
+.insc-convert-title  { font-size:14px; font-weight:700; color:var(--a-fg); margin:0; letter-spacing:0.02em; }
+.insc-convert-label  { font-size:12px; color:var(--a-fg-light); margin:0; }
+.insc-convert-select { width:100%; background:var(--a-bg); border:1px solid var(--a-border); border-radius:8px; padding:10px 12px; color:var(--a-fg); font-size:14px; cursor:pointer; }
+.insc-convert-select:focus { outline:none; border-color:var(--a-blue); }
+.insc-convert-btn    { background:var(--a-blue); color:#fff; border:none; border-radius:8px; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer; width:100%; margin-top:2px; transition:opacity 0.15s; }
 .insc-convert-btn:hover:not(:disabled) { opacity:0.88; }
 .insc-convert-btn:disabled { opacity:0.45; cursor:not-allowed; }
-.insc-creds-box      { background:#0f1923; border:1px solid #2a9d5c; border-radius:8px; padding:14px 16px; margin-top:14px; }
-.insc-creds-title    { font-size:13px; font-weight:700; color:#2a9d5c; margin:0 0 8px; }
-.insc-creds-row      { font-size:13px; color:#a0aec0; margin:3px 0; }
-.insc-creds-row strong { color:#e2e8f0; }
-.insc-activation-banner { display:flex; align-items:center; justify-content:space-between; background:#2d1f0a; border:1px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:12px; }
-.insc-activation-text   { font-size:13px; color:#fcd34d; }
-.insc-activation-btn    { background:#f59e0b; color:#0f1923; border:none; border-radius:6px; padding:7px 14px; font-size:13px; font-weight:700; cursor:pointer; }
-.insc-convert-error  { color:#f87171; font-size:13px; margin-top:8px; }
+.insc-creds-box      { background:var(--a-bg); border:1px solid var(--a-green); border-radius:8px; padding:14px 16px; margin-top:14px; }
+.insc-creds-title    { font-size:13px; font-weight:700; color:var(--a-green); margin:0 0 8px; }
+.insc-creds-row      { font-size:13px; color:var(--a-fg-mid); margin:3px 0; }
+.insc-creds-row strong { color:var(--a-fg); }
+.insc-activation-banner { display:flex; align-items:center; justify-content:space-between; background:rgba(245,158,11,0.08); border:1px solid var(--a-yellow); border-radius:8px; padding:10px 14px; margin-top:12px; }
+.insc-activation-text   { font-size:13px; color:var(--a-yellow); }
+.insc-activation-btn    { background:var(--a-yellow); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+.insc-convert-error  { color:var(--a-red); font-size:13px; margin-top:8px; }
 
 /* ═══════════════════════════════
    MESSAGES — REFONTE

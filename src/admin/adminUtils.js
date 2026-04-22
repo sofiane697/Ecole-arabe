@@ -39,3 +39,37 @@ export function generateTempPassword() {
   }
   return arr.join('');
 }
+
+// ─── Normalisation téléphone : retire espaces/tirets/points/parenthèses, +33→0
+// Miroir de la fonction SQL normalize_phone — sert à la recherche de doublon
+// côté client avant l'appel RPC (affichage immédiat).
+export function normalizeTelephone(tel) {
+  if (!tel) return '';
+  let t = String(tel).replace(/[\s.\-()]/g, '');
+  if (t.startsWith('+33')) t = '0' + t.slice(3);
+  return t;
+}
+
+// ─── Formatage du libellé d'un foyer à partir des 4 champs père/mère
+// Retourne par ordre de priorité :
+//   "M. et Mme Dupont"                 — couple, même nom
+//   "M. Dupont et Mme Durand"          — couple, noms différents
+//   "M. Jean Dupont"                   — père seul
+//   "Mme Marie Durand"                 — mère seule
+//   ""                                 — rien saisi
+export function formatFoyer({ pere_nom, pere_prenom, mere_nom, mere_prenom } = {}) {
+  const hasPere = Boolean(pere_nom || pere_prenom);
+  const hasMere = Boolean(mere_nom || mere_prenom);
+  const pere = [pere_prenom, pere_nom].filter(Boolean).join(' ').trim();
+  const mere = [mere_prenom, mere_nom].filter(Boolean).join(' ').trim();
+
+  if (hasPere && hasMere) {
+    if (pere_nom && mere_nom && pere_nom.trim().toLowerCase() === mere_nom.trim().toLowerCase()) {
+      return `M. et Mme ${pere_nom.trim()}`;
+    }
+    return `M. ${pere} et Mme ${mere}`.replace(/\s+/g, ' ').trim();
+  }
+  if (hasPere) return `M. ${pere}`.trim();
+  if (hasMere) return `Mme ${mere}`.trim();
+  return '';
+}

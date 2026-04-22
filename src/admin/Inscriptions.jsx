@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, panelVariants } from '../animations';
+import { motion, panelVariants } from '../animations';
 import {
   fetchInscriptions, updateInscriptionStatut,
   fetchAllClasses,
   updateInscriptionEleveId, fetchEleveById,
   updateEleveActif, updateEleve,
-  createEleve, sendWelcomeEmail, fetchEleveIdParIdentifiant,
+  createEleve, fetchEleveIdParIdentifiant,
 } from './supabaseAdmin';
+import { dispatchPostCreationEmails } from './parentsMail';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
+import { emptyBloc, isBlocUtilisable, processParentBlocs } from './parentsLogic';
+import ParentsSection, { ParentResults } from './ParentsSection';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 
@@ -56,6 +59,11 @@ export default function Inscriptions() {
   const [activating,       setActivating]       = useState(false);
   const [mailEnvoye,       setMailEnvoye]       = useState(null); // email destinataire ou false
 
+  // ─── Section Parents (wizard de conversion) ─────────────────────────────
+  const [parentsMode,   setParentsMode]   = useState('ensemble'); // 'ensemble' | 'separes'
+  const [parentsBlocs,  setParentsBlocs]  = useState([emptyBloc()]);
+  const [parentResults, setParentResults] = useState([]); // [{kind:'created'|'linked', label, identifiant, password?}]
+
   useEffect(() => {
     fetchInscriptions().then(setData).catch(() => {}).finally(() => setLoading(false));
     fetchAllClasses().then(setClasses).catch(() => {});
@@ -73,6 +81,9 @@ export default function Inscriptions() {
     setConvertResult(null);
     setConvertError('');
     setMailEnvoye(null);
+    setParentsMode('ensemble');
+    setParentsBlocs([emptyBloc()]);
+    setParentResults([]);
     if (insc.eleve_id) {
       const eleve = await fetchEleveById(insc.eleve_id);
       setLinkedEleve(eleve);
@@ -118,17 +129,20 @@ export default function Inscriptions() {
     setConvertLoading(true);
     setConvertError('');
     try {
+      // Validation amont : au moins un bloc parent utilisable (ou skip explicite).
+      const blocsValides = parentsBlocs.filter(isBlocUtilisable);
+      if (blocsValides.length === 0) {
+        throw new Error("Renseigne au moins un parent (père ou mère) avec email et téléphone.");
+      }
+
+      // 1. Créer l'élève
       const identifiant = generateIdentifiant(selected.prenom, selected.nom);
       const password    = generateTempPassword();
-
       const newEleve = await createEleve(selected.nom, selected.prenom, identifiant, password);
-
-      // admin_create_user ne retourne pas toujours l'UUID → fallback par identifiant
       const eleveId = newEleve.id ?? await fetchEleveIdParIdentifiant(identifiant);
-      if (!eleveId) throw new Error('Compte créé mais ID introuvable — réessayez.');
+      if (!eleveId) throw new Error('Compte élève créé mais ID introuvable — réessayez.');
 
       await updateEleveActif(eleveId, false);
-
       await updateEleve(eleveId, {
         classe_id:      convertForm.classeId      || null,
         telephone:      selected.telephone        || null,
@@ -137,10 +151,14 @@ export default function Inscriptions() {
       });
       await updateInscriptionEleveId(selected.id, eleveId);
 
+      // 2. Créer / rattacher les parents (bloc par bloc, reporting partiel si un échoue).
+      const results = await processParentBlocs(eleveId, blocsValides);
+
       // Email envoyé uniquement à l'activation, pas ici (élève inactif à ce stade)
 
       const eleveComplet = { id: eleveId, nom: selected.nom, prenom: selected.prenom, actif: false };
       setConvertResult({ identifiant, password });
+      setParentResults(results);
       setLinkedEleve(eleveComplet);
       setSelected(prev => ({ ...prev, statut: 'converti', eleve_id: eleveId }));
       setData(prev => prev.map(i => i.id === selected.id
@@ -156,20 +174,21 @@ export default function Inscriptions() {
     setActivating(true);
     await updateEleveActif(linkedEleve.id, true);
     setLinkedEleve(prev => ({ ...prev, actif: true }));
-    if (selected?.email && convertResult) {
-      const classeNom = classes.find(c => c.id === convertForm.classeId)?.nom ?? '';
-      sendWelcomeEmail({
-        email:        selected.email,
-        prenom:       selected.prenom,
-        nom:          selected.nom,
-        identifiant:  convertResult.identifiant,
-        tempPassword: convertResult.password,
-        classeNom,
-      }).catch(() => {});
-      setMailEnvoye(selected.email);
-    } else {
-      setMailEnvoye(false);
-    }
+    const classeNom = classes.find(c => c.id === convertForm.classeId)?.nom ?? '';
+
+    dispatchPostCreationEmails({
+      contactEmail:      selected?.email || null,
+      elevePrenom:       selected.prenom,
+      eleveNom:          selected.nom,
+      eleveIdentifiant:  convertResult?.identifiant,
+      eleveTempPassword: convertResult?.password,
+      classeNom,
+      parentResults,
+      // welcome uniquement si on a bien un email ET un résultat de conversion
+      sendWelcome:       Boolean(selected?.email && convertResult),
+    });
+    setMailEnvoye(selected?.email && convertResult ? selected.email : false);
+
     setActivating(false);
   };
 
@@ -442,8 +461,9 @@ export default function Inscriptions() {
                   <>
                     <div className="insc-detail-sep" />
                     <div className="insc-convert-panel">
-                      <p className="insc-convert-title">Créer le compte élève</p>
-                      <label className="insc-convert-label">Assigner une classe</label>
+                      <p className="insc-convert-title">Créer le compte élève + parents</p>
+
+                      <label className="insc-convert-label">1. Assigner une classe</label>
                       <select
                         className="insc-convert-select"
                         value={convertForm.classeId}
@@ -452,13 +472,25 @@ export default function Inscriptions() {
                         <option value="">— Sans classe pour l'instant —</option>
                         {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
                       </select>
+
+                      {/* Section Parents (composant partagé) */}
+                      <label className="insc-convert-label mt-4">2. Situation familiale</label>
+                      <ParentsSection
+                        mode={parentsMode}
+                        blocs={parentsBlocs}
+                        onChange={({ mode, blocs }) => {
+                          setParentsMode(mode);
+                          setParentsBlocs(blocs);
+                        }}
+                      />
+
                       {convertError && <p className="insc-convert-error">{convertError}</p>}
                       <button
                         className="insc-convert-btn"
                         disabled={convertLoading}
                         onClick={handleConvertToEleve}
                       >
-                        {convertLoading ? 'Création en cours…' : '✓ Créer le compte élève'}
+                        {convertLoading ? 'Création en cours…' : '✓ Créer élève + parent(s)'}
                       </button>
                     </div>
                   </>
@@ -467,11 +499,14 @@ export default function Inscriptions() {
                 {/* ── Identifiants générés ── */}
                 {convertResult && (
                   <div className="insc-creds-box">
-                    <p className="insc-creds-title">✓ Compte créé — identifiants</p>
+                    <p className="insc-creds-title">✓ Compte élève créé</p>
                     <p className="insc-creds-row">Identifiant : <strong>{convertResult.identifiant}</strong></p>
                     <p className="insc-creds-row">Mot de passe provisoire : <strong>{convertResult.password}</strong></p>
                   </div>
                 )}
+
+                {/* ── Résultats parents (créés, rattachés ou échoués) ── */}
+                <ParentResults results={parentResults} />
 
                 {/* ── Banner activation ── */}
                 {linkedEleve && !linkedEleve.actif && (
@@ -518,3 +553,4 @@ export default function Inscriptions() {
     </>
   );
 }
+

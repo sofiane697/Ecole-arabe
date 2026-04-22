@@ -32,6 +32,13 @@ import PortailDevoirs from './portail/PortailDevoirs';
 import PortailResultats from './portail/PortailResultats';
 import PortailObservations from './portail/PortailObservations';
 import PortailMessages     from './portail/PortailMessages';
+import ParentLogin         from './parent/ParentLogin';
+import ParentApp           from './parent/ParentApp';
+import ParentDashboard     from './parent/ParentDashboard';
+import ParentNotes         from './parent/ParentNotes';
+import ParentObservations  from './parent/ParentObservations';
+import ParentDevoirs       from './parent/ParentDevoirs';
+import ParentAbsences      from './parent/ParentAbsences';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -79,6 +86,16 @@ function AnimatedRoutes() {
           <Route path="resultats" element={<PortailResultats />} />
           <Route path="observations" element={<PortailObservations />} />
           <Route path="messages" element={<PortailMessages />} />
+        </Route>
+
+        {/* Portail parent */}
+        <Route path="/parent/login" element={<ParentLogin />} />
+        <Route path="/parent" element={<ParentApp />}>
+          <Route index              element={<ParentDashboard />} />
+          <Route path="notes"        element={<ParentNotes />} />
+          <Route path="observations" element={<ParentObservations />} />
+          <Route path="devoirs"      element={<ParentDevoirs />} />
+          <Route path="absences"     element={<ParentAbsences />} />
         </Route>
       </Routes>
     </AnimatePresence>

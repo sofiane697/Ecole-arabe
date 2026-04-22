@@ -727,15 +727,127 @@ export async function fetchConversationMessages(eleveId, enseignantId) {
   return res.json();
 }
 
-export async function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword, classeNom }) {
+/** POST authentifié vers la Edge function d'envoi mail. Ajoute le header
+ *  `x-admin-id` que l'Edge vérifie via _is_admin avant d'appeler Resend. */
+async function postEdgeMail(payload, errorLabel) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'x-admin-id': requireAdminId(),
     },
-    body: JSON.stringify({ email, prenom, nom, identifiant, tempPassword, classeNom }),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Erreur envoi email ${res.status}`);
+  if (!res.ok) throw new Error(`${errorLabel} ${res.status}`);
   return res.json();
+}
+
+/** Mail de bienvenue envoyé à l'email de contact de l'élève.
+ *  `parents` : liste des comptes parents **nouvellement créés** à inclure dans
+ *  le mail ({label, identifiant, password}[]). Les parents rattachés à un
+ *  compte existant ne sont PAS dans ce tableau — ils reçoivent un mail dédié
+ *  via sendParentAttachEmail (pas de mdp à transmettre, le compte existe déjà). */
+export function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword, classeNom, parents }) {
+  return postEdgeMail({
+    kind: 'welcome',
+    email, prenom, nom, identifiant, tempPassword, classeNom,
+    parents: Array.isArray(parents) ? parents : [],
+  }, 'Erreur envoi email');
+}
+
+/** Mail de notification envoyé à un parent **existant** rattaché à un nouvel
+ *  enfant. Pas d'identifiant/mdp provisoire : le parent utilise le compte qu'il a déjà. */
+export function sendParentAttachEmail({ email, foyerLabel, identifiant, elevePrenom, eleveNom, classeNom }) {
+  return postEdgeMail({
+    kind: 'attach',
+    email, foyerLabel, identifiant, elevePrenom, eleveNom, classeNom,
+  }, 'Erreur envoi email (attach)');
+}
+
+// ─── PARENTS ─────────────────────────────────────────────────────────────────
+// Toutes les fonctions admin_* côté SQL exigent un p_admin_id valide (vérifié
+// via _is_admin). On le lit depuis admin_session juste avant l'appel — si la
+// session a expiré localement, on remonte une erreur claire plutôt que de laisser
+// la RPC échouer avec un message générique.
+
+function requireAdminId() {
+  const id = getAdminId();
+  if (!id) throw new Error('Session admin invalide. Reconnecte-toi.');
+  return id;
+}
+
+/** Créer un compte parent + lier à l'élève en une transaction (fonction SQL). */
+export async function adminCreateParent({
+  identifiant, password,
+  pere_nom = null, pere_prenom = null,
+  mere_nom = null, mere_prenom = null,
+  email, telephone, eleve_id, lien = 'parents',
+}) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_parent`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:    requireAdminId(),
+      p_identifiant: identifiant,
+      p_password:    password,
+      p_pere_nom:    pere_nom,
+      p_pere_prenom: pere_prenom,
+      p_mere_nom:    mere_nom,
+      p_mere_prenom: mere_prenom,
+      p_email:       email,
+      p_telephone:   telephone,
+      p_eleve_id:    eleve_id,
+      p_lien:        lien,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.hint || `Erreur création parent ${res.status}`);
+  }
+  return res.json(); // UUID du parent
+}
+
+/** Rechercher un parent existant par email OU téléphone.
+ *  Retourne un tableau (0, 1 ou N matchs). Chaque ligne inclut `enfants` (JSONB). */
+export async function adminFindParentByContact(email, telephone) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_find_parent_by_contact`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id: requireAdminId(),
+      p_email:    email || null,
+      p_tel:      telephone || null,
+    }),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+/** Rattacher un parent existant à un élève (nouvelle ligne parent_eleves). */
+export async function adminLinkParentEleve(parentId, eleveId, lien = 'parents') {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_link_parent_eleve`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:  requireAdminId(),
+      p_parent_id: parentId,
+      p_eleve_id:  eleveId,
+      p_lien:      lien,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur rattachement parent ${res.status}`);
+  }
+}
+
+/** Réinitialiser le mot de passe d'un parent. */
+export async function adminResetParentPassword(parentId, newPassword) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_parent_password`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:     requireAdminId(),
+      p_id:           parentId,
+      p_new_password: newPassword,
+    }),
+  });
+  if (!res.ok) throw new Error(`Erreur reset mdp parent ${res.status}`);
 }
