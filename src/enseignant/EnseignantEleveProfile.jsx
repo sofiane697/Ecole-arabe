@@ -5,6 +5,8 @@ import {
   fetchQCMExistenceEns, fetchNotesEleve, fetchObservationsEleve,
   fetchRetardsAbsencesEleve, fetchEvaluationsClasse,
 } from './supabaseEnseignant';
+import EleveAvatar from '../shared/EleveAvatar';
+import { calcAge } from '../shared/dateUtils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const GRADES = [
@@ -245,11 +247,11 @@ export default function EnseignantEleveProfile() {
 
   // ── Données ──────────────────────────────────────────────────────────────────
   const eleve      = stateEleve || {};
-  const initiales  = ((eleve.prenom?.[0] || '') + (eleve.nom?.[0] || '')).toUpperCase();
   const nomComplet = `${eleve.prenom || ''} ${eleve.nom || ''}`.trim() || '—';
   const dateInscrit = eleve.created_at
     ? new Date(eleve.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
     : null;
+  const age = calcAge(eleve.date_naissance);
 
   // ── Calculs Progression ───────────────────────────────────────────────────
   const isPassed = (nivId) =>
@@ -307,7 +309,7 @@ export default function EnseignantEleveProfile() {
       <div style={S.headerCard}>
         {/* Zone haute : avatar + nom + badge */}
         <div style={S.headerTop}>
-          <div style={S.avatar}>{initiales || '?'}</div>
+          <EleveAvatar eleve={eleve} variant="enseignant" size={60} />
           <div style={S.headerInfo}>
             <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
               <span style={S.headerName}>{nomComplet}</span>
@@ -320,9 +322,12 @@ export default function EnseignantEleveProfile() {
         </div>
 
         {/* Zone basse : méta-données */}
-        {(stateClasse || dateInscrit || eleve.telephone || eleve.email_contact) && (
+        {(stateClasse || dateInscrit || eleve.telephone || eleve.email_contact || age != null) && (
           <div style={S.headerBottom}>
-            {stateClasse         && <span style={S.metaItemGold}>🏫 {stateClasse.nom}</span>}
+            {stateClasse && <span style={S.metaItemGold}>🏫 {stateClasse.nom}</span>}
+            {age != null && (
+              <span style={S.metaItem}>🎂 {age} an{age > 1 ? 's' : ''}</span>
+            )}
             {dateInscrit         && <span style={S.metaItem}>📅 Inscrit le {dateInscrit}</span>}
             {eleve.telephone     && <span style={S.metaItem}>📞 {eleve.telephone}</span>}
             {eleve.email_contact && <span style={S.metaItem}>✉️ {eleve.email_contact}</span>}

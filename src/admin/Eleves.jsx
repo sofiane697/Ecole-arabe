@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail, fetchEleveActivite, fetchEleveIdParIdentifiant } from './supabaseAdmin';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, sendWelcomeEmail, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
+import { calcAge } from '../shared/dateUtils';
+import { fmtPrenom, fmtNom } from '../shared/nameUtils';
+import EleveAvatar from '../shared/EleveAvatar';
+import PhotoEditor from '../shared/PhotoEditor';
 
 const PAGE_SIZE = 25;
-
-// ─── Formatage des noms ──────────────────────────────────────────────────────
-const fmtPrenom = (s) => s.trim() ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
-const fmtNom    = (s) => s.trim().toUpperCase();
 
 // ─── Icônes ──────────────────────────────────────────────────────────────────
 const IconPlus  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -87,8 +87,12 @@ export default function Eleves() {
   const [confirmReset, setConfirmReset] = useState(null);  // élève en attente de confirmation reset
   const [confirmDelete, setConfirmDelete] = useState(null); // élève en attente de confirmation suppression
   const [editEleve, setEditEleve] = useState(null);       // élève en cours d'édition
-  const [editForm, setEditForm] = useState({ prenom:'', nom:'', telephone:'', email_contact:'', classe_id:'' });
+  const [editForm, setEditForm] = useState({ prenom:'', nom:'', telephone:'', email_contact:'', classe_id:'', date_naissance:'', photo_url:null, photo_path:null, photo_scale:1, photo_pos_x:50, photo_pos_y:50 });
   const [editLoading, setEditLoading] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+  const [confirmRemovePhoto, setConfirmRemovePhoto] = useState(false);
+  const photoInputRef = useRef(null);
   const [allClasses, setAllClasses] = useState([]);
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
   const [detailModule, setDetailModule] = useState(null); // module ouvert dans le panneau latéral
@@ -190,7 +194,87 @@ export default function Eleves() {
 
   const handleOpenEdit = (eleve) => {
     setEditEleve(eleve);
-    setEditForm({ prenom: eleve.prenom || '', nom: eleve.nom || '', telephone: eleve.telephone || '', email_contact: eleve.email_contact || '', classe_id: eleve.classe_id || '' });
+    setPhotoError('');
+    setEditForm({
+      prenom: eleve.prenom || '',
+      nom: eleve.nom || '',
+      telephone: eleve.telephone || '',
+      email_contact: eleve.email_contact || '',
+      classe_id: eleve.classe_id || '',
+      date_naissance: eleve.date_naissance ? eleve.date_naissance.slice(0, 10) : '',
+      photo_url: eleve.photo_url || null,
+      photo_path: eleve.photo_path || null,
+      photo_scale: Number(eleve.photo_scale ?? 1),
+      photo_pos_x: Number(eleve.photo_pos_x ?? 50),
+      photo_pos_y: Number(eleve.photo_pos_y ?? 50),
+    });
+  };
+
+  const handleSelectPhoto = async (file) => {
+    if (!file || !editEleve) return;
+    setPhotoError('');
+    setPhotoUploading(true);
+    try {
+      // L'Edge Function "eleve-photo" upload + met à jour profils_eleves atomiquement.
+      const { photo_url, photo_path } = await uploadElevePhoto(editEleve.id, file);
+      // Reset du cadrage : l'ancien offset/zoom ne fait aucun sens sur une nouvelle image.
+      const reset = { photo_url, photo_path, photo_scale: 1, photo_pos_x: 50, photo_pos_y: 50 };
+      await updateEleve(editEleve.id, { photo_scale: 1, photo_pos_x: 50, photo_pos_y: 50 });
+      setEditForm(f => ({ ...f, ...reset }));
+      setSelectedEleve(prev => prev && prev.id === editEleve.id ? { ...prev, ...reset } : prev);
+      setEleves(prev => prev.map(e => e.id === editEleve.id ? { ...e, ...reset } : e));
+    } catch (e) {
+      setPhotoError(e.message || 'Erreur lors de l\'upload de la photo.');
+    } finally {
+      setPhotoUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
+  const handleCropChange = async (photo_scale, photo_pos_x, photo_pos_y) => {
+    if (!editEleve) return;
+    // No-op si rien n'a changé (évite un PATCH inutile après setState des mêmes valeurs).
+    if (
+      photo_scale === editForm.photo_scale &&
+      photo_pos_x === editForm.photo_pos_x &&
+      photo_pos_y === editForm.photo_pos_y
+    ) return;
+    // Sauvegarde des anciennes valeurs pour rollback en cas d'échec DB.
+    const prev = {
+      photo_scale: editForm.photo_scale,
+      photo_pos_x: editForm.photo_pos_x,
+      photo_pos_y: editForm.photo_pos_y,
+    };
+    const patch = { photo_scale, photo_pos_x, photo_pos_y };
+    setEditForm(f => ({ ...f, ...patch }));
+    setSelectedEleve(p => p && p.id === editEleve.id ? { ...p, ...patch } : p);
+    setEleves(list => list.map(e => e.id === editEleve.id ? { ...e, ...patch } : e));
+    try {
+      await updateEleve(editEleve.id, patch);
+    } catch (e) {
+      // Rollback UI vers la dernière valeur connue côté DB pour éviter un drift.
+      setEditForm(f => ({ ...f, ...prev }));
+      setSelectedEleve(p => p && p.id === editEleve.id ? { ...p, ...prev } : p);
+      setEleves(list => list.map(x => x.id === editEleve.id ? { ...x, ...prev } : x));
+      setPhotoError(e.message || 'Erreur lors de la sauvegarde du cadrage.');
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!editEleve) return;
+    setPhotoError('');
+    setPhotoUploading(true);
+    try {
+      // L'Edge Function purge le storage et met photo_url/path à null en DB.
+      await deleteElevePhoto(editEleve.id);
+      setEditForm(f => ({ ...f, photo_url: null, photo_path: null }));
+      setSelectedEleve(prev => prev && prev.id === editEleve.id ? { ...prev, photo_url: null, photo_path: null } : prev);
+      setEleves(prev => prev.map(e => e.id === editEleve.id ? { ...e, photo_url: null, photo_path: null } : e));
+    } catch (e) {
+      setPhotoError(e.message || 'Erreur lors de la suppression.');
+    } finally {
+      setPhotoUploading(false);
+    }
   };
 
   const handleSaveEdit = async () => {
@@ -202,6 +286,9 @@ export default function Eleves() {
       // Dériver niveau_scolaire_id depuis la classe sélectionnée
       const classeId = editForm.classe_id || null;
       const niveauScolaireId = classeId ? (allClasses.find(c => c.id === classeId)?.niveau_id || null) : null;
+      // Le cadrage (photo_scale/pos_x/pos_y) est commité en temps réel via handleCropChange
+      // et photo_url/path via l'Edge Function : on n'a pas besoin de les re-envoyer ici,
+      // cela écraserait potentiellement des modifs concurrentes.
       await Promise.all([
         updateEleve(editEleve.id, {
           prenom: cleanPrenom,
@@ -209,10 +296,11 @@ export default function Eleves() {
           telephone: editForm.telephone.trim() || null,
           email_contact: editForm.email_contact.trim() || null,
           classe_id: classeId,
+          date_naissance: editForm.date_naissance || null,
         }),
         updateEleveNiveauScolaire(editEleve.id, niveauScolaireId),
       ]);
-      const updated = { ...editEleve, prenom: cleanPrenom, nom: cleanNom, telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: classeId, niveau_scolaire_id: niveauScolaireId };
+      const updated = { ...editEleve, prenom: cleanPrenom, nom: cleanNom, telephone: editForm.telephone.trim() || null, email_contact: editForm.email_contact.trim() || null, classe_id: classeId, niveau_scolaire_id: niveauScolaireId, date_naissance: editForm.date_naissance || null, photo_url: editForm.photo_url, photo_path: editForm.photo_path, photo_scale: editForm.photo_scale, photo_pos_x: editForm.photo_pos_x, photo_pos_y: editForm.photo_pos_y };
       setSelectedEleve(updated);
       setEleves(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEditEleve(null);
@@ -243,7 +331,7 @@ export default function Eleves() {
 
   // ─── VUE DÉTAIL ──────────────────────────────────────────────────────
   if (selectedEleve) {
-    const initials = (fmtPrenom(selectedEleve.prenom || '')?.[0] || '') + (fmtNom(selectedEleve.nom || '')?.[0] || '');
+    const age = calcAge(selectedEleve.date_naissance);
     return (
       <div className={CLS.page}>
         <div className={CLS.breadcrumb} onClick={() => setSelectedEleve(null)}>
@@ -253,11 +341,11 @@ export default function Eleves() {
 
         <div className="elv-detail-header">
           <div className="elv-detail-top">
-            <div className="elv-detail-avatar">{initials}</div>
+            <EleveAvatar eleve={selectedEleve} variant="detail" />
             <div className="elv-detail-body">
               <div className="elv-detail-name">{fmtPrenom(selectedEleve.prenom || '')} {fmtNom(selectedEleve.nom || '')}</div>
               <div className="elv-detail-id">ID · {(selectedEleve.identifiant || '').toUpperCase()}</div>
-              {(selectedEleve.classe_id || selectedEleve.telephone || selectedEleve.email_contact) && (
+              {(selectedEleve.classe_id || selectedEleve.telephone || selectedEleve.email_contact || age != null) && (
                 <div className="elv-detail-meta">
                   {selectedEleve.classe_id && (() => {
                     const cl = allClasses.find(c => c.id === selectedEleve.classe_id);
@@ -266,6 +354,9 @@ export default function Eleves() {
                       <span className="elv-detail-meta-item gold">🏫 {nv ? `${nv.nom} — ` : ''}{cl.nom}</span>
                     ) : null;
                   })()}
+                  {age != null && (
+                    <span className="elv-detail-meta-item">🎂 {age} an{age > 1 ? 's' : ''}</span>
+                  )}
                   {selectedEleve.telephone && (
                     <span className="elv-detail-meta-item">📞 {selectedEleve.telephone}</span>
                   )}
@@ -299,6 +390,61 @@ export default function Eleves() {
           <div className={CLS.overlay} style={S.overlay} onClick={() => setEditEleve(null)}>
             <div className={`${CLS.modal} !max-w-[400px] max-h-[85vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
               <div className={CLS.modalTitle}>✏️ Modifier l'élève</div>
+
+              <div className="elv-edit-photo-zone">
+                {editForm.photo_url ? (
+                  <PhotoEditor
+                    // Remount sur changement de photo : les props initiales du composant
+                    // ne sont lues qu'au montage, donc on force un re-init quand l'URL change.
+                    key={editForm.photo_url}
+                    photoUrl={editForm.photo_url}
+                    scale={editForm.photo_scale}
+                    posX={editForm.photo_pos_x}
+                    posY={editForm.photo_pos_y}
+                    onChange={handleCropChange}
+                    size={160}
+                    disabled={photoUploading}
+                  />
+                ) : (
+                  <EleveAvatar
+                    eleve={{ prenom: editForm.prenom, nom: editForm.nom, photo_url: null }}
+                    variant="detail"
+                    size={110}
+                  />
+                )}
+                <div className="elv-edit-photo-actions">
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    style={{ display: 'none' }}
+                    onChange={e => handleSelectPhoto(e.target.files?.[0])}
+                  />
+                  <button
+                    type="button"
+                    className="elv-edit-photo-btn"
+                    disabled={photoUploading}
+                    onClick={() => photoInputRef.current?.click()}
+                  >
+                    {photoUploading ? 'Téléchargement…' : (editForm.photo_url ? 'Changer la photo' : 'Ajouter une photo')}
+                  </button>
+                  {editForm.photo_url && !photoUploading && (
+                    <button type="button" className="elv-edit-photo-btn danger" onClick={() => setConfirmRemovePhoto(true)}>
+                      Supprimer
+                    </button>
+                  )}
+                </div>
+                {photoError && (
+                  <div style={{ fontSize: 12, color: 'var(--a-red)', marginTop: 4, textAlign: 'center' }}>{photoError}</div>
+                )}
+                <div style={{ fontSize: 11, color: 'var(--a-fg-light)', marginTop: 4, textAlign: 'center' }}>
+                  JPG, PNG ou WebP — 3 Mo max
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--a-fg-light)', marginTop: 2, textAlign: 'center', fontStyle: 'italic' }}>
+                  La photo est enregistrée dès l'upload.
+                </div>
+              </div>
+
               <div className={CLS.field}>
                 <label className={CLS.label}>Prénom</label>
                 <input
@@ -341,6 +487,27 @@ export default function Eleves() {
                 />
               </div>
               <div style={{ height:1, background:'var(--a-border)', margin:'0.5rem 0 1rem' }} />
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Informations personnelles (optionnel)</div>
+              <div className={CLS.field}>
+                <label className={CLS.label}>Date de naissance</label>
+                <input
+                  className={CLS.input}
+                  type="date"
+                  value={editForm.date_naissance}
+                  onChange={e => setEditForm(f => ({ ...f, date_naissance: e.target.value }))}
+                  max={new Date().toISOString().slice(0, 10)}
+                />
+                {(() => {
+                  const ageEdit = calcAge(editForm.date_naissance);
+                  return ageEdit != null ? (
+                    <div style={{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 4 }}>
+                      Âge : {ageEdit} an{ageEdit > 1 ? 's' : ''}
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+
+              <div style={{ height:1, background:'var(--a-border)', margin:'0.5rem 0 1rem' }} />
               <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Classe (optionnel)</div>
               <div className={CLS.field}>
                 <label className={CLS.label}>Classe</label>
@@ -372,6 +539,17 @@ export default function Eleves() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ─── Modal confirmation suppression photo ─── */}
+        {confirmRemovePhoto && (
+          <ConfirmModal
+            title="Supprimer la photo ?"
+            message={<span>La photo de profil sera retirée définitivement de la fiche élève.<br/>Cette action est immédiate.</span>}
+            confirmLabel="Supprimer la photo"
+            onConfirm={async () => { setConfirmRemovePhoto(false); await handleRemovePhoto(); }}
+            onCancel={() => setConfirmRemovePhoto(false)}
+          />
         )}
 
         {/* ─── Modal confirmation reset mot de passe ─── */}
@@ -810,12 +988,11 @@ export default function Eleves() {
           <>
             <div className={CLS.grid}>
               {paginated.map(e => {
-                const initials = (fmtPrenom(e.prenom || '')?.[0] || '') + (fmtNom(e.nom || '')?.[0] || '');
                 return (
                   <div key={e.id} className={CLS.card} onClick={() => openEleve(e)}
                     onMouseEnter={ev => { ev.currentTarget.style.transform='translateY(-2px)'; ev.currentTarget.style.boxShadow='0 6px 24px rgba(0,0,0,.12)'; }}
                     onMouseLeave={ev => { ev.currentTarget.style.transform=''; ev.currentTarget.style.boxShadow=''; }}>
-                    <div className={CLS.avatar}>{initials}</div>
+                    <EleveAvatar eleve={e} variant="card" />
                     <div className={CLS.info}>
                       <div className={CLS.name}>{fmtPrenom(e.prenom || '')} {fmtNom(e.nom || '')}</div>
                       <div className={CLS.email}>ID : <span style={{ fontFamily:'var(--a-font-mono)', fontWeight:700, color:'var(--a-gold)' }}>{(e.identifiant || '').toUpperCase()}</span></div>

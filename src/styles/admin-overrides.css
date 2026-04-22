@@ -2548,19 +2548,31 @@
   box-shadow: var(--a-shadow-md);
   border-color: rgba(var(--a-gold-rgb),0.25);
 }
-.elv-avatar {
-  width: 2.6rem;
-  height: 2.6rem;
+/* ─── Avatar générique (photo ou initiales) — base pour .elv-avatar, .elv-detail-avatar, .portail-sidebar-avatar ─── */
+.avatar-circle {
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--a-gold), var(--a-gold-l));
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  color: #fff;
   font-weight: 800;
-  flex-shrink: 0;
   letter-spacing: -0.02em;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--a-gold), var(--a-gold-l));
+}
+.avatar-circle.has-photo { background: transparent; }
+.avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+.elv-avatar {
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 0.9rem;
 }
 .elv-info { flex: 1; min-width: 0; }
 .elv-name { font-weight: 600; color: var(--a-fg); font-size: 0.875rem; letter-spacing: -0.01em; }
@@ -2585,17 +2597,50 @@
 .elv-detail-avatar {
   width: 3.75rem;
   height: 3.75rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--a-gold), var(--a-gold-l));
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 1.35rem;
-  font-weight: 800;
-  flex-shrink: 0;
-  letter-spacing: -0.03em;
   box-shadow: 0 4px 14px rgba(var(--a-gold-rgb), 0.28);
+}
+
+/* ─── Zone photo dans la modal d'édition ─── */
+.elv-edit-photo-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0 16px;
+  border-bottom: 1px solid var(--a-border);
+  margin-bottom: 16px;
+}
+.elv-edit-photo-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.elv-edit-photo-btn {
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  color: var(--a-fg);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s var(--a-ease);
+}
+.elv-edit-photo-btn:hover:not(:disabled) {
+  background: var(--a-gold);
+  color: #fff;
+  border-color: var(--a-gold);
+}
+.elv-edit-photo-btn.danger:hover:not(:disabled) {
+  background: var(--a-red);
+  color: #fff;
+  border-color: var(--a-red);
+}
+.elv-edit-photo-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
 }
 .elv-detail-body { flex: 1; min-width: 0; }
 .elv-detail-name {

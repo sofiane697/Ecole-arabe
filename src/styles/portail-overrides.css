@@ -226,8 +226,22 @@
   border-top: 1px solid var(--p-border);
   flex-shrink: 0;
 }
-.portail-sidebar-user { margin-bottom: 12px; }
-.portail-sidebar-user strong { display: block; font-size: 13px; color: var(--p-fg); }
+.portail-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.portail-sidebar-avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--p-gold, #bf8a30), #e8a93e);
+  box-shadow: 0 2px 8px rgba(191,138,48,.25);
+}
+.portail-sidebar-user { min-width: 0; flex: 1; }
+.portail-sidebar-user strong { display: block; font-size: 13px; color: var(--p-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .portail-sidebar-user span { font-size: 11px; color: var(--p-fg-light); }
 .portail-logout-btn {
   display: flex; align-items: center; gap: 8px;

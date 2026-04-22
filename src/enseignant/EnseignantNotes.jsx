@@ -4,6 +4,7 @@ import {
   fetchEvaluationsClasse, createEvaluation, updateEvaluation, deleteEvaluation,
   fetchNotesEvaluation, upsertNote,
 } from './supabaseEnseignant';
+import EleveAvatar from '../shared/EleveAvatar';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IconPlus = () => (
@@ -44,7 +45,6 @@ const GRADES = [
 const gradeFromScore = (score) => GRADES.find(g => g.value === score) || null;
 const noteKey = (evalId, eleveId) => `${evalId}_${eleveId}`;
 const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : null;
-function initials(e) { return `${(e.prenom||'')[0]||''}${(e.nom||'')[0]||''}`.toUpperCase(); }
 
 // ─── CSS ─────────────────────────────────────────────────────────────────────
 const NOTES_CSS = `
@@ -860,16 +860,15 @@ export default function EnseignantNotes() {
                       <div key={eleve.id} className="en-student-row">
                         {/* Identité */}
                         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                          <div
-                            className="en-avatar"
-                            style={{
+                          <EleveAvatar
+                            eleve={eleve}
+                            size={40}
+                            fallbackStyle={{
                               background: grade ? `${grade.color}18` : 'rgba(255,255,255,.05)',
                               border: `2px solid ${grade ? grade.color : 'var(--a-border)'}`,
                               color: grade ? grade.color : 'var(--a-fg-mid)',
                             }}
-                          >
-                            {initials(eleve)}
-                          </div>
+                          />
                           <div>
                             <div className="en-student-name">{eleve.prenom} {eleve.nom}</div>
                             <div className="en-student-sub" style={{ color: note?.absent ? '#ff453a' : grade ? grade.color : 'var(--a-fg-light)', fontWeight: grade || note?.absent ? 600 : 400 }}>

@@ -45,6 +45,17 @@ export function getEleveUser() {
   try { return JSON.parse(sessionStorage.getItem('eleve_user')); } catch { return null; }
 }
 
+/** Récupère les infos à jour de l'élève (photo_url, date_naissance, etc.) */
+export async function fetchEleveSelf(eleveId) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=id,prenom,nom,photo_url,photo_path,photo_scale,photo_pos_x,photo_pos_y`,
+    { headers: ANON_HEADERS }
+  );
+  if (!res.ok) return null;
+  const rows = await res.json().catch(() => []);
+  return rows?.[0] || null;
+}
+
 /** Changer le mot de passe (1ère connexion) */
 export async function changePassword(eleveId, oldPassword, newPassword) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/change_eleve_password`, {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchAllConversations, fetchConversationMessages } from './supabaseAdmin';
+import EleveAvatar from '../shared/EleveAvatar';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -46,21 +47,10 @@ function formatDateSep(iso) {
   return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
-// ─── Composant Avatar ───────────────────────────────────────────────────────
-
-function Avatar({ prenom, nom, size = 36, radius = 10 }) {
-  const p = avatarPalette(`${prenom}${nom}`);
-  return (
-    <div className="surv-conv-avatar" style={{
-      width: size, height: size, borderRadius: radius,
-      background: p.bg, color: p.color,
-    }}>
-      {initials(prenom, nom)}
-    </div>
-  );
-}
-
 // ─── Composant principal ────────────────────────────────────────────────────
+// NB : les enseignants restent en rendu DIY (palette hash + initiales) car
+// aucune photo de profil enseignant n'est stockée. Les élèves passent par
+// <EleveAvatar> qui affiche la photo_url si présente, sinon la palette.
 
 export default function AdminSurveillance() {
   const [conversations, setConversations] = useState([]);
@@ -210,12 +200,14 @@ export default function AdminSurveillance() {
                 className={`surv-conv-item${isActive(c) ? ' active' : ''}`}
                 onClick={() => { setSelected(c); setMessages([]); prevMsgCountRef.current = 0; }}
               >
-                {/* Avatar double */}
+                {/* Avatar double (élève + enseignant) */}
                 <div className="relative w-9 h-9 shrink-0">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold absolute top-0 left-0 z-[2] shadow-[0_0_0_2px_var(--a-bg-card)]"
-                    style={{ background: pEleve.bg, color: pEleve.color }}>
-                    {initials(eleve?.prenom, eleve?.nom)}
-                  </div>
+                  <EleveAvatar
+                    eleve={eleve}
+                    size={28}
+                    className="absolute top-0 left-0 z-[2] shadow-[0_0_0_2px_var(--a-bg-card)]"
+                    fallbackStyle={{ background: pEleve.bg, color: pEleve.color, fontSize: 10 }}
+                  />
                   <div className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-[8px] font-bold absolute bottom-0 right-0 z-[1] shadow-[0_0_0_2px_var(--a-bg-card)]"
                     style={{
                       background: avatarPalette(`${ens?.prenom}${ens?.nom}`).bg,
@@ -257,12 +249,15 @@ export default function AdminSurveillance() {
             <div className="surv-main-participants">
               {/* Chip élève */}
               <div className="surv-participant-chip">
-                <div className="chip-av" style={{
-                  background: avatarPalette(`${selected.profils_eleves?.prenom}${selected.profils_eleves?.nom}`).bg,
-                  color: avatarPalette(`${selected.profils_eleves?.prenom}${selected.profils_eleves?.nom}`).color,
-                }}>
-                  {initials(selected.profils_eleves?.prenom, selected.profils_eleves?.nom)}
-                </div>
+                <EleveAvatar
+                  eleve={selected.profils_eleves}
+                  size={32}
+                  className="chip-av"
+                  fallbackStyle={{
+                    background: avatarPalette(`${selected.profils_eleves?.prenom}${selected.profils_eleves?.nom}`).bg,
+                    color: avatarPalette(`${selected.profils_eleves?.prenom}${selected.profils_eleves?.nom}`).color,
+                  }}
+                />
                 <div>
                   <div className="chip-name">{selected.profils_eleves?.prenom} {selected.profils_eleves?.nom}</div>
                   <div className="chip-role">Élève</div>
@@ -326,9 +321,18 @@ export default function AdminSurveillance() {
                   return (
                     <div key={m.id} className={`surv-bubble-wrap ${m.sender_role}`}>
                       {/* Avatar expéditeur */}
-                      <div className="surv-bubble-av" style={{ background: pal.bg, color: pal.color }}>
-                        {initials(senderPrenom, senderNom)}
-                      </div>
+                      {isEleve ? (
+                        <EleveAvatar
+                          eleve={selected.profils_eleves}
+                          size={28}
+                          className="surv-bubble-av"
+                          fallbackStyle={{ background: pal.bg, color: pal.color }}
+                        />
+                      ) : (
+                        <div className="surv-bubble-av" style={{ background: pal.bg, color: pal.color }}>
+                          {initials(senderPrenom, senderNom)}
+                        </div>
+                      )}
 
                       {/* Bulle + heure */}
                       <div className="surv-bubble-content">

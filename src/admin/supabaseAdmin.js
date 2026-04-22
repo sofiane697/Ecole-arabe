@@ -335,6 +335,83 @@ export async function uploadFile(file, path) {
   return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${path}`;
 }
 
+// ─── PHOTOS ÉLÈVES ────────────────────────────────────────────────────────────
+// Upload et suppression transitent par l'Edge Function "eleve-photo" qui :
+//   - vérifie l'admin_session via RPC SQL,
+//   - utilise la service_role key pour écrire dans le bucket eleves-photos
+//     (les INSERT/UPDATE/DELETE sont bloqués pour anon/authenticated au niveau policy),
+//   - met à jour profils_eleves.photo_url / photo_path dans la foulée.
+
+const PHOTO_MAX_BYTES = 3 * 1024 * 1024;
+const PHOTO_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp'];
+const ELEVE_PHOTO_FN = `${SUPABASE_URL}/functions/v1/eleve-photo`;
+
+function getAdminId() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('admin_session'));
+    return s?.id || null;
+  } catch { return null; }
+}
+
+/** Upload une photo de profil élève via l'Edge Function.
+ *  Retourne { photo_url, photo_path } — la DB est déjà mise à jour par la fonction. */
+export async function uploadElevePhoto(eleveId, file) {
+  if (!file) throw new Error('Aucun fichier sélectionné.');
+  if (!file.type || !file.type.startsWith('image/')) {
+    throw new Error('Le fichier doit être une image (JPG, PNG ou WebP).');
+  }
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!PHOTO_ALLOWED_EXT.includes(ext)) {
+    throw new Error('Format non supporté. Utilisez JPG, PNG ou WebP.');
+  }
+  if (file.size > PHOTO_MAX_BYTES) {
+    throw new Error('Image trop lourde (3 Mo maximum).');
+  }
+  const adminId = getAdminId();
+  if (!adminId) throw new Error('Session admin invalide. Reconnectez-vous.');
+
+  const res = await fetch(ELEVE_PHOTO_FN, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': file.type,
+      'x-admin-id': adminId,
+      'x-op': 'upload',
+      'x-eleve-id': eleveId,
+      'x-ext': ext,
+    },
+    body: file,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Erreur upload photo ${res.status}`);
+  }
+  return res.json(); // { photo_url, photo_path }
+}
+
+/** Supprime la photo d'un élève via l'Edge Function (storage + DB). */
+export async function deleteElevePhoto(eleveId) {
+  const adminId = getAdminId();
+  if (!adminId) throw new Error('Session admin invalide. Reconnectez-vous.');
+
+  const res = await fetch(ELEVE_PHOTO_FN, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+      'x-admin-id': adminId,
+      'x-op': 'delete',
+      'x-eleve-id': eleveId,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Erreur suppression photo ${res.status}`);
+  }
+}
+
 /** Réinitialiser le mot de passe d'un élève (génère un provisoire + force changement à la prochaine connexion) */
 export async function resetElevePassword(id, newPassword) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_eleve_password`, {
@@ -349,6 +426,10 @@ export async function resetElevePassword(id, newPassword) {
 
 /** Supprimer un élève (messages + progression + profil) */
 export async function deleteEleve(id) {
+  // 0. Purger les photos de profil via l'Edge Function (best-effort).
+  //    Si elle échoue (session expirée, réseau…), la suppression DB continue ;
+  //    les photos resteront alors dans le bucket jusqu'à nettoyage manuel.
+  await deleteElevePhoto(id).catch(() => {});
   // 1. Supprimer les messages de l'élève
   await authFetch(`${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${id}`, { method: 'DELETE' });
   // 2. Supprimer la progression de l'élève
@@ -622,7 +703,7 @@ export async function fetchAllConversations() {
   const res = await authFetch(
     `${SUPABASE_URL}/rest/v1/chat_messages` +
     `?select=eleve_id,enseignant_id,contenu,created_at,sender_role,` +
-    `profils_eleves(id,nom,prenom,classe_id),enseignants(id,nom,prenom)` +
+    `profils_eleves(id,nom,prenom,classe_id,photo_url,photo_scale,photo_pos_x,photo_pos_y),enseignants(id,nom,prenom)` +
     `&order=created_at.desc`
   );
   if (!res.ok) return [];

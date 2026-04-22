@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getEnseignantUser, fetchMesClasses, fetchElevesDeClasse } from './supabaseEnseignant';
+import EleveAvatar from '../shared/EleveAvatar';
 
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -90,7 +91,6 @@ export default function EnseignantClasse() {
             </thead>
             <tbody>
               {eleves.map(e => {
-                const initiales = (e.prenom?.[0] || '') + (e.nom?.[0] || '');
                 const date = e.created_at
                   ? new Date(e.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' })
                   : '—';
@@ -101,7 +101,7 @@ export default function EnseignantClasse() {
                     onMouseLeave={ev => ev.currentTarget.style.background=''}>
                     <td style={S.td}>
                       <div style={S.nameCell}>
-                        <div style={S.avatar}>{initiales}</div>
+                        <EleveAvatar eleve={e} fallbackStyle={S.avatar} />
                         <span style={{ fontWeight:600 }}>{e.prenom} {e.nom}</span>
                       </div>
                     </td>

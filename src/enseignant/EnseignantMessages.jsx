@@ -5,10 +5,8 @@ import {
   deleteConversation, sendGroupMessage, fetchBroadcastsClasse,
   updateBroadcast, deleteBroadcast,
 } from './supabaseEnseignant';
-
-const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : '';
-const fmtNom    = (s) => s ? s.trim().toUpperCase() : '';
-const initiales = (prenom, nom) => `${(prenom||'')[0]||''}${(nom||'')[0]||''}`.toUpperCase();
+import EleveAvatar from '../shared/EleveAvatar';
+import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
 const BROADCAST_MAX = 2000;
 
@@ -31,14 +29,15 @@ const cls = {
   search:        { padding:'10px 14px', borderBottom:'1px solid var(--a-border)' },
   searchInput:   { width:'100%', padding:'8px 12px', borderRadius:20, border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:13, outline:'none', boxSizing:'border-box' },
   listWrap:      { flex:1, overflowY:'auto' },
-  eleveAvatar:   { width:36, height:36, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:700, flexShrink:0 },
+  // Passé en fallbackStyle à <EleveAvatar> : les dimensions/forme viennent de .avatar-circle + inlineSize, on ne conserve que les couleurs.
+  eleveAvatar:   { background:'var(--a-gold)', color:'#fff' },
   classeIcon:    { width:36, height:36, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 },
   eleveName:     { fontSize:13, fontWeight:600, color:'var(--a-fg)' },
   eleveId:       { fontSize:11, color:'var(--a-fg-light)', fontFamily:'var(--a-font-mono)', marginTop:2 },
   badge:         { marginLeft:'auto', background:'var(--a-red)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20, flexShrink:0 },
   chat:          { flex:1, display:'flex', flexDirection:'column', overflow:'hidden' },
   chatHeader:    { padding:'12px 18px', borderBottom:'1px solid var(--a-border)', display:'flex', alignItems:'center', gap:12 },
-  chatAvatar:    { width:36, height:36, borderRadius:'50%', background:'var(--a-gold)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:700, flexShrink:0 },
+  chatAvatar:    { background:'var(--a-gold)', color:'#fff' },
   chatName:      { fontSize:14, fontWeight:700, color:'var(--a-fg)' },
   chatSub:       { fontSize:11, color:'var(--a-fg-light)', fontFamily:'var(--a-font-mono)' },
   messages:      { flex:1, overflowY:'auto', padding:16, display:'flex', flexDirection:'column', gap:8 },
@@ -346,7 +345,7 @@ export default function EnseignantMessages() {
             const active = selEleve?.id === e.id;
             return (
               <div key={e.id} style={S.eleveItem(active)} onClick={() => selectEleve(e)}>
-                <div style={cls.eleveAvatar}>{initiales(e.prenom, e.nom)}</div>
+                <EleveAvatar eleve={e} size={36} fallbackStyle={cls.eleveAvatar} />
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={cls.eleveName}>{fmtPrenom(e.prenom)} {fmtNom(e.nom)}</div>
                   <div style={cls.eleveId}>{(e.identifiant || '').toUpperCase()}</div>
@@ -489,7 +488,7 @@ export default function EnseignantMessages() {
         ) : (
           <>
             <div style={cls.chatHeader}>
-              <div style={cls.chatAvatar}>{initiales(selEleve.prenom, selEleve.nom)}</div>
+              <EleveAvatar eleve={selEleve} size={36} fallbackStyle={cls.chatAvatar} />
               <div style={{ flex:1 }}>
                 <div style={cls.chatName}>{fmtPrenom(selEleve.prenom)} {fmtNom(selEleve.nom)}</div>
                 <div style={cls.chatSub}>{(selEleve.identifiant || '').toUpperCase()}</div>

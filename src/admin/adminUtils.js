@@ -1,3 +1,6 @@
+// Re-export pour compat descendante (anciens imports via ./adminUtils)
+export { calcAge } from '../shared/dateUtils';
+
 // ─── Génération identifiant : 1ère lettre prénom + 2ème lettre nom + 1ère lettre nom + 4 chiffres
 export function generateIdentifiant(prenom, nom) {
   const p = prenom.trim().replace(/\s/g, '');

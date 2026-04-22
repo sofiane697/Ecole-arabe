@@ -4,6 +4,7 @@ import {
   fetchObservationsClasse, createObservation, deleteObservation,
 } from './supabaseEnseignant';
 import { motion, staggerContainer, fadeUp, tapScale } from '../animations';
+import EleveAvatar from '../shared/EleveAvatar';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const TYPES = [
@@ -17,10 +18,6 @@ function typeInfo(v) { return TYPES.find(t => t.value === v) || TYPES[0]; }
 function formatDate(str) {
   if (!str) return '';
   return new Date(str).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
-}
-
-function initials(e) {
-  return `${(e.prenom || '')[0] || ''}${(e.nom || '')[0] || ''}`.toUpperCase();
 }
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -206,7 +203,7 @@ export default function EnseignantObservations() {
                   const ti     = latest ? typeInfo(latest.type) : null;
                   return (
                     <motion.div key={e.id} variants={fadeUp} style={S.listItem(selEleve?.id === e.id)} onClick={() => selectEleve(e)}>
-                      <div style={S.avatar(hasObs)}>{initials(e)}</div>
+                      <EleveAvatar eleve={e} size={34} fallbackStyle={S.avatar(hasObs)} />
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={S.listName}>{e.prenom} {e.nom}</div>
                         <div style={S.listSub}>

@@ -5,6 +5,7 @@ import {
   updateEleve, updateEleveNiveauScolaire,
 } from './supabaseAdmin';
 import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
+import EleveAvatar from '../shared/EleveAvatar';
 
 const IconBack  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
 const IconPlus  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -315,7 +316,6 @@ export default function Classes() {
 
       <div className={S.eleveGrid}>
         {elevesClasse.map(e => {
-          const initiales = (e.prenom?.[0] || '') + (e.nom?.[0] || '');
           const identifiant = (e.identifiant || '').toUpperCase() || '—';
           const dateInscription = e.created_at
             ? new Date(e.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
@@ -326,7 +326,7 @@ export default function Classes() {
               onMouseEnter={ev => { ev.currentTarget.style.borderColor='var(--a-gold)'; ev.currentTarget.style.transform='translateY(-2px)'; }}
               onMouseLeave={ev => { ev.currentTarget.style.borderColor=''; ev.currentTarget.style.transform=''; }}>
               <div className={S.eleveTop}>
-                <div className={S.eleveAvatar}>{initiales}</div>
+                <EleveAvatar eleve={e} size={35} />
                 <div>
                   <div className={S.eleveName}>{e.prenom} {e.nom}</div>
                   <div className={S.eleveId}>{identifiant}</div>
@@ -354,7 +354,6 @@ export default function Classes() {
 
 // ─── Modal Info Élève (lecture seule) ─────────────────────────────────────────
 function EleveInfoModal({ eleve, onClose }) {
-  const initiales = (eleve.prenom?.[0] || '') + (eleve.nom?.[0] || '');
   const identifiant = (eleve.identifiant || '').toUpperCase() || '—';
   const dateInscription = eleve.created_at
     ? new Date(eleve.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
@@ -373,9 +372,7 @@ function EleveInfoModal({ eleve, onClose }) {
     <div className={S.overlay} onClick={onClose}>
       <div className={S.modal} style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-4 mb-6 pb-5 border-b border-a-border">
-          <div className="w-14 h-14 rounded-full bg-a-gold text-white flex items-center justify-center text-xl font-extrabold shrink-0">
-            {initiales}
-          </div>
+          <EleveAvatar eleve={eleve} size={56} />
           <div>
             <div className="text-lg font-bold text-a-fg">{eleve.prenom} {eleve.nom}</div>
             <div className="text-[13px] text-a-gold font-bold font-a-mono mt-[3px]">{identifiant}</div>

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession, verifyEleveSession } from './supabasePortail';
+import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession, verifyEleveSession, fetchEleveSelf } from './supabasePortail';
 import { AnimatePresence, motion, pageVariants, staggerContainer } from '../animations';
+import EleveAvatar from '../shared/EleveAvatar';
+import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
 const LETTER_SPRING = { type: 'spring', stiffness: 280, damping: 20, mass: 0.6 };
 
@@ -125,6 +127,7 @@ export default function PortailApp() {
   const [newDevoirsCount, setNewDevoirsCount] = useState(0);
   const [newNotesCount, setNewNotesCount] = useState(0);
   const [newObsCount, setNewObsCount] = useState(0);
+  const [photoInfo, setPhotoInfo] = useState(null);
   const classeIdRef = useRef(null);
 
   useEffect(() => {
@@ -144,6 +147,17 @@ export default function PortailApp() {
       if (!valid) { sessionStorage.clear(); navigate('/portail/login'); }
     }).catch(() => { sessionStorage.clear(); navigate('/portail/login'); });
   }, [navigate]);
+
+  // Charger la photo de profil (non retournée par login_eleve)
+  useEffect(() => {
+    const user = getEleveUser();
+    if (!user?.id) return;
+    let cancelled = false;
+    fetchEleveSelf(user.id)
+      .then(row => { if (!cancelled && row?.photo_url) setPhotoInfo(row); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // ─── Tracking de session ────────────────────────────────────────────
   useEffect(() => {
@@ -214,8 +228,6 @@ export default function PortailApp() {
   };
 
   const user = getEleveUser();
-  const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : s;
-  const fmtNom    = (s) => s ? s.trim().toUpperCase() : s;
   const userName = `${fmtPrenom(user?.prenom || '')} ${fmtNom(user?.nom || '')}`.trim() || 'Élève';
   const userIdentifiant = user?.identifiant ? user.identifiant.toUpperCase() : '';
 
@@ -355,9 +367,22 @@ export default function PortailApp() {
         </nav>
 
         <div className="portail-sidebar-footer">
-          <div className="portail-sidebar-user">
-            <strong>{userName}</strong>
-            <span>ID : {userIdentifiant}</span>
+          <div className="portail-sidebar-profile">
+            <EleveAvatar
+              eleve={{
+                prenom: user?.prenom,
+                nom: user?.nom,
+                photo_url: photoInfo?.photo_url,
+                photo_scale: photoInfo?.photo_scale,
+                photo_pos_x: photoInfo?.photo_pos_x,
+                photo_pos_y: photoInfo?.photo_pos_y,
+              }}
+              variant="portail"
+            />
+            <div className="portail-sidebar-user">
+              <strong>{userName}</strong>
+              <span>ID : {userIdentifiant}</span>
+            </div>
           </div>
           <button className="portail-logout-btn" onClick={handleLogout}>
             <span className="text-sm">🚪</span> Se déconnecter
