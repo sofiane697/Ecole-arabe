@@ -1,4 +1,4 @@
-import { calcAge, normalizeTelephone, formatFoyer, generateIdentifiant, generateTempPassword } from './adminUtils';
+import { calcAge, normalizeTelephone, formatFoyer, generateIdentifiant, generateTempPassword, safeMailtoHref, safeTelHref, getParentInitials } from './adminUtils';
 
 describe('calcAge', () => {
   beforeAll(() => {
@@ -112,33 +112,33 @@ describe('formatFoyer', () => {
     expect(formatFoyer({ pere_nom: '', mere_nom: '' })).toBe('');
   });
 
-  test('père seul', () => {
-    expect(formatFoyer({ pere_prenom: 'Jean', pere_nom: 'Dupont' })).toBe('M. Jean Dupont');
+  test('père seul — prénom capitalisé, nom en MAJUSCULES', () => {
+    expect(formatFoyer({ pere_prenom: 'Jean', pere_nom: 'Dupont' })).toBe('M. Jean DUPONT');
   });
 
-  test('mère seule', () => {
-    expect(formatFoyer({ mere_prenom: 'Marie', mere_nom: 'Durand' })).toBe('Mme Marie Durand');
+  test('mère seule — prénom capitalisé, nom en MAJUSCULES', () => {
+    expect(formatFoyer({ mere_prenom: 'Marie', mere_nom: 'Durand' })).toBe('Mme Marie DURAND');
   });
 
-  test('couple avec même nom de famille → "M. et Mme <nom>"', () => {
+  test('couple avec même nom de famille → "M. et Mme NOM"', () => {
     expect(formatFoyer({
       pere_prenom: 'Jean', pere_nom: 'Dupont',
       mere_prenom: 'Marie', mere_nom: 'Dupont',
-    })).toBe('M. et Mme Dupont');
+    })).toBe('M. et Mme DUPONT');
   });
 
-  test('couple avec noms différents → noms complets de chacun', () => {
+  test('couple avec noms différents → noms complets en MAJUSCULES', () => {
     expect(formatFoyer({
       pere_prenom: 'Jean', pere_nom: 'Dupont',
       mere_prenom: 'Marie', mere_nom: 'Durand',
-    })).toBe('M. Jean Dupont et Mme Marie Durand');
+    })).toBe('M. Jean DUPONT et Mme Marie DURAND');
   });
 
-  test('insensible à la casse du nom de famille pour la détection du "même nom"', () => {
+  test('insensible à la casse pour la détection "même nom"', () => {
     expect(formatFoyer({
       pere_prenom: 'Jean',  pere_nom: 'Dupont',
       mere_prenom: 'Marie', mere_nom: 'DUPONT',
-    })).toBe('M. et Mme Dupont');
+    })).toBe('M. et Mme DUPONT');
   });
 
   test('père avec juste le prénom (pas de nom)', () => {
@@ -146,7 +146,17 @@ describe('formatFoyer', () => {
   });
 
   test('mère avec juste le nom (pas de prénom)', () => {
-    expect(formatFoyer({ mere_nom: 'Durand' })).toBe('Mme Durand');
+    expect(formatFoyer({ mere_nom: 'Durand' })).toBe('Mme DURAND');
+  });
+
+  test('normalise les casses bizarres (tout minuscule → formatage propre)', () => {
+    expect(formatFoyer({ pere_prenom: 'jean', pere_nom: 'dupont' })).toBe('M. Jean DUPONT');
+    expect(formatFoyer({ pere_prenom: 'JEAN', pere_nom: 'DuPOnt' })).toBe('M. Jean DUPONT');
+  });
+
+  test('préserve les prénoms composés (Jean-Paul, Marie-Ange)', () => {
+    expect(formatFoyer({ pere_prenom: 'jean-paul', pere_nom: 'dupont' })).toBe('M. Jean-Paul DUPONT');
+    expect(formatFoyer({ mere_prenom: 'MARIE-ANGE', mere_nom: 'DURAND' })).toBe('Mme Marie-Ange DURAND');
   });
 });
 
@@ -209,5 +219,68 @@ describe('generateTempPassword', () => {
     const a = generateTempPassword();
     const b = generateTempPassword();
     expect(a).not.toBe(b);
+  });
+});
+
+// ─── Sécurité : bloque les schemes dangereux (javascript:, data:, vbscript:…)
+describe('safeMailtoHref', () => {
+  test('renvoie mailto: pour un email valide', () => {
+    expect(safeMailtoHref('jean@exemple.fr')).toBe('mailto:jean@exemple.fr');
+  });
+  test('renvoie null pour un email vide', () => {
+    expect(safeMailtoHref('')).toBeNull();
+    expect(safeMailtoHref(null)).toBeNull();
+    expect(safeMailtoHref(undefined)).toBeNull();
+  });
+  test('renvoie null pour un email invalide (sans @)', () => {
+    expect(safeMailtoHref('notanemail')).toBeNull();
+  });
+  test('renvoie null pour une tentative XSS (javascript:)', () => {
+    expect(safeMailtoHref('javascript:alert(1)')).toBeNull();
+  });
+  test('renvoie null si email contient des caractères dangereux (<, >, ")', () => {
+    expect(safeMailtoHref('x@y.com"><script>')).toBeNull();
+    expect(safeMailtoHref("x'@y.com")).toBeNull();
+  });
+  test('trim les espaces', () => {
+    expect(safeMailtoHref('  jean@exemple.fr  ')).toBe('mailto:jean@exemple.fr');
+  });
+});
+
+describe('safeTelHref', () => {
+  test('renvoie tel: pour un numéro normal', () => {
+    expect(safeTelHref('+33 6 12 34 56 78')).toBe('tel:+33612345678');
+    expect(safeTelHref('06 12 34 56 78')).toBe('tel:0612345678');
+  });
+  test('renvoie null pour un téléphone vide', () => {
+    expect(safeTelHref('')).toBeNull();
+    expect(safeTelHref(null)).toBeNull();
+  });
+  test('renvoie null pour une tentative XSS', () => {
+    expect(safeTelHref('javascript:alert(1)')).toBeNull();
+  });
+  test('renvoie null si moins de 4 chiffres après nettoyage', () => {
+    expect(safeTelHref('abc')).toBeNull();
+    expect(safeTelHref('12')).toBeNull();
+  });
+  test('filtre les caractères non autorisés', () => {
+    expect(safeTelHref('06<script>12345')).toBe('tel:0612345');
+  });
+});
+
+describe('getParentInitials', () => {
+  test('initiales père+nom', () => {
+    expect(getParentInitials({ pere_prenom: 'Jean', pere_nom: 'Dupont' })).toBe('JD');
+  });
+  test('initiales mère seule', () => {
+    expect(getParentInitials({ mere_prenom: 'Marie', mere_nom: 'Durand' })).toBe('MD');
+  });
+  test('fallback P si aucun nom', () => {
+    expect(getParentInitials({})).toBe('P');
+    expect(getParentInitials(null)).toBe('P');
+    expect(getParentInitials(undefined)).toBe('P');
+  });
+  test('priorise père si les deux présents', () => {
+    expect(getParentInitials({ pere_prenom: 'Jean', pere_nom: 'Dupont', mere_prenom: 'Marie', mere_nom: 'Durand' })).toBe('JD');
   });
 });

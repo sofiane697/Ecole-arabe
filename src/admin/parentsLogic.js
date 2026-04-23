@@ -50,6 +50,69 @@ export async function checkDuplicateParentForBloc(bloc, emailArg, telArg) {
 }
 
 /**
+ * Détermine le mode UI initial d'un ParentBloc :
+ *   - 'create' si le bloc a déjà des données de saisie (au moins un parent coché
+ *     OU un nom/prénom renseigné OU un email/téléphone saisi)
+ *   - 'search' sinon (défaut pour un nouveau bloc)
+ *
+ * Note : le cas `useExisting + matchedParent` n'est PAS un mode UI — il prend
+ * le pas via la bannière verte "Rattaché".
+ */
+export function initialBlocMode(bloc) {
+  if (!bloc) return 'search';
+  const hasData = Boolean(
+    bloc.has_pere || bloc.has_mere ||
+    bloc.pere_nom || bloc.pere_prenom ||
+    bloc.mere_nom || bloc.mere_prenom ||
+    bloc.email || bloc.telephone
+  );
+  return hasData ? 'create' : 'search';
+}
+
+/**
+ * Pour un index de bloc donné, retourne la liste des `matchedParent.id` des
+ * AUTRES blocs du wizard. Utilisé pour exclure les parents déjà rattachés de
+ * la recherche (évite les doublons en mode séparés : Parent I et Parent II
+ * ne peuvent pas pointer sur le même compte).
+ */
+export function excludedParentIdsFor(blocs, currentIndex) {
+  if (!Array.isArray(blocs)) return [];
+  return blocs
+    .filter((_, i) => i !== currentIndex)
+    .map(b => b?.matchedParent?.id)
+    .filter(Boolean);
+}
+
+/**
+ * Ultime check duplicate au submit : pour chaque bloc utilisable qui va créer
+ * un NOUVEAU parent (ni `useExisting` ni `matchedParent` déjà posés), relance
+ * `checkDuplicateParentForBloc` avec les contacts saisis. Renvoie :
+ *   - `refreshedBlocs` : la liste des blocs avec `matchedParent` éventuellement posé
+ *   - `needsReview`    : true si un match a été trouvé → l'admin doit arbitrer
+ *
+ * Appelé avant `processParentBlocs` dans Eleves.jsx et Inscriptions.jsx pour
+ * éviter les doublons silencieux quand l'admin clique "Créer" avant que
+ * l'onBlur des champs contact n'ait eu le temps de déclencher la recherche.
+ */
+export async function checkDuplicatesOnSubmit(blocs) {
+  const refreshedBlocs = [...blocs];
+  let needsReview = false;
+  for (let i = 0; i < refreshedBlocs.length; i++) {
+    const b = refreshedBlocs[i];
+    if (!isBlocUtilisable(b)) continue;
+    if (b.useExisting && b.matchedParent) continue; // admin a déjà choisi
+    if (b.matchedParent) { needsReview = true; continue; }
+    if (!b.email?.trim() && !b.telephone?.trim()) continue;
+    const refreshed = await checkDuplicateParentForBloc(b, b.email, b.telephone);
+    if (refreshed.matchedParent) {
+      refreshedBlocs[i] = refreshed;
+      needsReview = true;
+    }
+  }
+  return { refreshedBlocs, needsReview };
+}
+
+/**
  * Crée / rattache les parents pour un élève donné.
  *
  * Pour chaque bloc utilisable :

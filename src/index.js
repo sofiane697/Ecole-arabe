@@ -13,6 +13,7 @@ import Cours from './admin/Cours';
 import Classes from './admin/Classes';
 import Eleves from './admin/Eleves';
 import Enseignants from './admin/Enseignants';
+import Parents from './admin/Parents';
 import AdminSurveillance from './admin/AdminSurveillance';
 import EnseignantLogin      from './enseignant/EnseignantLogin';
 import EnseignantApp        from './enseignant/EnseignantApp';
@@ -57,6 +58,7 @@ function AnimatedRoutes() {
           <Route path="cours" element={<Cours />} />
           <Route path="classes" element={<Classes />} />
           <Route path="eleves" element={<Eleves />} />
+          <Route path="parents" element={<Parents />} />
           <Route path="enseignants" element={<Enseignants />} />
           <Route path="surveillance" element={<AdminSurveillance />} />
         </Route>

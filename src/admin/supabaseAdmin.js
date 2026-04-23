@@ -851,3 +851,129 @@ export async function adminResetParentPassword(parentId, newPassword) {
   });
   if (!res.ok) throw new Error(`Erreur reset mdp parent ${res.status}`);
 }
+
+/** Créer un parent SANS rattachement à un élève (gestion autonome). */
+export async function adminCreateParentStandalone({
+  identifiant, password,
+  pere_nom = null, pere_prenom = null,
+  mere_nom = null, mere_prenom = null,
+  email, telephone,
+}) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_parent_standalone`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:   requireAdminId(),
+      p_identifiant: identifiant,
+      p_password:    password,
+      p_pere_nom:    pere_nom,
+      p_pere_prenom: pere_prenom,
+      p_mere_nom:    mere_nom,
+      p_mere_prenom: mere_prenom,
+      p_email:       email,
+      p_telephone:   telephone,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.hint || `Erreur création parent ${res.status}`);
+  }
+  return res.json(); // UUID du parent
+}
+
+/** Liste paginée des parents avec recherche nom/email/tel/identifiant.
+ *  Chaque ligne contient un `total_count` (bigint) pour la pagination. */
+export async function adminFetchParentsPaginated({ search = '', limit = 25, offset = 0 } = {}) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_parents_paginated`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id: requireAdminId(),
+      p_search:   search || null,
+      p_limit:    limit,
+      p_offset:   offset,
+    }),
+  });
+  if (!res.ok) throw new Error(`Erreur liste parents ${res.status}`);
+  return res.json();
+}
+
+/** Parents rattachés à un élève donné (pour fiche élève). */
+export async function adminFetchParentsOfEleve(eleveId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_parents_of_eleve`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id: requireAdminId(),
+      p_eleve_id: eleveId,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur chargement parents de l'élève ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Enfants rattachés à un parent (pour fiche parent). */
+export async function adminFetchElevesOfParent(parentId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleves_of_parent`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:  requireAdminId(),
+      p_parent_id: parentId,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur chargement enfants du parent ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Patch partiel des coordonnées d'un parent (NULL = ne change pas). */
+export async function adminUpdateParent(parentId, patch = {}) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_parent`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:    requireAdminId(),
+      p_id:          parentId,
+      p_pere_nom:    patch.pere_nom    ?? null,
+      p_pere_prenom: patch.pere_prenom ?? null,
+      p_mere_nom:    patch.mere_nom    ?? null,
+      p_mere_prenom: patch.mere_prenom ?? null,
+      p_email:       patch.email       ?? null,
+      p_telephone:   patch.telephone   ?? null,
+      p_actif:       typeof patch.actif === 'boolean' ? patch.actif : null,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur modification parent ${res.status}`);
+  }
+}
+
+/** Supprimer un parent (refusé si des enfants lui sont encore rattachés). */
+export async function adminDeleteParent(parentId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_delete_parent`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_id: parentId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur suppression parent ${res.status}`);
+  }
+}
+
+/** Détacher un parent d'un élève (supprime la ligne pivot). */
+export async function adminUnlinkParentEleve(parentId, eleveId) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_unlink_parent_eleve`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:  requireAdminId(),
+      p_parent_id: parentId,
+      p_eleve_id:  eleveId,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur détachement parent ${res.status}`);
+  }
+}

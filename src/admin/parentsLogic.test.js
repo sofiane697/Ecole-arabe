@@ -1,4 +1,4 @@
-import { emptyBloc, isBlocUtilisable, checkDuplicateParentForBloc, processParentBlocs } from './parentsLogic';
+import { emptyBloc, isBlocUtilisable, checkDuplicateParentForBloc, processParentBlocs, checkDuplicatesOnSubmit, initialBlocMode, excludedParentIdsFor } from './parentsLogic';
 import * as supabaseAdmin from './supabaseAdmin';
 
 describe('emptyBloc', () => {
@@ -290,5 +290,179 @@ describe('processParentBlocs', () => {
     expect(id1).not.toBe(id2);
     expect(id1).toMatch(/^JuD\d{4}$/);
     expect(id2).toMatch(/^MuD\d{4}$/);
+  });
+});
+
+// ─── Check duplicate au submit — anti-doublon silencieux si onBlur skippé ───
+describe('checkDuplicatesOnSubmit', () => {
+  beforeEach(() => {
+    jest.spyOn(supabaseAdmin, 'adminFindParentByContact').mockResolvedValue([]);
+  });
+  afterEach(() => { jest.restoreAllMocks(); });
+
+  test('bloc vide → needsReview=false, bloc inchangé', async () => {
+    const blocs = [emptyBloc()];
+    const { refreshedBlocs, needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(false);
+    expect(refreshedBlocs[0]).toEqual(blocs[0]);
+  });
+
+  test('bloc avec contacts et aucun match → needsReview=false', async () => {
+    supabaseAdmin.adminFindParentByContact.mockResolvedValue([]);
+    const blocs = [{
+      ...emptyBloc(),
+      has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean',
+      email: 'jean@nouveau.fr', telephone: '0611',
+    }];
+    const { needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(false);
+    expect(supabaseAdmin.adminFindParentByContact).toHaveBeenCalled();
+  });
+
+  test('bloc avec match → needsReview=true + matchedParent posé', async () => {
+    const matched = { id: 'parent-xyz', identifiant: 'JeD1234', email: 'jean@exist.fr' };
+    supabaseAdmin.adminFindParentByContact.mockResolvedValue([matched]);
+    const blocs = [{
+      ...emptyBloc(),
+      has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean',
+      email: 'jean@exist.fr', telephone: '0611',
+    }];
+    const { refreshedBlocs, needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(true);
+    expect(refreshedBlocs[0].matchedParent).toEqual(matched);
+  });
+
+  test('bloc avec useExisting + matchedParent déjà posé → needsReview=false (admin a déjà choisi)', async () => {
+    const blocs = [{
+      ...emptyBloc(),
+      useExisting: true,
+      matchedParent: { id: 'parent-xyz', identifiant: 'JeD1234' },
+    }];
+    const { needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(false);
+    expect(supabaseAdmin.adminFindParentByContact).not.toHaveBeenCalled();
+  });
+
+  test('bloc avec matchedParent posé sans useExisting → needsReview=true (admin doit arbitrer)', async () => {
+    const matched = { id: 'parent-xyz', identifiant: 'JeD1234' };
+    const blocs = [{
+      ...emptyBloc(),
+      has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean',
+      email: 'jean@exist.fr', telephone: '0611',
+      matchedParent: matched, useExisting: false,
+    }];
+    const { needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(true);
+  });
+
+  test('bloc sans email ni téléphone → pas de recherche, pas de match', async () => {
+    const blocs = [{
+      ...emptyBloc(),
+      has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean',
+      email: '', telephone: '',
+    }];
+    const { needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(false);
+    expect(supabaseAdmin.adminFindParentByContact).not.toHaveBeenCalled();
+  });
+
+  test('plusieurs blocs — un seul match → needsReview=true', async () => {
+    const matched = { id: 'parent-xyz', identifiant: 'JeD1234' };
+    supabaseAdmin.adminFindParentByContact
+      .mockResolvedValueOnce([])           // 1er bloc : pas de match
+      .mockResolvedValueOnce([matched]);   // 2ème bloc : match
+    const blocs = [
+      { ...emptyBloc(), has_pere: true, pere_nom: 'A', pere_prenom: 'Aa', email: 'a@x.fr', telephone: '0611' },
+      { ...emptyBloc(), has_mere: true, mere_nom: 'B', mere_prenom: 'Bb', email: 'b@x.fr', telephone: '0622' },
+    ];
+    const { refreshedBlocs, needsReview } = await checkDuplicatesOnSubmit(blocs);
+    expect(needsReview).toBe(true);
+    expect(refreshedBlocs[0].matchedParent).toBe(null);
+    expect(refreshedBlocs[1].matchedParent).toEqual(matched);
+  });
+});
+
+// ─── Mode UI initial d'un ParentBloc ───────────────────────────────────────
+describe('initialBlocMode', () => {
+  test('bloc null/undefined → search', () => {
+    expect(initialBlocMode(null)).toBe('search');
+    expect(initialBlocMode(undefined)).toBe('search');
+  });
+
+  test('bloc vide (emptyBloc) → search', () => {
+    expect(initialBlocMode(emptyBloc())).toBe('search');
+  });
+
+  test('bloc avec has_pere coché → create', () => {
+    expect(initialBlocMode({ ...emptyBloc(), has_pere: true })).toBe('create');
+  });
+
+  test('bloc avec has_mere coché → create', () => {
+    expect(initialBlocMode({ ...emptyBloc(), has_mere: true })).toBe('create');
+  });
+
+  test('bloc avec email saisi → create', () => {
+    expect(initialBlocMode({ ...emptyBloc(), email: 'a@b.c' })).toBe('create');
+  });
+
+  test('bloc avec téléphone saisi → create', () => {
+    expect(initialBlocMode({ ...emptyBloc(), telephone: '0611' })).toBe('create');
+  });
+
+  test('bloc avec un seul nom (sans has_pere) → create', () => {
+    expect(initialBlocMode({ ...emptyBloc(), pere_nom: 'Dupont' })).toBe('create');
+    expect(initialBlocMode({ ...emptyBloc(), mere_prenom: 'Marie' })).toBe('create');
+  });
+});
+
+// ─── Exclusion cross-bloc pour la recherche parent ─────────────────────────
+describe('excludedParentIdsFor', () => {
+  test('tableau vide si aucun bloc', () => {
+    expect(excludedParentIdsFor([], 0)).toEqual([]);
+  });
+
+  test('array non fourni → retourne []', () => {
+    expect(excludedParentIdsFor(null, 0)).toEqual([]);
+    expect(excludedParentIdsFor(undefined, 0)).toEqual([]);
+  });
+
+  test('bloc unique — exclut rien (self)', () => {
+    const b = { ...emptyBloc(), matchedParent: { id: 'p1' } };
+    expect(excludedParentIdsFor([b], 0)).toEqual([]);
+  });
+
+  test('2 blocs, Parent I matched — Parent II doit exclure le parent de I', () => {
+    const blocs = [
+      { ...emptyBloc(), matchedParent: { id: 'p1', identifiant: 'A' } },
+      { ...emptyBloc() },
+    ];
+    expect(excludedParentIdsFor(blocs, 0)).toEqual([]);
+    expect(excludedParentIdsFor(blocs, 1)).toEqual(['p1']);
+  });
+
+  test('2 blocs matchés — chacun exclut l\'autre', () => {
+    const blocs = [
+      { ...emptyBloc(), matchedParent: { id: 'p1' } },
+      { ...emptyBloc(), matchedParent: { id: 'p2' } },
+    ];
+    expect(excludedParentIdsFor(blocs, 0)).toEqual(['p2']);
+    expect(excludedParentIdsFor(blocs, 1)).toEqual(['p1']);
+  });
+
+  test('ignore les blocs sans matchedParent', () => {
+    const blocs = [
+      { ...emptyBloc(), matchedParent: { id: 'p1' } },
+      { ...emptyBloc() }, // pas de matched
+      { ...emptyBloc(), matchedParent: { id: 'p3' } },
+    ];
+    expect(excludedParentIdsFor(blocs, 1)).toEqual(['p1', 'p3']);
+  });
+
+  test('matchedParent sans id → filtré (robustesse)', () => {
+    const blocs = [
+      { ...emptyBloc(), matchedParent: { identifiant: 'A' } }, // pas d'id
+      { ...emptyBloc() },
+    ];
+    expect(excludedParentIdsFor(blocs, 1)).toEqual([]);
   });
 });

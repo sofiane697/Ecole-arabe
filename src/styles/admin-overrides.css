@@ -189,6 +189,68 @@
   overflow: hidden;
 }
 
+/* ─── Placeholder normalisé pour les 4 pages de login ───────────────────────
+   Gris sobre (palette Apple #6e6e73) — aligné sur le rendu du portail
+   enseignant (référence). Opacity:1 pour neutraliser la règle Firefox qui
+   applique 0.54 par défaut. */
+.admin-form-panel input::placeholder,
+.admin-form-panel input::-webkit-input-placeholder,
+.ens-form-panel input::placeholder,
+.ens-form-panel input::-webkit-input-placeholder,
+.portail-form-panel input::placeholder,
+.portail-form-panel input::-webkit-input-placeholder {
+  color: #6e6e73;
+  opacity: 1;
+}
+
+/* ─── Bordure dorée subtile par défaut sur les 4 login ───────────────────────
+   Les inline styles JS définissent `border: 1px solid rgba(255,255,255,0.1)`
+   qui est quasi-invisible sur fond sombre. On remplace par une teinte dorée
+   discrète (25% d'opacité) pour que la zone input soit bien délimitée au repos.
+   Le focus (déjà géré par .admin-root input:focus / .portail-root input:focus)
+   renforce la couleur. */
+.admin-form-panel input,
+.ens-form-panel input,
+.portail-form-panel input {
+  border-color: rgba(191, 138, 48, 0.28) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ─── Neutralisation de l'autofill navigateur sur les 4 login ────────────────
+   Chrome / Edge / Safari appliquent un fond crème et un texte bleuté quand
+   un champ est auto-rempli depuis les credentials sauvegardés. On force
+   notre fond sombre (#2c2c2e) via l'astuce box-shadow inset (seule manière
+   de contourner -webkit-autofill) et le texte à #f5f5f7. On préserve aussi
+   la bordure dorée par-dessus.
+   La transition ultra-longue empêche le flash jaune au chargement. */
+.admin-form-panel input:-webkit-autofill,
+.admin-form-panel input:-webkit-autofill:hover,
+.admin-form-panel input:-webkit-autofill:active,
+.ens-form-panel input:-webkit-autofill,
+.ens-form-panel input:-webkit-autofill:hover,
+.ens-form-panel input:-webkit-autofill:active,
+.portail-form-panel input:-webkit-autofill,
+.portail-form-panel input:-webkit-autofill:hover,
+.portail-form-panel input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #2c2c2e inset !important;
+          box-shadow: 0 0 0 1000px #2c2c2e inset !important;
+  -webkit-text-fill-color: #f5f5f7 !important;
+  caret-color: #f5f5f7;
+  border-color: rgba(191, 138, 48, 0.28) !important;
+  transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
+}
+
+/* ─── Autofill + focus : bordure dorée vive + halo, tout en préservant le mask ─
+   Deux box-shadows empilés : le mask interne (pour cacher le fond d'autofill)
+   ET le halo externe doré du focus. */
+.admin-form-panel input:-webkit-autofill:focus,
+.ens-form-panel input:-webkit-autofill:focus,
+.portail-form-panel input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #2c2c2e inset, 0 0 0 3px rgba(191, 138, 48, 0.18) !important;
+          box-shadow: 0 0 0 1000px #2c2c2e inset, 0 0 0 3px rgba(191, 138, 48, 0.18) !important;
+  border-color: #bf8a30 !important;
+}
+
 /* ─── Login Page ─── */
 .admin-login-page {
   min-height: 100vh;
@@ -1352,8 +1414,14 @@
 /* Actions détail */
 .insc-detail-actions {
   display: flex;
+  flex-direction: column;
   gap: 0.6rem;
-  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.insc-detail-actions .msg-action-primary,
+.insc-detail-actions .msg-action-danger {
+  width: 100%;
+  justify-content: center;
 }
 
 
@@ -1378,6 +1446,142 @@
 .insc-activation-text   { font-size:13px; color:var(--a-yellow); }
 .insc-activation-btn    { background:var(--a-yellow); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:13px; font-weight:700; cursor:pointer; }
 .insc-convert-error  { color:var(--a-red); font-size:13px; margin-top:8px; }
+
+/* ─── Status cards (post-conversion) — éditoriales, accent left + icône ─── */
+.insc-status-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem 0.9rem 1.1rem;
+  border-radius: 10px;
+  margin-top: 0.7rem;
+  overflow: hidden;
+  background: var(--status-bg, var(--a-bg));
+  border: 1px solid var(--status-border, var(--a-border));
+}
+.insc-status-card::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 3px;
+  background: var(--status-accent, var(--a-fg-light));
+  border-radius: 3px 0 0 3px;
+}
+
+/* Variantes par couleur sémantique */
+.insc-status-card.success {
+  --status-bg:     rgba(48, 209, 88, 0.06);
+  --status-border: rgba(48, 209, 88, 0.25);
+  --status-accent: var(--a-green);
+  --status-title:  var(--a-green);
+}
+.insc-status-card.warn {
+  --status-bg:     rgba(255, 159, 10, 0.07);
+  --status-border: rgba(255, 159, 10, 0.3);
+  --status-accent: var(--a-yellow);
+  --status-title:  var(--a-yellow);
+}
+.insc-status-card.pending {
+  --status-bg:     rgba(var(--a-gold-rgb), 0.06);
+  --status-border: rgba(var(--a-gold-rgb), 0.28);
+  --status-accent: var(--a-gold);
+  --status-title:  var(--a-gold);
+}
+
+/* Icône circulaire */
+.insc-status-icon {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--status-accent);
+  color: #fff;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--status-accent) 30%, transparent);
+  margin-top: 0.1rem;
+}
+
+.insc-status-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.insc-status-title {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--status-title);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+}
+
+.insc-status-desc {
+  font-size: 0.75rem;
+  color: var(--a-fg-mid);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.insc-status-link {
+  color: var(--a-fg);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(var(--a-gold-rgb), 0.3);
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.insc-status-link:hover {
+  color: var(--a-gold);
+  border-color: var(--a-gold);
+}
+
+.insc-status-mono {
+  font-family: var(--a-font-mono, 'JetBrains Mono', monospace);
+  color: var(--a-fg);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+/* CTA intégré (ex: "Activer l'accès") */
+.insc-status-cta {
+  flex-shrink: 0;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--status-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  align-self: center;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--status-accent) 30%, transparent);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.insc-status-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--status-accent) 40%, transparent);
+}
+.insc-status-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.insc-status-cta:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .insc-status-card { flex-wrap: wrap; }
+  .insc-status-cta  { margin-top: 0.5rem; }
+}
 
 /* ═══════════════════════════════
    MESSAGES — REFONTE
@@ -1732,6 +1936,46 @@
   margin-top: 0.15rem;
 }
 
+.msg-reader-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+.msg-reader-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.28rem 0.7rem;
+  border-radius: 980px;
+  background: var(--a-bg);
+  border: 1px solid var(--a-border);
+  color: var(--a-fg-mid);
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  transition: color 0.18s var(--a-ease),
+              border-color 0.18s var(--a-ease),
+              background 0.18s var(--a-ease),
+              transform 0.18s var(--a-ease);
+}
+.msg-reader-contact > svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.18s var(--a-ease);
+}
+.msg-reader-contact:hover {
+  color: var(--a-gold);
+  border-color: rgba(var(--a-gold-rgb), 0.45);
+  background: rgba(var(--a-gold-rgb), 0.06);
+  transform: translateY(-1px);
+}
+.msg-reader-contact:hover > svg {
+  opacity: 1;
+}
+
 .msg-reader-sep {
   height: 1px;
   background: var(--a-border);
@@ -1816,6 +2060,24 @@
   border-color: var(--a-gold);
   color: var(--a-gold);
   background: rgba(var(--a-gold-rgb),0.06);
+}
+.msg-action-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  background: transparent;
+  color: var(--a-red);
+  border: 1px solid var(--a-red);
+  border-radius: 980px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--a-ease);
+}
+.msg-action-danger:hover {
+  background: rgba(255, 69, 58, 0.08);
 }
 
 /* ─── Page titre ─── */
@@ -3334,3 +3596,944 @@
 .presence-dropdown {
   animation: presence-dropdown-in 0.15s ease-out forwards;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PARENT CARD — editorial refined (Notion/Linear inspired, quiet luxury)
+   Utilisé dans src/admin/Parents.jsx pour la grille de parents.
+   Palette : var(--a-*) uniquement, pas de hex en dur.
+═══════════════════════════════════════════════════════════════════════════ */
+
+.parent-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  border-radius: 14px;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.22s ease,
+    box-shadow 0.28s ease;
+}
+
+.parent-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--a-gold-rgb), 0.38);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 14px 28px -10px rgba(var(--a-gold-rgb), 0.22);
+}
+
+.parent-card:focus-visible {
+  outline: none;
+  border-color: var(--a-gold);
+  box-shadow: 0 0 0 3px rgba(var(--a-gold-rgb), 0.22);
+  transform: translateY(-1px);
+}
+
+/* Accent doré en haut — signature subtile, apparait au hover */
+.parent-card-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--a-gold) 30%,
+    var(--a-gold) 70%,
+    transparent 100%);
+  opacity: 0;
+  transform: scaleX(0.6);
+  transform-origin: center;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.parent-card:hover .parent-card-accent,
+.parent-card:focus-visible .parent-card-accent {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.parent-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.parent-card-avatar {
+  position: relative;
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    linear-gradient(135deg, var(--a-gold) 0%, rgba(var(--a-gold-rgb), 0.82) 100%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow:
+    0 2px 6px rgba(var(--a-gold-rgb), 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.28s ease;
+}
+.parent-card:hover .parent-card-avatar {
+  transform: scale(1.05) rotate(-1deg);
+  box-shadow:
+    0 4px 12px rgba(var(--a-gold-rgb), 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.parent-card-identity {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.125rem;
+}
+
+.parent-card-name {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--a-fg);
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parent-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  flex-wrap: wrap;
+}
+
+.parent-card-ident {
+  font-family: var(--a-font-mono, 'JetBrains Mono', monospace);
+  color: var(--a-gold);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.parent-card-sep {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--a-fg-light);
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+
+.parent-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+}
+.parent-card-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+.parent-card-status.inactif { color: var(--a-red); }
+.parent-card-status.warn    { color: var(--a-yellow); }
+
+/* Bouton fantôme supprimer — fade in au hover, devient rouge au hover direct */
+.parent-card-ghost-btn {
+  opacity: 0;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--a-fg-light);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition:
+    opacity 0.22s ease,
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.parent-card:hover .parent-card-ghost-btn {
+  opacity: 0.65;
+}
+.parent-card-ghost-btn:hover:not(:disabled) {
+  opacity: 1 !important;
+  color: var(--a-red);
+  background: rgba(240, 85, 85, 0.1);
+  border-color: rgba(240, 85, 85, 0.25);
+  transform: scale(1.05);
+}
+.parent-card-ghost-btn:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--a-gold);
+  outline-offset: 1px;
+}
+.parent-card-ghost-btn:disabled {
+  cursor: not-allowed;
+}
+.parent-card-ghost-btn:disabled:hover {
+  color: var(--a-fg-light);
+  background: transparent;
+  border-color: transparent;
+  transform: none;
+}
+
+/* ── Contacts ──────────────────────────────────────────────────── */
+.parent-card-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.parent-card-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+  color: var(--a-fg-mid);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  min-width: 0;
+  max-width: 100%;
+  font-family: inherit;
+}
+.parent-card-contact > svg {
+  flex-shrink: 0;
+  color: var(--a-fg-light);
+  transition: color 0.15s ease;
+}
+.parent-card-contact > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+a.parent-card-contact:hover {
+  color: var(--a-gold);
+}
+a.parent-card-contact:hover > svg {
+  color: var(--a-gold);
+}
+
+/* ── Enfants (section hero) ───────────────────────────────────── */
+.parent-card-enfants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem 0.95rem;
+  background:
+    linear-gradient(135deg,
+      rgba(var(--a-gold-rgb), 0.06) 0%,
+      rgba(var(--a-gold-rgb), 0.015) 100%);
+  border: 1px solid rgba(var(--a-gold-rgb), 0.14);
+  border-radius: 10px;
+  margin-top: auto;
+  transition: border-color 0.22s ease, background 0.22s ease;
+}
+.parent-card:hover .parent-card-enfants {
+  border-color: rgba(var(--a-gold-rgb), 0.28);
+  background:
+    linear-gradient(135deg,
+      rgba(var(--a-gold-rgb), 0.09) 0%,
+      rgba(var(--a-gold-rgb), 0.025) 100%);
+}
+
+.parent-card-enfants.empty {
+  background: var(--a-bg);
+  border-color: var(--a-border);
+  border-style: dashed;
+}
+.parent-card:hover .parent-card-enfants.empty {
+  background: var(--a-bg);
+  border-color: var(--a-border);
+}
+
+.parent-card-enfants-empty-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.74rem;
+  color: var(--a-fg-light);
+  font-style: italic;
+}
+.parent-card-enfants-empty-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--a-fg-light);
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.parent-card-enfants-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+/* Stack d'avatars façon Linear : overlap -8px, bordure couleur carte */
+.parent-card-enfants-stack {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.parent-card-eleve-chip {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--a-bg);
+  border: 2px solid var(--a-bg-card);
+  color: var(--a-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  position: relative;
+  font-family: var(--a-font-mono, 'JetBrains Mono', monospace);
+  transition: border-color 0.22s ease, transform 0.2s ease;
+}
+.parent-card-eleve-chip + .parent-card-eleve-chip {
+  margin-left: -8px;
+}
+.parent-card-eleve-chip.more {
+  background: rgba(var(--a-gold-rgb), 0.14);
+  color: var(--a-gold);
+  font-weight: 700;
+}
+.parent-card:hover .parent-card-eleve-chip {
+  border-color: rgba(var(--a-gold-rgb), 0.28);
+}
+
+.parent-card-enfants-count {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--a-fg);
+  letter-spacing: 0.005em;
+}
+
+.parent-card-enfants-names {
+  font-size: 0.72rem;
+  color: var(--a-fg-mid);
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Clavier : rendu accessible de la navigation tab */
+.parent-card:focus:not(:focus-visible) { outline: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PARENT DETAIL — fiche détail éditoriale, cohérente avec ParentCard
+   Utilisé dans src/admin/Parents.jsx pour la vue "ParentDetail".
+═══════════════════════════════════════════════════════════════════════════ */
+
+.parent-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Breadcrumb retour */
+.parent-detail-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.4rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--a-fg-mid);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.parent-detail-back:hover {
+  color: var(--a-gold);
+  background: rgba(var(--a-gold-rgb), 0.07);
+  transform: translateX(-2px);
+}
+.parent-detail-back:focus-visible {
+  outline: 2px solid var(--a-gold);
+  outline-offset: 2px;
+}
+
+/* ── Hero header ──────────────────────────────────────────────── */
+.parent-detail-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  border-radius: 16px;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+
+.parent-detail-hero-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--a-gold) 30%,
+    var(--a-gold) 70%,
+    transparent 100%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.parent-detail-hero-avatar {
+  width: 64px; height: 64px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    linear-gradient(135deg, var(--a-gold) 0%, rgba(var(--a-gold-rgb), 0.82) 100%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow:
+    0 4px 14px rgba(var(--a-gold-rgb), 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.parent-detail-hero-identity {
+  flex: 1;
+  min-width: 200px;
+}
+
+.parent-detail-hero-name {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--a-fg);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.parent-detail-hero-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  flex-wrap: wrap;
+}
+
+.parent-detail-hero-ident {
+  font-family: var(--a-font-mono, 'JetBrains Mono', monospace);
+  color: var(--a-gold);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.parent-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.01);
+}
+.parent-detail-chip.inactif {
+  color: var(--a-red);
+  background: rgba(240, 85, 85, 0.08);
+  border-color: rgba(240, 85, 85, 0.25);
+}
+.parent-detail-chip.warn {
+  color: var(--a-yellow);
+  background: rgba(255, 159, 10, 0.08);
+  border-color: rgba(255, 159, 10, 0.28);
+}
+.parent-detail-chip-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 5px currentColor;
+  flex-shrink: 0;
+}
+
+/* Actions hero — boutons discrets, icône + label */
+.parent-detail-hero-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.parent-detail-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+  white-space: nowrap;
+}
+.parent-detail-action-btn.gold {
+  color: var(--a-gold);
+  background: rgba(var(--a-gold-rgb), 0.09);
+  border-color: rgba(var(--a-gold-rgb), 0.22);
+}
+.parent-detail-action-btn.gold:hover {
+  background: rgba(var(--a-gold-rgb), 0.18);
+  border-color: rgba(var(--a-gold-rgb), 0.35);
+  transform: translateY(-1px);
+}
+.parent-detail-action-btn.blue {
+  color: var(--a-blue);
+  background: rgba(85, 150, 247, 0.09);
+  border-color: rgba(85, 150, 247, 0.22);
+}
+.parent-detail-action-btn.blue:hover {
+  background: rgba(85, 150, 247, 0.18);
+  border-color: rgba(85, 150, 247, 0.38);
+  transform: translateY(-1px);
+}
+.parent-detail-action-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Error banner */
+.parent-detail-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--a-red);
+  background: rgba(240, 85, 85, 0.08);
+  border: 1px solid rgba(240, 85, 85, 0.25);
+}
+.parent-detail-error > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--a-red);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Section (coordonnées / enfants) ──────────────────────────── */
+.parent-detail-section {
+  padding: 1.5rem 1.75rem 1.6rem;
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  border-radius: 14px;
+}
+
+.parent-detail-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.35rem;
+}
+
+.parent-detail-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--a-fg-mid);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.parent-detail-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: rgba(var(--a-gold-rgb), 0.12);
+  color: var(--a-gold);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Bouton "Rattacher un élève" */
+.parent-detail-attach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--a-gold);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(var(--a-gold-rgb), 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.parent-detail-attach-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(var(--a-gold-rgb), 0.38);
+  background: var(--a-gold-l, var(--a-gold));
+}
+.parent-detail-attach-btn:focus-visible {
+  outline: 2px solid var(--a-gold);
+  outline-offset: 2px;
+}
+
+/* ── Fields (vue lecture) ─────────────────────────────────────── */
+.parent-detail-fields {
+  margin: 0;
+  display: grid;
+  gap: 0.95rem;
+}
+
+.parent-detail-field {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--a-border);
+}
+.parent-detail-field:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.parent-detail-field dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--a-fg-light);
+  margin: 0;
+}
+.parent-detail-field dd {
+  font-size: 0.92rem;
+  color: var(--a-fg);
+  margin: 0;
+  word-break: break-word;
+}
+
+.parent-detail-empty-inline {
+  color: var(--a-fg-light);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.parent-detail-link {
+  color: var(--a-fg);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--a-gold-rgb), 0.3);
+  padding-bottom: 1px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.parent-detail-link:hover {
+  color: var(--a-gold);
+  border-color: var(--a-gold);
+}
+
+/* ── Formulaire édition ────────────────────────────────────── */
+.parent-detail-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.parent-detail-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .parent-detail-edit-grid { grid-template-columns: 1fr; }
+  .parent-detail-field     { grid-template-columns: 1fr; gap: 0.2rem; }
+  .parent-detail-field dt  { margin-bottom: 0.1rem; }
+  .parent-detail-hero      { padding: 1.25rem; }
+  .parent-detail-section   { padding: 1.15rem 1.25rem; }
+}
+
+.parent-detail-edit-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--a-border);
+  background: var(--a-bg);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--a-fg);
+}
+.parent-detail-edit-toggle input[type="checkbox"] {
+  width: 16px; height: 16px;
+  margin-top: 2px;
+  accent-color: var(--a-gold);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Liste des enfants rattachés ──────────────────────────── */
+.parent-detail-eleves {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.parent-detail-eleve {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  padding: 0.85rem 1rem 0.85rem 0.85rem;
+  background: var(--a-bg);
+  border: 1px solid var(--a-border);
+  border-radius: 10px;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+.parent-detail-eleve:hover {
+  border-color: rgba(var(--a-gold-rgb), 0.3);
+  background: rgba(var(--a-gold-rgb), 0.025);
+  transform: translateY(-1px);
+}
+
+.parent-detail-eleve-avatar {
+  width: 38px; height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg,
+    rgba(85, 150, 247, 0.25) 0%,
+    rgba(85, 150, 247, 0.15) 100%);
+  color: var(--a-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: var(--a-font-mono, 'JetBrains Mono', monospace);
+  border: 1px solid rgba(85, 150, 247, 0.25);
+}
+
+/* Variante dorée pour distinguer un PARENT dans une fiche élève */
+.parent-detail-eleve-avatar.parent-variant {
+  background:
+    linear-gradient(135deg, var(--a-gold) 0%, rgba(var(--a-gold-rgb), 0.82) 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow:
+    0 2px 6px rgba(var(--a-gold-rgb), 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  font-family: inherit;
+  letter-spacing: 0.03em;
+}
+
+/* Meta-info dans la row d'un parent rattaché */
+.parent-detail-eleve-ident {
+  font-family: var(--a-font-mono, 'JetBrains Mono', monospace);
+  color: var(--a-gold);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.parent-detail-eleve-email {
+  color: var(--a-fg-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+.parent-detail-eleve-lien-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(var(--a-gold-rgb), 0.1);
+  border: 1px solid rgba(var(--a-gold-rgb), 0.22);
+  color: var(--a-gold);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+.parent-detail-eleve-warn {
+  color: var(--a-yellow);
+  font-weight: 500;
+}
+
+.parent-detail-eleve-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.parent-detail-eleve-name {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--a-fg);
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parent-detail-eleve-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  color: var(--a-fg-mid);
+  flex-wrap: wrap;
+}
+
+.parent-detail-eleve-classe {
+  color: var(--a-fg-mid);
+  font-weight: 500;
+}
+
+.parent-detail-eleve-lien {
+  color: var(--a-fg-light);
+  text-transform: capitalize;
+}
+
+.parent-detail-eleve-inactif {
+  color: var(--a-red);
+  font-weight: 500;
+}
+
+.parent-detail-sep-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--a-fg-light);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* Bouton détacher — fantôme, visible au hover du row */
+.parent-detail-detach-btn {
+  opacity: 0;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--a-fg-light);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition:
+    opacity 0.2s ease,
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.parent-detail-eleve:hover .parent-detail-detach-btn,
+.parent-detail-detach-btn:focus-visible {
+  opacity: 0.7;
+}
+.parent-detail-detach-btn:hover {
+  opacity: 1 !important;
+  color: var(--a-red);
+  background: rgba(240, 85, 85, 0.1);
+  border-color: rgba(240, 85, 85, 0.28);
+  transform: scale(1.05);
+}
+
+/* Empty state enfants */
+.parent-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.25rem 1.25rem;
+  border: 1.5px dashed var(--a-border);
+  border-radius: 12px;
+  background: var(--a-bg);
+  gap: 0.4rem;
+}
+.parent-detail-empty > svg {
+  color: var(--a-fg-light);
+  margin-bottom: 0.35rem;
+}
+.parent-detail-empty > p {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--a-fg-mid);
+  letter-spacing: -0.005em;
+}
+.parent-detail-empty > span {
+  font-size: 0.78rem;
+  color: var(--a-fg-light);
+  line-height: 1.4;
+}
+
+

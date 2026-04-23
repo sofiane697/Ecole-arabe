@@ -50,22 +50,74 @@ export function normalizeTelephone(tel) {
   return t;
 }
 
+// ─── Validation stricte format email — mirror de la regex du formulaire public
+const EMAIL_RE = /^[^\s@<>'"]+@[^\s@<>'"]+\.[^\s@<>'"]+$/;
+
+// ─── Génération de href mailto: sécurisé — renvoie '#' si email invalide
+// Empêche les schemes dangereux (javascript:, data:, vbscript:) qui passeraient
+// en XSS si React interpolait brutalement le champ utilisateur.
+export function safeMailtoHref(email) {
+  const trimmed = (email || '').trim();
+  if (!trimmed || !EMAIL_RE.test(trimmed)) return null;
+  return `mailto:${trimmed}`;
+}
+
+// ─── Génération de href tel: sécurisé — autorise uniquement chiffres/+/-/espace
+// Même protection que mailto : un tel contenant `javascript:...` serait XSS.
+export function safeTelHref(tel) {
+  const trimmed = (tel || '').trim();
+  if (!trimmed) return null;
+  // Garder uniquement les caractères valides de tel: (RFC 3966 simplifié)
+  const cleaned = trimmed.replace(/[^0-9+]/g, '');
+  if (cleaned.length < 4) return null;
+  return `tel:${cleaned}`;
+}
+
+// ─── Helper d'initiales parent (utilisé dans Parents.jsx + EleveParentsSection.jsx)
+export function getParentInitials(parent) {
+  const a = ((parent?.pere_prenom || parent?.mere_prenom || '')[0]) || '';
+  const b = ((parent?.pere_nom || parent?.mere_nom || '')[0]) || '';
+  return (a + b).toUpperCase() || 'P';
+}
+
+// ─── Normalisation d'affichage des noms/prénoms de parents
+// - Prénom : 1ère lettre majuscule, reste minuscule (Jean, Marie, Jean-Paul)
+// - Nom    : tout en majuscules (DUPONT)
+// Appliqué côté AFFICHAGE uniquement — la donnée brute en DB n'est pas touchée.
+const formatPrenomDisplay = (s) => {
+  const v = (s || '').trim();
+  if (!v) return v;
+  // Gère les prénoms composés : Jean-Paul, Marie-Ange
+  return v.split(/([\s\-])/).map(part => {
+    if (part === '' || part === ' ' || part === '-') return part;
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  }).join('');
+};
+const formatNomDisplay = (s) => (s || '').trim().toUpperCase();
+
 // ─── Formatage du libellé d'un foyer à partir des 4 champs père/mère
+// Applique automatiquement :
+//   - Prénom en casse titre  (Jean, Marie)
+//   - Nom en MAJUSCULES      (DUPONT)
 // Retourne par ordre de priorité :
-//   "M. et Mme Dupont"                 — couple, même nom
-//   "M. Dupont et Mme Durand"          — couple, noms différents
-//   "M. Jean Dupont"                   — père seul
-//   "Mme Marie Durand"                 — mère seule
+//   "M. et Mme DUPONT"                 — couple, même nom
+//   "M. Jean DUPONT et Mme Marie DURAND" — couple, noms différents
+//   "M. Jean DUPONT"                   — père seul
+//   "Mme Marie DURAND"                 — mère seule
 //   ""                                 — rien saisi
 export function formatFoyer({ pere_nom, pere_prenom, mere_nom, mere_prenom } = {}) {
   const hasPere = Boolean(pere_nom || pere_prenom);
   const hasMere = Boolean(mere_nom || mere_prenom);
-  const pere = [pere_prenom, pere_nom].filter(Boolean).join(' ').trim();
-  const mere = [mere_prenom, mere_nom].filter(Boolean).join(' ').trim();
+  const pNom  = formatNomDisplay(pere_nom);
+  const pPren = formatPrenomDisplay(pere_prenom);
+  const mNom  = formatNomDisplay(mere_nom);
+  const mPren = formatPrenomDisplay(mere_prenom);
+  const pere  = [pPren, pNom].filter(Boolean).join(' ').trim();
+  const mere  = [mPren, mNom].filter(Boolean).join(' ').trim();
 
   if (hasPere && hasMere) {
-    if (pere_nom && mere_nom && pere_nom.trim().toLowerCase() === mere_nom.trim().toLowerCase()) {
-      return `M. et Mme ${pere_nom.trim()}`;
+    if (pNom && mNom && pNom === mNom) {
+      return `M. et Mme ${pNom}`;
     }
     return `M. ${pere} et Mme ${mere}`.replace(/\s+/g, ' ').trim();
   }

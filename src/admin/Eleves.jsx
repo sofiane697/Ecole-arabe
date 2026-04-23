@@ -3,8 +3,9 @@ import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, delet
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
-import { emptyBloc, isBlocUtilisable, processParentBlocs } from './parentsLogic';
+import { emptyBloc, isBlocUtilisable, processParentBlocs, checkDuplicatesOnSubmit } from './parentsLogic';
 import ParentsSection, { ParentResults } from './ParentsSection';
+import EleveParentsSection from './EleveParentsSection';
 import { calcAge } from '../shared/dateUtils';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import EleveAvatar from '../shared/EleveAvatar';
@@ -387,6 +388,12 @@ export default function Eleves() {
             </button>
           </div>
         </div>
+
+        {/* ─── Parents rattachés à cet élève ─── */}
+        <EleveParentsSection
+          eleveId={selectedEleve.id}
+          onChanged={loadEleves}
+        />
 
         {/* ─── Modal modifier nom/prénom ─── */}
         {editEleve && (
@@ -1045,6 +1052,10 @@ function CreateEleveModal({ onClose, onCreated }) {
   const [countdown, setCountdown] = useState(30);
 
   // ─── Section Parents (ensemble / séparés, détection doublon) ──────────
+  // `addParentsNow` : toggle pour rendre cette étape optionnelle. Par défaut
+  // décoché — workflow recommandé : créer l'élève d'abord, puis rattacher les
+  // parents depuis la fiche élève ou la page Parents.
+  const [addParentsNow, setAddParentsNow] = useState(false);
   const [parentsMode, setParentsMode]   = useState('ensemble');
   const [parentsBlocs, setParentsBlocs] = useState([emptyBloc()]);
   const [parentResults, setParentResults] = useState([]);
@@ -1091,13 +1102,30 @@ function CreateEleveModal({ onClose, onCreated }) {
       setError("Renseigne la date de naissance de l'élève.");
       return;
     }
-    // Les comptes parents sont obligatoires uniquement pour un élève mineur.
-    const blocsValides = isMajor ? [] : parentsBlocs.filter(isBlocUtilisable);
-    if (!isMajor && blocsValides.length === 0) {
-      setError("Renseigne au moins un parent (père ou mère) avec email et téléphone.");
+    // Parents : obligatoires uniquement si élève mineur ET addParentsNow coché.
+    // Si `addParentsNow === false`, l'admin rattachera les parents plus tard.
+    const skipParents  = isMajor || !addParentsNow;
+    const blocsValides = skipParents ? [] : parentsBlocs.filter(isBlocUtilisable);
+    if (!skipParents && blocsValides.length === 0) {
+      setError("Renseigne au moins un parent (père ou mère) avec email et téléphone, ou décoche « Ajouter les parents maintenant ».");
       return;
     }
+
+    // Bouton submit désactivé pendant TOUT le processus (check duplicate compris)
+    // pour éviter un double-clic qui déclencherait 2 créations en parallèle.
     setLoading(true);
+
+    // Dernier check duplicate (au cas où l'onBlur n'aurait pas eu lieu) — évite
+    // les doublons silencieux si admin clique "Créer" avant le debounce.
+    if (!skipParents) {
+      const { refreshedBlocs, needsReview } = await checkDuplicatesOnSubmit(parentsBlocs);
+      if (needsReview) {
+        setParentsBlocs(refreshedBlocs);
+        setError("Un parent existant correspond à un bloc. Utilisez la bannière jaune pour le rattacher, ou modifiez email/téléphone pour créer un nouveau compte.");
+        setLoading(false);
+        return;
+      }
+    }
     try {
       const tempPwd  = generateTempPassword();
       const idLogin  = identifiant.toLowerCase();
@@ -1150,13 +1178,12 @@ function CreateEleveModal({ onClose, onCreated }) {
 
   const hasValidParent = parentsBlocs.some(isBlocUtilisable);
   // Un élève majeur n'a pas besoin de compte parent — on n'exige que nom/prénom/date.
-  // On calcule la liste des champs manquants pour l'afficher à l'admin plutôt que
-  // de le laisser deviner pourquoi le bouton est grisé.
+  // Si `addParentsNow === false`, on ne bloque pas le submit sur les parents.
   const missingFields = [];
   if (prenom.trim().length < 2)   missingFields.push('prénom');
   if (nom.trim().length < 2)      missingFields.push('nom');
   if (!dateNaissance)             missingFields.push('date de naissance');
-  if (!isMajor && !hasValidParent) {
+  if (!isMajor && addParentsNow && !hasValidParent) {
     missingFields.push('un parent complet (nom, prénom, email, téléphone)');
   }
   const valid = missingFields.length === 0;
@@ -1389,20 +1416,43 @@ function CreateEleveModal({ onClose, onCreated }) {
             </>
           ) : (
             <>
-              <label className={CLS.label}>
-                Parents *
-                <span style={{ color:'var(--a-fg-light)', fontWeight:400, textTransform:'none' }}>
-                  {' '}(au moins un parent requis pour créer un compte parent)
+              <label className={CLS.label}>Parents</label>
+
+              {/* Toggle : ajouter les parents maintenant ou plus tard */}
+              <label
+                className="flex items-start gap-3 p-3.5 rounded-lg cursor-pointer text-[13px] mb-3 transition-all duration-150"
+                style={{
+                  background: addParentsNow ? 'rgba(191,138,48,0.08)' : 'var(--a-bg)',
+                  border: `1px solid ${addParentsNow ? 'rgba(191,138,48,0.35)' : 'var(--a-border)'}`,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={addParentsNow}
+                  onChange={e => setAddParentsNow(e.target.checked)}
+                  className="w-[15px] h-[15px] mt-0.5 cursor-pointer flex-shrink-0"
+                  style={{ accentColor: 'var(--a-gold)' }}
+                />
+                <span className="flex-1" style={{ color: addParentsNow ? 'var(--a-gold)' : 'var(--a-fg)' }}>
+                  <strong>Ajouter les parents maintenant</strong>
+                  <span className="block text-[12px] font-normal mt-0.5" style={{ color: 'var(--a-fg-mid)' }}>
+                    {addParentsNow
+                      ? 'Renseignez les parents ci-dessous.'
+                      : 'Vous pourrez les rattacher plus tard depuis la fiche de l\'élève ou la page Parents.'}
+                  </span>
                 </span>
               </label>
-              <ParentsSection
-                mode={parentsMode}
-                blocs={parentsBlocs}
-                onChange={({ mode, blocs }) => {
-                  setParentsMode(mode);
-                  setParentsBlocs(blocs);
-                }}
-              />
+
+              {addParentsNow && (
+                <ParentsSection
+                  mode={parentsMode}
+                  blocs={parentsBlocs}
+                  onChange={({ mode, blocs }) => {
+                    setParentsMode(mode);
+                    setParentsBlocs(blocs);
+                  }}
+                />
+              )}
             </>
           )}
         </div>

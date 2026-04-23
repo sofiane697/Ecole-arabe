@@ -4,13 +4,16 @@ import {
   fetchInscriptions, updateInscriptionStatut,
   fetchAllClasses,
   updateInscriptionEleveId, fetchEleveById,
-  updateEleveActif, updateEleve,
+  updateEleveActif, updateEleve, updateEleveNiveauScolaire,
   createEleve, fetchEleveIdParIdentifiant,
 } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
-import { emptyBloc, isBlocUtilisable, processParentBlocs } from './parentsLogic';
+import { emptyBloc, isBlocUtilisable, processParentBlocs, checkDuplicatesOnSubmit } from './parentsLogic';
 import ParentsSection, { ParentResults } from './ParentsSection';
+import EleveParentsSection from './EleveParentsSection';
+import { fmtPrenom, fmtNom } from '../shared/nameUtils';
+import { safeMailtoHref } from './adminUtils';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 
@@ -51,7 +54,7 @@ export default function Inscriptions() {
   const [filtreCours,      setFiltreCours]      = useState('tous');
   const [selected,         setSelected]         = useState(null);
   const [classes,        setClasses]        = useState([]);
-  const [convertForm,    setConvertForm]    = useState({ classeId: '' });
+  const [convertForm,    setConvertForm]    = useState({ classeId: '', emailContact: '', telephone: '', dateNaissance: '' });
   const [convertLoading,   setConvertLoading]   = useState(false);
   const [convertError,     setConvertError]     = useState('');
   const [convertResult,    setConvertResult]    = useState(null);
@@ -60,6 +63,10 @@ export default function Inscriptions() {
   const [mailEnvoye,       setMailEnvoye]       = useState(null); // email destinataire ou false
 
   // ─── Section Parents (wizard de conversion) ─────────────────────────────
+  // `addParentsNow` : toggle pour rendre l'étape optionnelle. Par défaut false
+  // — le workflow recommandé est de convertir l'élève puis rattacher les
+  // parents depuis sa fiche ou la page Parents.
+  const [addParentsNow, setAddParentsNow] = useState(false);
   const [parentsMode,   setParentsMode]   = useState('ensemble'); // 'ensemble' | 'separes'
   const [parentsBlocs,  setParentsBlocs]  = useState([emptyBloc()]);
   const [parentResults, setParentResults] = useState([]); // [{kind:'created'|'linked', label, identifiant, password?}]
@@ -81,9 +88,16 @@ export default function Inscriptions() {
     setConvertResult(null);
     setConvertError('');
     setMailEnvoye(null);
+    setAddParentsNow(false);
     setParentsMode('ensemble');
     setParentsBlocs([emptyBloc()]);
     setParentResults([]);
+    setConvertForm({
+      classeId: '',
+      emailContact: insc.email || '',
+      telephone: insc.telephone || '',
+      dateNaissance: insc.date_naissance ? insc.date_naissance.slice(0, 10) : '',
+    });
     if (insc.eleve_id) {
       const eleve = await fetchEleveById(insc.eleve_id);
       setLinkedEleve(eleve);
@@ -129,26 +143,64 @@ export default function Inscriptions() {
     setConvertLoading(true);
     setConvertError('');
     try {
-      // Validation amont : au moins un bloc parent utilisable (ou skip explicite).
-      const blocsValides = parentsBlocs.filter(isBlocUtilisable);
-      if (blocsValides.length === 0) {
-        throw new Error("Renseigne au moins un parent (père ou mère) avec email et téléphone.");
+      // Validation nom/prénom (aligné sur Eleves.jsx : bloque caractères suspects)
+      const NOM_REGEX = /^[a-zA-Zàâäéèêëïîôùûüœæ\s'\-]{1,50}$/;
+      if (!NOM_REGEX.test((selected.prenom || '').trim())) {
+        throw new Error('Le prénom contient des caractères non autorisés.');
+      }
+      if (!NOM_REGEX.test((selected.nom || '').trim())) {
+        throw new Error('Le nom contient des caractères non autorisés.');
+      }
+      if (!convertForm.dateNaissance) {
+        throw new Error("Renseigne la date de naissance de l'élève avant conversion.");
       }
 
-      // 1. Créer l'élève
+      // Majorité : élève ≥ 18 ans → les comptes parents deviennent optionnels.
+      const age     = calcAge(convertForm.dateNaissance);
+      const isMajor = age !== null && age >= 18;
+
+      // Parents : obligatoires uniquement si mineur ET addParentsNow coché.
+      const skipParents  = isMajor || !addParentsNow;
+      const blocsValides = skipParents ? [] : parentsBlocs.filter(isBlocUtilisable);
+      if (!skipParents && blocsValides.length === 0) {
+        throw new Error("Renseigne au moins un parent (père ou mère) avec email et téléphone, ou décoche « Ajouter les parents maintenant ».");
+      }
+
+      // Dernier check duplicate avant création (au cas où onBlur n'a pas eu lieu)
+      if (!skipParents) {
+        const { refreshedBlocs, needsReview } = await checkDuplicatesOnSubmit(parentsBlocs);
+        if (needsReview) {
+          setParentsBlocs(refreshedBlocs);
+          throw new Error("Un parent existant correspond à un bloc. Utilise la bannière jaune pour le rattacher, ou modifie email/téléphone pour créer un nouveau compte.");
+        }
+      }
+
+      // 1. Créer l'élève : noms formatés + identifiant en minuscules (login case-insensitive)
       const identifiant = generateIdentifiant(selected.prenom, selected.nom);
+      const idLogin     = identifiant.toLowerCase();
       const password    = generateTempPassword();
-      const newEleve = await createEleve(selected.nom, selected.prenom, identifiant, password);
-      const eleveId = newEleve.id ?? await fetchEleveIdParIdentifiant(identifiant);
+      const cleanNom    = fmtNom(selected.nom);
+      const cleanPrenom = fmtPrenom(selected.prenom);
+      const newEleve = await createEleve(cleanNom, cleanPrenom, idLogin, password);
+      const eleveId = newEleve.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte élève créé mais ID introuvable — réessayez.');
 
-      await updateEleveActif(eleveId, false);
+      // Patch unique : actif:false + classe + téléphone + email + date (un seul appel réseau)
       await updateEleve(eleveId, {
-        classe_id:      convertForm.classeId      || null,
-        telephone:      selected.telephone        || null,
-        email_contact:  selected.email            || null,
-        date_naissance: selected.date_naissance   || null,
+        actif:          false,
+        classe_id:      convertForm.classeId             || null,
+        telephone:      convertForm.telephone.trim()     || null,
+        email_contact:  convertForm.emailContact.trim()  || null,
+        date_naissance: convertForm.dateNaissance        || null,
       });
+
+      // Synchronise le niveau scolaire depuis la classe (cf. Eleves.jsx) — sinon
+      // le filtrage des modules côté portail élève est incorrect.
+      if (convertForm.classeId) {
+        const niveauScolaireId = classes.find(c => c.id === convertForm.classeId)?.niveau_id || null;
+        await updateEleveNiveauScolaire(eleveId, niveauScolaireId);
+      }
+
       await updateInscriptionEleveId(selected.id, eleveId);
 
       // 2. Créer / rattacher les parents (bloc par bloc, reporting partiel si un échoue).
@@ -156,13 +208,13 @@ export default function Inscriptions() {
 
       // Email envoyé uniquement à l'activation, pas ici (élève inactif à ce stade)
 
-      const eleveComplet = { id: eleveId, nom: selected.nom, prenom: selected.prenom, actif: false };
-      setConvertResult({ identifiant, password });
+      const eleveComplet = { id: eleveId, nom: cleanNom, prenom: cleanPrenom, actif: false };
+      setConvertResult({ identifiant, idLogin, password });
       setParentResults(results);
       setLinkedEleve(eleveComplet);
-      setSelected(prev => ({ ...prev, statut: 'converti', eleve_id: eleveId }));
+      setSelected(prev => ({ ...prev, statut: 'converti', eleve_id: eleveId, nom: cleanNom, prenom: cleanPrenom }));
       setData(prev => prev.map(i => i.id === selected.id
-        ? { ...i, statut: 'converti', eleve_id: eleveId } : i));
+        ? { ...i, statut: 'converti', eleve_id: eleveId, nom: cleanNom, prenom: cleanPrenom } : i));
     } catch (e) {
       setConvertError(e.message ?? 'Erreur lors de la conversion');
     } finally {
@@ -176,18 +228,22 @@ export default function Inscriptions() {
     setLinkedEleve(prev => ({ ...prev, actif: true }));
     const classeNom = classes.find(c => c.id === convertForm.classeId)?.nom ?? '';
 
+    const emailContact = convertForm.emailContact.trim();
     dispatchPostCreationEmails({
-      contactEmail:      selected?.email || null,
-      elevePrenom:       selected.prenom,
-      eleveNom:          selected.nom,
-      eleveIdentifiant:  convertResult?.identifiant,
+      contactEmail:      emailContact || null,
+      // Formatage défensif : immunise contre une mutation manquée de `selected`.
+      elevePrenom:       fmtPrenom(selected.prenom),
+      eleveNom:          fmtNom(selected.nom),
+      // Envoyer l'identifiant en minuscules : le formulaire de login lowercase l'input
+      // avant l'appel RPC, donc la casse stockée en DB doit l'être aussi.
+      eleveIdentifiant:  convertResult?.idLogin ?? convertResult?.identifiant?.toLowerCase(),
       eleveTempPassword: convertResult?.password,
       classeNom,
       parentResults,
       // welcome uniquement si on a bien un email ET un résultat de conversion
-      sendWelcome:       Boolean(selected?.email && convertResult),
+      sendWelcome:       Boolean(emailContact && convertResult),
     });
-    setMailEnvoye(selected?.email && convertResult ? selected.email : false);
+    setMailEnvoye(emailContact && convertResult ? emailContact : false);
 
     setActivating(false);
   };
@@ -447,7 +503,7 @@ export default function Inscriptions() {
                         Passer à : {nextCfg.label} <IconArrow />
                       </button>
                       <button
-                        className="mt-2 w-full px-4 py-[9px] rounded-full border border-a-red bg-transparent text-a-red text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-1.5"
+                        className="msg-action-danger"
                         onClick={() => refuserInscription(selected.id, selected.statut)}
                       >
                         ✕ Refuser l'inscription
@@ -463,7 +519,14 @@ export default function Inscriptions() {
                     <div className="insc-convert-panel">
                       <p className="insc-convert-title">Créer le compte élève + parents</p>
 
-                      <label className="insc-convert-label">1. Assigner une classe</label>
+                      <label className="insc-convert-label">
+                        1. Assigner une classe
+                        {selected.cours && (
+                          <span className="ml-2 text-[11px] font-normal text-a-fg-light">
+                            (cours souhaité : {selected.cours})
+                          </span>
+                        )}
+                      </label>
                       <select
                         className="insc-convert-select"
                         value={convertForm.classeId}
@@ -473,16 +536,71 @@ export default function Inscriptions() {
                         {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
                       </select>
 
-                      {/* Section Parents (composant partagé) */}
-                      <label className="insc-convert-label mt-4">2. Situation familiale</label>
-                      <ParentsSection
-                        mode={parentsMode}
-                        blocs={parentsBlocs}
-                        onChange={({ mode, blocs }) => {
-                          setParentsMode(mode);
-                          setParentsBlocs(blocs);
-                        }}
+                      <label className="insc-convert-label mt-4">2. Date de naissance</label>
+                      <input
+                        type="date"
+                        className="insc-convert-select"
+                        max={new Date().toISOString().split('T')[0]}
+                        value={convertForm.dateNaissance}
+                        onChange={e => setConvertForm(f => ({ ...f, dateNaissance: e.target.value }))}
                       />
+
+                      <label className="insc-convert-label mt-4">3. Téléphone</label>
+                      <input
+                        type="tel"
+                        className="insc-convert-select"
+                        placeholder="+33 6 12 34 56 78"
+                        value={convertForm.telephone}
+                        onChange={e => setConvertForm(f => ({ ...f, telephone: e.target.value }))}
+                      />
+
+                      <label className="insc-convert-label mt-4">
+                        4. Email de contact (identifiants envoyés à cette adresse)
+                      </label>
+                      <input
+                        type="email"
+                        className="insc-convert-select"
+                        placeholder="email@exemple.com (laisser vide = pas d'envoi)"
+                        value={convertForm.emailContact}
+                        onChange={e => setConvertForm(f => ({ ...f, emailContact: e.target.value }))}
+                      />
+
+                      {/* Section Parents (optionnelle, toggle) */}
+                      <label className="insc-convert-label mt-4">5. Parents</label>
+                      <label
+                        className="flex items-start gap-3 p-3 rounded-lg cursor-pointer text-[13px] mb-2 transition-all duration-150"
+                        style={{
+                          background: addParentsNow ? 'rgba(191,138,48,0.08)' : 'var(--a-bg)',
+                          border: `1px solid ${addParentsNow ? 'rgba(191,138,48,0.35)' : 'var(--a-border)'}`,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={addParentsNow}
+                          onChange={e => setAddParentsNow(e.target.checked)}
+                          className="w-[15px] h-[15px] mt-0.5 cursor-pointer flex-shrink-0"
+                          style={{ accentColor: 'var(--a-gold)' }}
+                        />
+                        <span className="flex-1" style={{ color: addParentsNow ? 'var(--a-gold)' : 'var(--a-fg)' }}>
+                          <strong>Ajouter les parents maintenant</strong>
+                          <span className="block text-[12px] font-normal mt-0.5 text-a-fg-mid">
+                            {addParentsNow
+                              ? 'Renseignez les parents ci-dessous.'
+                              : 'Vous pourrez les rattacher plus tard depuis la fiche de l\'élève ou la page Parents.'}
+                          </span>
+                        </span>
+                      </label>
+
+                      {addParentsNow && (
+                        <ParentsSection
+                          mode={parentsMode}
+                          blocs={parentsBlocs}
+                          onChange={({ mode, blocs }) => {
+                            setParentsMode(mode);
+                            setParentsBlocs(blocs);
+                          }}
+                        />
+                      )}
 
                       {convertError && <p className="insc-convert-error">{convertError}</p>}
                       <button
@@ -490,7 +608,7 @@ export default function Inscriptions() {
                         disabled={convertLoading}
                         onClick={handleConvertToEleve}
                       >
-                        {convertLoading ? 'Création en cours…' : '✓ Créer élève + parent(s)'}
+                        {convertLoading ? 'Création en cours…' : (addParentsNow ? '✓ Créer élève + parent(s)' : '✓ Créer l\'élève')}
                       </button>
                     </div>
                   </>
@@ -508,40 +626,91 @@ export default function Inscriptions() {
                 {/* ── Résultats parents (créés, rattachés ou échoués) ── */}
                 <ParentResults results={parentResults} />
 
-                {/* ── Banner activation ── */}
+                {/* ── Gestion parents de l'élève converti (rattacher/détacher) ── */}
+                {linkedEleve && (
+                  <EleveParentsSection eleveId={linkedEleve.id} />
+                )}
+
+                {/* ── Banner activation (compte pas encore actif) ── */}
                 {linkedEleve && !linkedEleve.actif && (
-                  <div className="insc-activation-banner">
-                    <span className="insc-activation-text">⏳ Compte en attente d'activation</span>
+                  <div className="insc-status-card pending">
+                    <span className="insc-status-icon" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                    </span>
+                    <div className="insc-status-body">
+                      <div className="insc-status-title">Compte en attente d'activation</div>
+                      <div className="insc-status-desc">
+                        Le compte est créé mais l'élève ne peut pas encore se connecter.
+                      </div>
+                    </div>
                     <button
-                      className="insc-activation-btn"
+                      className="insc-status-cta"
                       disabled={activating}
                       onClick={handleActivateEleve}
                     >
-                      {activating ? '…' : "Activer l'accès"}
+                      {activating ? 'Activation…' : "Activer l'accès"}
                     </button>
                   </div>
                 )}
 
-                {/* ── Compte déjà actif ── */}
+                {/* ── Compte actif ── */}
                 {linkedEleve && linkedEleve.actif && (
-                  <div className="mt-3 px-3.5 py-2.5 rounded-lg text-[13px] text-a-green bg-[rgba(48,209,88,0.08)] border border-[rgba(48,209,88,0.3)]">
-                    ✅ Élève actif — accès portail ouvert
+                  <div className="insc-status-card success">
+                    <span className="insc-status-icon" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </span>
+                    <div className="insc-status-body">
+                      <div className="insc-status-title">Élève actif</div>
+                      <div className="insc-status-desc">L'accès au portail est ouvert.</div>
+                    </div>
                   </div>
                 )}
 
-                {/* ── Indicateur email envoyé ── */}
-                {mailEnvoye && (
-                  <div className="mt-2 flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-[rgba(48,209,88,0.07)] border border-[rgba(48,209,88,0.25)]">
-                    <span className="text-[15px]">✉️</span>
-                    <span className="text-xs text-a-green leading-normal">
-                      Mail envoyé avec les identifiants et mot de passe provisoire<br />
-                      <strong className="font-a-mono">{mailEnvoye}</strong>
-                    </span>
-                  </div>
-                )}
+                {/* ── Mail envoyé avec identifiants ── */}
+                {mailEnvoye && (() => {
+                  const href = safeMailtoHref(mailEnvoye);
+                  return (
+                    <div className="insc-status-card success">
+                      <span className="insc-status-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                      </span>
+                      <div className="insc-status-body">
+                        <div className="insc-status-title">Identifiants envoyés par email</div>
+                        <div className="insc-status-desc">
+                          {href ? (
+                            <a href={href} className="insc-status-link">{mailEnvoye}</a>
+                          ) : (
+                            <span className="insc-status-mono">{mailEnvoye}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* ── Pas d'email de contact ── */}
                 {mailEnvoye === false && (
-                  <div className="mt-2 px-3.5 py-2.5 rounded-lg text-xs text-a-yellow bg-[rgba(255,159,10,0.08)] border border-[rgba(255,159,10,0.3)]">
-                    ⚠️ Aucun email de contact — transmettez les identifiants manuellement.
+                  <div className="insc-status-card warn">
+                    <span className="insc-status-icon" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                      </svg>
+                    </span>
+                    <div className="insc-status-body">
+                      <div className="insc-status-title">Aucun email de contact</div>
+                      <div className="insc-status-desc">
+                        Transmettez les identifiants manuellement au parent (vive voix, SMS ou note papier).
+                      </div>
+                    </div>
                   </div>
                 )}
 

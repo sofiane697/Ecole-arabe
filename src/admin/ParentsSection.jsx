@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { formatFoyer } from './adminUtils';
-import { emptyBloc, checkDuplicateParentForBloc } from './parentsLogic';
+import React, { useState, useEffect } from 'react';
+import { formatFoyer, getParentInitials } from './adminUtils';
+import { fmtPrenom } from '../shared/nameUtils';
+import { emptyBloc, checkDuplicateParentForBloc, initialBlocMode, excludedParentIdsFor } from './parentsLogic';
+import { adminFetchParentsPaginated } from './supabaseAdmin';
 
 // ─── SVG icons (stroke 1.6, neutres — hériteront de color via currentColor) ──
 const IconUser = (p) => (
@@ -39,6 +41,21 @@ const IconX = ({ size = 10 }) => (
     <path d="M2 2 L8 8 M8 2 L2 8" />
   </svg>
 );
+const IconSearch = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+const IconPlus = ({ size = 12 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+const IconArrowLeft = ({ size = 12 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
 
 // Petit losange doré, utilisé en séparateur décoratif
 const Diamond = ({ size = 5 }) => (
@@ -63,7 +80,12 @@ export default function ParentsSection({ mode, blocs, onChange }) {
     const next = blocs.map((b, i) => {
       if (i !== idx) return b;
       const merged = { ...b, ...patch };
-      if ('email' in patch || 'telephone' in patch) {
+      // Reset matchedParent/useExisting uniquement si l'admin modifie un contact
+      // ET que l'appelant n'a pas explicitement posé matchedParent (sinon on
+      // annulerait en cascade un rattachement demandé par handleAttach).
+      const contactChanged  = 'email' in patch || 'telephone' in patch;
+      const hasExplicitMatch = 'matchedParent' in patch || 'useExisting' in patch;
+      if (contactChanged && !hasExplicitMatch) {
         merged.matchedParent = null;
         merged.useExisting   = false;
       }
@@ -153,6 +175,7 @@ export default function ParentsSection({ mode, blocs, onChange }) {
             index={idx}
             total={blocs.length}
             bloc={b}
+            excludedParentIds={excludedParentIdsFor(blocs, idx)}
             onChange={patch => updateBloc(idx, patch)}
             onCheckDuplicate={(email, tel) => checkDuplicate(idx, email, tel)}
           />
@@ -162,12 +185,71 @@ export default function ParentsSection({ mode, blocs, onChange }) {
   );
 }
 
-// ─── Bloc parent : card avec header typographique, toggles, contact ─────────
-function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
+// ─── Bloc parent : card avec header typographique + 3 modes ────────────────
+// Mode initial par bloc :
+//   - 'search' (défaut) : barre de recherche live → résultats cliquables
+//   - 'create'          : formulaire actuel (toggles Père/Mère + champs)
+//   - 'locked'          : bannière verte "Rattaché" (quand useExisting + matchedParent)
+// `excludedParentIds` : IDs des parents déjà rattachés dans d'autres blocs du
+// wizard (évite qu'on rattache le même parent 2x en mode séparés).
+function ParentBloc({ index, total, bloc, excludedParentIds = [], onChange, onCheckDuplicate }) {
   const isMultiple = total > 1;
-  const title = isMultiple ? `Parent` : 'Foyer';
+  const title = isMultiple ? 'Parent' : 'Foyer';
   const matched = bloc.matchedParent;
   const locked = bloc.useExisting;
+
+  // Mode UI local (purement affichage) : 'search' par défaut, 'create' si le
+  // bloc a déjà des données de saisie (remount ou bloc pré-rempli).
+  // L'état `useExisting + matchedParent` (bannière verte) prend le pas via `locked`.
+  const [mode, setMode] = useState(() => initialBlocMode(bloc));
+
+  // Transition unidirectionnelle search → create si le bloc se retrouve pré-rempli
+  // par un effet externe (ex : restauration de draft, autofill admin). On ne fait
+  // PAS l'inverse (create → search auto) car l'utilisateur pourrait avoir vidé ses
+  // champs manuellement et vouloir rester en mode create pour re-saisir.
+  useEffect(() => {
+    if (mode === 'search' && initialBlocMode(bloc) === 'create') {
+      setMode('create');
+    }
+  }, [bloc, mode]);
+
+  // Bascule "Créer un nouveau parent" → vide toute trace de matched + passe en create
+  const switchToCreate = () => {
+    onChange({ matchedParent: null });
+    setMode('create');
+  };
+
+  // Bascule "← Rechercher" depuis le mode create → vide les champs et revient en search
+  const switchToSearch = () => {
+    onChange({
+      has_pere: false, has_mere: false,
+      pere_nom: '', pere_prenom: '',
+      mere_nom: '', mere_prenom: '',
+      email: '', telephone: '',
+      matchedParent: null,
+    });
+    setMode('search');
+  };
+
+  // Clic sur un résultat → passe en mode locked (use existing parent).
+  // NB : on N'envoie PAS email/telephone dans le patch, sinon `updateBloc`
+  // (dans le parent ParentsSection) reset matchedParent et useExisting via sa
+  // règle de détection onChange contact — on perdrait notre propre rattachement.
+  // Les champs de création éventuellement saisis sont ignorés tant que locked
+  // (la bannière verte est rendue à leur place).
+  const handleAttach = (parentRow) => {
+    onChange({ useExisting: true, matchedParent: parentRow });
+  };
+
+  // Annuler le rattachement. Le mode cible dépend de l'état du bloc :
+  //   - si le bloc avait des données de saisie (cas : onBlur avait matché
+  //     pendant la création d'un nouveau parent) → retour à 'create' pour
+  //     préserver le contexte de l'admin.
+  //   - sinon (rattachement direct depuis la recherche) → retour à 'search'.
+  const handleCancelAttach = () => {
+    onChange({ useExisting: false, matchedParent: null });
+    setMode(initialBlocMode(bloc));
+  };
 
   return (
     <div style={{
@@ -176,7 +258,7 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
       background: 'var(--a-bg-card)',
       border: '1px solid var(--a-border)',
       boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-      opacity: locked ? 0.92 : 1,
+      opacity: locked ? 0.96 : 1,
       transition: 'opacity 0.2s',
     }}>
       {/* Header : numéro romain (si séparés) + label uppercase + ligne décorative */}
@@ -205,19 +287,379 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
         }} />
       </div>
 
+      {/* ─── Mode "locked" : bannière verte rattaché ─── */}
+      {locked && matched && (
+        <div style={{
+          padding: '12px 14px',
+          borderRadius: 10,
+          background: 'rgba(48,209,88,0.08)',
+          border: '1px solid rgba(48,209,88,0.28)',
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <span style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'var(--a-green)', color: '#fff',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, fontWeight: 700, fontSize: 13,
+          }} aria-hidden="true">
+            {getParentInitials(matched)}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontSize: 13, fontWeight: 600, color: 'var(--a-fg)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {formatFoyer(matched) || matched.email}
+            </div>
+            <div style={{
+              fontSize: 11.5, color: 'var(--a-fg-mid)', marginTop: 2,
+              display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap',
+            }}>
+              <MonoChip>{matched.identifiant}</MonoChip>
+              <span>Rattaché</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleCancelAttach}
+            style={{
+              fontSize: 11, fontWeight: 600, color: 'var(--a-fg-light)',
+              background: 'transparent', border: 'none',
+              cursor: 'pointer', padding: '4px 8px',
+              textDecoration: 'underline', textUnderlineOffset: 2,
+              flexShrink: 0,
+            }}
+            aria-label="Annuler le rattachement et revenir à la recherche"
+          >
+            Annuler
+          </button>
+        </div>
+      )}
+
+      {/* ─── Mode "search" : barre de recherche + résultats live ─── */}
+      {!locked && mode === 'search' && (
+        <ParentSearchPanel
+          excludedIds={excludedParentIds}
+          onAttach={handleAttach}
+          onSwitchToCreate={switchToCreate}
+        />
+      )}
+
+      {/* ─── Mode "create" : formulaire actuel ─── */}
+      {!locked && mode === 'create' && (
+        <ParentCreateForm
+          bloc={bloc}
+          onChange={onChange}
+          onCheckDuplicate={onCheckDuplicate}
+          onSwitchToSearch={switchToSearch}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Panneau de recherche d'un parent existant ──────────────────────────────
+function ParentSearchPanel({ excludedIds = [], onAttach, onSwitchToCreate }) {
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState('');
+
+  // Sérialisation stable des IDs exclus → évite une boucle useEffect si le
+  // parent recrée le tableau à chaque render (voir note dans EleveParentsSection).
+  const excludedKey = (excludedIds || []).join(',');
+
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setError('');
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    setError('');
+    const timer = setTimeout(async () => {
+      try {
+        const data = await adminFetchParentsPaginated({ search: q, limit: 8, offset: 0 });
+        if (cancelled) return;
+        const excluded = new Set(excludedKey ? excludedKey.split(',') : []);
+        setResults((data || []).filter(p => !excluded.has(p.id)));
+      } catch (e) {
+        if (!cancelled) {
+          // Message générique pour l'utilisateur ; détail technique en console
+          // pour le diagnostic (ne pas exposer le message brut de la RPC).
+          console.error('[ParentSearchPanel] Recherche parent échouée :', e);
+          setError('Erreur lors de la recherche. Réessayez dans un instant.');
+          setResults([]);
+        }
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    }, 250);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [search, excludedKey]);
+
+  const q = search.trim();
+
+  return (
+    <div>
+      <RefinedInput
+        icon={<IconSearch />}
+        placeholder="Nom, email ou téléphone du parent…"
+        ariaLabel="Rechercher un parent existant"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
+
+      {/* Zone résultats / empty state — aria-live pour annoncer les changements */}
+      <div
+        style={{ marginTop: 12, minHeight: q.length >= 2 ? 60 : 0 }}
+        aria-live="polite"
+        aria-busy={searching}
+      >
+        {error && (
+          <div
+            role="alert"
+            style={{
+              fontSize: 12, color: 'var(--a-red)',
+              padding: '8px 12px', borderRadius: 8,
+              background: 'rgba(240,85,85,0.08)',
+              border: '1px solid rgba(240,85,85,0.25)',
+            }}
+          >
+            {error}
+          </div>
+        )}
+        {!error && q.length >= 2 && searching && (
+          <div style={{ fontSize: 12, color: 'var(--a-fg-light)', fontStyle: 'italic', padding: '8px 4px' }}>
+            Recherche…
+          </div>
+        )}
+        {!error && q.length >= 2 && !searching && results.length === 0 && (
+          <div style={{
+            fontSize: 12, color: 'var(--a-fg-mid)', fontStyle: 'italic',
+            padding: '10px 12px', borderRadius: 8,
+            background: 'var(--a-bg)',
+            border: '1px dashed var(--a-border)',
+            textAlign: 'center',
+          }}>
+            Aucun parent trouvé pour « {q} ».
+          </div>
+        )}
+        {!error && results.length > 0 && (
+          <div
+            role="listbox"
+            aria-label="Résultats de recherche parent"
+            style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            {results.map(p => (
+              <ParentResultCard key={p.id} parent={p} onAttach={() => onAttach(p)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Séparateur + bouton "Créer un nouveau parent" */}
+      <div aria-hidden="true" style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        margin: '16px 2px 12px',
+      }}>
+        <span style={{ flex: 1, height: 1, background: 'var(--a-border)', opacity: 0.55 }} />
+        <span style={{
+          fontSize: 10, fontWeight: 600, color: 'var(--a-fg-light)',
+          letterSpacing: '0.15em', textTransform: 'uppercase',
+        }}>
+          ou
+        </span>
+        <span style={{ flex: 1, height: 1, background: 'var(--a-border)', opacity: 0.55 }} />
+      </div>
+      <button
+        type="button"
+        onClick={onSwitchToCreate}
+        style={{
+          width: '100%',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          gap: 8,
+          padding: '10px 14px', borderRadius: 10,
+          border: '1px dashed rgba(191,138,48,0.4)',
+          background: 'rgba(191,138,48,0.05)',
+          color: 'var(--a-gold)',
+          fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          fontFamily: 'inherit',
+          transition: 'all 0.15s ease',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'rgba(191,138,48,0.1)';
+          e.currentTarget.style.borderColor = 'var(--a-gold)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'rgba(191,138,48,0.05)';
+          e.currentTarget.style.borderColor = 'rgba(191,138,48,0.4)';
+        }}
+      >
+        <IconPlus /> Créer un nouveau parent
+      </button>
+    </div>
+  );
+}
+
+// ─── Carte résultat de recherche — design refined ─────────────────────────
+function ParentResultCard({ parent, onAttach }) {
+  const label = formatFoyer(parent) || parent.email || '—';
+  const nbEnfants = Array.isArray(parent.enfants) ? parent.enfants.length : 0;
+  const childNames = (parent.enfants || [])
+    .slice(0, 3)
+    .map(e => fmtPrenom(e.prenom || ''))
+    .filter(Boolean)
+    .join(' · ');
+  const extra = nbEnfants > 3 ? ` · +${nbEnfants - 3}` : '';
+
+  // Handlers hover/focus — même rendu visuel pour les deux (navigation clavier
+  // et souris cohérente). `data-hover` / `data-focus` permettent de stacker.
+  const applyActive = (el) => {
+    el.style.borderColor = 'rgba(191,138,48,0.4)';
+    el.style.background = 'rgba(191,138,48,0.04)';
+    el.style.transform = 'translateY(-1px)';
+  };
+  const resetActive = (el) => {
+    el.style.borderColor = 'var(--a-border)';
+    el.style.background = 'var(--a-bg)';
+    el.style.transform = 'translateY(0)';
+  };
+
+  return (
+    <button
+      type="button"
+      role="option"
+      onClick={onAttach}
+      style={{
+        width: '100%',
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '10px 12px',
+        borderRadius: 10,
+        background: 'var(--a-bg)',
+        border: '1px solid var(--a-border)',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        textAlign: 'left',
+        transition: 'all 0.15s ease',
+      }}
+      onMouseEnter={e => applyActive(e.currentTarget)}
+      onMouseLeave={e => resetActive(e.currentTarget)}
+      onFocus={e => applyActive(e.currentTarget)}
+      onBlur={e => resetActive(e.currentTarget)}
+      aria-label={`Rattacher ${label}`}
+    >
+      <span style={{
+        width: 34, height: 34, borderRadius: '50%',
+        background: 'linear-gradient(135deg, var(--a-gold) 0%, rgba(191,138,48,0.82) 100%)',
+        color: '#fff',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 12, fontWeight: 700,
+        boxShadow: '0 2px 6px rgba(191,138,48,0.25)',
+        flexShrink: 0,
+      }} aria-hidden="true">
+        {getParentInitials(parent)}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 13, fontWeight: 600, color: 'var(--a-fg)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          letterSpacing: '-0.005em',
+        }}>
+          {label}
+        </div>
+        <div style={{
+          fontSize: 11.5, color: 'var(--a-fg-mid)', marginTop: 2,
+          display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+        }}>
+          <span style={{
+            fontFamily: 'var(--a-font-mono, monospace)',
+            color: 'var(--a-gold)', fontWeight: 600, letterSpacing: '0.04em',
+          }}>{parent.identifiant}</span>
+          {parent.email && (
+            <>
+              <span aria-hidden="true" style={{
+                width: 3, height: 3, borderRadius: '50%',
+                background: 'var(--a-fg-light)', opacity: 0.5,
+              }} />
+              <span style={{
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                maxWidth: 180,
+              }}>{parent.email}</span>
+            </>
+          )}
+          {nbEnfants > 0 && (
+            <>
+              <span aria-hidden="true" style={{
+                width: 3, height: 3, borderRadius: '50%',
+                background: 'var(--a-fg-light)', opacity: 0.5,
+              }} />
+              <span style={{ color: 'var(--a-fg-light)' }}>
+                {nbEnfants} enfant{nbEnfants > 1 ? 's' : ''}{childNames ? ` : ${childNames}${extra}` : ''}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      <span style={{
+        fontSize: 11, fontWeight: 600, color: 'var(--a-gold)',
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        flexShrink: 0,
+      }} aria-hidden="true">
+        <IconLink size={11} /> Rattacher
+      </span>
+    </button>
+  );
+}
+
+// ─── Formulaire de création (ancien contenu de ParentBloc) ─────────────────
+function ParentCreateForm({ bloc, onChange, onCheckDuplicate, onSwitchToSearch }) {
+  const matched = bloc.matchedParent;
+
+  return (
+    <div>
+      {/* Breadcrumb : retour à la recherche */}
+      <button
+        type="button"
+        onClick={onSwitchToSearch}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '4px 8px 4px 6px',
+          borderRadius: 6,
+          border: 'none',
+          background: 'transparent',
+          color: 'var(--a-fg-mid)',
+          fontSize: 11.5, fontWeight: 600,
+          cursor: 'pointer',
+          marginBottom: 14,
+          fontFamily: 'inherit',
+          transition: 'color 0.15s, background 0.15s',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color = 'var(--a-gold)';
+          e.currentTarget.style.background = 'rgba(191,138,48,0.06)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color = 'var(--a-fg-mid)';
+          e.currentTarget.style.background = 'transparent';
+        }}
+      >
+        <IconArrowLeft /> Rechercher un parent existant
+      </button>
+
       {/* Toggles Père / Mère (chips au lieu de checkboxes) */}
       <div style={{ display: 'flex', gap: 10, marginBottom: (bloc.has_pere || bloc.has_mere) ? 16 : 20 }}>
         <ParentToggle
           active={bloc.has_pere}
           onClick={() => onChange({ has_pere: !bloc.has_pere })}
-          disabled={locked}
           label="Père"
           ariaLabel="Ajouter le père"
         />
         <ParentToggle
           active={bloc.has_mere}
           onClick={() => onChange({ has_mere: !bloc.has_mere })}
-          disabled={locked}
           label="Mère"
           ariaLabel="Ajouter la mère"
         />
@@ -232,14 +674,12 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
             ariaLabel="Prénom du père"
             value={bloc.pere_prenom}
             onChange={e => onChange({ pere_prenom: e.target.value })}
-            disabled={locked}
           />
           <RefinedInput
             placeholder="Nom du père"
             ariaLabel="Nom du père"
             value={bloc.pere_nom}
             onChange={e => onChange({ pere_nom: e.target.value })}
-            disabled={locked}
           />
         </div>
       )}
@@ -253,14 +693,12 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
             ariaLabel="Prénom de la mère"
             value={bloc.mere_prenom}
             onChange={e => onChange({ mere_prenom: e.target.value })}
-            disabled={locked}
           />
           <RefinedInput
             placeholder="Nom de la mère"
             ariaLabel="Nom de la mère"
             value={bloc.mere_nom}
             onChange={e => onChange({ mere_nom: e.target.value })}
-            disabled={locked}
           />
         </div>
       )}
@@ -277,7 +715,7 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
         </div>
       )}
 
-      {/* Contact (email + téléphone) */}
+      {/* Contact (email + téléphone) — onBlur détecte les doublons */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <RefinedInput
           icon={<IconMail />}
@@ -287,7 +725,6 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
           value={bloc.email}
           onChange={e => onChange({ email: e.target.value })}
           onBlur={e => onCheckDuplicate(e.target.value, bloc.telephone)}
-          disabled={locked}
         />
         <RefinedInput
           icon={<IconPhone />}
@@ -297,52 +734,16 @@ function ParentBloc({ index, total, bloc, onChange, onCheckDuplicate }) {
           value={bloc.telephone}
           onChange={e => onChange({ telephone: e.target.value })}
           onBlur={e => onCheckDuplicate(bloc.email, e.target.value)}
-          disabled={locked}
         />
       </div>
 
-      {/* Bannière "parent déjà enregistré" */}
-      {matched && !locked && (
+      {/* Bannière "parent déjà enregistré" (détection onBlur) */}
+      {matched && (
         <DuplicateBanner
           matched={matched}
           onAttach={() => onChange({ useExisting: true })}
           onDismiss={() => onChange({ matchedParent: null })}
         />
-      )}
-
-      {/* Confirmation : bloc rattaché (compact) */}
-      {locked && matched && (
-        <div style={{
-          marginTop: 12, padding: '10px 12px 10px 14px',
-          borderRadius: 10,
-          background: 'rgba(48,209,88,0.08)',
-          border: '1px solid rgba(48,209,88,0.28)',
-          display: 'flex', alignItems: 'center', gap: 10,
-        }}>
-          <span style={{
-            width: 22, height: 22, borderRadius: '50%',
-            background: 'var(--a-green)', color: '#fff',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-          }}>
-            <IconCheck size={11} />
-          </span>
-          <div style={{ flex: 1, fontSize: 12, color: 'var(--a-fg)', lineHeight: 1.4 }}>
-            Rattaché au compte <MonoChip>{matched.identifiant}</MonoChip>
-          </div>
-          <button
-            type="button"
-            onClick={() => onChange({ useExisting: false })}
-            style={{
-              fontSize: 11, fontWeight: 600, color: 'var(--a-fg-light)',
-              background: 'transparent', border: 'none',
-              cursor: 'pointer', padding: '4px 8px',
-              textDecoration: 'underline', textUnderlineOffset: 2,
-            }}
-          >
-            Annuler
-          </button>
-        </div>
       )}
     </div>
   );
