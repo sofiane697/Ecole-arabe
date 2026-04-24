@@ -196,7 +196,7 @@ describe('processParentBlocs', () => {
     expect(arg.mere_nom).toBeNull();
     expect(arg.email).toBe('jean@test.fr');       // trimmé
     expect(arg.telephone).toBe('0612345678');      // normalisé
-    expect(arg.identifiant).toMatch(/^JuD\d{4}$/); // Jean Dupont
+    expect(arg.identifiant).toMatch(/^jud\d{4}$/); // Jean Dupont — stocké en lowercase (cf. bug login parent résolu en avril 2026)
     expect(arg.password).toMatch(/.{8}/);          // 8 chars au moins
     expect(results[0].kind).toBe('created');
     expect(results[0].identifiant).toBe(arg.identifiant);
@@ -212,7 +212,7 @@ describe('processParentBlocs', () => {
     };
     await processParentBlocs('eleve-1', [bloc]);
     const arg = createSpy.mock.calls[0][0];
-    expect(arg.identifiant).toMatch(/^MuD\d{4}$/); // Marie Durand
+    expect(arg.identifiant).toMatch(/^mud\d{4}$/); // Marie Durand — lowercase
     expect(arg.pere_nom).toBeNull();
     expect(arg.mere_nom).toBe('Durand');
   });
@@ -288,8 +288,8 @@ describe('processParentBlocs', () => {
     const id1 = createSpy.mock.calls[0][0].identifiant;
     const id2 = createSpy.mock.calls[1][0].identifiant;
     expect(id1).not.toBe(id2);
-    expect(id1).toMatch(/^JuD\d{4}$/);
-    expect(id2).toMatch(/^MuD\d{4}$/);
+    expect(id1).toMatch(/^jud\d{4}$/);
+    expect(id2).toMatch(/^mud\d{4}$/);
   });
 });
 

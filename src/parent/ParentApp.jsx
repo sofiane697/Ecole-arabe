@@ -7,14 +7,17 @@ import EleveAvatar from '../shared/EleveAvatar';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import { formatFoyer } from '../admin/adminUtils';
 
-// Titre affiché dans la topbar selon la route (pattern identique à PortailApp).
+// Titre affiché dans la topbar selon la route — deux langues pour le rendu
+// éditorial (français en gros + calligraphie arabe dessous, cohérent avec
+// l'identité Institut As-Safaa).
 const PAGE_TITLES = {
-  '/parent':               'Accueil',
-  '/parent/notes':         'Notes',
-  '/parent/observations':  'Appréciations',
-  '/parent/devoirs':       'Devoirs',
-  '/parent/absences':      'Retards & absences',
+  '/parent':               { fr: 'Accueil',             ar: 'الرئيسية' },
+  '/parent/notes':         { fr: 'Notes',               ar: 'العلامات' },
+  '/parent/observations':  { fr: 'Appréciations',       ar: 'الملاحظات' },
+  '/parent/devoirs':       { fr: 'Devoirs',             ar: 'الواجبات' },
+  '/parent/absences':      { fr: 'Retards & absences',  ar: 'الحضور والغياب' },
 };
+const DEFAULT_TITLE = { fr: 'Accueil', ar: 'الرئيسية' };
 
 // ─── Sélecteur d'enfant (dropdown dans la topbar) ─ spécifique au portail parent
 function EnfantSelector() {
@@ -43,52 +46,53 @@ function EnfantSelector() {
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         type="button"
+        className="portail-enfant-pill"
         onClick={() => !unique && setOpen(o => !o)}
         disabled={unique}
         aria-haspopup={unique ? undefined : 'listbox'}
         aria-expanded={unique ? undefined : open}
         aria-label={`Enfant sélectionné : ${current.prenom} ${current.nom}${unique ? '' : ' — cliquer pour changer'}`}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '6px 14px', borderRadius: 999,
-          background: 'rgba(191,138,48,0.08)',
-          border: '1px solid rgba(191,138,48,0.3)',
-          cursor: unique ? 'default' : 'pointer',
-          color: 'var(--p-gold)',
-          fontFamily: 'var(--p-font-display)',
-          fontWeight: 600, fontSize: 14,
-        }}
       >
-        <EleveAvatar
-          eleve={{
-            prenom: current.prenom, nom: current.nom,
-            photo_url: current.photo_url,
-            photo_scale: current.photo_scale,
-            photo_pos_x: current.photo_pos_x,
-            photo_pos_y: current.photo_pos_y,
-          }}
-          size={32}
-        />
-        <span>{fmtPrenom(current.prenom)} {fmtNom(current.nom)}</span>
+        <span className="portail-enfant-pill-avatar-wrap">
+          <EleveAvatar
+            eleve={{
+              prenom: current.prenom, nom: current.nom,
+              photo_url: current.photo_url,
+              photo_scale: current.photo_scale,
+              photo_pos_x: current.photo_pos_x,
+              photo_pos_y: current.photo_pos_y,
+            }}
+            size={30}
+          />
+        </span>
+        <span className="portail-enfant-pill-names">
+          <span className="portail-enfant-pill-prenom">{fmtPrenom(current.prenom)}</span>
+          <span className="portail-enfant-pill-nom">{fmtNom(current.nom)}</span>
+        </span>
         {current.classe_nom && (
-          <span style={{ fontSize: 12, color: 'var(--p-fg-light)', fontWeight: 500 }}>
-            · {current.classe_nom}
-          </span>
+          <>
+            <span className="portail-enfant-pill-sep" aria-hidden="true" />
+            <span className="portail-enfant-pill-classe">{current.classe_nom}</span>
+          </>
         )}
-        {!unique && <span style={{ fontSize: 11, opacity: 0.7 }}>▾</span>}
+        {!unique && (
+          <svg
+            className="portail-enfant-pill-chevron"
+            viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        )}
       </button>
 
       {open && !unique && (
         <div
           role="listbox"
           aria-label="Liste de mes enfants"
-          style={{
-            position: 'absolute', top: 'calc(100% + 8px)', left: 0, zIndex: 50,
-            minWidth: 260, padding: 6, borderRadius: 12,
-            background: 'var(--p-bg-card)',
-            border: '1px solid var(--p-border)',
-            boxShadow: 'var(--p-shadow-lg)',
-          }}
+          className="portail-enfant-dropdown"
         >
           {enfants.map(e => {
             const active = e.eleve_id === selectedEleveId;
@@ -99,14 +103,7 @@ function EnfantSelector() {
                 role="option"
                 aria-selected={active}
                 onClick={() => { setSelectedEleveId(e.eleve_id); setOpen(false); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                  padding: '8px 10px', borderRadius: 8, border: 'none',
-                  background: active ? 'rgba(191,138,48,0.14)' : 'transparent',
-                  color: active ? 'var(--p-gold)' : 'var(--p-fg)',
-                  cursor: 'pointer', textAlign: 'left',
-                  fontFamily: 'inherit',
-                }}
+                className="portail-enfant-option"
               >
                 <EleveAvatar
                   eleve={{
@@ -116,17 +113,17 @@ function EnfantSelector() {
                     photo_pos_x: e.photo_pos_x,
                     photo_pos_y: e.photo_pos_y,
                   }}
-                  size={32}
+                  size={36}
                 />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
+                <div className="portail-enfant-option-body">
+                  <span className="portail-enfant-option-name">
                     {fmtPrenom(e.prenom)} {fmtNom(e.nom)}
-                  </div>
+                  </span>
                   {e.classe_nom && (
-                    <div style={{ fontSize: 12, color: 'var(--p-fg-light)' }}>{e.classe_nom}</div>
+                    <span className="portail-enfant-option-classe">{e.classe_nom}</span>
                   )}
                 </div>
-                {active && <span style={{ color: 'var(--p-gold)', fontSize: 14 }}>✓</span>}
+                {active && <span className="portail-enfant-option-check" aria-hidden="true">✓</span>}
               </button>
             );
           })}
@@ -168,7 +165,7 @@ function ParentLayout() {
 
   const foyerLabel = formatFoyer(parent || {}) || 'Parent';
   const identifiant = parent?.identifiant ? parent.identifiant.toUpperCase() : '';
-  const currentTitle = PAGE_TITLES[location.pathname] || 'Accueil';
+  const currentTitle = PAGE_TITLES[location.pathname] || DEFAULT_TITLE;
   const today = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
@@ -232,7 +229,15 @@ function ParentLayout() {
       <main className="portail-main">
         <header className="portail-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, minWidth: 0 }}>
-            <h1 className="portail-topbar-title">{currentTitle}</h1>
+            <h1 className="portail-topbar-title" key={location.pathname}>
+              <span className="portail-topbar-title-accent" aria-hidden="true" />
+              <span className="portail-topbar-title-stack">
+                <span className="portail-topbar-title-fr">{currentTitle.fr}</span>
+                <span className="portail-topbar-title-ar" aria-hidden="true" dir="rtl">
+                  {currentTitle.ar}
+                </span>
+              </span>
+            </h1>
             <EnfantSelector />
           </div>
           <div className="portail-topbar-right">

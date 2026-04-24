@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchModulesEleve, fetchEleveNiveauScolaireId } from './supabasePortail';
 import { motion, AnimatePresence, staggerContainer, fadeUp, cardHover, tapScale } from '../animations';
+import { coverImgStyle, isSafeCoverUrl } from '../shared/imageCrop';
 
 const DASH_SPRING = { type: 'spring', stiffness: 80, damping: 18, mass: 0.8 };
 const EASE_OUT = [0.22, 1, 0.36, 1];
@@ -147,8 +148,13 @@ export default function PortailDashboard() {
                 variants={fadeUp}
                 {...cardHover}
                 onClick={() => navigate(`/portail/module/${m.id}`)}>
-                {m.image_url ? (
-                  <img src={m.image_url} alt={m.titre} className="portail-module-card-img" />
+                {isSafeCoverUrl(m.image_url) ? (
+                  <img
+                    src={m.image_url}
+                    alt={m.titre}
+                    className="portail-module-card-img"
+                    style={coverImgStyle(m)}
+                  />
                 ) : (
                   <div className="portail-module-card-img-placeholder" style={{ background: palette.bg }}>
                     📖

@@ -7,6 +7,7 @@ import {
   fetchProgression, saveProgression, fetchLeconsEleve, fetchNiveauxByLeconEleve, fetchQCMExistenceForNiveaux,
   fetchAllNiveauxForModuleEleve, fetchNiveauxParThematiquePourProgression,
 } from './supabasePortail';
+import { coverImgStyle, isSafeCoverUrl } from '../shared/imageCrop';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function getYouTubeId(url) {
@@ -213,8 +214,12 @@ function ModuleEntryView({ moduleId }) {
               onClick={() => navigate(`/portail/module/${moduleId}/thematique/${th.id}`, { state: { titre: th.titre } })}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
-              {th.image_url ? (
-                <img src={th.image_url} alt={th.titre} style={S.cardImg} />
+              {isSafeCoverUrl(th.image_url) ? (
+                <img
+                  src={th.image_url}
+                  alt={th.titre}
+                  style={{ ...S.cardImg, ...coverImgStyle(th) }}
+                />
               ) : (
                 <div style={S.cardImgContainer(palette.bg)}>
                   <span style={S.cardImgPlaceholder}>📂</span>
@@ -341,8 +346,13 @@ function LeconsEntryView({ thId, moduleId, thematiqueTitle, onBack }) {
               ); }}
               onMouseEnter={e => { if (!locked) { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 12px 40px ${palette.btnShadow}`; } }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}>
-              {lec.image_url ? (
-                <img src={lec.image_url} alt={lec.titre} style={S.cardImg} loading="lazy" />
+              {isSafeCoverUrl(lec.image_url) ? (
+                <img
+                  src={lec.image_url}
+                  alt={lec.titre}
+                  loading="lazy"
+                  style={{ ...S.cardImg, ...coverImgStyle(lec) }}
+                />
               ) : (
                 <div style={S.cardImgContainer(palette.bg)}>
                   <span style={S.cardImgPlaceholder}>{locked ? '🔒' : '📝'}</span>
@@ -724,9 +734,13 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
       ) : selNiveau ? (
         <div style={NS.mainCard}>
           {/* Hero — image ou dégradé coloré */}
-          {selNiveau.image_url ? (
+          {isSafeCoverUrl(selNiveau.image_url) ? (
             <div style={NS.heroContainer}>
-              <img src={selNiveau.image_url} alt={selNiveau.titre} style={NS.heroImg} />
+              <img
+                src={selNiveau.image_url}
+                alt={selNiveau.titre}
+                style={{ ...NS.heroImg, ...coverImgStyle(selNiveau) }}
+              />
               <div style={NS.heroOverlay} />
               <div style={NS.heroTitleOnImg}>{selNiveau.titre}</div>
             </div>
@@ -740,7 +754,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
             </div>
           )}
           {/* Description si image de couverture */}
-          {selNiveau.image_url && selNiveau.description && (
+          {isSafeCoverUrl(selNiveau.image_url) && selNiveau.description && (
             <p style={{ padding:'14px 20px 0', margin:0, fontSize:14, color:'var(--p-fg-mid)', lineHeight:1.6 }}>
               {selNiveau.description}
             </p>

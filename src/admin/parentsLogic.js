@@ -144,7 +144,7 @@ export async function processParentBlocs(eleveId, blocsValides) {
       } else {
         const principalPrenom = b.has_pere ? b.pere_prenom : b.mere_prenom;
         const principalNom    = b.has_pere ? b.pere_nom    : b.mere_nom;
-        const pIdentifiant = generateIdentifiant(principalPrenom, principalNom);
+        const pIdentifiant = generateIdentifiant(principalPrenom, principalNom).toLowerCase();
         const pPassword    = generateTempPassword();
         await adminCreateParent({
           identifiant: pIdentifiant,

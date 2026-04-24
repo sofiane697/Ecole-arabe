@@ -28,7 +28,7 @@ export function normalizeCrop(scale, posX, posY) {
 }
 
 /**
- * Éditeur de cadrage non-destructif pour une photo de profil élève.
+ * Éditeur de cadrage non-destructif pour une image.
  *
  * - **drag** (souris ou toucher) pour repositionner (pan),
  * - **molette** (desktop) pour zoomer,
@@ -38,13 +38,21 @@ export function normalizeCrop(scale, posX, posY) {
  * `onChange(scale, posX, posY)` qu'au **relâchement** (fin de drag, molette settle,
  * slider release) afin de ne pas saturer le back-end.
  *
+ * Deux formats supportés :
+ *   - `shape='circle'` (défaut) → cadre circulaire `size × size` (avatar élève)
+ *   - `shape='rect'`           → cadre rectangulaire `width × height` avec `aspectRatio` CSS (couverture module/thème/leçon)
+ *
  * @param {object} props
  * @param {string} props.photoUrl
  * @param {number} props.scale
  * @param {number} props.posX
  * @param {number} props.posY
  * @param {(scale: number, posX: number, posY: number) => void} props.onChange
- * @param {number} [props.size=180]
+ * @param {'circle'|'rect'} [props.shape='circle']
+ * @param {number} [props.size=180]            - Pour `shape='circle'`.
+ * @param {number} [props.width]               - Pour `shape='rect'` (ex : 360).
+ * @param {number} [props.height]              - Pour `shape='rect'` (ex : 180).
+ * @param {string} [props.radius]              - Border-radius custom (ex: '10px'), `shape='rect'` uniquement.
  * @param {boolean} [props.disabled=false]
  */
 export default function PhotoEditor({
@@ -53,7 +61,11 @@ export default function PhotoEditor({
   posX: posXProp,
   posY: posYProp,
   onChange,
+  shape = 'circle',
   size = 180,
+  width,
+  height,
+  radius,
   disabled = false,
 }) {
   // Les props initiales ne sont lues qu'au montage. Le parent doit utiliser
@@ -67,6 +79,7 @@ export default function PhotoEditor({
   const containerRef = useRef(null);
   const dragStateRef = useRef(null);
   const wheelTimerRef = useRef(null);
+  const keyTimerRef   = useRef(null);
 
   // Refs miroirs — **mises à jour synchrones par les setters ci-dessous** (pas via
   // useEffect) pour éviter un bug de timing : si le re-render + useEffect miroir
@@ -161,9 +174,10 @@ export default function PhotoEditor({
     return () => el.removeEventListener('wheel', handleWheel);
   }, [disabled, commit]);
 
-  // Nettoyage du timer au démontage.
+  // Nettoyage des timers au démontage.
   useEffect(() => () => {
     if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
+    if (keyTimerRef.current)   clearTimeout(keyTimerRef.current);
   }, []);
 
   // ─── Slider ──────────────────────────────────────────────────────────────
@@ -178,6 +192,8 @@ export default function PhotoEditor({
   };
 
   // Pan au clavier : accessibilité — déplace la position de 5 % par touche.
+  // Debounce : une rafale de flèches ne doit pas déclencher N PATCH vers la DB.
+  // On suit le même pattern que la molette (WHEEL_COMMIT_MS).
   const handleKeyDown = (e) => {
     if (disabled) return;
     const STEP = 5;
@@ -193,7 +209,11 @@ export default function PhotoEditor({
     e.preventDefault();
     updatePosX(newX);
     updatePosY(newY);
-    onChangeRef.current(scaleRef.current, newX, newY);
+    if (keyTimerRef.current) clearTimeout(keyTimerRef.current);
+    keyTimerRef.current = setTimeout(() => {
+      commit();
+      keyTimerRef.current = null;
+    }, WHEEL_COMMIT_MS);
   };
 
   const imgStyle = {
@@ -208,10 +228,15 @@ export default function PhotoEditor({
     display: 'block',
   };
 
+  const isRect = shape === 'rect';
+  const rectW = width  || 360;
+  const rectH = height || 180;
   const containerStyle = {
-    width: size,
-    height: size,
-    borderRadius: '50%',
+    width:         isRect ? '100%' : size,
+    maxWidth:      isRect ? rectW   : size,
+    height:        isRect ? undefined : size,
+    aspectRatio:   isRect ? `${rectW} / ${rectH}` : undefined,
+    borderRadius:  isRect ? (radius || 10) : '50%',
     overflow: 'hidden',
     position: 'relative',
     background: 'var(--a-bg-input)',
@@ -220,6 +245,7 @@ export default function PhotoEditor({
     touchAction: 'none',
     flexShrink: 0,
   };
+  const sliderMaxWidth = isRect ? rectW : size + 40;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
@@ -236,7 +262,18 @@ export default function PhotoEditor({
         <img src={photoUrl} alt="" style={imgStyle} draggable={false} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', maxWidth: size + 40 }}>
+      {/* Feedback lecteur d'écran : annonce la position et le zoom courants
+          après chaque commit (drag-end, molette settle, slider release, pan
+          clavier). Invisible visuellement. */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}
+      >
+        {`Position ${Math.round(posX)} % ${Math.round(posY)} %, zoom ${Math.round(scale * 100)} %`}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', maxWidth: sliderMaxWidth }}>
         <span style={{ fontSize: 11, color: 'var(--a-fg-light)', fontWeight: 600 }} aria-hidden="true">−</span>
         <input
           type="range"

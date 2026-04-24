@@ -194,7 +194,74 @@
   z-index: 5;
   flex-shrink: 0;
 }
-.portail-topbar-title { font-family: var(--p-font-display); font-size: 18px; font-weight: 700; color: var(--p-fg); white-space: nowrap; }
+/* Titre éditorial de la topbar — barre accent + français bold + calligraphie arabe.
+   Utilisé uniquement par le portail Parent (ParentApp.jsx). */
+.portail-topbar-title {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  font-family: var(--p-font-display);
+  white-space: nowrap;
+  animation: portailTitleIn .45s var(--p-ease-out) both;
+}
+
+@keyframes portailTitleIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.portail-topbar-title-accent {
+  width: 3px;
+  border-radius: 2px;
+  align-self: stretch;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--p-gold) 18%,
+    var(--p-gold-l, var(--p-gold)) 50%,
+    var(--p-gold) 82%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px -2px var(--p-gold);
+}
+
+.portail-topbar-title-stack {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.portail-topbar-title-fr {
+  font-family: var(--p-font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--p-fg);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.portail-topbar-title-ar {
+  font-family: var(--p-font-arabic);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--p-gold);
+  letter-spacing: 0;
+  line-height: 1.1;
+  opacity: 0.85;
+  text-align: right;
+  /* L'arabe occupe naturellement plus de hauteur ; on compense pour éviter
+     qu'il pousse le français vers le haut. */
+  margin-top: 1px;
+}
+
+.portail-root.portail-light .portail-topbar-title-ar {
+  color: #3f8a5f;
+  opacity: 0.9;
+}
 .portail-topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .portail-topbar-date { font-family: var(--p-font-mono); font-size: 0.75rem; color: var(--p-fg-light); white-space: nowrap; }
 
@@ -585,7 +652,9 @@
 
   .portail-topbar { padding: 0 12px; height: 64px; }
   .portail-topbar-date { display: none; }
-  .portail-topbar-title { font-size: 15px; }
+  .portail-topbar-title { gap: 10px; }
+  .portail-topbar-title-fr { font-size: 17px; }
+  .portail-topbar-title-ar { font-size: 12px; }
 
   .portail-topbar-fun-title { font-size: 22px !important; gap: 4px !important; }
   .portail-topbar-fun-stars { display: none !important; }
@@ -836,4 +905,295 @@ div.admin-root[class*="h-screen"] {
     width: 100% !important;
     padding: 24px 20px !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sélecteur d'enfant (topbar parent) — bulle éditoriale
+   — anneau animé sur l'avatar, typographie prénom/NOM hiérarchisée,
+     badge classe isolé, chevron rotatif et micro-élévation au survol.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.portail-enfant-pill {
+  --pill-accent:        var(--p-gold);
+  --pill-accent-soft:   rgba(191,138,48,0.10);
+  --pill-accent-softer: rgba(191,138,48,0.04);
+  --pill-ring:          rgba(191,138,48,0.28);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 8px 5px 5px;
+  border: 1px solid var(--pill-ring);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--pill-accent-soft) 0%, var(--pill-accent-softer) 100%);
+  color: var(--pill-accent);
+  font-family: var(--p-font-display);
+  cursor: pointer;
+  isolation: isolate;
+  transition:
+    transform    .28s var(--p-ease-out),
+    box-shadow   .28s var(--p-ease-out),
+    border-color .28s var(--p-ease-out);
+}
+
+/* halo dégradé visible en hover / ouvert */
+.portail-enfant-pill::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, var(--pill-accent) 0%, transparent 40%, transparent 60%, var(--pill-accent) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .3s var(--p-ease-out);
+  pointer-events: none;
+}
+
+.portail-enfant-pill:hover:not(:disabled),
+.portail-enfant-pill[aria-expanded="true"] {
+  transform: translateY(-1px);
+  border-color: rgba(191,138,48,0.50);
+  box-shadow:
+    0 10px 28px -8px rgba(191,138,48,0.28),
+    0 0 0 1px rgba(191,138,48,0.08) inset;
+}
+
+.portail-enfant-pill:hover:not(:disabled)::before,
+.portail-enfant-pill[aria-expanded="true"]::before {
+  opacity: 0.7;
+}
+
+.portail-enfant-pill:focus-visible {
+  outline: 2px solid var(--pill-accent);
+  outline-offset: 3px;
+}
+
+.portail-enfant-pill:disabled {
+  cursor: default;
+}
+
+/* Avatar : anneau conique doré + respiration de fond */
+.portail-enfant-pill-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  padding: 2px;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 140deg,
+    var(--pill-accent) 0deg,
+    rgba(191,138,48,0.15) 110deg,
+    var(--pill-accent) 210deg,
+    rgba(191,138,48,0.15) 320deg,
+    var(--pill-accent) 360deg
+  );
+  transition: transform .5s var(--p-ease-out);
+}
+.portail-enfant-pill:hover:not(:disabled) .portail-enfant-pill-avatar-wrap {
+  transform: rotate(12deg);
+}
+.portail-enfant-pill-avatar-wrap::before {
+  content: '';
+  position: absolute; inset: 1px;
+  border-radius: 999px;
+  background: var(--p-bg);
+  z-index: 0;
+}
+.portail-enfant-pill-avatar-wrap > * {
+  position: relative;
+  z-index: 1;
+}
+/* Avatar à l'intérieur de la pill : fond doré/vert cohérent avec le thème parent,
+   car .avatar-circle global utilise var(--a-gold) indéfinie dans .portail-root. */
+.portail-enfant-pill-avatar-wrap .avatar-circle:not(.has-photo) {
+  background: linear-gradient(135deg, var(--pill-accent), rgba(255,255,255,0.15));
+  color: #fff;
+  font-family: var(--p-font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.portail-enfant-option .avatar-circle:not(.has-photo) {
+  background: linear-gradient(135deg, var(--p-gold), rgba(255,255,255,0.15));
+  color: #fff;
+  font-family: var(--p-font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.portail-root.portail-light .portail-enfant-option .avatar-circle:not(.has-photo) {
+  background: linear-gradient(135deg, #5BA87A, #A8D8B0);
+}
+
+/* Bloc nom/prénom : hiérarchie sur 2 lignes compactes */
+.portail-enfant-pill-names {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+}
+.portail-enfant-pill-prenom {
+  font-family: var(--p-font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--pill-accent);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.portail-enfant-pill-nom {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--p-fg-mid);
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+/* Séparateur vertical dégradé */
+.portail-enfant-pill-sep {
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(to bottom, transparent, var(--pill-ring), transparent);
+  flex-shrink: 0;
+}
+
+/* Badge classe : mini-chip mono, isolé visuellement */
+.portail-enfant-pill-classe {
+  font-family: var(--p-font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--pill-accent);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(191,138,48,0.10);
+  border: 1px solid rgba(191,138,48,0.22);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Chevron rotatif */
+.portail-enfant-pill-chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--pill-accent);
+  opacity: 0.6;
+  transition: transform .3s var(--p-ease-out), opacity .3s var(--p-ease-out);
+  flex-shrink: 0;
+  margin: 0 4px 0 -2px;
+}
+.portail-enfant-pill[aria-expanded="true"] .portail-enfant-pill-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* ─── Mode clair : palette pastel verte ─── */
+.portail-root.portail-light .portail-enfant-pill {
+  --pill-accent:        #3f8a5f;
+  --pill-accent-soft:   rgba(91,168,122,0.12);
+  --pill-accent-softer: rgba(91,168,122,0.04);
+  --pill-ring:          rgba(91,168,122,0.30);
+}
+.portail-root.portail-light .portail-enfant-pill-avatar-wrap {
+  background: conic-gradient(
+    from 140deg,
+    #3f8a5f 0deg,
+    rgba(91,168,122,0.20) 110deg,
+    #3f8a5f 210deg,
+    rgba(91,168,122,0.20) 320deg,
+    #3f8a5f 360deg
+  );
+}
+.portail-root.portail-light .portail-enfant-pill-avatar-wrap::before {
+  background: #ffffff;
+}
+.portail-root.portail-light .portail-enfant-pill-nom { color: #636e72; }
+.portail-root.portail-light .portail-enfant-pill-classe {
+  color: #3f8a5f;
+  background: rgba(91,168,122,0.12);
+  border-color: rgba(91,168,122,0.24);
+}
+.portail-root.portail-light .portail-enfant-pill:hover:not(:disabled),
+.portail-root.portail-light .portail-enfant-pill[aria-expanded="true"] {
+  border-color: rgba(91,168,122,0.55);
+  box-shadow:
+    0 10px 28px -8px rgba(91,168,122,0.30),
+    0 0 0 1px rgba(91,168,122,0.14) inset;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dropdown liste des enfants
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.portail-enfant-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 50;
+  min-width: 280px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--p-bg-card);
+  border: 1px solid var(--p-border);
+  box-shadow: var(--p-shadow-lg);
+  animation: portailEnfantDropdownIn .24s var(--p-ease-out);
+}
+
+@keyframes portailEnfantDropdownIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.portail-enfant-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--p-fg);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background .2s var(--p-ease);
+}
+.portail-enfant-option + .portail-enfant-option { margin-top: 2px; }
+.portail-enfant-option:hover { background: var(--p-bg-hover); }
+.portail-enfant-option[aria-selected="true"] {
+  background: rgba(191,138,48,0.12);
+  color: var(--p-gold);
+}
+.portail-root.portail-light .portail-enfant-option[aria-selected="true"] {
+  background: rgba(91,168,122,0.14);
+  color: #3f8a5f;
+}
+
+.portail-enfant-option-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.portail-enfant-option-name {
+  font-family: var(--p-font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.portail-enfant-option-classe {
+  font-size: 11px;
+  font-family: var(--p-font-mono);
+  letter-spacing: 0.05em;
+  color: var(--p-fg-mid);
+}
+.portail-enfant-option-check {
+  color: inherit;
+  font-size: 14px;
+  flex-shrink: 0;
 }

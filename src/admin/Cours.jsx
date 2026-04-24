@@ -11,6 +11,8 @@ import {
   fetchNiveauxScolaires, resetProgressionNiveau,
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
+import PhotoEditor from '../shared/PhotoEditor';
+import { coverImgStyle, isSafeCoverUrl } from '../shared/imageCrop';
 
 // ─── Icônes SVG ──────────────────────────────────────────────────────────────
 const IconBack  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
@@ -25,6 +27,7 @@ const IconPPT   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 
 const TYPE_ICONS = { video: <IconVideo />, pdf: <IconFile />, texte: <IconText />, word: <IconWord />, ppt: <IconPPT /> };
 const TYPE_COLORS = { video: 'var(--a-red)', pdf: 'var(--a-blue)', texte: 'var(--a-green)', word: '#2b579a', ppt: '#c43e1c' };
+
 
 // ─── Classes CSS ────────────────────────────────────────────────────────────
 const S = {
@@ -256,8 +259,8 @@ export default function Cours() {
   const handleSaveModule = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateModule(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, actif: data.actif, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
-      else { await createModule({ titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || modules.length + 1, actif: true, niveaux_scolaires_ids: data.niveaux_scolaires_ids || [] }); }
+      if (data.id) { await updateModule(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre, actif: data.actif, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
+      else { await createModule({ titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre || modules.length + 1, actif: true, niveaux_scolaires_ids: data.niveaux_scolaires_ids || [] }); }
       await loadModules();
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -282,8 +285,8 @@ export default function Cours() {
   const handleSaveThematique = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateThematique(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
-      else { await createThematique({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || thematiques.length + 1, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
+      if (data.id) { await updateThematique(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
+      else { await createThematique({ module_id: selModule.id, titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre || thematiques.length + 1, niveaux_scolaires_ids: data.niveaux_scolaires_ids }); }
       await loadThematiques(selModule.id);
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -308,8 +311,8 @@ export default function Cours() {
   const handleSaveNiveau = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateNiveau(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre, score_requis: data.score_requis }); }
-      else { await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, lecon_id: selLecon?.id || null, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
+      if (data.id) { await updateNiveau(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre, score_requis: data.score_requis }); }
+      else { await createNiveau({ module_id: selModule.id, thematique_id: selThematique?.id || null, lecon_id: selLecon?.id || null, titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre || niveaux.length + 1, score_requis: data.score_requis || 80 }); }
       if (selLecon) { await loadNiveauxByLecon(selLecon.id); }
       else if (selThematique) { await loadNiveauxByThematique(selThematique.id); }
       else { await loadNiveaux(selModule.id); }
@@ -338,8 +341,8 @@ export default function Cours() {
   const handleSaveLecon = async (data) => {
     setLoading(true);
     try {
-      if (data.id) { await updateLecon(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre }); }
-      else { await createLecon({ thematique_id: selThematique.id, titre: data.titre, description: data.description, image_url: data.image_url, ordre: data.ordre || lecons.length + 1 }); }
+      if (data.id) { await updateLecon(data.id, { titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre }); }
+      else { await createLecon({ thematique_id: selThematique.id, titre: data.titre, description: data.description, image_url: data.image_url, image_scale: data.image_scale, image_pos_x: data.image_pos_x, image_pos_y: data.image_pos_y, ordre: data.ordre || lecons.length + 1 }); }
       await loadLecons(selThematique.id);
       setModal(null);
     } catch(e) { alert(e.message); }
@@ -444,9 +447,9 @@ export default function Cours() {
         <div className={S.grid}>
           {modules.map(m => (
             <div key={m.id} className={S.card} onClick={() => openModule(m)}>
-              {m.image_url ? (
+              {isSafeCoverUrl(m.image_url) ? (
                 <div className={S.cardImg}>
-                  <img src={m.image_url} alt={m.titre} />
+                  <img src={m.image_url} alt={m.titre} style={coverImgStyle(m)} />
                   <div className={S.cardImgOverlay} />
                 </div>
               ) : (
@@ -503,9 +506,9 @@ export default function Cours() {
         <div className={S.grid}>
           {thematiques.map(th => (
             <div key={th.id} className={S.card} onClick={() => openThematique(th)}>
-              {th.image_url ? (
+              {isSafeCoverUrl(th.image_url) ? (
                 <div className={S.cardImg}>
-                  <img src={th.image_url} alt={th.titre} />
+                  <img src={th.image_url} alt={th.titre} style={coverImgStyle(th)} />
                   <div className={S.cardImgOverlay} />
                 </div>
               ) : (
@@ -563,9 +566,9 @@ export default function Cours() {
         <div className={S.grid}>
           {lecons.map(lec => (
             <div key={lec.id} className={S.card} onClick={() => openLecon(lec)}>
-              {lec.image_url ? (
+              {isSafeCoverUrl(lec.image_url) ? (
                 <div className={S.cardImg}>
-                  <img src={lec.image_url} alt={lec.titre} />
+                  <img src={lec.image_url} alt={lec.titre} style={coverImgStyle(lec)} />
                   <div className={S.cardImgOverlay} />
                 </div>
               ) : (
@@ -756,74 +759,197 @@ export default function Cours() {
 
 // ─── MODALS ──────────────────────────────────────────────────────────────────
 
-// ── Composant partagé : zone d'upload image ──────────────────────────────────
-function ImageUploadZone({ imageUrl, setImageUrl, uploading, setUploading, uploadErr, setUploadErr, dragOver, setDragOver, getFolder }) {
+// Whitelist stricte : seules ces extensions et MIME sont acceptées pour les
+// couvertures. SVG volontairement exclu — il peut embarquer du JS et, servi
+// depuis un bucket public, exposer un XSS si un utilisateur ouvre l'image dans
+// un nouvel onglet. Idem GIF/AVIF/BMP/TIFF qui n'apportent rien pour une
+// couverture et élargissent la surface d'attaque.
+const COVER_ALLOWED_EXT  = ['jpg', 'jpeg', 'png', 'webp'];
+const COVER_ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp'];
+
+// Vérifie la signature binaire (4-12 premiers octets) pour attraper un fichier
+// renommé `.jpg` mais dont le contenu est autre chose (p.ex. HTML/SVG). Côté
+// serveur, le bucket `cours` accepte tout — c'est la seule barrière avant
+// l'upload.
+async function hasValidImageMagicBytes(file) {
+  const buf = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  // JPEG : FF D8 FF
+  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return true;
+  // PNG : 89 50 4E 47 0D 0A 1A 0A
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return true;
+  // WEBP : 52 49 46 46 xx xx xx xx 57 45 42 50 (RIFF....WEBP)
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return true;
+  return false;
+}
+
+// ── Composant partagé : zone d'upload image + éditeur de cadrage ────────────
+// Quand une image est présente on n'affiche plus un simple aperçu mais le
+// PhotoEditor (drag, molette, slider) cadré comme les cards des portails.
+function ImageUploadZone({
+  imageUrl, setImageUrl,
+  imageScale = 1, setImageScale,
+  imagePosX  = 50, setImagePosX,
+  imagePosY  = 50, setImagePosY,
+  uploading, setUploading, uploadErr, setUploadErr,
+  dragOver, setDragOver, getFolder,
+}) {
+  // Compteur local de remplacements. Incrémenté à chaque upload réussi.
+  // Sert 2 buts dans le rendu ci-dessous :
+  //   1) cache-busting du <img> quand Supabase réécrit sur le même path
+  //      (cover.{ext}) et renvoie donc la même URL publique ;
+  //   2) forcer le remount du PhotoEditor via sa `key` afin qu'il réinitialise
+  //      son state interne (scale/pos sont lus uniquement au montage).
+  const [uploadStamp, setUploadStamp] = useState(0);
+
   const handleFile = async (file) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) { setUploadErr('Fichier non valide (JPG, PNG, WebP uniquement)'); return; }
+    // MIME (navigateur-fourni, faillible) + extension (attaquant-fourni, faillible)
+    // + magic bytes (contenu réel, fiable). Les 3 doivent concorder.
+    if (!COVER_ALLOWED_MIME.includes(file.type)) {
+      setUploadErr('Format non supporté. Utilisez JPG, PNG ou WebP.');
+      return;
+    }
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (!COVER_ALLOWED_EXT.includes(ext)) {
+      setUploadErr('Extension non supportée. Utilisez .jpg, .jpeg, .png ou .webp.');
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) { setUploadErr('Image trop lourde (max 5 Mo)'); return; }
+    if (!(await hasValidImageMagicBytes(file))) {
+      setUploadErr('Le fichier ne semble pas être une image JPG/PNG/WebP valide.');
+      return;
+    }
     setUploadErr('');
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop().toLowerCase();
       const folder = getFolder();
       await deleteOldCover(folder).catch(() => {});
       const url = await uploadFile(file, `${folder}/cover.${ext}`);
       setImageUrl(url);
+      // Nouvelle image : on réinitialise le cadrage — le précédent ne s'applique
+      // plus à un contenu différent.
+      setImageScale?.(1);
+      setImagePosX?.(50);
+      setImagePosY?.(50);
+      setUploadStamp(s => s + 1);
     } catch(e) { setUploadErr(e.message); }
     setUploading(false);
   };
 
   const openPicker = () => {
     const inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = 'image/*';
+    inp.type = 'file';
+    // Hint UI uniquement — la validation réelle se fait dans handleFile
+    // (MIME + extension + magic bytes).
+    inp.accept = COVER_ALLOWED_MIME.join(',');
     inp.onchange = ev => handleFile(ev.target.files[0]);
     inp.click();
+  };
+
+  const handleCropChange = (s, x, y) => {
+    setImageScale?.(s);
+    setImagePosX?.(x);
+    setImagePosY?.(y);
   };
 
   return (
     <div className={S.field}>
       <label className={S.label}>Image de couverture</label>
-      <div
-        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
-        onClick={openPicker}
-        style={{
+
+      {/* On n'alimente le PhotoEditor que si l'URL est sûre. Un `image_url`
+          stocké en DB pointant vers un domaine tiers ou un schéma `javascript:`
+          / `data:` est simplement ignoré — on retombe sur la dropzone. */}
+      {isSafeCoverUrl(imageUrl) ? (
+        <div style={{
           borderRadius: 'var(--a-radius-sm)',
-          border: `2px dashed ${dragOver ? 'var(--a-gold)' : imageUrl ? 'var(--a-green)' : 'var(--a-border)'}`,
-          background: dragOver ? 'rgba(191,138,48,.04)' : imageUrl ? 'rgba(48,209,88,.03)' : 'transparent',
-          padding: 12, cursor: 'pointer', textAlign: 'center',
-          transition: 'all .2s', position: 'relative', overflow: 'hidden',
+          border: '1px solid var(--a-border)',
+          background: 'rgba(48,209,88,.03)',
+          padding: 14,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
-        {imageUrl ? (
-          <div style={{ position:'relative' }}>
-            <img src={imageUrl} alt="aperçu" style={{ width:'100%', height:120, objectFit:'cover', borderRadius:6, display:'block' }} />
-            <div
-              style={{ position:'absolute', inset:0, background:'rgba(0,0,0,.45)', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, opacity:0, transition:'opacity .2s' }}
-              onMouseEnter={e => e.currentTarget.style.opacity=1}
-              onMouseLeave={e => e.currentTarget.style.opacity=0}>
-              <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>🖼 Changer l'image</span>
-            </div>
+          <PhotoEditor
+            key={`${imageUrl}-${uploadStamp}`}
+            photoUrl={uploadStamp > 0 ? `${imageUrl}?v=${uploadStamp}` : imageUrl}
+            scale={imageScale} posX={imagePosX} posY={imagePosY}
+            onChange={handleCropChange}
+            shape="rect" width={360} height={180}
+          />
+          <div style={{ display:'flex', gap: 10, marginTop: 10, fontSize: 11, color: 'var(--a-fg-light)' }}>
+            <span>Glissez pour recadrer · molette ou slider pour zoomer</span>
           </div>
-        ) : (
+          <div style={{ display:'flex', gap: 12, marginTop: 10 }}>
+            <button
+              type="button"
+              onClick={openPicker}
+              style={{ background: 'transparent', border: '1px solid var(--a-border)', color: 'var(--a-fg-mid)', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+            >🖼 Changer l'image</button>
+            <button
+              type="button"
+              onClick={() => { setImageUrl(''); setImageScale?.(1); setImagePosX?.(50); setImagePosY?.(50); }}
+              style={{ background: 'transparent', border: '1px solid var(--a-border)', color: 'var(--a-red)', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+            >✕ Supprimer</button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+          onClick={openPicker}
+          style={{
+            borderRadius: 'var(--a-radius-sm)',
+            border: `2px dashed ${dragOver ? 'var(--a-gold)' : 'var(--a-border)'}`,
+            background: dragOver ? 'rgba(191,138,48,.04)' : 'transparent',
+            padding: 12, cursor: 'pointer', textAlign: 'center',
+            transition: 'all .2s', position: 'relative', overflow: 'hidden',
+          }}>
           <div style={{ padding:'14px 0', color:'var(--a-fg-mid)', fontSize:13, lineHeight:1.8 }}>
             {uploading
               ? <span style={{ color:'var(--a-gold)' }}>⏳ Upload en cours…</span>
               : <><span style={{ fontSize:20 }}>🖼</span><br/><strong>Glissez une image</strong> ou cliquez pour parcourir<br/><span style={{ fontSize:11, opacity:.65 }}>JPG, PNG, WebP — max 5 Mo</span></>
             }
           </div>
-        )}
-      </div>
-      {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
-      {imageUrl && !uploading && (
-        <div style={{ display:'flex', justifyContent:'flex-end', marginTop:4 }}>
-          <button style={{ background:'none', border:'none', color:'var(--a-red)', fontSize:12, cursor:'pointer', fontFamily:'inherit' }}
-            onClick={e => { e.stopPropagation(); setImageUrl(''); }}>✕ Supprimer l'image</button>
         </div>
       )}
+
+      {uploadErr && <div style={{ color:'var(--a-red)', fontSize:12, marginTop:4 }}>{uploadErr}</div>}
     </div>
   );
+}
+
+// ─── Hook partagé — state de l'image de couverture pour les 4 modals ─────────
+// Factorise : URL + cadrage (scale/pos_x/pos_y) + flags upload/dragOver/err.
+// Expose des props bindables prêtes pour <ImageUploadZone> et un payload
+// `toPayload()` pour onSave().
+//
+// Pourquoi un hook et pas un composant ? Chaque modal veut choisir le `getFolder`
+// (slug(titre) vs `${module}/${titre}` vs `${module}/${thema}/${titre}`) et garde
+// le contrôle de son sauvegarde — le hook n'encapsule que l'état répétitif.
+function useCoverImageState(data) {
+  // Coercion Number() indispensable : PostgREST renvoie les NUMERIC en string.
+  // Sans cast, la molette du PhotoEditor ferait "1.50" + 0.08 → "1.500.08" → NaN.
+  const [image_url,   setImageUrl]   = useState(data?.image_url || '');
+  const [image_scale, setImageScale] = useState(Number(data?.image_scale ?? 1));
+  const [image_pos_x, setImagePosX]  = useState(Number(data?.image_pos_x ?? 50));
+  const [image_pos_y, setImagePosY]  = useState(Number(data?.image_pos_y ?? 50));
+  const [dragOver,    setDragOver]   = useState(false);
+  const [uploading,   setUploading]  = useState(false);
+  const [uploadErr,   setUploadErr]  = useState('');
+
+  return {
+    uploading,
+    imageProps: {
+      imageUrl:    image_url,   setImageUrl,
+      imageScale:  image_scale, setImageScale,
+      imagePosX:   image_pos_x, setImagePosX,
+      imagePosY:   image_pos_y, setImagePosY,
+      uploading,   setUploading,
+      uploadErr,   setUploadErr,
+      dragOver,    setDragOver,
+    },
+    toPayload: () => ({ image_url, image_scale, image_pos_x, image_pos_y }),
+  };
 }
 
 // ── Composant partagé : sélecteur niveaux scolaires ──────────────────────────
@@ -863,14 +989,11 @@ function NsSelectorField({ list, selected, onChange, warnIfEmpty, warnMsg }) {
 function ModuleModal({ data, onSave, onClose, loading }) {
   const [titre,       setTitre]       = useState(data?.titre || '');
   const [description, setDescription] = useState(data?.description || '');
-  const [image_url,   setImageUrl]    = useState(data?.image_url || '');
   const [ordre,       setOrdre]       = useState(data?.ordre || 1);
   const [actif,       setActif]       = useState(data?.actif !== undefined ? data.actif : true);
-  const [dragOver,    setDragOver]    = useState(false);
-  const [uploading,   setUploading]   = useState(false);
-  const [uploadErr,   setUploadErr]   = useState('');
   const [nsList,      setNsList]      = useState([]);
   const [selectedNs,  setSelectedNs]  = useState(data?.niveaux_scolaires_ids || []);
+  const img = useCoverImageState(data);
 
   useEffect(() => { fetchNiveauxScolaires().then(setNsList).catch(() => {}); }, []);
   const toggleNs = id => setSelectedNs(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -885,9 +1008,7 @@ function ModuleModal({ data, onSave, onClose, loading }) {
         <label className={S.label}>Description</label>
         <textarea className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description du module…" rows={3} />
       </div>
-      <ImageUploadZone imageUrl={image_url} setImageUrl={setImageUrl} uploading={uploading} setUploading={setUploading}
-        uploadErr={uploadErr} setUploadErr={setUploadErr} dragOver={dragOver} setDragOver={setDragOver}
-        getFolder={() => toSlug(titre)} />
+      <ImageUploadZone {...img.imageProps} getFolder={() => toSlug(titre)} />
       <NsSelectorField list={nsList} selected={selectedNs} onChange={toggleNs}
         warnIfEmpty warnMsg="Aucun niveau sélectionné → module invisible pour tous les élèves" />
       <div style={{ display:'flex', gap:12 }}>
@@ -905,8 +1026,8 @@ function ModuleModal({ data, onSave, onClose, loading }) {
       </div>
       <div className={S.btnRow}>
         <button className={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()}
-          onClick={() => onSave({ id:data?.id, titre, description, image_url, ordre, actif, niveaux_scolaires_ids:selectedNs })}>
+        <button className={S.btnSave} disabled={loading || img.uploading || !titre.trim()}
+          onClick={() => onSave({ id:data?.id, titre, description, ...img.toPayload(), ordre, actif, niveaux_scolaires_ids:selectedNs })}>
           {loading ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
@@ -918,13 +1039,10 @@ function ModuleModal({ data, onSave, onClose, loading }) {
 function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
   const [titre,       setTitre]       = useState(data?.titre || '');
   const [description, setDescription] = useState(data?.description || '');
-  const [image_url,   setImageUrl]    = useState(data?.image_url || '');
   const [ordre,       setOrdre]       = useState(data?.ordre || 1);
-  const [dragOver,    setDragOver]    = useState(false);
-  const [uploading,   setUploading]   = useState(false);
-  const [uploadErr,   setUploadErr]   = useState('');
   const [nsList,      setNsList]      = useState([]);
   const [selectedNs,  setSelectedNs]  = useState(data?.niveaux_scolaires_ids || []);
+  const img = useCoverImageState(data);
 
   useEffect(() => { fetchNiveauxScolaires().then(setNsList).catch(() => {}); }, []);
   const toggleNs = id => setSelectedNs(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -939,8 +1057,7 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
         <label className={S.label}>Description</label>
         <textarea className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la thématique…" rows={3} />
       </div>
-      <ImageUploadZone imageUrl={image_url} setImageUrl={setImageUrl} uploading={uploading} setUploading={setUploading}
-        uploadErr={uploadErr} setUploadErr={setUploadErr} dragOver={dragOver} setDragOver={setDragOver}
+      <ImageUploadZone {...img.imageProps}
         getFolder={() => `${toSlug(moduleTitre)}/${toSlug(titre)}`} />
       <NsSelectorField list={nsList} selected={selectedNs} onChange={toggleNs}
         warnIfEmpty warnMsg="Aucun niveau sélectionné → thématique invisible pour les élèves" />
@@ -950,8 +1067,8 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
       </div>
       <div className={S.btnRow}>
         <button className={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()}
-          onClick={() => onSave({ id:data?.id, titre, description, image_url, ordre, niveaux_scolaires_ids:selectedNs })}>
+        <button className={S.btnSave} disabled={loading || img.uploading || !titre.trim()}
+          onClick={() => onSave({ id:data?.id, titre, description, ...img.toPayload(), ordre, niveaux_scolaires_ids:selectedNs })}>
           {loading ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
@@ -963,11 +1080,8 @@ function ThematiqueModal({ data, onSave, onClose, loading, moduleTitre }) {
 function LeconModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTitre }) {
   const [titre,       setTitre]       = useState(data?.titre || '');
   const [description, setDescription] = useState(data?.description || '');
-  const [image_url,   setImageUrl]    = useState(data?.image_url || '');
   const [ordre,       setOrdre]       = useState(data?.ordre || 1);
-  const [dragOver,    setDragOver]    = useState(false);
-  const [uploading,   setUploading]   = useState(false);
-  const [uploadErr,   setUploadErr]   = useState('');
+  const img = useCoverImageState(data);
 
   return (
     <Modal title={data ? 'Modifier la leçon' : 'Nouvelle leçon'} onClose={onClose}>
@@ -979,8 +1093,7 @@ function LeconModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTit
         <label className={S.label}>Description</label>
         <textarea className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description de la leçon…" rows={3} />
       </div>
-      <ImageUploadZone imageUrl={image_url} setImageUrl={setImageUrl} uploading={uploading} setUploading={setUploading}
-        uploadErr={uploadErr} setUploadErr={setUploadErr} dragOver={dragOver} setDragOver={setDragOver}
+      <ImageUploadZone {...img.imageProps}
         getFolder={() => `${toSlug(moduleTitre)}/${toSlug(thematiqueTitre)}/${toSlug(titre)}`} />
       <div className={S.field}>
         <label className={S.label}>Ordre</label>
@@ -988,8 +1101,8 @@ function LeconModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTit
       </div>
       <div className={S.btnRow}>
         <button className={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()}
-          onClick={() => onSave({ id:data?.id, titre, description, image_url, ordre })}>
+        <button className={S.btnSave} disabled={loading || img.uploading || !titre.trim()}
+          onClick={() => onSave({ id:data?.id, titre, description, ...img.toPayload(), ordre })}>
           {loading ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
@@ -1001,12 +1114,9 @@ function LeconModal({ data, onSave, onClose, loading, moduleTitre, thematiqueTit
 function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
   const [titre,        setTitre]       = useState(data?.titre || '');
   const [description,  setDescription] = useState(data?.description || '');
-  const [image_url,    setImageUrl]    = useState(data?.image_url || '');
   const [ordre,        setOrdre]       = useState(data?.ordre || 1);
   const [score_requis, setScoreRequis] = useState(data?.score_requis || 80);
-  const [dragOver,     setDragOver]    = useState(false);
-  const [uploading,    setUploading]   = useState(false);
-  const [uploadErr,    setUploadErr]   = useState('');
+  const img = useCoverImageState(data);
 
   return (
     <Modal title={data ? 'Modifier le niveau' : 'Nouveau niveau'} onClose={onClose}>
@@ -1018,8 +1128,7 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
         <label className={S.label}>Description</label>
         <textarea className={S.textarea} value={description} onChange={e => setDescription(e.target.value)} rows={2} />
       </div>
-      <ImageUploadZone imageUrl={image_url} setImageUrl={setImageUrl} uploading={uploading} setUploading={setUploading}
-        uploadErr={uploadErr} setUploadErr={setUploadErr} dragOver={dragOver} setDragOver={setDragOver}
+      <ImageUploadZone {...img.imageProps}
         getFolder={() => `${toSlug(moduleTitre)}/${toSlug(titre)}`} />
       <div style={{ display:'flex', gap:12 }}>
         <div className={S.field} style={{ flex:1 }}>
@@ -1033,8 +1142,8 @@ function NiveauModal({ data, onSave, onClose, loading, moduleTitre }) {
       </div>
       <div className={S.btnRow}>
         <button className={S.btnCancel} onClick={onClose}>Annuler</button>
-        <button className={S.btnSave} disabled={loading || uploading || !titre.trim()}
-          onClick={() => onSave({ id:data?.id, titre, description, image_url, ordre, score_requis })}>
+        <button className={S.btnSave} disabled={loading || img.uploading || !titre.trim()}
+          onClick={() => onSave({ id:data?.id, titre, description, ...img.toPayload(), ordre, score_requis })}>
           {loading ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
