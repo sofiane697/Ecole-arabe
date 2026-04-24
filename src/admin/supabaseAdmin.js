@@ -251,6 +251,62 @@ export async function fetchEleveProgression(eleveId) {
   return res.json();
 }
 
+// Defense-in-depth : valide le format UUID avant interpolation dans une URL
+// PostgREST. Sans ça, un `eleveId` malformé pourrait injecter des paramètres
+// (ex: "x&select=*"). Les UUIDs DB sont sûrs, c'est une garantie pour les
+// futurs appelants qui passeraient une string non-validée.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function safeEleveId(eleveId) {
+  if (typeof eleveId !== 'string' || !UUID_RE.test(eleveId)) {
+    throw new Error('eleveId invalide');
+  }
+  return encodeURIComponent(eleveId);
+}
+
+// Borne défensive contre un élève corrompu avec des milliers de lignes
+// (DoS UI + quota Supabase). 500 couvre largement une scolarité complète.
+const ELEVE_FETCH_LIMIT = 500;
+
+/** Notes d'un élève (lecture admin) — jointure évaluations pour titre/date */
+export async function fetchNotesEleve(eleveId) {
+  const id = safeEleveId(eleveId);
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${id}` +
+    `&select=id,score,absent,commentaire,created_at,evaluation:evaluations(id,titre,date_evaluation)` +
+    `&order=created_at.desc&limit=${ELEVE_FETCH_LIMIT}`
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const rows = await res.json();
+  return rows.map(r => ({
+    ...r,
+    evaluation: r.evaluation
+      ? { id: r.evaluation.id, titre: r.evaluation.titre, date: r.evaluation.date_evaluation }
+      : null,
+  }));
+}
+
+/** Retards & absences d'un élève (lecture admin) */
+export async function fetchRetardsAbsencesEleve(eleveId) {
+  const id = safeEleveId(eleveId);
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/retards_absences?eleve_id=eq.${id}` +
+    `&select=id,type,date,commentaire&order=date.desc&limit=${ELEVE_FETCH_LIMIT}`
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
+/** Appréciations d'un élève (lecture admin) */
+export async function fetchObservationsEleve(eleveId) {
+  const id = safeEleveId(eleveId);
+  const res = await authFetch(
+    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${id}` +
+    `&select=id,type,contenu,created_at&order=created_at.desc&limit=${ELEVE_FETCH_LIMIT}`
+  );
+  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return res.json();
+}
+
 /** Réinitialiser la progression de TOUS les élèves pour un niveau donné.
  *  À appeler quand les questions QCM d'un niveau sont supprimées / remplacées,
  *  pour éviter que d'anciens records reussi=true ressurgissent. */

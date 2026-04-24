@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
@@ -75,12 +75,45 @@ const S = {
   filterOpt: (active) => ({ display:'inline-flex', alignItems:'center', gap:5, padding:'5px 14px', borderRadius:980, border:'none', fontSize:12.5, fontWeight:700, cursor:'pointer', transition:'all .18s var(--a-ease)', background: active ? 'var(--a-gold)' : 'transparent', color: active ? '#fff' : 'var(--a-fg-mid)', boxShadow: active ? '0 2px 8px rgba(191,138,48,.35)' : 'none', letterSpacing:'-.01em' }),
 };
 
+// ─── Constantes Notes / Absences / Appréciations ───────────────────────────
+const SCORE_LABEL = { 4: 'A+', 3: 'A', 2: 'ECA', 1: 'NA' };
+const SCORE_SUB   = { 4: 'Acquis +', 3: 'Acquis', 2: 'En cours', 1: 'Non acquis' };
+const SCORE_COLOR = { 4: 'var(--a-green)', 3: 'var(--a-gold)', 2: 'var(--a-yellow)', 1: 'var(--a-red)' };
+const ABSENCE_CFG = {
+  retard:  { label: 'Retard',  color: 'var(--a-yellow)', icon: '⏰' },
+  absence: { label: 'Absence', color: 'var(--a-red)',    icon: '🚫' },
+};
+const OBS_CFG = {
+  general:      { label: 'Général',      color: 'var(--a-blue)',   icon: '📋' },
+  comportement: { label: 'Comportement', color: 'var(--a-yellow)', icon: '🧭' },
+  progression:  { label: 'Progression',  color: 'var(--a-green)',  icon: '📈' },
+};
+
+const fmtDateFr = (d) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+// ─── Helpers JSX locaux pour les sections Notes / Absences / Appréciations ─
+const EleveEmptyState = ({ children }) => (
+  <div style={{ padding: 32, textAlign: 'center', color: 'var(--a-fg-light)', background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius-sm)', border: '1px solid var(--a-border)', fontSize: 13 }}>
+    {children}
+  </div>
+);
+
+const EleveStatCard = ({ value, color, children }) => (
+  <div className="elv-stat-card" style={{ borderTop: `3px solid ${color}` }}>
+    <div className="elv-stat-value" style={{ color }}>{value}</div>
+    <div className="elv-stat-label">{children}</div>
+  </div>
+);
+
 export default function Eleves() {
   const [eleves, setEleves] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedEleve, setSelectedEleve] = useState(null);
   const [progression, setProgression] = useState([]);
   const [modules, setModules] = useState([]);
+  const [notes, setNotes]               = useState([]);
+  const [absences, setAbsences]         = useState([]);
+  const [observations, setObservations] = useState([]);
   const [niveauxMap, setNiveauxMap] = useState({});
   const [qcmNiveauxIds, setQcmNiveauxIds] = useState(new Set());
   const [resetResult, setResetResult] = useState(null);   // { identifiant, tempPassword }
@@ -141,28 +174,46 @@ export default function Eleves() {
   }, [selectedEleve, activitePeriode]);
 
   // ─── Voir le détail d'un élève ───────────────────────────────────────
+  // Token de génération : protège contre les changements rapides d'élève.
+  // Si l'admin clique sur A puis B avant la fin du fetch de A, on ignore les
+  // setters de A pour éviter qu'ils n'écrasent les données de B.
+  const openEleveTokenRef = useRef(0);
   const openEleve = async (eleve) => {
+    const token = ++openEleveTokenRef.current;
     setSelectedEleve(eleve);
     setModules([]);
     setProgression([]);
     setNiveauxMap({});
     setQcmNiveauxIds(new Set());
+    setNotes([]);
+    setAbsences([]);
+    setObservations([]);
     try {
       const mods = await fetchModules();
+      if (token !== openEleveTokenRef.current) return;
       setModules(mods);
-      const [prog, nivMap] = await Promise.all([
-        fetchEleveProgression(eleve.id).catch(() => []),
+      const logFetchErr = (label) => (e) => { console.warn(`[openEleve] ${label}`, e); return []; };
+      const [prog, nivMap, nts, abs, obs] = await Promise.all([
+        fetchEleveProgression(eleve.id).catch(logFetchErr('progression')),
         Promise.all(mods.map(async (m) => {
           try { return [m.id, await fetchAllNiveauxForModule(m.id)]; } catch { return [m.id, []]; }
         })).then(entries => Object.fromEntries(entries)),
+        fetchNotesEleve(eleve.id).catch(logFetchErr('notes')),
+        fetchRetardsAbsencesEleve(eleve.id).catch(logFetchErr('absences')),
+        fetchObservationsEleve(eleve.id).catch(logFetchErr('observations')),
       ]);
+      if (token !== openEleveTokenRef.current) return;
       setProgression(prog);
       setNiveauxMap(nivMap);
+      setNotes(nts);
+      setAbsences(abs);
+      setObservations(obs);
       // Charger quels niveaux ont un QCM (même logique que le portail élève)
       const allNiveauIds = Object.values(nivMap).flat().map(n => n.id);
-      const qcmIds = await fetchQCMNiveauxIds(allNiveauIds).catch(() => new Set());
+      const qcmIds = await fetchQCMNiveauxIds(allNiveauIds).catch((e) => { console.warn('[openEleve] qcmIds', e); return new Set(); });
+      if (token !== openEleveTokenRef.current) return;
       setQcmNiveauxIds(qcmIds);
-    } catch(e) {}
+    } catch(e) { console.warn('[openEleve] modules', e); }
   };
 
   const handleToggleActif = async (eleve) => {
@@ -787,6 +838,173 @@ export default function Eleves() {
             </div>
           )}
         </div>
+
+        {/* ─── Section Notes ─── */}
+        {(() => {
+          const counts = notes.reduce((acc, n) => {
+            if (!n.absent && n.score != null) acc[n.score] = (acc[n.score] || 0) + 1;
+            return acc;
+          }, {});
+          return (
+            <>
+              <div className="elv-section-title" style={{ marginTop: 32 }}>Notes</div>
+              <div className="elv-stats-grid">
+                {[4, 3, 2, 1].map(score => (
+                  <EleveStatCard key={score} value={counts[score] || 0} color={SCORE_COLOR[score]}>
+                    {SCORE_LABEL[score]} <span style={{ color:'var(--a-fg-light)', fontWeight:400 }}>· {SCORE_SUB[score]}</span>
+                  </EleveStatCard>
+                ))}
+              </div>
+              {notes.length === 0 ? (
+                <EleveEmptyState>Aucune note enregistrée pour l'instant.</EleveEmptyState>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {notes.map(n => (
+                    <div key={n.id} style={{
+                      padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
+                      background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                      display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center',
+                    }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--a-fg)' }}>
+                          {n.evaluation?.titre || 'Évaluation'}
+                        </div>
+                        {n.evaluation?.date && (
+                          <div style={{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 3 }}>
+                            {fmtDateFr(n.evaluation.date)}
+                          </div>
+                        )}
+                        {n.commentaire && (
+                          <div style={{ fontSize: 13, color: 'var(--a-fg)', marginTop: 8, fontStyle: 'italic' }}>
+                            « {n.commentaire} »
+                          </div>
+                        )}
+                      </div>
+                      {(() => {
+                        const color = n.absent ? 'var(--a-fg-light)' : (SCORE_COLOR[n.score] || 'var(--a-fg-light)');
+                        return (
+                          <div style={{
+                            padding: '6px 14px', borderRadius: 999,
+                            background: `${color}22`,
+                            color: n.absent ? 'var(--a-fg-mid)' : color,
+                            fontSize: 14, fontWeight: 700,
+                            minWidth: 50, textAlign: 'center',
+                          }}>
+                            {n.absent ? 'Abs.' : (SCORE_LABEL[n.score] || '—')}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()}
+
+        {/* ─── Section Retards & absences ─── */}
+        {(() => {
+          const nbRetards  = absences.filter(i => i.type === 'retard').length;
+          const nbAbsences = absences.filter(i => i.type === 'absence').length;
+          return (
+            <>
+              <div className="elv-section-title" style={{ marginTop: 32 }}>Retards et absences</div>
+              <div className="elv-stats-grid">
+                <EleveStatCard value={nbRetards} color="var(--a-yellow)">Retard{nbRetards > 1 ? 's' : ''}</EleveStatCard>
+                <EleveStatCard value={nbAbsences} color="var(--a-red)">Absence{nbAbsences > 1 ? 's' : ''}</EleveStatCard>
+              </div>
+              {absences.length === 0 ? (
+                <EleveEmptyState>Aucun retard ni absence enregistré.</EleveEmptyState>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {absences.map(item => {
+                    const cfg = ABSENCE_CFG[item.type] || { label: item.type, color: 'var(--a-fg-mid)', icon: '❓' };
+                    return (
+                      <div key={item.id} style={{
+                        padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
+                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                        borderLeft: `4px solid ${cfg.color}`,
+                        display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center',
+                      }}>
+                        <div>
+                          <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            padding: '3px 11px', borderRadius: 999,
+                            background: `${cfg.color}22`, color: cfg.color,
+                            fontSize: 12, fontWeight: 600, marginBottom: item.commentaire ? 8 : 0,
+                          }}>
+                            <span aria-hidden="true">{cfg.icon}</span> {cfg.label}
+                          </div>
+                          {item.commentaire && (
+                            <p style={{ margin: 0, fontSize: 13, color: 'var(--a-fg)', lineHeight: 1.55 }}>
+                              {item.commentaire}
+                            </p>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--a-fg-mid)', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          {fmtDateFr(item.date)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          );
+        })()}
+
+        {/* ─── Section Appréciations ─── */}
+        {(() => {
+          const counts = observations.reduce((acc, o) => {
+            acc[o.type] = (acc[o.type] || 0) + 1;
+            return acc;
+          }, {});
+          return (
+            <>
+              <div className="elv-section-title" style={{ marginTop: 32 }}>Appréciations</div>
+              <div className="elv-stats-grid">
+                {Object.entries(OBS_CFG).map(([key, cfg]) => (
+                  <EleveStatCard key={key} value={counts[key] || 0} color={cfg.color}>
+                    <span aria-hidden="true">{cfg.icon}</span> {cfg.label}
+                  </EleveStatCard>
+                ))}
+              </div>
+              {observations.length === 0 ? (
+                <EleveEmptyState>Aucune appréciation pour l'instant.</EleveEmptyState>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {observations.map(obs => {
+                    const cfg = OBS_CFG[obs.type] || { label: obs.type, color: 'var(--a-fg-mid)', icon: '📌' };
+                    return (
+                      <div key={obs.id} style={{
+                        padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
+                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                        borderLeft: `4px solid ${cfg.color}`,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            padding: '3px 11px', borderRadius: 999,
+                            background: `${cfg.color}22`, color: cfg.color,
+                            fontSize: 12, fontWeight: 600,
+                          }}>
+                            <span aria-hidden="true">{cfg.icon}</span> {cfg.label}
+                          </span>
+                          <span style={{ fontSize: 12, color: 'var(--a-fg-light)' }}>
+                            {fmtDateFr(obs.created_at)}
+                          </span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: 14, color: 'var(--a-fg)', lineHeight: 1.55 }}>
+                          {obs.contenu}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          );
+        })()}
 
         {/* ─── Section Activité ─── */}
         {(() => {
