@@ -167,3 +167,30 @@ export async function fetchAbsencesEleve(eleveId) {
   if (error) return { data: [], error };
   return { data: data || [], error: null };
 }
+
+// ─── DÉCLARATIONS PARENT ─────────────────────────────────────────────────────
+
+/** Soumet un préavis de retard ou d'absence pour un enfant. */
+export async function createDeclarationParent({ eleveId, type, date, heurePrevue, motif }) {
+  const s = needSession(); if (s.error) throw new Error(s.error.error);
+  const { data, error } = await rpc('create_declaration_parent', {
+    p_token:        s.token,
+    p_eleve_id:     eleveId,
+    p_type:         type,
+    p_date:         date,
+    p_heure_prevue: heurePrevue || null,
+    p_motif:        motif || null,
+  });
+  if (error) throw new Error(error);
+  return data;
+}
+
+/** Historique des déclarations soumises par le parent pour un enfant (90 derniers jours). */
+export async function fetchDeclarationsParent(eleveId) {
+  const s = needSession(); if (s.error) return s.error;
+  const { data, error } = await rpc('fetch_declarations_parent', {
+    p_token: s.token, p_eleve_id: eleveId,
+  });
+  if (error) return { data: [], error };
+  return { data: data || [], error: null };
+}

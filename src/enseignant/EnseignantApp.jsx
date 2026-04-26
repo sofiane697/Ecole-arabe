@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence, verifyEnseignantSession } from './supabaseEnseignant';
+import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence, verifyEnseignantSession, countDeclarationsEnseignant } from './supabaseEnseignant';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconClasses = () => (
@@ -235,8 +235,9 @@ export default function EnseignantApp() {
     return saved ? saved === 'dark' : true;
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [presence, setPresence]       = useState('en_ligne');
+  const [unreadCount,   setUnreadCount]   = useState(0);
+  const [declCount,     setDeclCount]     = useState(0);
+  const [presence, setPresence]           = useState('en_ligne');
 
   useEffect(() => {
     const root = document.querySelector('.admin-root');
@@ -276,7 +277,7 @@ export default function EnseignantApp() {
     updatePresence(u.id, statut);
   };
 
-  // Badge non-lus — poll toutes les 30s
+  // Badge messages non-lus — poll toutes les 30s
   useEffect(() => {
     const u = getEnseignantUser();
     if (!u?.id) return;
@@ -284,6 +285,17 @@ export default function EnseignantApp() {
     refresh();
     const t = setInterval(refresh, 30000);
     return () => clearInterval(t);
+  }, []);
+
+  // Badge déclarations parents — poll toutes les 60s + rafraîchissement immédiat après prise en compte
+  useEffect(() => {
+    const u = getEnseignantUser();
+    if (!u?.id) return;
+    const refresh = () => countDeclarationsEnseignant(u.id).then(setDeclCount).catch(() => {});
+    refresh();
+    const t = setInterval(refresh, 60000);
+    window.addEventListener('declaration-acknowledged', refresh);
+    return () => { clearInterval(t); window.removeEventListener('declaration-acknowledged', refresh); };
   }, []);
 
   const handleLogout = async () => {
@@ -328,6 +340,9 @@ export default function EnseignantApp() {
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}>
             <IconAbsences /> Retard / Absence
+            {declCount > 0 && (
+              <span className="admin-nav-badge">{declCount}</span>
+            )}
           </NavLink>
 
           <NavLink to="/enseignant/devoirs"

@@ -1033,3 +1033,38 @@ export async function adminUnlinkParentEleve(parentId, eleveId) {
     throw new Error(err.message || `Erreur détachement parent ${res.status}`);
   }
 }
+
+// ─── DÉCLARATIONS PARENTS ─────────────────────────────────────────────────────
+
+/** Liste paginée de toutes les déclarations parents. */
+export async function adminFetchDeclarations({ limit = 25, offset = 0 } = {}) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_declarations`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_limit: limit, p_offset: offset }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Nombre de déclarations non vues (badge sidebar). */
+export async function adminCountNouvellesDeclarations() {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_count_nouvelles_declarations`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId() }),
+  });
+  if (!res.ok) return 0;
+  const n = await res.json();
+  return typeof n === 'number' ? n : 0;
+}
+
+/** Marque toutes les déclarations comme vues (appelé à l'ouverture de la page). */
+export async function adminMarkDeclarationsVues() {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_mark_declarations_vues`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId() }),
+  });
+  await res.text().catch(() => {});
+}

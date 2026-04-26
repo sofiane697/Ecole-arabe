@@ -1,3 +1,30 @@
+// ─── Today as YYYY-MM-DD (local timezone) ────────────────────────────────────
+export function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// ─── Format a DATE-only string (YYYY-MM-DD) without timezone shift ────────────
+// new Date('2026-05-10') is parsed as UTC midnight and can show May 9 in UTC+2.
+export function fmtDateLong(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return new Date(Number(y), Number(m) - 1, Number(d))
+    .toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+export function fmtDateShort(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+export function fmtDateWeekday(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return new Date(Number(y), Number(m) - 1, Number(d))
+    .toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
 // ─── Calcul de l'âge à partir d'une date de naissance ──────────────────────
 // Parse YYYY-MM-DD manuellement pour éviter les décalages de timezone
 // entre `new Date(str)` (UTC par défaut) et `new Date()` (local).

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { logoutAdmin, fetchInscriptions, fetchMessages, verifyAdminSession } from './supabaseAdmin';
+import { logoutAdmin, fetchInscriptions, fetchMessages, verifyAdminSession, adminCountNouvellesDeclarations } from './supabaseAdmin';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconDashboard = () => (
@@ -49,15 +49,16 @@ const IconStudent = () => (
 );
 
 const PAGE_TITLES = {
-  '/admin':              'Tableau de bord',
-  '/admin/inscriptions': 'Pré-inscriptions',
-  '/admin/messages':     'Messages',
-  '/admin/cours':        'Gestion des cours',
-  '/admin/classes':      'Gestion des classes',
-  '/admin/eleves':        'Gestion des élèves',
-  '/admin/parents':       'Gestion des parents',
-  '/admin/enseignants':   'Gestion des enseignants',
-  '/admin/surveillance':  'Surveillance des discussions',
+  '/admin':                 'Tableau de bord',
+  '/admin/inscriptions':    'Pré-inscriptions',
+  '/admin/messages':        'Messages',
+  '/admin/cours':           'Gestion des cours',
+  '/admin/classes':         'Gestion des classes',
+  '/admin/eleves':          'Gestion des élèves',
+  '/admin/parents':         'Gestion des parents',
+  '/admin/enseignants':     'Gestion des enseignants',
+  '/admin/surveillance':    'Surveillance des discussions',
+  '/admin/declarations':    'Déclarations des parents',
 };
 
 export default function AdminApp() {
@@ -98,12 +99,14 @@ export default function AdminApp() {
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [unreadMessages,  setUnreadMessages]  = useState(0);
-  const [newInscriptions, setNewInscriptions] = useState(0);
+  const [unreadMessages,   setUnreadMessages]   = useState(0);
+  const [newInscriptions,  setNewInscriptions]  = useState(0);
+  const [newDeclarations,  setNewDeclarations]  = useState(0);
 
   useEffect(() => {
     fetchMessages().then(msgs => setUnreadMessages(msgs.filter(m => !m.lu).length)).catch(() => {});
     fetchInscriptions().then(insc => setNewInscriptions(insc.filter(i => i.statut === 'nouveau').length)).catch(() => {});
+    adminCountNouvellesDeclarations().then(setNewDeclarations).catch(() => {});
   }, [location.pathname]); // recharger à chaque changement de page
   const currentTitle    = PAGE_TITLES[location.pathname] || 'Admin';
 
@@ -219,6 +222,23 @@ export default function AdminApp() {
             onClick={() => setSidebarOpen(false)}
           >
             <IconEye /> Surveillance
+          </NavLink>
+
+          <NavLink
+            to="/admin/declarations"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="9" y1="13" x2="15" y2="13"/>
+              <line x1="9" y1="17" x2="13" y2="17"/>
+            </svg>
+            Déclarations parents
+            {newDeclarations > 0 && location.pathname !== '/admin/declarations' && (
+              <span className="admin-nav-badge">{newDeclarations}</span>
+            )}
           </NavLink>
 
           <div className="admin-nav-section" style={{ marginTop: '1.5rem' }}>Site</div>

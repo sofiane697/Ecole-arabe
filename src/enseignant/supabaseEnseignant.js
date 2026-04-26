@@ -520,3 +520,38 @@ export async function updatePresence(enseignantId, statut) {
   });
   await res.text().catch(() => {});
 }
+
+// ─── DÉCLARATIONS PARENTS ─────────────────────────────────────────────────────
+
+/** Déclarations parents pour une classe donnée (aujourd'hui - 1 → futur). */
+export async function fetchDeclarationsClasse(enseignantId, classeId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/fetch_declarations_classe`, {
+    method: 'POST',
+    headers: ANON_HEADERS,
+    body: JSON.stringify({ p_enseignant_id: enseignantId, p_classe_id: classeId }),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+/** Marque une déclaration comme prise en compte par l'enseignant. */
+export async function markDeclarationVueEnseignant(enseignantId, declarationId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/mark_declaration_vue_enseignant`, {
+    method: 'POST',
+    headers: ANON_HEADERS,
+    body: JSON.stringify({ p_enseignant_id: enseignantId, p_declaration_id: declarationId }),
+  });
+  return res.ok;
+}
+
+/** Nombre de déclarations à venir (badge sidebar). */
+export async function countDeclarationsEnseignant(enseignantId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/count_declarations_enseignant`, {
+    method: 'POST',
+    headers: ANON_HEADERS,
+    body: JSON.stringify({ p_enseignant_id: enseignantId }),
+  });
+  if (!res.ok) return 0;
+  const n = await res.json();
+  return typeof n === 'number' ? n : 0;
+}

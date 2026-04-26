@@ -2,19 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   getEnseignantUser, fetchMesClasses, fetchElevesDeClasse,
   fetchRetardsAbsences, createRetardAbsence, updateRetardAbsence, deleteRetardAbsence,
+  fetchDeclarationsClasse, markDeclarationVueEnseignant,
 } from './supabaseEnseignant';
 import { motion, tapScale } from '../animations';
+import { todayISO, fmtDateShort, fmtDateWeekday } from '../shared/dateUtils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '—';
-  const [y, m, d] = dateStr.split('-');
-  return `${d}/${m}/${y}`;
-}
+function todayStr() { return todayISO(); }
 
 function getEleveName(eleves, eleveId) {
   const e = eleves.find(el => el.id === eleveId);
@@ -89,6 +83,7 @@ export default function EnseignantAbsences() {
   const [confirmDel, setConfirmDel] = useState(null);
   const [saving,     setSaving]     = useState(false);
   const [feedback,   setFeedback]   = useState(null);
+  const [decls,      setDecls]      = useState([]);
 
   const [fType,       setFType]       = useState('retard');
   const [fEleve,      setFEleve]      = useState('');
@@ -106,15 +101,19 @@ export default function EnseignantAbsences() {
     if (!selClasse) return;
     setLoading(true);
     try {
-      const [els, ents] = await Promise.all([
+      const [els, ents, dcls] = await Promise.all([
         fetchElevesDeClasse(selClasse),
         fetchRetardsAbsences(selClasse),
+        fetchDeclarationsClasse(user.id, selClasse),
       ]);
       setEleves(els);
       setEntries(ents);
-    } catch {}
+      setDecls(dcls || []);
+    } catch {
+      setEleves([]); setEntries([]); setDecls([]);
+    }
     setLoading(false);
-  }, [selClasse]);
+  }, [selClasse]); // eslint-disable-line
 
   useEffect(() => { load(); }, [load]);
 
@@ -213,6 +212,111 @@ export default function EnseignantAbsences() {
         )}
       </div>
 
+      {/* Préavis des parents */}
+      {selClasse && decls.length > 0 && (
+        <div>
+          <div style={{
+            fontSize:12, fontWeight:700, color:'var(--a-gold)',
+            textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:10,
+          }}>
+            Préavis des parents ({decls.length})
+          </div>
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+            {decls.map(d => {
+              const isRetard = d.type === 'retard';
+              const color = isRetard ? 'var(--a-gold)' : 'var(--a-red)';
+              const colorBg = isRetard ? 'rgba(191,138,48,.12)' : 'rgba(255,69,58,.10)';
+              const dateLabel = fmtDateWeekday(d.date);
+              const soumisLe = new Date(d.created_at).toLocaleString('fr-FR', {
+                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+              });
+              return (
+                <div key={d.id} style={{
+                  background: 'var(--a-bg-card)',
+                  border: '1px solid var(--a-border)',
+                  borderLeft: `4px solid ${d.vue_enseignant ? 'var(--a-border)' : color}`,
+                  borderRadius: 'var(--a-radius)',
+                  padding: '12px 16px',
+                  display: 'flex', flexDirection: 'column', gap: 7,
+                  opacity: d.vue_enseignant ? 0.55 : 1,
+                }}>
+                  {/* Ligne principale */}
+                  <div style={{ display:'flex', alignItems:'center', gap:9, flexWrap:'wrap' }}>
+                    <span style={{
+                      display:'inline-flex', alignItems:'center', gap:5,
+                      padding:'3px 10px', borderRadius:999,
+                      background: colorBg, color, fontSize:12, fontWeight:700, flexShrink:0,
+                    }}>
+                      {isRetard ? '⏰ Retard' : '🚫 Absence'}
+                    </span>
+                    <span style={{ fontSize:14, fontWeight:700, color:'var(--a-fg)' }}>
+                      {d.eleve_prenom} {d.eleve_nom}
+                    </span>
+                    <span style={{ fontSize:13, color:'var(--a-fg)', fontWeight:500 }}>
+                      — {dateLabel}
+                    </span>
+                    {d.heure_prevue && (
+                      <span style={{
+                        fontSize:12, fontWeight:600, color,
+                        background: colorBg, padding:'2px 8px', borderRadius:6,
+                      }}>
+                        à {d.heure_prevue}
+                      </span>
+                    )}
+                    <span style={{ marginLeft:'auto', fontSize:11, color:'var(--a-fg-light)', whiteSpace:'nowrap' }}>
+                      Soumis le {soumisLe}
+                    </span>
+                  </div>
+
+                  {/* Ligne secondaire : motif + bouton */}
+                  <div style={{ display:'flex', alignItems:'center', gap:12, flexWrap:'wrap' }}>
+                    {d.motif ? (
+                      <span style={{
+                        fontSize:12, color:'var(--a-fg-mid)', fontStyle:'italic',
+                        background:'var(--a-bg)', padding:'3px 10px',
+                        borderRadius:6, border:'1px solid var(--a-border)',
+                      }}>
+                        "{d.motif}"
+                      </span>
+                    ) : (
+                      <span style={{ fontSize:12, color:'var(--a-fg-light)' }}>Aucun motif renseigné</span>
+                    )}
+
+                    <span style={{ marginLeft:'auto' }}>
+                      {d.vue_enseignant ? (
+                        <span style={{
+                          fontSize:12, fontWeight:700, color:'var(--a-green)',
+                          display:'inline-flex', alignItems:'center', gap:5,
+                        }}>
+                          ✓ Pris en compte
+                        </span>
+                      ) : (
+                        <button
+                          onClick={async () => {
+                            const ok = await markDeclarationVueEnseignant(user.id, d.id);
+                            if (ok) {
+                              setDecls(prev => prev.map(x => x.id === d.id ? { ...x, vue_enseignant: true } : x));
+                              window.dispatchEvent(new CustomEvent('declaration-acknowledged'));
+                            }
+                          }}
+                          style={{
+                            padding:'4px 14px', borderRadius:980, fontSize:12, fontWeight:700,
+                            border:'1.5px solid var(--a-green)', background:'transparent',
+                            color:'var(--a-green)', cursor:'pointer',
+                          }}
+                        >
+                          Prendre en compte
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       {selClasse && entries.length > 0 && (
         <div style={S.statsRow}>
@@ -255,7 +359,7 @@ export default function EnseignantAbsences() {
             const isOwn = e.enseignant_id === user.id;
             return (
               <div key={e.id} style={S.tableRow(i)}>
-                <span style={S.cell}>{formatDate(e.date)}</span>
+                <span style={S.cell}>{fmtDateShort(e.date)}</span>
                 <span style={S.cell}>{getEleveName(eleves, e.eleve_id)}</span>
                 <span>
                   {e.type === 'retard'
@@ -339,7 +443,7 @@ export default function EnseignantAbsences() {
             <div style={{ fontSize:36, textAlign:'center', marginBottom:12 }}>⚠️</div>
             <div style={{ ...S.modalTitle, textAlign:'center' }}>Supprimer cette entrée ?</div>
             <p style={{ textAlign:'center', color:'var(--a-fg-mid)', fontSize:14, marginBottom:24, lineHeight:1.6 }}>
-              {confirmDel.type === 'retard' ? 'Retard' : 'Absence'} du {formatDate(confirmDel.date)}<br />
+              {confirmDel.type === 'retard' ? 'Retard' : 'Absence'} du {fmtDateShort(confirmDel.date)}<br />
               pour {getEleveName(eleves, confirmDel.eleve_id)}
             </p>
             <div style={S.modalBtns}>
