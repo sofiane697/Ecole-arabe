@@ -5,13 +5,56 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
 // Défaut : onboarding@resend.dev — domaine de test Resend, fonctionne SANS vérification
 // mais N'ACCEPTE d'envoyer QU'À l'email owner du compte Resend. Pour envoyer à n'importe
 // qui, vérifier un vrai domaine sur https://resend.com/domains et poser la var
-// FROM_EMAIL=École As-Safaa <noreply@ton-domaine.fr>.
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'École As-Safaa <onboarding@resend.dev>';
+// FROM_EMAIL=Institut As-Safaa <noreply@ton-domaine.fr>.
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Institut As-Safaa <onboarding@resend.dev>';
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
-};
+// SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY sont injectés automatiquement par Supabase
+// dans toutes les Edge Functions. Service role nécessaire pour appeler _is_admin (RLS bypass).
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
+const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+// CORS : restreint via la variable `ALLOWED_ORIGINS` (séparée par virgules).
+// Défaut localhost pour le dev. En prod, poser ALLOWED_ORIGINS=https://ton-domaine.fr.
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('origin') || '';
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0] || '';
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Headers': 'authorization, content-type, x-admin-id',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  };
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Vérifie via RPC _is_admin (SECURITY DEFINER) que p_admin_id correspond à un admin valide.
+// Utilise la service_role key pour contourner RLS et garantir un appel authentifié serveur-à-serveur.
+async function isAdmin(adminId: string | null): Promise<boolean> {
+  if (!adminId || !UUID_RE.test(adminId)) return false;
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/_is_admin`, {
+      method: 'POST',
+      headers: {
+        'apikey': SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_admin_id: adminId }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data === true;
+  } catch {
+    return false;
+  }
+}
 
 // Échappement HTML pour toutes les valeurs injectées (nom, identifiant, mdp…).
 // Protège contre l'injection si un champ admin contient < > & " '.
@@ -24,6 +67,11 @@ function escapeHtml(s: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
+const EMAIL_RE = /^[^\s@<>'"]+@[^\s@<>'"]+\.[^\s@<>'"]+$/;
+function isValidEmail(s: unknown): s is string {
+  return typeof s === 'string' && s.length <= 200 && EMAIL_RE.test(s.trim());
+}
+
 type ParentBlock = { label: string; identifiant: string; password: string };
 
 // ─── Dispatcher ─────────────────────────────────────────────────────────────
@@ -31,8 +79,17 @@ type ParentBlock = { label: string; identifiant: string; password: string };
 //   - 'welcome' (défaut) : mail de bienvenue élève, avec option parents créés
 //   - 'attach'           : notification à un parent existant rattaché à un nouvel enfant
 serve(async (req) => {
+  const cors = corsHeaders(req);
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: CORS_HEADERS });
+    return new Response('ok', { headers: cors });
+  }
+
+  // Authentification : x-admin-id obligatoire et vérifié côté serveur via _is_admin.
+  // Sans ce check, n'importe qui avec la clé anon pouvait envoyer des emails au nom de l'école.
+  const adminId = req.headers.get('x-admin-id');
+  if (!(await isAdmin(adminId))) {
+    return jsonError('Non autorisé', 401, cors);
   }
 
   try {
@@ -40,23 +97,23 @@ serve(async (req) => {
     const kind: string = body.kind || 'welcome';
 
     if (kind === 'attach') {
-      return await handleAttach(body);
+      return await handleAttach(body, cors);
     }
-    return await handleWelcome(body);
+    return await handleWelcome(body, cors);
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...cors },
     });
   }
 });
 
 // ─── Mail de bienvenue (élève + éventuels parents nouvellement créés) ───────
-async function handleWelcome(body: any): Promise<Response> {
+async function handleWelcome(body: any, cors: Record<string, string>): Promise<Response> {
   const { email, prenom, nom, identifiant, tempPassword, classeNom, parents } = body;
 
-  if (!email || !prenom || !nom || !identifiant || !tempPassword) {
-    return jsonError('Paramètres manquants', 400);
+  if (!isValidEmail(email) || !prenom || !nom || !identifiant || !tempPassword) {
+    return jsonError('Paramètres manquants ou invalides', 400, cors);
   }
 
   const classeInfo = classeNom
@@ -110,7 +167,7 @@ async function handleWelcome(body: any): Promise<Response> {
 
         <tr><td style="background:#BF8A30;padding:32px 40px;text-align:center;">
           <div style="font-size:32px;margin-bottom:8px;">🕌</div>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Bienvenue à l'École Raqib</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Bienvenue à l'Institut As-Safaa</h1>
         </td></tr>
 
         <tr><td style="padding:36px 40px;">
@@ -142,7 +199,7 @@ async function handleWelcome(body: any): Promise<Response> {
 
           <p style="margin:24px 0 0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
-            <strong style="color:#1a1a1a;">L'équipe de l'École Raqib</strong>
+            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
           </p>
         </td></tr>
 
@@ -157,18 +214,18 @@ async function handleWelcome(body: any): Promise<Response> {
 </html>`;
 
   const subject = parentsList.length > 0
-    ? `Bienvenue à l'École Raqib — identifiants élève et parent`
-    : `Bienvenue à l'École Raqib — vos identifiants de connexion`;
+    ? `Bienvenue à l'Institut As-Safaa — identifiants élève et parent`
+    : `Bienvenue à l'Institut As-Safaa — vos identifiants de connexion`;
 
-  return await sendResendEmail(email, subject, html);
+  return await sendResendEmail(email, subject, html, cors);
 }
 
 // ─── Mail de rattachement : notifie un parent existant d'un nouvel enfant ──
-async function handleAttach(body: any): Promise<Response> {
+async function handleAttach(body: any, cors: Record<string, string>): Promise<Response> {
   const { email, foyerLabel, identifiant, elevePrenom, eleveNom, classeNom } = body;
 
-  if (!email || !elevePrenom || !eleveNom) {
-    return jsonError('Paramètres manquants', 400);
+  if (!isValidEmail(email) || !elevePrenom || !eleveNom) {
+    return jsonError('Paramètres manquants ou invalides', 400, cors);
   }
 
   const classeInfo = classeNom
@@ -203,7 +260,7 @@ async function handleAttach(body: any): Promise<Response> {
 
         <tr><td style="background:#2c5cc4;padding:32px 40px;text-align:center;">
           <div style="font-size:32px;margin-bottom:8px;">👨‍👩‍👧</div>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Nouveau rattachement — École Raqib</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Nouveau rattachement — Institut As-Safaa</h1>
         </td></tr>
 
         <tr><td style="padding:36px 40px;">
@@ -226,7 +283,7 @@ async function handleAttach(body: any): Promise<Response> {
 
           <p style="margin:0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
-            <strong style="color:#1a1a1a;">L'équipe de l'École Raqib</strong>
+            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
           </p>
         </td></tr>
 
@@ -240,12 +297,12 @@ async function handleAttach(body: any): Promise<Response> {
 </body>
 </html>`;
 
-  const subject = `École Raqib — vous êtes désormais rattaché à ${elevePrenom} ${eleveNom}`;
-  return await sendResendEmail(email, subject, html);
+  const subject = `Institut As-Safaa — vous êtes désormais rattaché à ${elevePrenom} ${eleveNom}`;
+  return await sendResendEmail(email, subject, html, cors);
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-async function sendResendEmail(to: string, subject: string, html: string): Promise<Response> {
+async function sendResendEmail(to: string, subject: string, html: string, cors: Record<string, string>): Promise<Response> {
   const resendRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -258,18 +315,18 @@ async function sendResendEmail(to: string, subject: string, html: string): Promi
     const err = await resendRes.json().catch(() => ({}));
     return new Response(JSON.stringify({ error: err }), {
       status: resendRes.status,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...cors },
     });
   }
   const data = await resendRes.json();
   return new Response(JSON.stringify({ ok: true, id: data.id }), {
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: { 'Content-Type': 'application/json', ...cors },
   });
 }
 
-function jsonError(message: string, status: number): Response {
+function jsonError(message: string, status: number, cors: Record<string, string>): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: { 'Content-Type': 'application/json', ...cors },
   });
 }

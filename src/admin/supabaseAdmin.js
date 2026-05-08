@@ -15,40 +15,42 @@ async function authFetch(url, options = {}) {
   });
 }
 
+// Phase RLS #2.E : `inscriptions` et `messages` ont l'INSERT public ouvert
+// (formulaires site App.jsx) mais SELECT/UPDATE/DELETE admin-only via RPCs.
+
 /** Récupérer toutes les inscriptions */
 export async function fetchInscriptions() {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/inscriptions?order=created_at.desc`);
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_fetch_inscriptions',
+    { p_admin_id: requireAdminId() },
+    'Erreur chargement inscriptions');
 }
 
 /** Récupérer tous les messages */
 export async function fetchMessages() {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/messages?order=created_at.desc`);
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_fetch_messages',
+    { p_admin_id: requireAdminId() },
+    'Erreur chargement messages');
 }
 
 /** Mettre à jour le statut d'une inscription */
 export async function updateInscriptionStatut(id, statut) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/inscriptions?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ statut }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_inscription_statut',
+    { p_admin_id: requireAdminId(), p_id: id, p_statut: statut },
+    'Erreur modification inscription');
 }
 
 /** Marquer un message comme lu / non lu */
 export async function updateMessageLu(id, lu) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_message_lu',
+    { p_admin_id: requireAdminId(), p_id: id, p_lu: lu },
+    'Erreur modification message');
 }
 
 /** Supprimer un message */
 export async function deleteMessage(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_message',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression message');
 }
 
 /** Connexion admin via identifiant + mot de passe (bcrypt, table profils_admins) */
@@ -80,7 +82,25 @@ export function logoutAdmin() {
   sessionStorage.removeItem('admin_auth');
 }
 
-// ─── MODULES ─────────────────────────────────────────────────────────────────
+// ─── MODULES / NIVEAUX / CONTENUS ───────────────────────────────────────────
+// Phase RLS #2.B (2026-05-08) : les écritures sur modules/niveaux/contenus/
+// thematiques/lecons sont fermées à anon. Les SELECT restent ouverts (élève,
+// enseignant, admin lisent massivement ces tables — pas de bénéfice à tout
+// passer en RPC). Les CRUD passent par les RPCs admin_* SECURITY DEFINER.
+
+// Helper local : appel RPC + gestion d'erreur uniformisée. Évite la duplication
+// du try/catch sur les 15 wrappers ci-dessous.
+async function rpcAdminWrite(fn, body, errLabel) {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.hint || `${errLabel} ${res.status}`);
+  }
+  return res.json().catch(() => null);
+}
 
 export async function fetchModules() {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/modules?order=ordre`);
@@ -89,26 +109,22 @@ export async function fetchModules() {
 }
 
 export async function createModule(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/modules`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_create_module',
+    { p_admin_id: requireAdminId(), p_data: data },
+    'Erreur création module');
 }
 
 export async function updateModule(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/modules?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_module',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification module');
 }
 
 export async function deleteModule(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/modules?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_module',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression module');
 }
-
-// ─── NIVEAUX ─────────────────────────────────────────────────────────────────
 
 export async function fetchNiveaux(moduleId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux?module_id=eq.${moduleId}&order=ordre`);
@@ -117,26 +133,22 @@ export async function fetchNiveaux(moduleId) {
 }
 
 export async function createNiveau(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_create_niveau',
+    { p_admin_id: requireAdminId(), p_data: data },
+    'Erreur création niveau');
 }
 
 export async function updateNiveau(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_niveau',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification niveau');
 }
 
 export async function deleteNiveau(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_niveau',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression niveau');
 }
-
-// ─── CONTENUS ────────────────────────────────────────────────────────────────
 
 export async function fetchContenus(niveauId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/contenus?niveau_id=eq.${niveauId}&order=ordre`);
@@ -145,23 +157,21 @@ export async function fetchContenus(niveauId) {
 }
 
 export async function createContenu(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/contenus`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_create_contenu',
+    { p_admin_id: requireAdminId(), p_data: data },
+    'Erreur création contenu');
 }
 
 export async function updateContenu(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/contenus?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_contenu',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification contenu');
 }
 
 export async function deleteContenu(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/contenus?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_contenu',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression contenu');
 }
 
 // ─── QCM QUESTIONS ───────────────────────────────────────────────────────────
@@ -187,38 +197,81 @@ export async function fetchAllNiveauxForModule(moduleId) {
   return niveaux;
 }
 
+// QCM côté admin : depuis la phase RLS #2.A (anti-triche), `qcm_questions` est
+// fermée à anon. Toutes les opérations passent désormais par les RPCs admin_*
+// SECURITY DEFINER qui vérifient la session admin via _is_admin.
+
 export async function fetchQCMNiveauxIds(niveauIds) {
   if (!niveauIds.length) return new Set();
-  const ids = niveauIds.join(',');
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=in.(${ids})&select=niveau_id`);
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_qcm_existence`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_niveau_ids: niveauIds }),
+  });
+  if (!res.ok) return new Set();
   const data = await res.json();
-  return new Set((data || []).map(q => q.niveau_id));
+  // RPC retourne SETOF BIGINT → tableau de nombres
+  return new Set(Array.isArray(data) ? data : []);
 }
 
 export async function fetchQCM(niveauId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=eq.${niveauId}&order=ordre`);
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_qcm_questions`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_niveau_id: niveauId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
   return res.json();
 }
 
 export async function createQuestion(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_question`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:        requireAdminId(),
+      p_niveau_id:       data.niveau_id,
+      p_question:        data.question,
+      p_choix:           data.choix,
+      p_reponse_correcte: data.reponse_correcte,
+      p_ordre:           data.ordre ?? 0,
+    }),
   });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
+  // RPC retourne le BIGINT id de la question créée
   return res.json();
 }
 
 export async function updateQuestion(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_question`, {
+    method: 'POST',
+    body: JSON.stringify({
+      p_admin_id:        requireAdminId(),
+      p_id:              id,
+      p_question:        data.question        ?? null,
+      p_choix:           data.choix           ?? null,
+      p_reponse_correcte: data.reponse_correcte ?? null,
+      p_ordre:           data.ordre           ?? null,
+    }),
   });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
 }
 
 export async function deleteQuestion(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/qcm_questions?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_delete_question`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_id: id }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
 }
 
 // ─── ÉLÈVES ──────────────────────────────────────────────────────────────────
@@ -237,16 +290,22 @@ export async function createEleve(nom, prenom, identifiant, password) {
   return { id: userId, nom, prenom, identifiant };
 }
 
-/** Récupérer tous les élèves */
+/** Récupérer tous les élèves — phase RLS #2.D.2 : passe par RPC.
+ *  La table `profils_eleves` est fermée à anon (hashes bcrypt + PII mineurs). */
 export async function fetchEleves() {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?order=created_at.desc`);
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_fetch_eleves',
+    { p_admin_id: requireAdminId() },
+    'Erreur chargement élèves');
 }
 
-/** Récupérer la progression d'un élève */
+/** Récupérer la progression d'un élève (via RPC SECURITY DEFINER depuis la
+ *  phase RLS #2.A). La table `eleve_progression` est fermée à anon. */
 export async function fetchEleveProgression(eleveId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/eleve_progression?eleve_id=eq.${eleveId}`);
+  if (!safeEleveId(eleveId)) return [];
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleve_progression`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: eleveId }),
+  });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
@@ -267,55 +326,66 @@ function safeEleveId(eleveId) {
 // (DoS UI + quota Supabase). 500 couvre largement une scolarité complète.
 const ELEVE_FETCH_LIMIT = 500;
 
-/** Notes d'un élève (lecture admin) — jointure évaluations pour titre/date */
+/** Notes d'un élève (lecture admin) — phase RLS #2.C : passe par RPC.
+ *  La table `notes` est désormais fermée à anon (RGPD scolaire mineurs). */
 export async function fetchNotesEleve(eleveId) {
   const id = safeEleveId(eleveId);
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${id}` +
-    `&select=id,score,absent,commentaire,created_at,evaluation:evaluations(id,titre,date_evaluation)` +
-    `&order=created_at.desc&limit=${ELEVE_FETCH_LIMIT}`
-  );
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_notes_eleve`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: id }),
+  });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   const rows = await res.json();
+  // Réformat de la jointure pour rester compatible avec le caller existant
+  // (Eleves.jsx attend `r.evaluation = { id, titre, date }`).
   return rows.map(r => ({
-    ...r,
-    evaluation: r.evaluation
-      ? { id: r.evaluation.id, titre: r.evaluation.titre, date: r.evaluation.date_evaluation }
+    id: r.id,
+    score: r.score,
+    absent: r.absent,
+    commentaire: r.commentaire,
+    created_at: r.created_at,
+    evaluation: r.evaluation_id
+      ? { id: r.evaluation_id, titre: r.eval_titre, date: r.eval_date }
       : null,
   }));
 }
 
-/** Retards & absences d'un élève (lecture admin) */
+/** Retards & absences d'un élève (lecture admin) — phase RLS #2.C : passe par RPC. */
 export async function fetchRetardsAbsencesEleve(eleveId) {
   const id = safeEleveId(eleveId);
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/retards_absences?eleve_id=eq.${id}` +
-    `&select=id,type,date,commentaire&order=date.desc&limit=${ELEVE_FETCH_LIMIT}`
-  );
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_retards_absences_eleve`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: id }),
+  });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
 
-/** Appréciations d'un élève (lecture admin) */
+/** Appréciations d'un élève (lecture admin) — phase RLS #2.C : passe par RPC. */
 export async function fetchObservationsEleve(eleveId) {
   const id = safeEleveId(eleveId);
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${id}` +
-    `&select=id,type,contenu,created_at&order=created_at.desc&limit=${ELEVE_FETCH_LIMIT}`
-  );
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_observations_eleve`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: id }),
+  });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
 
 /** Réinitialiser la progression de TOUS les élèves pour un niveau donné.
  *  À appeler quand les questions QCM d'un niveau sont supprimées / remplacées,
- *  pour éviter que d'anciens records reussi=true ressurgissent. */
+ *  pour éviter que d'anciens records reussi=true ressurgissent.
+ *  Migré phase RLS #2.A vers `admin_reset_progression_niveau` (vérification
+ *  admin côté SQL — l'ancienne `reset_progression_niveau` était ouverte à anon). */
 export async function resetProgressionNiveau(niveauId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/reset_progression_niveau`, {
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_progression_niveau`, {
     method: 'POST',
-    body: JSON.stringify({ p_niveau_id: niveauId }),
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_niveau_id: niveauId }),
   });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Erreur ${res.status}`);
+  }
 }
 
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
@@ -480,27 +550,26 @@ export async function resetElevePassword(id, newPassword) {
   }
 }
 
-/** Supprimer un élève (messages + progression + profil) */
+/** Supprimer un élève (messages + photo + profil).
+ *  Le DELETE explicite sur `eleve_progression` a été retiré phase RLS #2.A :
+ *  la FK `eleve_progression.eleve_id → profils_eleves.id` a `ON DELETE CASCADE`,
+ *  donc Postgres nettoie automatiquement. (`eleve_progression` est désormais
+ *  fermé à anon — un DELETE explicite planterait.) */
 export async function deleteEleve(id) {
-  // 0. Purger les photos de profil via l'Edge Function (best-effort).
-  //    Si elle échoue (session expirée, réseau…), la suppression DB continue ;
-  //    les photos resteront alors dans le bucket jusqu'à nettoyage manuel.
+  // 0. Purger les photos via l'Edge Function (best-effort).
   await deleteElevePhoto(id).catch(() => {});
-  // 1. Supprimer les messages de l'élève
-  await authFetch(`${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${id}`, { method: 'DELETE' });
-  // 2. Supprimer la progression de l'élève
-  await authFetch(`${SUPABASE_URL}/rest/v1/eleve_progression?eleve_id=eq.${id}`, { method: 'DELETE' });
-  // 3. Supprimer le profil
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  // 1. Suppression atomique chat_messages + profils_eleves via RPC (phase 2.D.2).
+  //    La cascade FK purge eleve_progression, parent_eleves, eleve_sessions, etc.
+  await rpcAdminWrite('admin_delete_eleve_full',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression élève');
 }
 
-/** Modifier les infos d'un élève (nom, prénom, téléphone, email_contact, classe_id) */
+/** Modifier les infos d'un élève (nom, prénom, téléphone, email_contact, classe_id…) */
 export async function updateEleve(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_eleve',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification élève');
 }
 
 /** Modifier le niveau scolaire d'un élève (via fonction SECURITY DEFINER — contourne le RLS) */
@@ -512,7 +581,7 @@ export async function updateEleveNiveauScolaire(eleveId, niveauScolaireId) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
-// ─── THÉMATIQUES ─────────────────────────────────────────────────────────────
+// ─── THÉMATIQUES (lecture REST direct, écriture via RPCs phase RLS #2.B) ───
 
 export async function fetchThematiques(moduleId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`);
@@ -521,23 +590,21 @@ export async function fetchThematiques(moduleId) {
 }
 
 export async function createThematique(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_create_thematique',
+    { p_admin_id: requireAdminId(), p_data: data },
+    'Erreur création thématique');
 }
 
 export async function updateThematique(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_thematique',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification thématique');
 }
 
 export async function deleteThematique(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/thematiques?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_thematique',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression thématique');
 }
 
 export async function fetchNiveauxByThematique(thId) {
@@ -546,7 +613,7 @@ export async function fetchNiveauxByThematique(thId) {
   return res.json();
 }
 
-// ─── LEÇONS ──────────────────────────────────────────────────────────────────
+// ─── LEÇONS (lecture REST direct, écriture via RPCs phase RLS #2.B) ────────
 
 export async function fetchLecons(thId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons?thematique_id=eq.${thId}&order=ordre`);
@@ -555,23 +622,21 @@ export async function fetchLecons(thId) {
 }
 
 export async function createLecon(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_create_lecon',
+    { p_admin_id: requireAdminId(), p_data: data },
+    'Erreur création leçon');
 }
 
 export async function updateLecon(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_lecon',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification leçon');
 }
 
 export async function deleteLecon(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/lecons?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_lecon',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression leçon');
 }
 
 export async function fetchNiveauxByLecon(leconId) {
@@ -637,49 +702,49 @@ export async function deleteClasse(id) {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
-// ─── Enseignants ──────────────────────────────────────────────────────────────
+// ─── Enseignants — phase RLS #2.D.1 : tables `enseignants` + `enseignant_classes`
+//     verrouillées (USING(false)). Tous les CRUD passent par RPCs admin_*.
+
 export async function fetchEnseignants() {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants?order=nom.asc`);
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
-}
-export async function createEnseignant(data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  const rows = await res.json();
-  return rows[0];
-}
-export async function updateEnseignant(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-}
-export async function deleteEnseignant(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignants?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  return rpcAdminWrite('admin_fetch_enseignants',
+    { p_admin_id: requireAdminId() },
+    'Erreur chargement enseignants');
 }
 
-// ─── Enseignant ↔ Classes (jointure) ──────────────────────────────────────────
-export async function fetchEnseignantClasses(enseignantId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?enseignant_id=eq.${enseignantId}&select=classe_id`);
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  const rows = await res.json();
-  return rows.map(r => r.classe_id);
+export async function createEnseignant(data) {
+  // La RPC retourne juste l'UUID — on construit un objet compatible avec
+  // les anciens callers qui s'attendaient à recevoir la ligne complète.
+  const id = await rpcAdminWrite('admin_insert_enseignant',
+    { p_admin_id: requireAdminId(), p_data: data },
+    'Erreur création enseignant');
+  return { id, ...data };
 }
+
+export async function updateEnseignant(id, data) {
+  await rpcAdminWrite('admin_update_enseignant',
+    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    'Erreur modification enseignant');
+}
+
+export async function deleteEnseignant(id) {
+  await rpcAdminWrite('admin_delete_enseignant',
+    { p_admin_id: requireAdminId(), p_id: id },
+    'Erreur suppression enseignant');
+}
+
+export async function fetchEnseignantClasses(enseignantId) {
+  const data = await rpcAdminWrite('admin_fetch_enseignant_classes',
+    { p_admin_id: requireAdminId(), p_enseignant_id: enseignantId },
+    'Erreur chargement classes enseignant');
+  return Array.isArray(data) ? data : [];
+}
+
 export async function setEnseignantClasses(enseignantId, classeIds) {
-  // Supprime toutes les assignations existantes puis réinsère
-  const del = await authFetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?enseignant_id=eq.${enseignantId}`, { method: 'DELETE' });
-  if (!del.ok) throw new Error(`Erreur ${del.status}`);
-  if (classeIds.length === 0) return;
-  const rows = classeIds.map(cid => ({ enseignant_id: enseignantId, classe_id: cid }));
-  const ins = await authFetch(`${SUPABASE_URL}/rest/v1/enseignant_classes`, {
-    method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows),
-  });
-  if (!ins.ok) throw new Error(`Erreur ${ins.status}`);
+  // Une seule RPC transactionnelle — résout le bug d'incohérence DELETE+INSERT
+  // séquentiel signalé en phase 1 (enseignant sans classe pendant la fenêtre).
+  await rpcAdminWrite('admin_set_enseignant_classes',
+    { p_admin_id: requireAdminId(), p_enseignant_id: enseignantId, p_classe_ids: classeIds || [] },
+    'Erreur assignation classes enseignant');
 }
 
 /** Créer le compte auth d'un enseignant (identifiant + mot de passe bcrypt) */
@@ -700,31 +765,36 @@ export async function adminResetEnseignantPassword(id, newPassword) {
   if (!res.ok) throw new Error(`Erreur reset mot de passe enseignant ${res.status}`);
 }
 
-/** Récupérer l'ID d'un élève par son identifiant (fallback si createEleve ne retourne pas l'UUID) */
+/** Récupérer l'ID d'un élève par son identifiant (fallback si createEleve ne retourne pas l'UUID).
+ *  Phase RLS #2.D.2 : passe par RPC. */
 export async function fetchEleveIdParIdentifiant(identifiant) {
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/profils_eleves?identifiant=eq.${encodeURIComponent(identifiant)}&select=id`
-  );
-  if (!res.ok) return null;
-  const rows = await res.json();
-  return rows[0]?.id ?? null;
+  try {
+    return await rpcAdminWrite('admin_fetch_eleve_id_par_identifiant',
+      { p_admin_id: requireAdminId(), p_identifiant: identifiant },
+      'Erreur lookup identifiant') || null;
+  } catch {
+    return null;
+  }
 }
 
 /** Lier une inscription à un élève et passer le statut à 'converti' */
 export async function updateInscriptionEleveId(inscriptionId, eleveId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/inscriptions?id=eq.${inscriptionId}`, {
-    method: 'PATCH',
-    headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify({ eleve_id: eleveId, statut: 'converti' }),
-  });
-  return res.ok;
+  try {
+    await rpcAdminWrite('admin_update_inscription_eleve_id',
+      { p_admin_id: requireAdminId(), p_id: inscriptionId, p_eleve_id: eleveId },
+      'Erreur conversion inscription');
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-/** Récupérer un élève par son id */
+/** Récupérer un élève par son id — phase RLS #2.D.2 : passe par RPC. */
 export async function fetchEleveById(eleveId) {
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=id,created_at,nom,prenom,email,must_change_password,actif,telephone,email_contact,classe_id,identifiant,niveau_scolaire_id,date_naissance`
-  );
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleve_by_id`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: eleveId }),
+  });
   if (!res.ok) return null;
   const rows = await res.json();
   return rows[0] ?? null;
@@ -741,46 +811,59 @@ export async function updateEleveActif(id, actif) {
 // ─── EMAIL ───────────────────────────────────────────────────────────────────
 
 /** Envoie l'email de bienvenue via Supabase Edge Function (Resend) */
-/** Récupère les sessions de connexion d'un élève sur une période donnée */
+/** Récupère les sessions de connexion d'un élève sur une période donnée
+ *  (phase RLS #2.E : passe par RPC, eleve_sessions verrouillée). */
 export async function fetchEleveActivite(eleveId, from, to) {
-  const fromEnc = encodeURIComponent(from);
-  const toEnc   = encodeURIComponent(to);
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/eleve_sessions?eleve_id=eq.${eleveId}&started_at=gte.${fromEnc}&started_at=lte.${toEnc}&order=started_at.desc`
-  );
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  return rpcAdminWrite('admin_fetch_eleve_sessions',
+    { p_admin_id: requireAdminId(), p_eleve_id: eleveId, p_from: from, p_to: to },
+    'Erreur chargement activité');
 }
 
-// ─── SURVEILLANCE DISCUSSIONS ────────────────────────────────────────────────
+// ─── SURVEILLANCE DISCUSSIONS (phase RLS #2.E : RPCs) ───────────────────────
 
-/** Toutes les conversations (dédupliquées, triées par dernier message) */
+/** Toutes les conversations dédupliquées (déduplication faite côté SQL via DISTINCT ON). */
 export async function fetchAllConversations() {
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages` +
-    `?select=eleve_id,enseignant_id,contenu,created_at,sender_role,` +
-    `profils_eleves(id,nom,prenom,classe_id,photo_url,photo_scale,photo_pos_x,photo_pos_y),enseignants(id,nom,prenom)` +
-    `&order=created_at.desc`
-  );
-  if (!res.ok) return [];
-  const rows = await res.json();
-  const seen = new Set();
-  return rows.filter(r => {
-    const key = `${r.eleve_id}|${r.enseignant_id}`;
-    if (seen.has(key)) return false;
-    seen.add(key); return true;
-  });
+  try {
+    const rows = await rpcAdminWrite('admin_fetch_all_conversations',
+      { p_admin_id: requireAdminId() },
+      'Erreur chargement conversations');
+    // Reformat pour compat ascendante avec les composants existants
+    return (Array.isArray(rows) ? rows : []).map(r => ({
+      eleve_id: r.eleve_id,
+      enseignant_id: r.enseignant_id,
+      contenu: r.contenu,
+      created_at: r.created_at,
+      sender_role: r.sender_role,
+      profils_eleves: r.eleve_id ? {
+        id: r.eleve_id,
+        nom: r.eleve_nom,
+        prenom: r.eleve_prenom,
+        classe_id: r.eleve_classe_id,
+        photo_url: r.eleve_photo_url,
+        photo_scale: r.eleve_photo_scale,
+        photo_pos_x: r.eleve_photo_pos_x,
+        photo_pos_y: r.eleve_photo_pos_y,
+      } : null,
+      enseignants: r.enseignant_id ? {
+        id: r.enseignant_id,
+        nom: r.enseignant_nom,
+        prenom: r.enseignant_prenom,
+      } : null,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /** Tous les messages d'une conversation élève ↔ enseignant */
 export async function fetchConversationMessages(eleveId, enseignantId) {
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages` +
-    `?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}` +
-    `&order=created_at.asc`
-  );
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    return await rpcAdminWrite('admin_fetch_conversation_messages',
+      { p_admin_id: requireAdminId(), p_eleve_id: eleveId, p_enseignant_id: enseignantId },
+      'Erreur chargement messages') || [];
+  } catch {
+    return [];
+  }
 }
 
 /** POST authentifié vers la Edge function d'envoi mail. Ajoute le header

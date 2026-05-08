@@ -109,10 +109,13 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
 
   useEffect(() => {
     if (!editorRef.current) return;
-    const initial = value
+    // Sanitize systématique du contenu initial : si la DB a déjà été polluée
+    // (ou si un autre admin a injecté du HTML malveillant), on retire scripts,
+    // event handlers et iframes avant qu'ils n'atteignent le DOM contentEditable.
+    const raw = value
       ? (value.startsWith('<') ? value : `<p>${value.replace(/\n/g, '<br/>')}</p>`)
       : '<p><br/></p>';
-    editorRef.current.innerHTML = initial;
+    editorRef.current.innerHTML = DOMPurify.sanitize(raw);
   }, []); // init une seule fois
 
   // Mise à jour overlay si scroll / resize fenêtre
@@ -180,17 +183,38 @@ export default function RichTextEditor({ value, onChange, uploadFolder = 'conten
     notify();
   };
 
+  // Whitelist stricte des schémas autorisés pour <img src>.
+  // Bloque javascript:, data:, vbscript: et tout ce qui ne ressemble pas à du HTTP(S).
+  // Le second cas couvre les chemins relatifs internes au bucket Supabase.
+  const isSafeImageUrl = (s) => {
+    const t = (s || '').trim();
+    if (!t) return false;
+    return /^https?:\/\//i.test(t) || /^\/[^/]/.test(t);
+  };
+
   const insertImage = (url) => {
-    if (!url.trim() || !editorRef.current) return;
-    const imgTag = `<img src="${url}" alt="" />`;
+    if (!editorRef.current || !isSafeImageUrl(url)) return;
+    // Construction via DOM (et non concaténation de string) : impossible
+    // d'injecter des attributs ou guillemets parasites dans le tag.
+    const img = document.createElement('img');
+    img.src = url.trim();
+    img.alt = '';
+
     editorRef.current.focus();
     const sel = window.getSelection();
     if (savedRangeRef.current && editorRef.current.contains(savedRangeRef.current.startContainer)) {
       sel.removeAllRanges();
       sel.addRange(savedRangeRef.current);
-      document.execCommand('insertHTML', false, imgTag);
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(img);
+      // Replacer le curseur juste après l'image
+      range.setStartAfter(img);
+      range.setEndAfter(img);
+      sel.removeAllRanges();
+      sel.addRange(range);
     } else {
-      editorRef.current.innerHTML += imgTag;
+      editorRef.current.appendChild(img);
     }
     notify();
     setImgUrl('');

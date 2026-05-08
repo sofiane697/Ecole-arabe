@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 import {
   fetchModulesEleve, fetchNiveauxByThematiqueEleve,
   fetchThematiquesEleve, fetchAllThematiquesEleve, fetchEleveNiveauScolaireId, fetchContenusEleve, fetchQCMEleve,
-  fetchProgression, saveProgression, fetchLeconsEleve, fetchNiveauxByLeconEleve, fetchQCMExistenceForNiveaux,
+  fetchProgression, submitQCM, fetchLeconsEleve, fetchNiveauxByLeconEleve, fetchQCMExistenceForNiveaux,
   fetchAllNiveauxForModuleEleve, fetchNiveauxParThematiquePourProgression,
 } from './supabasePortail';
 import { coverImgStyle, isSafeCoverUrl } from '../shared/imageCrop';
@@ -551,25 +551,22 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
     // Vérification côté JS que toutes les questions ont une réponse sélectionnée
     const allAnswered = questions.every((_, qi) => (answers[qi] || []).length > 0);
     if (!allAnswered) return;                            // réponses manquantes
-    // ── Calcul du score ───────────────────────────────────────────────────────
-    const correct = questions.filter((q, i) => {
-      const choixCount = (q.choix || []).length;
-      const correctSet = (Array.isArray(q.reponse_correcte) ? q.reponse_correcte : (q.reponse_correcte != null ? [q.reponse_correcte] : []))
-        .filter(v => v >= 0 && v < choixCount); // ignore les indices hors limites (données corrompues)
-      const selected = answers[i] || [];
-      if (correctSet.length === 0 || selected.length === 0) return false;
-      return correctSet.length === selected.length && correctSet.every(v => selected.includes(v));
-    }).length;
-    const pct = Math.round((correct / questions.length) * 100);
-    const passed = pct >= (selNiveau.score_requis || 80);
-    // ── Sauvegarde ────────────────────────────────────────────────────────────
+    // ── Construction du payload {questionId: [indices]} pour la RPC ─────────
+    // Le score et le statut "réussi" sont calculés EXCLUSIVEMENT côté SQL —
+    // le client ne connaît pas les bonnes réponses ni le seuil de réussite.
+    const payload = {};
+    questions.forEach((q, i) => {
+      payload[String(q.id)] = answers[i] || [];
+    });
     setSubmitting(true);
     setSubmitError('');
-    setScore(pct);
     try {
-      await saveProgression(eleveId, selNiveau.id, pct, passed);
+      // `reussi` est dans le retour mais on ne l'utilise pas directement —
+      // on recharge la progression complète, isPassed() reflète l'état serveur.
+      const { score: serverScore } = await submitQCM(selNiveau.id, payload);
+      setScore(serverScore);
       setProgressionState(await fetchProgression(eleveId));
-      setShowResult(true); // affiché seulement si la sauvegarde réussit
+      setShowResult(true);
     } catch(e) {
       setSubmitError('Erreur de connexion. Ta progression n\'a pas été enregistrée. Réessaie dans quelques instants.');
     } finally {
@@ -682,7 +679,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
             <strong>{qcmPage + 1}</strong>
             <span style={{ color:'var(--p-fg-light)' }}> / {questions.length}</span>
           </div>
-          {(questions[qcmPage]?.reponse_correcte || []).length > 1 && (
+          {questions[qcmPage]?.multi_reponses && (
             <div style={{ fontSize:12, color:'var(--p-gold)', fontWeight:600, marginBottom:10, display:'flex', alignItems:'center', gap:5 }}>
               <span>☑</span> Plusieurs réponses correctes possibles
             </div>

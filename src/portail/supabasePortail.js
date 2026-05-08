@@ -9,68 +9,97 @@ const ANON_HEADERS = {
 };
 
 // ─── AUTH CUSTOM (sans Supabase Auth) ────────────────────────────────────────
+// Le serveur (login_eleve) renvoie un session_token opaque (32 bytes hex). On ne stocke
+// JAMAIS le password ni le hash côté client. Toutes les RPCs de données personnelles
+// résolvent ce token en eleve_id côté serveur via _resolve_eleve_session — un attaquant
+// qui falsifie le sessionStorage avec un token bidon verra ses requêtes rejetées.
 
-/** Connexion élève via fonction SQL */
-export async function loginEleve(identifiant, password) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_eleve`, {
+const SESSION_KEY = 'eleve_user';
+
+// Helper interne : extrait le session_token de la session locale.
+// Renvoie null si la session est absente ou corrompue.
+function getEleveSessionToken() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY))?.session_token || null; } catch { return null; }
+}
+
+// Wrapper RPC unifié (cohérence avec supabaseParent.js).
+// Utilisé par toutes les fonctions sécurisées par token.
+async function rpc(fn, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
     method: 'POST',
     headers: ANON_HEADERS,
-    body: JSON.stringify({ p_identifiant: identifiant, p_password: password }),
+    body: JSON.stringify(body || {}),
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error(data?.message || data?.hint || 'Identifiants incorrects');
+    throw new Error(data?.message || data?.hint || `Erreur ${res.status}`);
   }
-  // Stocker l'utilisateur en session
-  sessionStorage.setItem('eleve_user', JSON.stringify(data));
   return data;
 }
 
-export async function verifyEleveSession(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/rpc/verify_eleve_session`,
-    { method: 'POST', headers: ANON_HEADERS, body: JSON.stringify({ p_id: eleveId }) }
-  );
-  if (!res.ok) return false;
-  return await res.json();
+/** Connexion élève via fonction SQL — retourne désormais un session_token opaque */
+export async function loginEleve(identifiant, password) {
+  const data = await rpc('login_eleve', { p_identifiant: identifiant, p_password: password });
+  if (!data?.session_token) throw new Error('Identifiants incorrects');
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  return data;
 }
 
-/** Déconnexion élève */
-export function logoutEleve() {
-  sessionStorage.removeItem('eleve_user');
+/** Vérifie côté serveur que la session_token courante est valide et non expirée.
+ *  Ancienne version : `verify_eleve_session(p_id)` se contentait de vérifier l'existence
+ *  d'un élève actif → un attaquant pouvait passer n'importe quel UUID valide d'élève
+ *  pour falsifier le check. La nouvelle version résout le token en eleve_id côté serveur. */
+export async function verifyEleveSession(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return false;
+  try {
+    const resolvedId = await rpc('_resolve_eleve_session', { p_token: token });
+    return Boolean(resolvedId);
+  } catch { return false; }
+}
+
+/** Déconnexion élève : purge le sessionStorage local IMMÉDIATEMENT (synchrone)
+ *  puis révoque le token côté serveur en best-effort.
+ *  Le purge est en premier pour éviter qu'un caller qui n'await pas et navigue
+ *  vers /login ne voie une session encore valide. */
+export async function logoutEleve() {
+  const token = getEleveSessionToken();
+  sessionStorage.removeItem(SESSION_KEY);
+  if (token) {
+    try { await rpc('logout_eleve', { p_token: token }); } catch {} // best-effort
+  }
 }
 
 /** Récupérer les infos de l'élève connecté */
 export function getEleveUser() {
-  try { return JSON.parse(sessionStorage.getItem('eleve_user')); } catch { return null; }
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; }
 }
 
-/** Récupère les infos à jour de l'élève (photo_url, date_naissance, etc.) */
-export async function fetchEleveSelf(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=id,prenom,nom,photo_url,photo_path,photo_scale,photo_pos_x,photo_pos_y`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return null;
-  const rows = await res.json().catch(() => []);
-  return rows?.[0] || null;
+/** Récupère les infos à jour de l'élève (photo_url, niveau, classe, etc.) via RPC sécurisée.
+ *  Le paramètre `eleveId` est conservé pour compat ascendante mais ignoré : l'élève est
+ *  identifié par son session_token côté serveur. */
+export async function fetchEleveSelf(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return null;
+  try {
+    const rows = await rpc('fetch_eleve_self_secure', { p_token: token });
+    return Array.isArray(rows) ? rows[0] || null : rows || null;
+  } catch { return null; }
 }
 
-/** Changer le mot de passe (1ère connexion) */
-export async function changePassword(eleveId, oldPassword, newPassword) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/change_eleve_password`, {
-    method: 'POST',
-    headers: ANON_HEADERS,
-    body: JSON.stringify({ p_id: eleveId, p_old: oldPassword, p_new: newPassword }),
+/** Changer le mot de passe (1ère connexion) — version sécurisée par token */
+export async function changePassword(_eleveId, oldPassword, newPassword) {
+  const token = getEleveSessionToken();
+  if (!token) throw new Error('Session expirée');
+  const data = await rpc('change_eleve_password_secure', {
+    p_token: token, p_old: oldPassword, p_new: newPassword,
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error('Erreur changement mot de passe');
   if (data === false) throw new Error('Ancien mot de passe incorrect');
-  // Mettre à jour la session
+  // Mettre à jour la session locale (must_change_password = false)
   const user = getEleveUser();
   if (user) {
     user.must_change_password = false;
-    sessionStorage.setItem('eleve_user', JSON.stringify(user));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
   }
   return true;
 }
@@ -95,20 +124,35 @@ export async function fetchContenusEleve(niveauId) {
   return res.json();
 }
 
+/** QCM du niveau pour l'élève authentifié.
+ *  Anti-triche : la RPC ne renvoie JAMAIS `reponse_correcte`. À la place, un
+ *  booléen `multi_reponses` permet à l'UI de savoir si plusieurs réponses
+ *  sont attendues. Le score est calculé serveur-side dans `submitQCM`. */
 export async function fetchQCMEleve(niveauId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=eq.${niveauId}&order=ordre`, { headers: ANON_HEADERS });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  const token = getEleveSessionToken();
+  if (!token) throw new Error('Session expirée');
+  const data = await rpc('fetch_qcm_for_eleve_secure', {
+    p_token: token,
+    p_niveau_id: niveauId,
+  });
+  return Array.isArray(data) ? data : [];
 }
 
 /** Retourne un Set des niveau_ids qui ont au moins une question QCM — 1 seul appel batch */
 export async function fetchQCMExistenceForNiveaux(niveauIds) {
   if (!niveauIds.length) return new Set();
-  const ids = niveauIds.join(',');
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/qcm_questions?niveau_id=in.(${ids})&select=niveau_id`, { headers: ANON_HEADERS });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  const data = await res.json();
-  return new Set((data || []).map(q => q.niveau_id));
+  const token = getEleveSessionToken();
+  if (!token) return new Set();
+  try {
+    const data = await rpc('fetch_qcm_existence_for_eleve_secure', {
+      p_token: token,
+      p_niveau_ids: niveauIds,
+    });
+    // La RPC retourne SETOF BIGINT → tableau de nombres
+    return new Set(Array.isArray(data) ? data : []);
+  } catch {
+    return new Set();
+  }
 }
 
 /** Toutes les thématiques d'un module (sans filtre) — pour détecter si le module est structuré en thématiques */
@@ -129,16 +173,14 @@ export async function fetchThematiquesEleve(moduleId, niveauScolaireId) {
   );
 }
 
-/** Récupérer le niveau scolaire d'un élève depuis la DB (fallback si absent de la session) */
-export async function fetchEleveNiveauScolaireId(eleveId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_eleve_niveau_scolaire`, {
-    method: 'POST',
-    headers: ANON_HEADERS,
-    body: JSON.stringify({ p_id: eleveId }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data ?? null;
+/** Récupérer le niveau scolaire de l'élève connecté depuis la DB (fallback session locale) */
+export async function fetchEleveNiveauScolaireId(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return null;
+  try {
+    const data = await rpc('fetch_eleve_niveau_scolaire_secure', { p_token: token });
+    return data ?? null;
+  } catch { return null; }
 }
 
 export async function fetchNiveauxByThematiqueEleve(thId) {
@@ -187,103 +229,104 @@ export async function fetchNiveauxByLeconEleve(leconId) {
 }
 
 // ─── CHAT ────────────────────────────────────────────────────────────────────
+// Toutes les RPCs *_for_eleve_secure résolvent l'eleve_id depuis le session_token
+// côté serveur. Le helper _eleve_owns_chat_with(token, ens_id) vérifie en plus
+// que l'enseignant cible est bien rattaché à la classe de l'élève — un élève ne
+// peut donc pas envoyer de message à un prof qui ne lui enseigne pas.
 
-/** Récupère les enseignants de la classe de l'élève */
-export async function fetchEnseignantsDeLEleve(eleveId) {
-  const r1 = await fetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=classe_id`, { headers: ANON_HEADERS });
-  if (!r1.ok) throw new Error(`Erreur ${r1.status}`);
-  const [eleve] = await r1.json();
-  if (!eleve?.classe_id) return [];
-  const r2 = await fetch(`${SUPABASE_URL}/rest/v1/enseignant_classes?classe_id=eq.${eleve.classe_id}&select=enseignant_id`, { headers: ANON_HEADERS });
-  if (!r2.ok) throw new Error(`Erreur ${r2.status}`);
-  const rows = await r2.json();
-  if (!rows.length) return [];
-  const ids = rows.map(r => r.enseignant_id).join(',');
-  const r3 = await fetch(`${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids})&select=id,nom,prenom,statut_presence`, { headers: ANON_HEADERS });
-  if (!r3.ok) throw new Error(`Erreur ${r3.status}`);
-  return await r3.json();
+/** Récupère les enseignants de la classe de l'élève (avec leur statut de présence) */
+export async function fetchEnseignantsDeLEleve(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_enseignants_de_eleve_secure', { p_token: token });
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
 }
 
 /** Récupère tous les messages d'une conversation élève↔enseignant */
-export async function fetchChatMessages(eleveId, enseignantId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&broadcast_id=is.null&order=created_at.asc`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return await res.json();
+export async function fetchChatMessages(_eleveId, enseignantId) {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_chat_messages_for_eleve_secure', { p_token: token, p_enseignant_id: enseignantId });
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
 }
 
-/** Récupère toutes les annonces de classe (broadcasts) pour cet élève, tous enseignants confondus */
-export async function fetchBroadcastsEleve(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages` +
-    `?eleve_id=eq.${eleveId}` +
-    `&broadcast_id=not.is.null` +
-    `&select=id,contenu,created_at,lu,enseignant_id,broadcast_id,enseignants(id,nom,prenom)` +
-    `&order=created_at.desc`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return [];
-  return await res.json();
+/** Récupère toutes les annonces de classe (broadcasts) pour cet élève, tous enseignants confondus.
+ *  Conserve le shape historique : `enseignants: { id, nom, prenom }`. */
+export async function fetchBroadcastsEleve(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_broadcasts_eleve_secure', { p_token: token });
+    if (!Array.isArray(rows)) return [];
+    return rows.map(r => ({
+      id: r.id,
+      broadcast_id: r.broadcast_id,
+      contenu: r.contenu,
+      created_at: r.created_at,
+      lu: r.lu,
+      enseignant_id: r.enseignant_id,
+      enseignants: r.enseignant_id
+        ? { id: r.enseignant_id, nom: r.enseignant_nom, prenom: r.enseignant_prenom }
+        : null,
+    }));
+  } catch { return []; }
 }
 
 /** Marque toutes les annonces non lues comme lues pour cet élève */
-export async function markBroadcastsReadEleve(eleveId) {
-  await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&broadcast_id=not.is.null&lu=eq.false`,
-    { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
-  );
+export async function markBroadcastsReadEleve(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return;
+  try { await rpc('mark_broadcasts_read_eleve_secure', { p_token: token }); } catch {}
 }
 
 /** Compte les annonces non lues pour cet élève */
-export async function fetchUnreadBroadcastsCount(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&broadcast_id=not.is.null&lu=eq.false&select=id`,
-    { headers: { ...ANON_HEADERS, 'Prefer': 'count=exact' } }
-  );
-  if (!res.ok) return 0;
-  const data = await res.json();
-  return Array.isArray(data) ? data.length : 0;
+export async function fetchUnreadBroadcastsCount(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return 0;
+  try {
+    const n = await rpc('count_unread_broadcasts_eleve_secure', { p_token: token });
+    return typeof n === 'number' ? n : 0;
+  } catch { return 0; }
 }
 
-/** Envoie un message */
-export async function sendChatMessage(eleveId, enseignantId, contenu, senderRole) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/chat_messages`, {
-    method: 'POST',
-    headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ eleve_id: eleveId, enseignant_id: enseignantId, contenu, sender_role: senderRole }),
+/** Envoie un message — sender_role est imposé à 'eleve' côté serveur */
+export async function sendChatMessage(_eleveId, enseignantId, contenu, _senderRole) {
+  const token = getEleveSessionToken();
+  if (!token) throw new Error('Session expirée');
+  await rpc('send_chat_message_for_eleve_secure', {
+    p_token: token, p_enseignant_id: enseignantId, p_contenu: contenu,
   });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
 
-/** Marque comme lus les messages reçus par l'élève */
-export async function markMessagesReadEleve(eleveId, enseignantId) {
-  await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&broadcast_id=is.null&lu=eq.false`,
-    { method: 'PATCH', headers: { ...ANON_HEADERS, 'Prefer': 'return=minimal' }, body: JSON.stringify({ lu: true }) }
-  );
+/** Marque comme lus les messages reçus par l'élève (privés, hors broadcasts) */
+export async function markMessagesReadEleve(_eleveId, enseignantId) {
+  const token = getEleveSessionToken();
+  if (!token) return;
+  try { await rpc('mark_messages_read_for_eleve_secure', { p_token: token, p_enseignant_id: enseignantId }); } catch {}
 }
 
-/** Compte les messages non lus reçus par l'élève (tous enseignants) */
-export async function fetchUnreadCountEleve(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&sender_role=eq.enseignant&broadcast_id=is.null&lu=eq.false&select=id`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return 0;
-  const data = await res.json();
-  return Array.isArray(data) ? data.length : 0;
+/** Compte les messages non lus reçus par l'élève (tous enseignants, privés uniquement) */
+export async function fetchUnreadCountEleve(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return 0;
+  try {
+    const n = await rpc('count_unread_for_eleve_secure', { p_token: token });
+    return typeof n === 'number' ? n : 0;
+  } catch { return 0; }
 }
 
 /** Compte les messages non lus d'un enseignant précis pour l'élève */
-export async function fetchUnreadCountParEnseignant(eleveId, enseignantId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/chat_messages?eleve_id=eq.${eleveId}&enseignant_id=eq.${enseignantId}&sender_role=eq.enseignant&broadcast_id=is.null&lu=eq.false&select=id`,
-    { headers: ANON_HEADERS }
-  );
-  const data = await res.json();
-  return Array.isArray(data) ? data.length : 0;
+export async function fetchUnreadCountParEnseignant(_eleveId, enseignantId) {
+  const token = getEleveSessionToken();
+  if (!token) return 0;
+  try {
+    const n = await rpc('count_unread_par_enseignant_for_eleve_secure', { p_token: token, p_enseignant_id: enseignantId });
+    return typeof n === 'number' ? n : 0;
+  } catch { return 0; }
 }
 
 /** Traverse la vraie hiérarchie Module→Thématiques→(Leçons→)Niveaux.
@@ -311,132 +354,157 @@ export async function fetchAllNiveauxForModuleEleve(moduleId) {
 }
 
 // ─── PROGRESSION ──────────────────────────────────────────────────────────────
+// Les RPCs *_secure résolvent le session_token côté serveur — un élève ne peut
+// donc pas lire/modifier la progression d'un autre en falsifiant son eleveId.
 
-export async function fetchProgression(eleveId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_progression`, {
-    method: 'POST',
-    headers: ANON_HEADERS,
-    body: JSON.stringify({ p_eleve_id: eleveId }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+export async function fetchProgression(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) throw new Error('Session expirée');
+  return await rpc('get_progression_secure', { p_token: token });
 }
 
-export async function saveProgression(eleveId, niveauId, score, reussi) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_progression`, {
-    method: 'POST',
-    headers: ANON_HEADERS,
-    body: JSON.stringify({ p_eleve_id: eleveId, p_niveau_id: niveauId, p_score: score, p_reussi: reussi }),
+/** Soumet les réponses d'un QCM. Le score et le réussi/raté sont calculés
+ *  EXCLUSIVEMENT côté serveur — le client ne peut plus envoyer un score
+ *  arbitraire (cf. anti-triche RPC `submit_qcm_secure`).
+ *  @param niveauId  BIGINT id du niveau
+ *  @param answers   {[questionId: string]: number[]} indices choisis par question
+ *  @returns {{score: number, reussi: boolean}}
+ */
+export async function submitQCM(niveauId, answers) {
+  const token = getEleveSessionToken();
+  if (!token) throw new Error('Session expirée');
+  const data = await rpc('submit_qcm_secure', {
+    p_token: token,
+    p_niveau_id: niveauId,
+    p_answers: answers || {},
   });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  // RPC retourne RETURNS TABLE(score INT, reussi BOOL) → premier élément
+  const row = Array.isArray(data) && data.length > 0 ? data[0] : null;
+  if (!row) throw new Error('Réponse serveur invalide');
+  return { score: Number(row.score) || 0, reussi: Boolean(row.reussi) };
 }
 
 // ─── DEVOIRS ─────────────────────────────────────────────────────────────────
 
-/** Récupère classe_id de l'élève depuis la DB (quand absent de la session) */
-export async function fetchClasseIdEleve(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${eleveId}&select=classe_id`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  const rows = await res.json();
-  return rows[0]?.classe_id || null;
+/** Récupère le classe_id de l'élève connecté via la RPC sécurisée fetch_eleve_self_secure */
+export async function fetchClasseIdEleve(_eleveId) {
+  const self = await fetchEleveSelf();
+  return self?.classe_id || null;
 }
 
-/** Devoirs de la classe de l'élève à venir */
-export async function fetchDevoirsEleve(classeId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/devoirs?classe_id=eq.${classeId}&order=date_limite.asc`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+/** Devoirs de la classe de l'élève à venir.
+ *  La classe est résolue côté serveur depuis le token (paramètre classeId ignoré
+ *  pour compat ascendante — un attaquant ne peut plus passer un classeId arbitraire). */
+export async function fetchDevoirsEleve(_classeId) {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_devoirs_for_eleve', { p_token: token });
+    if (!Array.isArray(rows)) return [];
+    return rows.map(r => ({
+      id: r.id,
+      titre: r.titre,
+      description: r.description,
+      date_limite: r.date_limite,
+      created_at: r.created_at,
+      enseignant_id: r.enseignant_id,
+      enseignants: r.enseignant_id ? { nom: r.enseignant_nom, prenom: r.enseignant_prenom } : null,
+    }));
+  } catch { return []; }
 }
 
-/** Nombre de devoirs créés après seenAt (pour badge non-vus) */
-export async function fetchNewDevoirsCount(classeId, seenAt) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/devoirs?classe_id=eq.${classeId}&created_at=gt.${encodeURIComponent(seenAt)}&select=id`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return 0;
-  const data = await res.json();
-  return data.length;
+/** Retards et absences de l'élève connecté */
+export async function fetchAbsencesEleve() {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_absences_for_eleve', { p_token: token });
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
+
+/** Nombre de devoirs créés après seenAt (pour badge non-vus).
+ *  Sécurisée par session_token : la classe est résolue côté serveur. */
+export async function fetchNewDevoirsCount(_classeId, seenAt) {
+  const token = getEleveSessionToken();
+  if (!token) return 0;
+  try {
+    const n = await rpc('count_new_devoirs_for_eleve', { p_token: token, p_seen_at: seenAt });
+    return typeof n === 'number' ? n : 0;
+  } catch { return 0; }
 }
 
 /** Nombre de nouvelles notes ajoutées pour l'élève après seenAt */
-export async function fetchNewNotesCount(eleveId, seenAt) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&created_at=gt.${encodeURIComponent(seenAt)}&select=id`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return 0;
-  const data = await res.json();
-  return data.length;
+export async function fetchNewNotesCount(_eleveId, seenAt) {
+  const token = getEleveSessionToken();
+  if (!token) return 0;
+  try {
+    const n = await rpc('count_new_notes_for_eleve', { p_token: token, p_seen_at: seenAt });
+    return typeof n === 'number' ? n : 0;
+  } catch { return 0; }
 }
 
 /** Nombre de nouvelles observations ajoutées pour l'élève après seenAt */
-export async function fetchNewObsCount(eleveId, seenAt) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${eleveId}&created_at=gt.${encodeURIComponent(seenAt)}&select=id`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return 0;
-  const data = await res.json();
-  return data.length;
+export async function fetchNewObsCount(_eleveId, seenAt) {
+  const token = getEleveSessionToken();
+  if (!token) return 0;
+  try {
+    const n = await rpc('count_new_observations_for_eleve', { p_token: token, p_seen_at: seenAt });
+    return typeof n === 'number' ? n : 0;
+  } catch { return 0; }
 }
 
 // ─── NOTES ───────────────────────────────────────────────────────────────────
 
-/** Récupère les notes de l'élève avec les détails de chaque évaluation */
-export async function fetchMesNotes(eleveId) {
-  const r1 = await fetch(
-    `${SUPABASE_URL}/rest/v1/notes?eleve_id=eq.${eleveId}&select=score,absent,commentaire,evaluation_id`,
-    { headers: ANON_HEADERS }
-  );
-  if (!r1.ok) return [];
-  const notes = await r1.json();
-  if (!notes.length) return [];
-
-  const evalIds = [...new Set(notes.map(n => n.evaluation_id).filter(Boolean))];
-  if (!evalIds.length) return notes.map(n => ({ ...n, evaluation: null }));
-
-  const r2 = await fetch(
-    `${SUPABASE_URL}/rest/v1/evaluations?id=in.(${evalIds.join(',')})&select=id,titre,date_evaluation,score_max`,
-    { headers: ANON_HEADERS }
-  );
-  const evals = r2.ok ? await r2.json() : [];
-  const evalMap = Object.fromEntries(evals.map(e => [e.id, e]));
-  return notes.map(n => ({ ...n, evaluation: evalMap[n.evaluation_id] || null }));
+/** Récupère les notes de l'élève connecté avec les détails de chaque évaluation.
+ *  Une seule RPC sécurisée remplace les 2 fetchs PostgREST + jointure manuelle. */
+export async function fetchMesNotes(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_notes_for_eleve', { p_token: token });
+    if (!Array.isArray(rows)) return [];
+    return rows.map(r => ({
+      id: r.id,
+      evaluation_id: r.evaluation_id,
+      score: r.score,
+      absent: r.absent,
+      commentaire: r.commentaire,
+      evaluation: r.evaluation_id
+        ? { id: r.evaluation_id, titre: r.eval_titre, date_evaluation: r.eval_date, score_max: r.eval_score_max }
+        : null,
+    }));
+  } catch { return []; }
 }
 
 // ─── PRÉSENCE ENSEIGNANTS ────────────────────────────────────────────────────
 
-/** Récupère le statut de présence de plusieurs enseignants — retourne { [id]: statut } */
+/** Récupère le statut de présence de plusieurs enseignants — retourne { [id]: statut }.
+ *  Réutilise fetch_enseignants_de_eleve_secure (qui retourne tous les profs de la classe
+ *  avec leur statut). Le filtre par `ids` est appliqué côté client mais le serveur ne
+ *  retourne que les profs effectivement rattachés à la classe de l'élève — pas de fuite. */
 export async function fetchEnseignantsPresence(ids) {
-  if (!ids.length) return {};
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/enseignants?id=in.(${ids.join(',')})&select=id,statut_presence`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return {};
-  const data = await res.json();
-  return Object.fromEntries((data || []).map(e => [e.id, e.statut_presence]));
+  if (!ids?.length) return {};
+  const token = getEleveSessionToken();
+  if (!token) return {};
+  try {
+    const rows = await rpc('fetch_enseignants_de_eleve_secure', { p_token: token });
+    if (!Array.isArray(rows)) return {};
+    const idsSet = new Set(ids);
+    return Object.fromEntries(rows.filter(e => idsSet.has(e.id)).map(e => [e.id, e.statut_presence]));
+  } catch { return {}; }
 }
 
 // ─── TRACKING SESSIONS ───────────────────────────────────────────────────────
 
-/** Démarre une session de suivi (appelé à la connexion) — retourne l'UUID de session */
-export async function startSession(eleveId) {
+/** Démarre une session de suivi (appelé à la connexion) — retourne l'UUID de session.
+ *  La version sécurisée résout l'eleve_id depuis le session_token côté serveur :
+ *  un attaquant ne peut plus créer une session de tracking pour un autre élève. */
+export async function startSession(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return null;
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/start_eleve_session`, {
-      method: 'POST',
-      headers: ANON_HEADERS,
-      body: JSON.stringify({ p_eleve_id: eleveId }),
-    });
-    if (!res.ok) return null;
-    return await res.json(); // UUID string
+    return await rpc('start_eleve_session_secure', { p_token: token });
   } catch { return null; }
 }
 
@@ -487,12 +555,22 @@ export async function fetchAllBadgeCounts(eleveId, classeId, seenDates) {
 
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
 
-/** Récupère les observations de l'élève */
-export async function fetchMesObservations(eleveId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/observations?eleve_id=eq.${eleveId}&order=created_at.desc`,
-    { headers: ANON_HEADERS }
-  );
-  if (!res.ok) return [];
-  return res.json();
+/** Récupère les observations (appréciations) de l'élève connecté.
+ *  Format identique à l'API legacy : `enseignants: { nom, prenom }` est reconstitué
+ *  côté client à partir des colonnes plates de la RPC. */
+export async function fetchMesObservations(_eleveId) {
+  const token = getEleveSessionToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_observations_for_eleve', { p_token: token });
+    if (!Array.isArray(rows)) return [];
+    return rows.map(r => ({
+      id: r.id,
+      type: r.type,
+      contenu: r.contenu,
+      created_at: r.created_at,
+      enseignant_id: r.enseignant_id,
+      enseignants: r.enseignant_id ? { nom: r.enseignant_nom, prenom: r.enseignant_prenom } : null,
+    }));
+  } catch { return []; }
 }
