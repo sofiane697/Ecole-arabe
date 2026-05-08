@@ -21,39 +21,42 @@ async function authFetch(url, options = {}) {
 /** Récupérer toutes les inscriptions */
 export async function fetchInscriptions() {
   return rpcAdminWrite('admin_fetch_inscriptions',
-    { p_admin_id: requireAdminId() },
+    { p_admin_token: requireAdminToken() },
     'Erreur chargement inscriptions');
 }
 
 /** Récupérer tous les messages */
 export async function fetchMessages() {
   return rpcAdminWrite('admin_fetch_messages',
-    { p_admin_id: requireAdminId() },
+    { p_admin_token: requireAdminToken() },
     'Erreur chargement messages');
 }
 
 /** Mettre à jour le statut d'une inscription */
 export async function updateInscriptionStatut(id, statut) {
   await rpcAdminWrite('admin_update_inscription_statut',
-    { p_admin_id: requireAdminId(), p_id: id, p_statut: statut },
+    { p_admin_token: requireAdminToken(), p_id: id, p_statut: statut },
     'Erreur modification inscription');
 }
 
 /** Marquer un message comme lu / non lu */
 export async function updateMessageLu(id, lu) {
   await rpcAdminWrite('admin_update_message_lu',
-    { p_admin_id: requireAdminId(), p_id: id, p_lu: lu },
+    { p_admin_token: requireAdminToken(), p_id: id, p_lu: lu },
     'Erreur modification message');
 }
 
 /** Supprimer un message */
 export async function deleteMessage(id) {
   await rpcAdminWrite('admin_delete_message',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression message');
 }
 
-/** Connexion admin via identifiant + mot de passe (bcrypt, table profils_admins) */
+/** Connexion admin — phase 3 : login_admin_custom retourne désormais un token
+ *  opaque (32 bytes hex) en plus de l'admin_id. Le token est stocké en
+ *  sessionStorage et passé à toutes les RPCs admin_*. Le simple lookup d'UUID
+ *  ne suffit plus (faille fermée par migration `admin_sessions_phase3`). */
 export async function loginAdmin(identifiant, password) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_admin_custom`, {
     method: 'POST',
@@ -62,22 +65,42 @@ export async function loginAdmin(identifiant, password) {
   });
   if (!res.ok) throw new Error('Identifiant ou mot de passe incorrect');
   const admin = await res.json();
-  if (!admin || !admin.id) throw new Error('Identifiant ou mot de passe incorrect');
+  if (!admin || !admin.id || !admin.token) throw new Error('Identifiant ou mot de passe incorrect');
   sessionStorage.setItem('admin_session', JSON.stringify(admin));
   return admin;
 }
 
-export async function verifyAdminSession(adminId) {
-  const res = await authFetch(
-    `${SUPABASE_URL}/rest/v1/rpc/verify_admin_session`,
-    { method: 'POST', body: JSON.stringify({ p_id: adminId }) }
-  );
+/** Vérifie qu'une session admin est encore valide via son token.
+ *  Migration phase 3 : on utilise verify_admin_session_token(token) qui résout
+ *  côté SQL et n'expose plus l'UUID à un attaquant. L'argument `adminId` est
+ *  conservé pour compat ascendante avec les anciens callers (ignoré). */
+export async function verifyAdminSession(_adminId) {
+  const session = (() => {
+    try { return JSON.parse(sessionStorage.getItem('admin_session')); } catch { return null; }
+  })();
+  if (!session?.token) return false;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_admin_session_token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+    body: JSON.stringify({ p_admin_token: session.token }),
+  });
   if (!res.ok) return false;
-  return await res.json();
+  const data = await res.json();
+  return data && data.id ? true : false;
 }
 
-/** Déconnexion */
+/** Déconnexion — phase 3 : invalide le token côté serveur en plus de purger
+ *  sessionStorage. L'invalidation est best-effort (fire-and-forget) ; même si
+ *  la RPC échoue, le sessionStorage est purgé localement. */
 export function logoutAdmin() {
+  const token = getAdminToken();
+  if (token) {
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/logout_admin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      body: JSON.stringify({ p_admin_token: token }),
+    }).catch(() => {});
+  }
   sessionStorage.removeItem('admin_session');
   sessionStorage.removeItem('admin_auth');
 }
@@ -110,19 +133,19 @@ export async function fetchModules() {
 
 export async function createModule(data) {
   return rpcAdminWrite('admin_create_module',
-    { p_admin_id: requireAdminId(), p_data: data },
+    { p_admin_token: requireAdminToken(), p_data: data },
     'Erreur création module');
 }
 
 export async function updateModule(id, data) {
   await rpcAdminWrite('admin_update_module',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification module');
 }
 
 export async function deleteModule(id) {
   await rpcAdminWrite('admin_delete_module',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression module');
 }
 
@@ -134,19 +157,19 @@ export async function fetchNiveaux(moduleId) {
 
 export async function createNiveau(data) {
   return rpcAdminWrite('admin_create_niveau',
-    { p_admin_id: requireAdminId(), p_data: data },
+    { p_admin_token: requireAdminToken(), p_data: data },
     'Erreur création niveau');
 }
 
 export async function updateNiveau(id, data) {
   await rpcAdminWrite('admin_update_niveau',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification niveau');
 }
 
 export async function deleteNiveau(id) {
   await rpcAdminWrite('admin_delete_niveau',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression niveau');
 }
 
@@ -158,19 +181,19 @@ export async function fetchContenus(niveauId) {
 
 export async function createContenu(data) {
   return rpcAdminWrite('admin_create_contenu',
-    { p_admin_id: requireAdminId(), p_data: data },
+    { p_admin_token: requireAdminToken(), p_data: data },
     'Erreur création contenu');
 }
 
 export async function updateContenu(id, data) {
   await rpcAdminWrite('admin_update_contenu',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification contenu');
 }
 
 export async function deleteContenu(id) {
   await rpcAdminWrite('admin_delete_contenu',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression contenu');
 }
 
@@ -205,7 +228,7 @@ export async function fetchQCMNiveauxIds(niveauIds) {
   if (!niveauIds.length) return new Set();
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_qcm_existence`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_niveau_ids: niveauIds }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_niveau_ids: niveauIds }),
   });
   if (!res.ok) return new Set();
   const data = await res.json();
@@ -216,7 +239,7 @@ export async function fetchQCMNiveauxIds(niveauIds) {
 export async function fetchQCM(niveauId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_qcm_questions`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_niveau_id: niveauId }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_niveau_id: niveauId }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -229,7 +252,7 @@ export async function createQuestion(data) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_question`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:        requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_niveau_id:       data.niveau_id,
       p_question:        data.question,
       p_choix:           data.choix,
@@ -249,7 +272,7 @@ export async function updateQuestion(id, data) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_question`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:        requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_id:              id,
       p_question:        data.question        ?? null,
       p_choix:           data.choix           ?? null,
@@ -266,7 +289,7 @@ export async function updateQuestion(id, data) {
 export async function deleteQuestion(id) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_delete_question`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_id: id }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_id: id }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -294,7 +317,7 @@ export async function createEleve(nom, prenom, identifiant, password) {
  *  La table `profils_eleves` est fermée à anon (hashes bcrypt + PII mineurs). */
 export async function fetchEleves() {
   return rpcAdminWrite('admin_fetch_eleves',
-    { p_admin_id: requireAdminId() },
+    { p_admin_token: requireAdminToken() },
     'Erreur chargement élèves');
 }
 
@@ -304,7 +327,7 @@ export async function fetchEleveProgression(eleveId) {
   if (!safeEleveId(eleveId)) return [];
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleve_progression`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: eleveId }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_eleve_id: eleveId }),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
@@ -332,7 +355,7 @@ export async function fetchNotesEleve(eleveId) {
   const id = safeEleveId(eleveId);
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_notes_eleve`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: id }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_eleve_id: id }),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   const rows = await res.json();
@@ -355,7 +378,7 @@ export async function fetchRetardsAbsencesEleve(eleveId) {
   const id = safeEleveId(eleveId);
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_retards_absences_eleve`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: id }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_eleve_id: id }),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
@@ -366,7 +389,7 @@ export async function fetchObservationsEleve(eleveId) {
   const id = safeEleveId(eleveId);
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_observations_eleve`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: id }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_eleve_id: id }),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
@@ -380,7 +403,7 @@ export async function fetchObservationsEleve(eleveId) {
 export async function resetProgressionNiveau(niveauId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_progression_niveau`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_niveau_id: niveauId }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_niveau_id: niveauId }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -479,6 +502,15 @@ function getAdminId() {
   } catch { return null; }
 }
 
+/** Récupère le token de session admin (phase 3). NULL si pas connecté ou
+ *  ancienne session sans token (admin doit alors se reloguer). */
+function getAdminToken() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('admin_session'));
+    return s?.token || null;
+  } catch { return null; }
+}
+
 /** Upload une photo de profil élève via l'Edge Function.
  *  Retourne { photo_url, photo_path } — la DB est déjà mise à jour par la fonction. */
 export async function uploadElevePhoto(eleveId, file) {
@@ -561,14 +593,14 @@ export async function deleteEleve(id) {
   // 1. Suppression atomique chat_messages + profils_eleves via RPC (phase 2.D.2).
   //    La cascade FK purge eleve_progression, parent_eleves, eleve_sessions, etc.
   await rpcAdminWrite('admin_delete_eleve_full',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression élève');
 }
 
 /** Modifier les infos d'un élève (nom, prénom, téléphone, email_contact, classe_id…) */
 export async function updateEleve(id, data) {
   await rpcAdminWrite('admin_update_eleve',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification élève');
 }
 
@@ -591,19 +623,19 @@ export async function fetchThematiques(moduleId) {
 
 export async function createThematique(data) {
   return rpcAdminWrite('admin_create_thematique',
-    { p_admin_id: requireAdminId(), p_data: data },
+    { p_admin_token: requireAdminToken(), p_data: data },
     'Erreur création thématique');
 }
 
 export async function updateThematique(id, data) {
   await rpcAdminWrite('admin_update_thematique',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification thématique');
 }
 
 export async function deleteThematique(id) {
   await rpcAdminWrite('admin_delete_thematique',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression thématique');
 }
 
@@ -623,19 +655,19 @@ export async function fetchLecons(thId) {
 
 export async function createLecon(data) {
   return rpcAdminWrite('admin_create_lecon',
-    { p_admin_id: requireAdminId(), p_data: data },
+    { p_admin_token: requireAdminToken(), p_data: data },
     'Erreur création leçon');
 }
 
 export async function updateLecon(id, data) {
   await rpcAdminWrite('admin_update_lecon',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification leçon');
 }
 
 export async function deleteLecon(id) {
   await rpcAdminWrite('admin_delete_lecon',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression leçon');
 }
 
@@ -707,7 +739,7 @@ export async function deleteClasse(id) {
 
 export async function fetchEnseignants() {
   return rpcAdminWrite('admin_fetch_enseignants',
-    { p_admin_id: requireAdminId() },
+    { p_admin_token: requireAdminToken() },
     'Erreur chargement enseignants');
 }
 
@@ -715,26 +747,26 @@ export async function createEnseignant(data) {
   // La RPC retourne juste l'UUID — on construit un objet compatible avec
   // les anciens callers qui s'attendaient à recevoir la ligne complète.
   const id = await rpcAdminWrite('admin_insert_enseignant',
-    { p_admin_id: requireAdminId(), p_data: data },
+    { p_admin_token: requireAdminToken(), p_data: data },
     'Erreur création enseignant');
   return { id, ...data };
 }
 
 export async function updateEnseignant(id, data) {
   await rpcAdminWrite('admin_update_enseignant',
-    { p_admin_id: requireAdminId(), p_id: id, p_data: data },
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
     'Erreur modification enseignant');
 }
 
 export async function deleteEnseignant(id) {
   await rpcAdminWrite('admin_delete_enseignant',
-    { p_admin_id: requireAdminId(), p_id: id },
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur suppression enseignant');
 }
 
 export async function fetchEnseignantClasses(enseignantId) {
   const data = await rpcAdminWrite('admin_fetch_enseignant_classes',
-    { p_admin_id: requireAdminId(), p_enseignant_id: enseignantId },
+    { p_admin_token: requireAdminToken(), p_enseignant_id: enseignantId },
     'Erreur chargement classes enseignant');
   return Array.isArray(data) ? data : [];
 }
@@ -743,7 +775,7 @@ export async function setEnseignantClasses(enseignantId, classeIds) {
   // Une seule RPC transactionnelle — résout le bug d'incohérence DELETE+INSERT
   // séquentiel signalé en phase 1 (enseignant sans classe pendant la fenêtre).
   await rpcAdminWrite('admin_set_enseignant_classes',
-    { p_admin_id: requireAdminId(), p_enseignant_id: enseignantId, p_classe_ids: classeIds || [] },
+    { p_admin_token: requireAdminToken(), p_enseignant_id: enseignantId, p_classe_ids: classeIds || [] },
     'Erreur assignation classes enseignant');
 }
 
@@ -770,7 +802,7 @@ export async function adminResetEnseignantPassword(id, newPassword) {
 export async function fetchEleveIdParIdentifiant(identifiant) {
   try {
     return await rpcAdminWrite('admin_fetch_eleve_id_par_identifiant',
-      { p_admin_id: requireAdminId(), p_identifiant: identifiant },
+      { p_admin_token: requireAdminToken(), p_identifiant: identifiant },
       'Erreur lookup identifiant') || null;
   } catch {
     return null;
@@ -781,7 +813,7 @@ export async function fetchEleveIdParIdentifiant(identifiant) {
 export async function updateInscriptionEleveId(inscriptionId, eleveId) {
   try {
     await rpcAdminWrite('admin_update_inscription_eleve_id',
-      { p_admin_id: requireAdminId(), p_id: inscriptionId, p_eleve_id: eleveId },
+      { p_admin_token: requireAdminToken(), p_id: inscriptionId, p_eleve_id: eleveId },
       'Erreur conversion inscription');
     return true;
   } catch {
@@ -793,7 +825,7 @@ export async function updateInscriptionEleveId(inscriptionId, eleveId) {
 export async function fetchEleveById(eleveId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleve_by_id`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_eleve_id: eleveId }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_eleve_id: eleveId }),
   });
   if (!res.ok) return null;
   const rows = await res.json();
@@ -815,7 +847,7 @@ export async function updateEleveActif(id, actif) {
  *  (phase RLS #2.E : passe par RPC, eleve_sessions verrouillée). */
 export async function fetchEleveActivite(eleveId, from, to) {
   return rpcAdminWrite('admin_fetch_eleve_sessions',
-    { p_admin_id: requireAdminId(), p_eleve_id: eleveId, p_from: from, p_to: to },
+    { p_admin_token: requireAdminToken(), p_eleve_id: eleveId, p_from: from, p_to: to },
     'Erreur chargement activité');
 }
 
@@ -825,7 +857,7 @@ export async function fetchEleveActivite(eleveId, from, to) {
 export async function fetchAllConversations() {
   try {
     const rows = await rpcAdminWrite('admin_fetch_all_conversations',
-      { p_admin_id: requireAdminId() },
+      { p_admin_token: requireAdminToken() },
       'Erreur chargement conversations');
     // Reformat pour compat ascendante avec les composants existants
     return (Array.isArray(rows) ? rows : []).map(r => ({
@@ -859,7 +891,7 @@ export async function fetchAllConversations() {
 export async function fetchConversationMessages(eleveId, enseignantId) {
   try {
     return await rpcAdminWrite('admin_fetch_conversation_messages',
-      { p_admin_id: requireAdminId(), p_eleve_id: eleveId, p_enseignant_id: enseignantId },
+      { p_admin_token: requireAdminToken(), p_eleve_id: eleveId, p_enseignant_id: enseignantId },
       'Erreur chargement messages') || [];
   } catch {
     return [];
@@ -916,6 +948,15 @@ function requireAdminId() {
   return id;
 }
 
+/** Phase 3 : retourne le token admin. Toutes les RPCs admin_* l'attendent
+ *  comme p_admin_token. Si l'admin est connecté avec une ancienne session
+ *  (sans token), on jette une erreur explicite pour forcer le re-login. */
+function requireAdminToken() {
+  const token = getAdminToken();
+  if (!token) throw new Error('Session admin invalide. Reconnecte-toi.');
+  return token;
+}
+
 /** Créer un compte parent + lier à l'élève en une transaction (fonction SQL). */
 export async function adminCreateParent({
   identifiant, password,
@@ -926,7 +967,7 @@ export async function adminCreateParent({
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_parent`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:    requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_identifiant: identifiant,
       p_password:    password,
       p_pere_nom:    pere_nom,
@@ -952,7 +993,7 @@ export async function adminFindParentByContact(email, telephone) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_find_parent_by_contact`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id: requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_email:    email || null,
       p_tel:      telephone || null,
     }),
@@ -966,7 +1007,7 @@ export async function adminLinkParentEleve(parentId, eleveId, lien = 'parents') 
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_link_parent_eleve`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:  requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_parent_id: parentId,
       p_eleve_id:  eleveId,
       p_lien:      lien,
@@ -983,7 +1024,7 @@ export async function adminResetParentPassword(parentId, newPassword) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_parent_password`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:     requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_id:           parentId,
       p_new_password: newPassword,
     }),
@@ -1001,7 +1042,7 @@ export async function adminCreateParentStandalone({
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_parent_standalone`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:   requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_identifiant: identifiant,
       p_password:    password,
       p_pere_nom:    pere_nom,
@@ -1025,7 +1066,7 @@ export async function adminFetchParentsPaginated({ search = '', limit = 25, offs
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_parents_paginated`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id: requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_search:   search || null,
       p_limit:    limit,
       p_offset:   offset,
@@ -1040,7 +1081,7 @@ export async function adminFetchParentsOfEleve(eleveId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_parents_of_eleve`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id: requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_eleve_id: eleveId,
     }),
   });
@@ -1056,7 +1097,7 @@ export async function adminFetchElevesOfParent(parentId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleves_of_parent`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:  requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_parent_id: parentId,
     }),
   });
@@ -1072,7 +1113,7 @@ export async function adminUpdateParent(parentId, patch = {}) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_parent`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:    requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_id:          parentId,
       p_pere_nom:    patch.pere_nom    ?? null,
       p_pere_prenom: patch.pere_prenom ?? null,
@@ -1093,7 +1134,7 @@ export async function adminUpdateParent(parentId, patch = {}) {
 export async function adminDeleteParent(parentId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_delete_parent`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_id: parentId }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_id: parentId }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -1106,7 +1147,7 @@ export async function adminUnlinkParentEleve(parentId, eleveId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_unlink_parent_eleve`, {
     method: 'POST',
     body: JSON.stringify({
-      p_admin_id:  requireAdminId(),
+      p_admin_token: requireAdminToken(),
       p_parent_id: parentId,
       p_eleve_id:  eleveId,
     }),
@@ -1123,7 +1164,7 @@ export async function adminUnlinkParentEleve(parentId, eleveId) {
 export async function adminFetchDeclarations({ limit = 25, offset = 0 } = {}) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_declarations`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId(), p_limit: limit, p_offset: offset }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_limit: limit, p_offset: offset }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -1136,7 +1177,7 @@ export async function adminFetchDeclarations({ limit = 25, offset = 0 } = {}) {
 export async function adminCountNouvellesDeclarations() {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_count_nouvelles_declarations`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId() }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken() }),
   });
   if (!res.ok) return 0;
   const n = await res.json();
@@ -1147,7 +1188,7 @@ export async function adminCountNouvellesDeclarations() {
 export async function adminMarkDeclarationsVues() {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_mark_declarations_vues`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_id: requireAdminId() }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken() }),
   });
   await res.text().catch(() => {});
 }

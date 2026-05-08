@@ -2,6 +2,8 @@ import { fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve } fr
 
 const ELEVE_ID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 const ADMIN_ID = '11111111-2222-3333-4444-555555555555';
+// Phase 3 : les RPCs admin_* prennent un token, pas un UUID.
+const ADMIN_TOKEN = 'test-admin-token-' + 'f'.repeat(48);
 
 function mockFetchOnce({ ok = true, status = 200, body = [] } = {}) {
   global.fetch = jest.fn(() =>
@@ -16,7 +18,7 @@ function mockFetchOnce({ ok = true, status = 200, body = [] } = {}) {
 beforeEach(() => {
   // requireAdminId() lit sessionStorage.admin_session — Jest+jsdom fournit déjà
   // un sessionStorage fonctionnel, on y pose juste une session admin de test.
-  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID }));
+  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, token: ADMIN_TOKEN }));
 });
 
 afterEach(() => {
@@ -36,7 +38,7 @@ describe('fetchNotesEleve', () => {
     expect(url).toContain('/rest/v1/rpc/admin_fetch_notes_eleve');
     expect(opts.method).toBe('POST');
     const body = JSON.parse(opts.body);
-    expect(body.p_admin_id).toBe(ADMIN_ID);
+    expect(body.p_admin_token).toBe(ADMIN_TOKEN);
     expect(body.p_eleve_id).toBe(ELEVE_ID);
   });
 
@@ -118,7 +120,7 @@ describe('fetchRetardsAbsencesEleve', () => {
     expect(url).toContain('/rest/v1/rpc/admin_fetch_retards_absences_eleve');
     expect(opts.method).toBe('POST');
     const body = JSON.parse(opts.body);
-    expect(body.p_admin_id).toBe(ADMIN_ID);
+    expect(body.p_admin_token).toBe(ADMIN_TOKEN);
     expect(body.p_eleve_id).toBe(ELEVE_ID);
   });
 
@@ -151,7 +153,7 @@ describe('fetchObservationsEleve', () => {
     expect(url).toContain('/rest/v1/rpc/admin_fetch_observations_eleve');
     expect(opts.method).toBe('POST');
     const body = JSON.parse(opts.body);
-    expect(body.p_admin_id).toBe(ADMIN_ID);
+    expect(body.p_admin_token).toBe(ADMIN_TOKEN);
     expect(body.p_eleve_id).toBe(ELEVE_ID);
   });
 

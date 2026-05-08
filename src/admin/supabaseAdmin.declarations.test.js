@@ -1,6 +1,8 @@
 import { adminFetchDeclarations, adminCountNouvellesDeclarations, adminMarkDeclarationsVues } from './supabaseAdmin';
 
 const ADMIN_ID = '99999999-8888-7777-6666-555555555555';
+// Phase 3 : les RPCs admin_* prennent un token, pas un UUID.
+const ADMIN_TOKEN = 'test-admin-token-' + 'a'.repeat(48);
 
 function mockRpc({ ok = true, status = 200, body = {} } = {}) {
   const calls = [];
@@ -16,7 +18,7 @@ function mockRpc({ ok = true, status = 200, body = {} } = {}) {
 }
 
 beforeEach(() => {
-  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, identifiant: 'admin' }));
+  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, identifiant: 'admin', token: ADMIN_TOKEN }));
 });
 
 afterEach(() => {
@@ -32,7 +34,7 @@ describe('adminFetchDeclarations', () => {
     await adminFetchDeclarations();
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toMatch(/\/rpc\/admin_fetch_declarations$/);
-    expect(calls[0].body.p_admin_id).toBe(ADMIN_ID);
+    expect(calls[0].body.p_admin_token).toBe(ADMIN_TOKEN);
     expect(calls[0].body.p_limit).toBe(25);
     expect(calls[0].body.p_offset).toBe(0);
   });
@@ -72,7 +74,7 @@ describe('adminCountNouvellesDeclarations', () => {
     const calls = mockRpc({ body: 3 });
     await adminCountNouvellesDeclarations();
     expect(calls[0].url).toMatch(/\/rpc\/admin_count_nouvelles_declarations$/);
-    expect(calls[0].body.p_admin_id).toBe(ADMIN_ID);
+    expect(calls[0].body.p_admin_token).toBe(ADMIN_TOKEN);
   });
 
   test('retourne le nombre de déclarations non vues', async () => {
@@ -107,7 +109,7 @@ describe('adminMarkDeclarationsVues', () => {
     await adminMarkDeclarationsVues();
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toMatch(/\/rpc\/admin_mark_declarations_vues$/);
-    expect(calls[0].body.p_admin_id).toBe(ADMIN_ID);
+    expect(calls[0].body.p_admin_token).toBe(ADMIN_TOKEN);
   });
 
   test('ne throw pas si la RPC répond en erreur (fire-and-forget)', async () => {
