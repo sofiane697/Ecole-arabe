@@ -107,6 +107,7 @@ export default function EnseignantObservations() {
   const [formType,     setFormType]     = useState('general');
   const [saving,       setSaving]       = useState(false);
   const [actionError,  setActionError]  = useState('');
+  const [confirmDel,   setConfirmDel]   = useState(null); // observation à supprimer
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
@@ -161,7 +162,11 @@ export default function EnseignantObservations() {
     try {
       await deleteObservation(obsId, user.id);
       setObservations(prev => prev.filter(o => o.id !== obsId));
-    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression.'); }
+      setConfirmDel(null);
+    } catch(e) {
+      setActionError(e.message || 'Erreur lors de la suppression.');
+      setConfirmDel(null);
+    }
   };
 
   const eleveObs  = selEleve ? observations.filter(o => o.eleve_id === selEleve.id) : [];
@@ -273,7 +278,7 @@ export default function EnseignantObservations() {
                     return (
                       <div key={obs.id} style={S.histItem}>
                         {isOwn && (
-                          <button style={S.delBtn} title="Supprimer" onClick={() => handleDelete(obs.id)}>
+                          <button style={S.delBtn} title="Supprimer" onClick={() => setConfirmDel(obs)}>
                             <IconTrash />
                           </button>
                         )}
@@ -301,6 +306,51 @@ export default function EnseignantObservations() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Confirmation suppression observation ── */}
+      {confirmDel && (
+        <div
+          style={{
+            position:'fixed', inset:0, zIndex:50,
+            background:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}
+          onClick={() => setConfirmDel(null)}
+        >
+          <div
+            style={{
+              background:'var(--a-bg-card)', borderRadius:14, border:'1px solid var(--a-border)',
+              padding:24, maxWidth:380, width:'90%',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ textAlign:'center', marginBottom:16 }}>
+              <div style={{ fontSize:40, marginBottom:8 }}>🗑️</div>
+              <div style={{ fontFamily:'var(--a-font-display)', fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:8 }}>
+                Supprimer cette observation ?
+              </div>
+              <p style={{ fontSize:13, color:'var(--a-fg-mid)', lineHeight:1.5 }}>
+                {typeInfo(confirmDel.type).icon} {typeInfo(confirmDel.type).label} — {formatDate(confirmDel.created_at)}<br/>
+                Cette action est définitive.
+              </p>
+            </div>
+            <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
+              <button
+                style={{ padding:'8px 18px', borderRadius:20, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', cursor:'pointer', fontSize:13 }}
+                onClick={() => setConfirmDel(null)}
+              >
+                Annuler
+              </button>
+              <button
+                style={{ padding:'8px 20px', borderRadius:20, border:'none', background:'var(--a-red, #ff453a)', color:'#fff', fontWeight:700, cursor:'pointer', fontSize:13 }}
+                onClick={() => handleDelete(confirmDel.id)}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

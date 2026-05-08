@@ -175,7 +175,7 @@ export default function EnseignantDevoirs() {
       if (modal.mode === 'create') {
         await createDevoir({ enseignant_id: user.id, classe_id: fClasse, titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate });
       } else {
-        await updateDevoir(modal.devoir.id, { titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate, classe_id: fClasse }, user.id);
+        await updateDevoir(modal.devoir.id, { titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate }, user.id);
       }
       await load();
       setModal(null);
@@ -318,7 +318,7 @@ export default function EnseignantDevoirs() {
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
               <div style={C.field}>
                 <label style={C.label}>Classe *</label>
-                <select style={C.input} value={fClasse} onChange={e => setFClasse(e.target.value)}>
+                <select style={{ ...C.input, opacity: modal.mode === 'edit' ? 0.6 : 1, cursor: modal.mode === 'edit' ? 'not-allowed' : 'auto' }} value={fClasse} onChange={e => setFClasse(e.target.value)} disabled={modal.mode === 'edit'} title={modal.mode === 'edit' ? "La classe d'un devoir existant ne peut pas être modifiée. Pour déplacer un devoir, supprimez-le et recréez-le dans la nouvelle classe." : undefined}>
                   <option value="">— Choisir —</option>
                   {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
                 </select>

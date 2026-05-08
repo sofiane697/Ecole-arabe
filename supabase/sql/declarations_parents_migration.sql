@@ -60,16 +60,17 @@ CREATE POLICY "declarations_parents_no_anon"
 -- ─── 2. _parent_owns_eleve ───────────────────────────────────────────────────
 -- Helper déjà existant dans parents_migration.sql, inclus ici pour s'assurer
 -- qu'il est disponible même si la migration est exécutée seule.
+-- Corps strictement identique à parents_migration.sql pour que l'ordre d'exécution
+-- des deux migrations n'ait aucune incidence sur le comportement.
 CREATE OR REPLACE FUNCTION public._parent_owns_eleve(p_token TEXT, p_eleve_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_parent_id UUID;
+  v_parent_id UUID := public._resolve_parent_session(p_token);
 BEGIN
-  v_parent_id := public._resolve_parent_session(p_token);
-  IF v_parent_id IS NULL THEN RETURN false; END IF;
+  IF v_parent_id IS NULL OR p_eleve_id IS NULL THEN RETURN FALSE; END IF;
   RETURN EXISTS (
     SELECT 1 FROM public.parent_eleves
     WHERE parent_id = v_parent_id AND eleve_id = p_eleve_id

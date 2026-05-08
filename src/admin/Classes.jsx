@@ -446,14 +446,30 @@ function ClasseModal({ data, niveauNom, onSave, onClose, loading }) {
 
 // ─── Modal Confirmation ───────────────────────────────────────────────────────
 function ConfirmModal({ message, onConfirm, onClose }) {
+  const [submitting, setSubmitting] = useState(false);
+  const handleConfirm = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onConfirm();
+      onClose();
+    } catch (e) {
+      // Erreur déjà notifiée par le caller (alert/toast). On garde la modale
+      // ouverte pour que l'utilisateur puisse annuler explicitement ou retenter.
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
-    <div className={S.overlay} onClick={onClose}>
+    <div className={S.overlay} onClick={submitting ? undefined : onClose}>
       <div className={S.modal} style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
         <div className="text-lg font-bold text-a-fg mb-3">⚠️ Confirmation</div>
         <p className="text-sm text-a-fg-mid mb-6 leading-loose">{message}</p>
         <div className="flex gap-2.5 justify-end">
-          <button className={S.btnCancel} onClick={onClose}>Annuler</button>
-          <button className={S.btnDanger} onClick={() => { onConfirm(); onClose(); }}>Supprimer</button>
+          <button className={S.btnCancel} onClick={onClose} disabled={submitting}>Annuler</button>
+          <button className={S.btnDanger} onClick={handleConfirm} disabled={submitting}>
+            {submitting ? 'Suppression…' : 'Supprimer'}
+          </button>
         </div>
       </div>
     </div>

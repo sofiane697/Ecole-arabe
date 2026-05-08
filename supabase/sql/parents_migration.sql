@@ -28,7 +28,11 @@ BEGIN
         'fetch_parent_enfants',
         'fetch_notes_for_parent', 'fetch_observations_for_parent',
         'fetch_devoirs_for_parent', 'fetch_absences_for_parent',
-        '_resolve_parent_session', '_is_admin', '_parent_owns_eleve',
+        '_resolve_parent_session', '_is_admin',
+        -- _parent_owns_eleve volontairement absent : il est aussi défini dans
+        -- declarations_parents_migration.sql, et un DROP CASCADE ici détruirait
+        -- les fonctions de déclaration qui en dépendent. CREATE OR REPLACE plus bas
+        -- suffit car la signature BOOLEAN est désormais alignée entre les deux fichiers.
         'normalize_phone'
       )
   LOOP
@@ -467,23 +471,43 @@ GRANT EXECUTE ON FUNCTION public.fetch_parent_enfants(TEXT) TO anon, authenticat
 -- Prend le jeton (pas un id manipulable), le résout en parent_id, puis vérifie
 -- parent_eleves. Empêche un parent A de lire les données d'un enfant qui n'est
 -- pas le sien, même si A bidouille le jeton ou l'eleve_id côté client.
--- Retourne le parent_id si autorisé, NULL sinon.
+-- Retourne TRUE si autorisé, FALSE sinon.
+-- Signature alignée avec declarations_parents_migration.sql (RETURNS BOOLEAN) :
+-- les deux fichiers définissent désormais la même signature, donc CREATE OR REPLACE
+-- réussit dans n'importe quel ordre d'exécution sans avoir besoin de DROP préalable
+-- (qui détruirait les fonctions dépendantes via CASCADE).
+--
+-- Migration depuis l'ancienne version UUID : si une fonction _parent_owns_eleve
+-- existe déjà avec RETURNS UUID, on la drop avec CASCADE puisque CREATE OR REPLACE
+-- ne peut pas changer le type de retour. Les fonctions dépendantes (fetch_*) sont
+-- recréées plus bas dans ce même fichier ; les fonctions du module déclarations
+-- doivent être recréées en réexécutant declarations_parents_migration.sql.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_type t ON p.prorettype = t.oid
+    WHERE p.proname = '_parent_owns_eleve'
+      AND p.pronamespace = 'public'::regnamespace
+      AND t.typname = 'uuid'
+  ) THEN
+    DROP FUNCTION IF EXISTS public._parent_owns_eleve(TEXT, UUID) CASCADE;
+  END IF;
+END $$;
+
 CREATE OR REPLACE FUNCTION public._parent_owns_eleve(p_token TEXT, p_eleve_id UUID)
-RETURNS UUID
+RETURNS BOOLEAN
 LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
   v_parent_id UUID := public._resolve_parent_session(p_token);
 BEGIN
-  IF v_parent_id IS NULL OR p_eleve_id IS NULL THEN RETURN NULL; END IF;
-  IF EXISTS (
+  IF v_parent_id IS NULL OR p_eleve_id IS NULL THEN RETURN FALSE; END IF;
+  RETURN EXISTS (
     SELECT 1 FROM public.parent_eleves
     WHERE parent_id = v_parent_id AND eleve_id = p_eleve_id
-  ) THEN
-    RETURN v_parent_id;
-  END IF;
-  RETURN NULL;
+  );
 END;
 $$;
 
@@ -509,7 +533,7 @@ SET search_path = public
 AS $$
 #variable_conflict use_column
 BEGIN
-  IF public._parent_owns_eleve(p_token, p_eleve_id) IS NULL THEN
+  IF NOT public._parent_owns_eleve(p_token, p_eleve_id) THEN
     RAISE EXCEPTION 'Accès refusé';
   END IF;
   RETURN QUERY
@@ -540,7 +564,7 @@ SET search_path = public
 AS $$
 #variable_conflict use_column
 BEGIN
-  IF public._parent_owns_eleve(p_token, p_eleve_id) IS NULL THEN
+  IF NOT public._parent_owns_eleve(p_token, p_eleve_id) THEN
     RAISE EXCEPTION 'Accès refusé';
   END IF;
   RETURN QUERY
@@ -577,7 +601,7 @@ AS $$
 DECLARE
   v_classe_id UUID;
 BEGIN
-  IF public._parent_owns_eleve(p_token, p_eleve_id) IS NULL THEN
+  IF NOT public._parent_owns_eleve(p_token, p_eleve_id) THEN
     RAISE EXCEPTION 'Accès refusé';
   END IF;
   SELECT classe_id INTO v_classe_id FROM public.profils_eleves WHERE id = p_eleve_id;
@@ -609,7 +633,7 @@ SET search_path = public
 AS $$
 #variable_conflict use_column
 BEGIN
-  IF public._parent_owns_eleve(p_token, p_eleve_id) IS NULL THEN
+  IF NOT public._parent_owns_eleve(p_token, p_eleve_id) THEN
     RAISE EXCEPTION 'Accès refusé';
   END IF;
   RETURN QUERY

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence, verifyEnseignantSession, countDeclarationsEnseignant } from './supabaseEnseignant';
+import { logoutEnseignant, getEnseignantUser, fetchUnreadCountEnseignant, updatePresence, fetchMyPresence, verifyEnseignantSession, countDeclarationsEnseignant } from './supabaseEnseignant';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconClasses = () => (
@@ -258,14 +258,36 @@ export default function EnseignantApp() {
     }).catch(() => { sessionStorage.clear(); navigate('/enseignant/login'); });
   }, [navigate]);
 
-  // Présence — En ligne à la connexion, Déconnecté(e) à la fermeture
+  // Présence — Au mount, on synchronise avec la DB plutôt que d'écraser le statut.
+  // Si l'enseignant avait choisi 'reunion' ou 'non_joignable', on respecte ce choix
+  // au rechargement. On ne pousse 'en_ligne' que si l'état serveur est 'deconnecte'
+  // (= retour après fermeture d'onglet) ou inconnu. Au unload, passage à 'deconnecte'.
   useEffect(() => {
     const u = getEnseignantUser();
     if (!u?.id) return;
-    updatePresence(u.id, 'en_ligne');
-    const handleUnload = () => updatePresence(u.id, 'deconnecte');
+    let cancelled = false;
+    fetchMyPresence(u.id).then(currentStatus => {
+      if (cancelled) return;
+      if (!currentStatus || currentStatus === 'deconnecte') {
+        setPresence('en_ligne');
+        updatePresence(u.id, 'en_ligne');
+      } else {
+        setPresence(currentStatus);
+      }
+    }).catch(() => {
+      if (cancelled) return;
+      setPresence('en_ligne');
+      updatePresence(u.id, 'en_ligne');
+    });
+    // pagehide est plus fiable que beforeunload, surtout sur mobile (iOS Safari
+    // ignore parfois beforeunload). On écoute les deux pour maximiser la couverture.
+    // keepalive=true permet au ping de survivre au déchargement de la page.
+    const handleUnload = () => updatePresence(u.id, 'deconnecte', { keepalive: true });
+    window.addEventListener('pagehide', handleUnload);
     window.addEventListener('beforeunload', handleUnload);
     return () => {
+      cancelled = true;
+      window.removeEventListener('pagehide', handleUnload);
       window.removeEventListener('beforeunload', handleUnload);
     };
   }, []);

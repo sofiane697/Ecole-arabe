@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
