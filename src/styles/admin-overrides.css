@@ -2677,6 +2677,10 @@
   display: flex;
   flex-direction: column;
   min-height: 145px;
+  /* Empêche les noms longs (« Option grammaire ») et les boutons de
+     déborder de la carte. min-width: 0 + overflow: hidden. */
+  min-width: 0;
+  overflow: hidden;
 }
 .cls-niveau-card:hover {
   transform: translateY(-3px);
@@ -2684,19 +2688,37 @@
   border-color: rgba(var(--a-gold-rgb),0.3);
 }
 .cls-niveau-name {
-  font-size: 2.6rem;
+  /* clamp(min, préféré, max) : la taille s'adapte à la largeur de la carte
+     pour rester lisible avec les noms longs sans déborder. */
+  font-size: clamp(1.5rem, 6cqi, 2.6rem);
   font-weight: 900;
   color: var(--a-gold);
   letter-spacing: -0.05em;
-  line-height: 1;
+  line-height: 1.05;
   flex: 1;
+  min-width: 0;
+  /* break-word casse les longs mots qui dépasseraient l'espace dispo.
+     hyphens: auto ajoute une césure si la police le permet. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 .cls-niveau-footer {
   display: flex;
   gap: 0.5rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--a-border);
+  /* Permet aux boutons « Renommer » et « Supprimer » de passer à la ligne
+     plutôt que de déborder quand la carte est étroite. */
+  flex-wrap: wrap;
 }
+.cls-niveau-footer > * {
+  /* Chaque bouton peut shrink en dessous de sa largeur naturelle si besoin. */
+  min-width: 0;
+}
+/* Container queries : la taille du nom est calculée par rapport à la largeur
+   de la carte, pas du viewport — fonctionne quel que soit le nombre de colonnes. */
+.cls-niveau-card { container-type: inline-size; }
 .cls-add-card {
   border: 2px dashed var(--a-border);
   border-radius: var(--a-radius);
@@ -2732,6 +2754,10 @@
   display: flex;
   flex-direction: column;
   min-height: 130px;
+  /* Idem .cls-niveau-card : pas de débordement du contenu. */
+  min-width: 0;
+  overflow: hidden;
+  container-type: inline-size;
 }
 .cls-classe-card:hover {
   transform: translateY(-3px);
@@ -2739,12 +2765,16 @@
   border-color: rgba(var(--a-gold-rgb),0.3);
 }
 .cls-classe-name {
-  font-size: 1.6rem;
+  font-size: clamp(1.1rem, 5cqi, 1.6rem);
   font-weight: 900;
   color: var(--a-fg);
   letter-spacing: -0.04em;
-  line-height: 1;
+  line-height: 1.05;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 .cls-classe-count {
   font-size: 0.78rem;
@@ -2760,6 +2790,11 @@
   gap: 0.5rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--a-border);
+  /* Boutons en wrap si la carte est trop étroite. */
+  flex-wrap: wrap;
+}
+.cls-classe-footer > * {
+  min-width: 0;
 }
 
 .cls-eleve-grid {
