@@ -677,33 +677,30 @@ export async function fetchNiveauxByLecon(leconId) {
   return res.json();
 }
 
-// ─── Niveaux scolaires ────────────────────────────────────────────────────────
+// ─── Niveaux scolaires — phase RLS #2.F : SELECT REST direct, écritures via RPCs
 export async function fetchNiveauxScolaires() {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?order=ordre.asc,nom.asc`);
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
 export async function createNiveauScolaire(nom, ordre) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' },
-    body: JSON.stringify({ nom, ordre }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  const data = await res.json();
-  return data[0];
+  const id = await rpcAdminWrite('admin_create_niveau_scolaire',
+    { p_admin_token: requireAdminToken(), p_nom: nom, p_ordre: ordre ?? 0 },
+    'Erreur création niveau scolaire');
+  return { id, nom, ordre: ordre ?? 0 };
 }
 export async function updateNiveauScolaire(id, data) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_niveau_scolaire',
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: data },
+    'Erreur modification niveau scolaire');
 }
 export async function deleteNiveauScolaire(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/niveaux_scolaires?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_niveau_scolaire',
+    { p_admin_token: requireAdminToken(), p_id: id },
+    'Erreur suppression niveau scolaire');
 }
 
-// ─── Classes ──────────────────────────────────────────────────────────────────
+// ─── Classes — phase RLS #2.F : SELECT REST direct, écritures via RPCs
 export async function fetchClasses(niveauId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?niveau_id=eq.${niveauId}&order=nom.asc`);
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -715,23 +712,20 @@ export async function fetchAllClasses() {
   return res.json();
 }
 export async function createClasse(niveauId, nom) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes`, {
-    method: 'POST', headers: { 'Prefer': 'return=representation' },
-    body: JSON.stringify({ niveau_id: niveauId, nom }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  const data = await res.json();
-  return data[0];
+  const id = await rpcAdminWrite('admin_create_classe',
+    { p_admin_token: requireAdminToken(), p_niveau_id: niveauId, p_nom: nom },
+    'Erreur création classe');
+  return { id, niveau_id: niveauId, nom };
 }
 export async function updateClasse(id, nom) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ nom }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_classe',
+    { p_admin_token: requireAdminToken(), p_id: id, p_nom: nom },
+    'Erreur modification classe');
 }
 export async function deleteClasse(id) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/classes?id=eq.${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_delete_classe',
+    { p_admin_token: requireAdminToken(), p_id: id },
+    'Erreur suppression classe');
 }
 
 // ─── Enseignants — phase RLS #2.D.1 : tables `enseignants` + `enseignant_classes`
@@ -832,12 +826,11 @@ export async function fetchEleveById(eleveId) {
   return rows[0] ?? null;
 }
 
-/** Activer / désactiver un élève */
+/** Activer / désactiver un élève — passe par admin_update_eleve (table verrouillée phase 2.D.2) */
 export async function updateEleveActif(id, actif) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/profils_eleves?id=eq.${id}`, {
-    method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ actif }),
-  });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  await rpcAdminWrite('admin_update_eleve',
+    { p_admin_token: requireAdminToken(), p_id: id, p_data: { actif } },
+    'Erreur modification statut élève');
 }
 
 // ─── EMAIL ───────────────────────────────────────────────────────────────────
