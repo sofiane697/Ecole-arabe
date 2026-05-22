@@ -8,6 +8,7 @@ import {
   fetchAllNiveauxForModuleEleve, fetchNiveauxParThematiquePourProgression,
 } from './supabasePortail';
 import { coverImgStyle, isSafeCoverUrl } from '../shared/imageCrop';
+import { isValidGeniallyUrl } from '../shared/geniallyUtils';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function getYouTubeId(url) {
@@ -51,8 +52,8 @@ const S = {
 };
 
 
-const TYPE_COLORS = { video: '#ff453a', pdf: '#0a84ff', texte: '#30d158', word: '#2b579a', ppt: '#c43e1c' };
-const TYPE_LABELS = { video: '▶ Vidéo', texte: '📝 Texte', word: '📃 Word', ppt: '📊 PowerPoint' };
+const TYPE_COLORS = { video: '#ff453a', pdf: '#0a84ff', texte: '#30d158', word: '#2b579a', ppt: '#c43e1c', genially: '#ff6b2b' };
+const TYPE_LABELS = { video: '▶ Vidéo', texte: '📝 Texte', word: '📃 Word', ppt: '📊 PowerPoint', genially: '🎨 Genially' };
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <polyline points="15 18 9 12 15 6"/>
@@ -806,6 +807,18 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
                     src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(c.contenu)}`}
                     style={{ width:'100%', border:'none', ...(c.type === 'ppt' ? { aspectRatio:'16/9' } : { height:'600px' }) }}
                     title={c.titre} allowFullScreen />
+                )}
+                {c.type === 'genially' && isValidGeniallyUrl(c.contenu) && (
+                  <div style={{ position:'relative', width:'100%', paddingBottom:'56.25%' }}>
+                    <iframe
+                      src={c.contenu}
+                      title={c.titre || 'Présentation Genially'}
+                      style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', border:'none', borderRadius:'var(--p-radius-sm)' }}
+                      scrolling="yes"
+                    />
+                    {/* Masque les boutons partage / menu de la barre Genially */}
+                    <div style={{ position:'absolute', bottom:0, right:0, width:'28%', height:'46px', zIndex:10, cursor:'default' }} />
+                  </div>
                 )}
               </div>
             ))}

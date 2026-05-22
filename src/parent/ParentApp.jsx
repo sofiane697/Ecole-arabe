@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { logoutParent, getParentUser } from './supabaseParent';
 import { ParentProvider, useParentCtx } from './ParentContext';
@@ -19,116 +19,47 @@ const PAGE_TITLES = {
 };
 const DEFAULT_TITLE = { fr: 'Accueil', ar: 'الرئيسية' };
 
-// ─── Sélecteur d'enfant (dropdown dans la topbar) ─ spécifique au portail parent
+// ─── Sélecteur d'enfant (vignettes côte à côte dans la topbar) ───────────────
 function EnfantSelector() {
-  const { enfants, selectedEleveId, setSelectedEleveId, selectedEleve } = useParentCtx();
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const onClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('mousedown', onClick);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onClick);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, []);
+  const { enfants, selectedEleveId, setSelectedEleveId } = useParentCtx();
 
   if (!enfants || enfants.length === 0) return null;
-  const unique = enfants.length === 1;
-  const current = selectedEleve || enfants[0];
 
   return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <button
-        type="button"
-        className="portail-enfant-pill"
-        onClick={() => !unique && setOpen(o => !o)}
-        disabled={unique}
-        aria-haspopup={unique ? undefined : 'listbox'}
-        aria-expanded={unique ? undefined : open}
-        aria-label={`Enfant sélectionné : ${current.prenom} ${current.nom}${unique ? '' : ' — cliquer pour changer'}`}
-      >
-        <span className="portail-enfant-pill-avatar-wrap">
-          <EleveAvatar
-            eleve={{
-              prenom: current.prenom, nom: current.nom,
-              photo_url: current.photo_url,
-              photo_scale: current.photo_scale,
-              photo_pos_x: current.photo_pos_x,
-              photo_pos_y: current.photo_pos_y,
-            }}
-            size={30}
-          />
-        </span>
-        <span className="portail-enfant-pill-names">
-          <span className="portail-enfant-pill-prenom">{fmtPrenom(current.prenom)}</span>
-          <span className="portail-enfant-pill-nom">{fmtNom(current.nom)}</span>
-        </span>
-        {current.classe_nom && (
-          <>
-            <span className="portail-enfant-pill-sep" aria-hidden="true" />
-            <span className="portail-enfant-pill-classe">{current.classe_nom}</span>
-          </>
-        )}
-        {!unique && (
-          <svg
-            className="portail-enfant-pill-chevron"
-            viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round"
-            aria-hidden="true"
+    <div className="portail-enfant-tabs" role="group" aria-label="Choisir un enfant">
+      {enfants.map(e => {
+        const active = e.eleve_id === selectedEleveId;
+        return (
+          <button
+            key={e.eleve_id}
+            type="button"
+            className={`portail-enfant-tab${active ? ' active' : ''}`}
+            onClick={() => !active && setSelectedEleveId(e.eleve_id)}
+            aria-pressed={active}
+            aria-label={`${fmtPrenom(e.prenom)} ${fmtNom(e.nom)}${e.classe_nom ? ' — ' + e.classe_nom : ''}`}
           >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        )}
-      </button>
-
-      {open && !unique && (
-        <div
-          role="listbox"
-          aria-label="Liste de mes enfants"
-          className="portail-enfant-dropdown"
-        >
-          {enfants.map(e => {
-            const active = e.eleve_id === selectedEleveId;
-            return (
-              <button
-                key={e.eleve_id}
-                type="button"
-                role="option"
-                aria-selected={active}
-                onClick={() => { setSelectedEleveId(e.eleve_id); setOpen(false); }}
-                className="portail-enfant-option"
-              >
-                <EleveAvatar
-                  eleve={{
-                    prenom: e.prenom, nom: e.nom,
-                    photo_url: e.photo_url,
-                    photo_scale: e.photo_scale,
-                    photo_pos_x: e.photo_pos_x,
-                    photo_pos_y: e.photo_pos_y,
-                  }}
-                  size={36}
-                />
-                <div className="portail-enfant-option-body">
-                  <span className="portail-enfant-option-name">
-                    {fmtPrenom(e.prenom)} {fmtNom(e.nom)}
-                  </span>
-                  {e.classe_nom && (
-                    <span className="portail-enfant-option-classe">{e.classe_nom}</span>
-                  )}
-                </div>
-                {active && <span className="portail-enfant-option-check" aria-hidden="true">✓</span>}
-              </button>
-            );
-          })}
-        </div>
-      )}
+            <span className="portail-enfant-tab-avatar">
+              <EleveAvatar
+                eleve={{
+                  prenom: e.prenom, nom: e.nom,
+                  photo_url: e.photo_url,
+                  photo_scale: e.photo_scale,
+                  photo_pos_x: e.photo_pos_x,
+                  photo_pos_y: e.photo_pos_y,
+                }}
+                size={30}
+              />
+            </span>
+            <span className="portail-enfant-tab-body">
+              <span className="portail-enfant-tab-prenom">{fmtPrenom(e.prenom)}</span>
+              <span className="portail-enfant-tab-nom">{fmtNom(e.nom)}</span>
+              {e.classe_nom && (
+                <span className="portail-enfant-tab-classe">{e.classe_nom}</span>
+              )}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
