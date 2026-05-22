@@ -1,4 +1,4 @@
-import { fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve } from './supabaseAdmin';
+import { fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, adminCreateObservation, adminCreateRetardAbsence } from './supabaseAdmin';
 
 const ELEVE_ID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 const ADMIN_ID = '11111111-2222-3333-4444-555555555555';
@@ -176,5 +176,82 @@ describe('fetchObservationsEleve', () => {
   test('throw sur erreur HTTP', async () => {
     mockFetchOnce({ ok: false, status: 401 });
     await expect(fetchObservationsEleve(ELEVE_ID)).rejects.toThrow(/Erreur 401/);
+  });
+});
+
+const CLASSE_ID = 'cccccccc-dddd-eeee-ffff-000000000000';
+
+describe('adminCreateObservation', () => {
+  test('appelle admin_create_observation avec les bons paramètres', async () => {
+    mockFetchOnce({ body: 'new-uuid-obs' });
+    await adminCreateObservation({ eleve_id: ELEVE_ID, classe_id: CLASSE_ID, type: 'general', contenu: 'Très sérieux' });
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/rest/v1/rpc/admin_create_observation');
+    expect(opts.method).toBe('POST');
+    const body = JSON.parse(opts.body);
+    expect(body.p_admin_token).toBe(ADMIN_TOKEN);
+    expect(body.p_eleve_id).toBe(ELEVE_ID);
+    expect(body.p_classe_id).toBe(CLASSE_ID);
+    expect(body.p_type).toBe('general');
+    expect(body.p_contenu).toBe('Très sérieux');
+  });
+
+  test('passe p_classe_id à null si classe_id est undefined', async () => {
+    mockFetchOnce({ body: 'new-uuid-obs' });
+    await adminCreateObservation({ eleve_id: ELEVE_ID, classe_id: undefined, type: 'comportement', contenu: 'OK' });
+    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(body.p_classe_id).toBeNull();
+  });
+
+  test('accepte les 3 types valides', async () => {
+    for (const type of ['general', 'comportement', 'progression']) {
+      mockFetchOnce({ body: 'uuid' });
+      await adminCreateObservation({ eleve_id: ELEVE_ID, classe_id: null, type, contenu: 'test' });
+      const body = JSON.parse(global.fetch.mock.calls.at(-1)[1].body);
+      expect(body.p_type).toBe(type);
+    }
+  });
+
+  test('throw sur erreur HTTP', async () => {
+    mockFetchOnce({ ok: false, status: 403 });
+    await expect(adminCreateObservation({ eleve_id: ELEVE_ID, classe_id: null, type: 'general', contenu: 'x' }))
+      .rejects.toThrow(/Erreur ajout appréciation/);
+  });
+});
+
+describe('adminCreateRetardAbsence', () => {
+  test('appelle admin_create_retard_absence avec les bons paramètres', async () => {
+    mockFetchOnce({ body: 'new-uuid-abs' });
+    await adminCreateRetardAbsence({ eleve_id: ELEVE_ID, classe_id: CLASSE_ID, type: 'retard', date: '2026-05-20', commentaire: '10 min' });
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/rest/v1/rpc/admin_create_retard_absence');
+    expect(opts.method).toBe('POST');
+    const body = JSON.parse(opts.body);
+    expect(body.p_admin_token).toBe(ADMIN_TOKEN);
+    expect(body.p_eleve_id).toBe(ELEVE_ID);
+    expect(body.p_classe_id).toBe(CLASSE_ID);
+    expect(body.p_type).toBe('retard');
+    expect(body.p_date).toBe('2026-05-20');
+    expect(body.p_commentaire).toBe('10 min');
+  });
+
+  test('passe p_commentaire à null si commentaire est undefined', async () => {
+    mockFetchOnce({ body: 'new-uuid-abs' });
+    await adminCreateRetardAbsence({ eleve_id: ELEVE_ID, classe_id: null, type: 'absence', date: '2026-05-21', commentaire: undefined });
+    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(body.p_commentaire).toBeNull();
+  });
+
+  test('passe p_classe_id à null si classe_id est undefined', async () => {
+    mockFetchOnce({ body: 'new-uuid-abs' });
+    await adminCreateRetardAbsence({ eleve_id: ELEVE_ID, classe_id: undefined, type: 'retard', date: '2026-05-22', commentaire: null });
+    const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(body.p_classe_id).toBeNull();
+  });
+
+  test('throw sur erreur HTTP', async () => {
+    mockFetchOnce({ ok: false, status: 500 });
+    await expect(adminCreateRetardAbsence({ eleve_id: ELEVE_ID, classe_id: null, type: 'absence', date: '2026-05-20', commentaire: null }))
+      .rejects.toThrow(/Erreur ajout retard\/absence/);
   });
 });

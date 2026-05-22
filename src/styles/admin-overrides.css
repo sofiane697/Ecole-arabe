@@ -2998,6 +2998,84 @@
 .elv-action-btn.toggle:hover { color: var(--a-yellow); border-color: rgba(245,159,11,0.35); background: rgba(245,159,11,0.07); }
 .elv-action-btn.delete { margin-left: auto; }
 .elv-action-btn.delete:hover { color: var(--a-red); border-color: rgba(240,85,85,0.35); background: rgba(240,85,85,0.07); }
+.elv-action-btn.pdf:hover { color: var(--a-blue); border-color: rgba(85,150,247,0.35); background: rgba(85,150,247,0.07); }
+.elv-action-btn.pdf:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ─── Bouton "+ Ajouter" (formulaires inline) ─── */
+.elv-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--a-gold);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(var(--a-gold-rgb), 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.elv-add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(var(--a-gold-rgb), 0.38);
+  background: var(--a-gold-l, var(--a-gold));
+}
+.elv-add-btn:focus-visible {
+  outline: 2px solid var(--a-gold);
+  outline-offset: 2px;
+}
+.elv-add-btn:active { transform: translateY(0); }
+
+/* ─── Formulaire inline ─── */
+.elv-inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  border-left: 3px solid var(--a-gold);
+  border-radius: var(--a-radius-sm);
+  padding: 1rem 1.2rem;
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+.elv-inline-form-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--a-gold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.elv-form-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--a-fg-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+.elv-form-input {
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: var(--a-radius-sm);
+  border: 1px solid var(--a-border);
+  background: var(--a-bg);
+  color: var(--a-fg);
+  font-size: 14px;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.elv-form-input:focus {
+  outline: none;
+  border-color: var(--a-gold);
+}
 
 /* ─── Section title ─── */
 .elv-section-title {
@@ -3125,13 +3203,20 @@
   background: transparent; color: var(--a-fg-mid); font-size: 0.82rem; font-weight: 600;
   cursor: pointer; font-family: inherit; transition: all 0.2s;
 }
-.a-modal-btn-cancel:hover { border-color: var(--a-fg-mid); color: var(--a-fg); }
+.a-modal-btn-cancel:hover { border-color: rgba(240,85,85,0.5); color: var(--a-red); background: rgba(240,85,85,0.06); }
+.a-modal-btn-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
 .a-modal-btn-save {
-  padding: 8px 20px; border-radius: 980px; border: none;
+  padding: 8px 22px; border-radius: 980px; border: none;
   background: var(--a-gold); color: #fff; font-size: 0.82rem; font-weight: 700;
-  cursor: pointer; font-family: inherit; transition: all 0.2s;
+  cursor: pointer; font-family: inherit; transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   box-shadow: 0 2px 8px rgba(var(--a-gold-rgb),0.3);
 }
+.a-modal-btn-save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(var(--a-gold-rgb),0.42);
+  background: var(--a-gold-l, var(--a-gold));
+}
+.a-modal-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
 .a-modal-btn-save:hover { background: var(--a-gold-l); transform: translateY(-1px); }
 .a-modal-btn-save:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .a-modal-btn-danger {

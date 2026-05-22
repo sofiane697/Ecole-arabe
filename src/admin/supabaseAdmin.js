@@ -395,6 +395,29 @@ export async function fetchObservationsEleve(eleveId) {
   return res.json();
 }
 
+/** Ajouter une appréciation sur un élève (créée par l'admin). */
+export async function adminCreateObservation({ eleve_id, classe_id, type, contenu }) {
+  return rpcAdminWrite('admin_create_observation', {
+    p_admin_token: requireAdminToken(),
+    p_eleve_id: eleve_id,
+    p_classe_id: classe_id ?? null,
+    p_type: type,
+    p_contenu: contenu,
+  }, 'Erreur ajout appréciation');
+}
+
+/** Ajouter un retard ou une absence sur un élève (créé par l'admin). */
+export async function adminCreateRetardAbsence({ eleve_id, classe_id, type, date, commentaire }) {
+  return rpcAdminWrite('admin_create_retard_absence', {
+    p_admin_token: requireAdminToken(),
+    p_eleve_id: eleve_id,
+    p_classe_id: classe_id ?? null,
+    p_type: type,
+    p_date: date,
+    p_commentaire: commentaire ?? null,
+  }, 'Erreur ajout retard/absence');
+}
+
 /** Réinitialiser la progression de TOUS les élèves pour un niveau donné.
  *  À appeler quand les questions QCM d'un niveau sont supprimées / remplacées,
  *  pour éviter que d'anciens records reussi=true ressurgissent.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, adminCreateObservation, adminCreateRetardAbsence } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
@@ -21,6 +21,7 @@ const IconKey   = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="no
 const IconPause = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>;
 const IconPlay  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>;
 const IconTrash = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>;
+const IconPDF  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>;
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 const CLS = {
@@ -137,6 +138,11 @@ export default function Eleves() {
   const [activite, setActivite] = useState([]);
   const [activiteLoading, setActiviteLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [obsForm, setObsForm]       = useState(null);
+  const [obsSubmitting, setObsSub]  = useState(false);
+  const [absForm, setAbsForm]       = useState(null);
+  const [absSub, setAbsSub]         = useState(false);
 
   const loadEleves = useCallback(async () => {
     try { setEleves(await fetchEleves()); } catch(e) {}
@@ -188,6 +194,8 @@ export default function Eleves() {
     setNotes([]);
     setAbsences([]);
     setObservations([]);
+    setAbsForm(null);
+    setObsForm(null);
     try {
       const mods = await fetchModules();
       if (token !== openEleveTokenRef.current) return;
@@ -436,6 +444,9 @@ export default function Eleves() {
             </button>
             <button className="elv-action-btn delete" onClick={() => setConfirmDelete(selectedEleve)}>
               <IconTrash /> Supprimer
+            </button>
+            <button className="elv-action-btn pdf" onClick={handleDownloadPDF} disabled={pdfLoading}>
+              <IconPDF /> {pdfLoading ? 'Génération...' : 'Télécharger la fiche PDF'}
             </button>
           </div>
         </div>
@@ -908,7 +919,90 @@ export default function Eleves() {
           const nbAbsences = absences.filter(i => i.type === 'absence').length;
           return (
             <>
-              <div className="elv-section-title" style={{ marginTop: 32 }}>Retards et absences</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 32, marginBottom: 12 }}>
+                <div className="elv-section-title" style={{ marginTop: 0 }}>Retards et absences</div>
+                <button
+                  onClick={() => setAbsForm(absForm ? null : { type: 'retard', date: '', commentaire: '', error: '' })}
+                  className="elv-add-btn"
+                >
+                  {absForm ? '✕ Fermer' : '+ Ajouter'}
+                </button>
+              </div>
+              {absForm && (
+                <div className="elv-inline-form">
+                  <div className="elv-inline-form-title">Nouveau retard / absence</div>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 140 }}>
+                      <label className="elv-form-label">Type</label>
+                      <select
+                        value={absForm.type}
+                        onChange={e => setAbsForm(f => ({ ...f, type: e.target.value, error: '' }))}
+                        className="elv-form-input"
+                      >
+                        <option value="retard">⏱ Retard</option>
+                        <option value="absence">🚫 Absence</option>
+                      </select>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 160 }}>
+                      <label className="elv-form-label">Date *</label>
+                      <input
+                        type="date"
+                        value={absForm.date}
+                        onChange={e => setAbsForm(f => ({ ...f, date: e.target.value, error: '' }))}
+                        className="elv-form-input"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="elv-form-label">Commentaire (optionnel)</label>
+                    <textarea
+                      value={absForm.commentaire}
+                      onChange={e => setAbsForm(f => ({ ...f, commentaire: e.target.value }))}
+                      rows={2}
+                      placeholder="Précisions sur le retard ou l'absence…"
+                      className="elv-form-input"
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  {absForm.error && (
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--a-red)', background: 'rgba(231,76,60,0.08)', padding: '8px 12px', borderRadius: 'var(--a-radius-sm)' }}>
+                      {absForm.error}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 4, borderTop: '1px solid var(--a-border)' }}>
+                    <button onClick={() => setAbsForm(null)} className="a-modal-btn-cancel" disabled={absSub}>
+                      Annuler
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!absForm.date) return;
+                        setAbsSub(true);
+                        setAbsForm(f => ({ ...f, error: '' }));
+                        try {
+                          await adminCreateRetardAbsence({
+                            eleve_id: selectedEleve.id,
+                            classe_id: selectedEleve.classe_id ?? null,
+                            type: absForm.type,
+                            date: absForm.date,
+                            commentaire: absForm.commentaire || null,
+                          });
+                          setAbsences(await fetchRetardsAbsencesEleve(selectedEleve.id));
+                          setAbsForm(null);
+                        } catch (err) {
+                          setAbsForm(f => ({ ...f, error: err.message || 'Erreur lors de l\'enregistrement' }));
+                        } finally {
+                          setAbsSub(false);
+                        }
+                      }}
+                      className="a-modal-btn-save"
+                      disabled={absSub || !absForm.date}
+                      style={{ opacity: (absSub || !absForm.date) ? 0.6 : 1, cursor: (absSub || !absForm.date) ? 'not-allowed' : 'pointer' }}
+                    >
+                      {absSub ? 'Enregistrement…' : 'Enregistrer'}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="elv-stats-grid">
                 <EleveStatCard value={nbRetards} color="var(--a-yellow)">Retard{nbRetards > 1 ? 's' : ''}</EleveStatCard>
                 <EleveStatCard value={nbAbsences} color="var(--a-red)">Absence{nbAbsences > 1 ? 's' : ''}</EleveStatCard>
@@ -961,7 +1055,92 @@ export default function Eleves() {
           }, {});
           return (
             <>
-              <div className="elv-section-title" style={{ marginTop: 32 }}>Appréciations</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 32, marginBottom: 12 }}>
+                <div className="elv-section-title" style={{ marginTop: 0 }}>Appréciations</div>
+                <button
+                  onClick={() => setObsForm(obsForm ? null : { type: 'general', contenu: '', error: '' })}
+                  className="elv-add-btn"
+                >
+                  {obsForm ? '✕ Fermer' : '+ Ajouter une appréciation'}
+                </button>
+              </div>
+              {obsForm && (
+                <div className="elv-inline-form">
+                  <div className="elv-inline-form-title">Nouvelle appréciation</div>
+                  <div>
+                    <label className="elv-form-label">Type</label>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {[
+                        { value: 'general',      label: 'Général',      icon: '📋' },
+                        { value: 'comportement', label: 'Comportement', icon: '⭐' },
+                        { value: 'progression',  label: 'Progression',  icon: '📈' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setObsForm(f => ({ ...f, type: opt.value, error: '' }))}
+                          style={{
+                            flex: 1, padding: '7px 12px', borderRadius: 'var(--a-radius-sm)',
+                            border: obsForm.type === opt.value ? '2px solid var(--a-gold)' : '1px solid var(--a-border)',
+                            background: obsForm.type === opt.value ? 'rgba(191,138,48,0.12)' : 'var(--a-bg)',
+                            color: obsForm.type === opt.value ? 'var(--a-gold)' : 'var(--a-fg-mid)',
+                            fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {opt.icon} {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="elv-form-label">Appréciation *</label>
+                    <textarea
+                      value={obsForm.contenu}
+                      onChange={e => setObsForm(f => ({ ...f, contenu: e.target.value, error: '' }))}
+                      rows={3}
+                      placeholder="Saisissez votre appréciation…"
+                      className="elv-form-input"
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  {obsForm.error && (
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--a-red)', background: 'rgba(231,76,60,0.08)', padding: '8px 12px', borderRadius: 'var(--a-radius-sm)' }}>
+                      {obsForm.error}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 4, borderTop: '1px solid var(--a-border)' }}>
+                    <button onClick={() => setObsForm(null)} className="a-modal-btn-cancel" disabled={obsSubmitting}>
+                      Annuler
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!obsForm.contenu.trim()) return;
+                        setObsSub(true);
+                        setObsForm(f => ({ ...f, error: '' }));
+                        try {
+                          await adminCreateObservation({
+                            eleve_id: selectedEleve.id,
+                            classe_id: selectedEleve.classe_id ?? null,
+                            type: obsForm.type,
+                            contenu: obsForm.contenu,
+                          });
+                          setObservations(await fetchObservationsEleve(selectedEleve.id));
+                          setObsForm(null);
+                        } catch (err) {
+                          setObsForm(f => ({ ...f, error: err.message || 'Erreur lors de l\'enregistrement' }));
+                        } finally {
+                          setObsSub(false);
+                        }
+                      }}
+                      className="a-modal-btn-save"
+                      disabled={obsSubmitting || !obsForm.contenu.trim()}
+                      style={{ opacity: (obsSubmitting || !obsForm.contenu.trim()) ? 0.6 : 1, cursor: (obsSubmitting || !obsForm.contenu.trim()) ? 'not-allowed' : 'pointer' }}
+                    >
+                      {obsSubmitting ? 'Enregistrement…' : 'Enregistrer'}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="elv-stats-grid">
                 {Object.entries(OBS_CFG).map(([key, cfg]) => (
                   <EleveStatCard key={key} value={counts[key] || 0} color={cfg.color}>
@@ -1162,6 +1341,304 @@ export default function Eleves() {
     a.download = `eleves-raqib-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  async function handleDownloadPDF() {
+    if (!selectedEleve) return;
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const { applyPlugin } = await import('jspdf-autotable');
+      applyPlugin(jsPDF);
+
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 14;
+      const contentW = pageW - margin * 2;
+
+      const GOLD  = [191, 138, 48];
+      const DARK  = [50, 40, 30];
+      const MID   = [110, 95, 75];
+      const LIGHT = [245, 241, 233];
+      const WHITE = [255, 255, 255];
+
+      // ── En-tête ──
+      doc.setFillColor(...GOLD);
+      doc.rect(0, 0, pageW, 24, 'F');
+      doc.setTextColor(...WHITE);
+      doc.setFontSize(17);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FICHE ÉLÈVE', margin, 11);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Institut As-Safaa — ENT', margin, 18);
+      const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      doc.setFontSize(8);
+      doc.text(`Généré le ${dateGen}`, pageW - margin, 18, { align: 'right' });
+
+      let y = 32;
+
+      // ── Infos élève ──
+      const age = calcAge(selectedEleve.date_naissance);
+      const cl = allClasses.find(c => c.id === selectedEleve.classe_id);
+      const nv = cl ? niveauxScolaires.find(n => n.id === cl.niveau_id) : null;
+      const classeNom = cl ? `${nv ? nv.nom + ' — ' : ''}${cl.nom}` : '—';
+
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(margin, y, contentW, 38, 3, 3, 'F');
+
+      const col1x = margin + 5;
+      const col2x = margin + contentW / 2 + 5;
+      const labelW = 30;
+      const infoRows = [
+        [['Nom',         fmtNom(selectedEleve.nom || '')],                          ['Prénom',      fmtPrenom(selectedEleve.prenom || '')]],
+        [['Identifiant', (selectedEleve.identifiant || '').toUpperCase()],           ['Classe',       classeNom]],
+        [['Âge',    age ? `${age} an${age > 1 ? 's' : ''}` : '—'],         ['Email',        selectedEleve.email_contact || '—']],
+        [['Statut',      selectedEleve.actif ? 'Actif' : 'Inactif'],                ['Inscrit le',   selectedEleve.created_at ? new Date(selectedEleve.created_at).toLocaleDateString('fr-FR') : '—']],
+      ];
+
+      let iy = y + 8;
+      for (const row of infoRows) {
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...MID);
+        doc.text(row[0][0], col1x, iy);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...DARK);
+        doc.text(row[0][1], col1x + labelW, iy);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...MID);
+        doc.text(row[1][0], col2x, iy);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...DARK);
+        doc.text(row[1][1], col2x + labelW, iy);
+        iy += 8;
+      }
+      y += 44;
+
+      // ── Stats globales ──
+      const totalQCM = modules.reduce((acc, m) => {
+        return acc + (niveauxMap[m.id] || []).filter(n => qcmNiveauxIds.has(n.id)).length;
+      }, 0);
+      const totalReussis = modules.reduce((acc, m) => {
+        const nivsAvecQCM = (niveauxMap[m.id] || []).filter(n => qcmNiveauxIds.has(n.id));
+        return acc + nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+      }, 0);
+      const pctGlobal = totalQCM > 0 ? Math.round((totalReussis / totalQCM) * 100) : 0;
+
+      const statsW = (contentW - 4) / 3;
+      [
+        { label: 'MODULES',         value: String(modules.length) },
+        { label: 'NIVEAUX RÉUSSIS', value: totalQCM > 0 ? `${totalReussis} / ${totalQCM}` : '—' },
+        { label: 'PROGRESSION',     value: totalQCM > 0 ? `${pctGlobal}%` : '—' },
+      ].forEach((s, i) => {
+        const sx = margin + i * (statsW + 2);
+        doc.setFillColor(...WHITE);
+        doc.setDrawColor(...GOLD);
+        doc.roundedRect(sx, y, statsW, 18, 2, 2, 'FD');
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...DARK);
+        doc.text(s.value, sx + statsW / 2, y + 9, { align: 'center' });
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...MID);
+        doc.text(s.label, sx + statsW / 2, y + 15, { align: 'center' });
+      });
+      y += 24;
+
+      const addSectionTitle = (title) => {
+        doc.setFontSize(9.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...GOLD);
+        doc.text(title, margin, y);
+        doc.setDrawColor(...GOLD);
+        doc.line(margin, y + 1.5, margin + contentW, y + 1.5);
+        y += 6;
+      };
+
+      // ── Progression par module ──
+      addSectionTitle('PROGRESSION PAR MODULE');
+      const progRows = modules.map(m => {
+        const nivsAvecQCM = (niveauxMap[m.id] || []).filter(n => qcmNiveauxIds.has(n.id));
+        const totalN   = nivsAvecQCM.length;
+        const reussis  = nivsAvecQCM.filter(n => progression.some(p => p.niveau_id === n.id && p.reussi)).length;
+        const scores   = nivsAvecQCM.map(n => progression.find(p => p.niveau_id === n.id)?.score).filter(s => s != null);
+        const moyScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+        const pct      = totalN > 0 ? Math.round((reussis / totalN) * 100) : null;
+        let statut;
+        if (totalN === 0)     statut = 'Sans QCM';
+        else if (pct === 100) statut = 'Terminé';
+        else if (reussis > 0) statut = 'En cours';
+        else                  statut = 'Non commencé';
+        return [
+          m.titre || '—',
+          totalN > 0 ? String(totalN) : '—',
+          totalN > 0 ? `${reussis}/${totalN}` : '—',
+          moyScore != null ? `${moyScore}%` : '—',
+          statut,
+        ];
+      });
+
+      doc.autoTable({
+        startY: y,
+        head: [['Module', 'QCM', 'Réussis', 'Moy. score', 'Statut']],
+        body: progRows.length > 0 ? progRows : [['Aucun module disponible', '', '', '', '']],
+        theme: 'grid',
+        headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: 'bold', fontSize: 8.5 },
+        bodyStyles: { fontSize: 8, textColor: DARK },
+        alternateRowStyles: { fillColor: LIGHT },
+        columnStyles: {
+          0: { cellWidth: 65 },
+          1: { cellWidth: 20, halign: 'center' },
+          2: { cellWidth: 22, halign: 'center' },
+          3: { cellWidth: 24, halign: 'center' },
+          4: { cellWidth: 'auto' },
+        },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+
+      // ── Notes ──
+      if (y > pageH - 65) { doc.addPage(); y = 20; }
+      addSectionTitle('NOTES');
+
+      // Récapitulatif A+/A/ECA/NA
+      const noteCounts = { 4: 0, 3: 0, 2: 0, 1: 0, absent: 0 };
+      notes.forEach(n => { if (n.absent) noteCounts.absent++; else if (n.score) noteCounts[n.score] = (noteCounts[n.score] || 0) + 1; });
+      doc.autoTable({
+        startY: y,
+        body: [[
+          `A+ (Acquis +) : ${noteCounts[4]}`,
+          `A (Acquis) : ${noteCounts[3]}`,
+          `ECA (En cours) : ${noteCounts[2]}`,
+          `NA (Non acquis) : ${noteCounts[1]}`,
+          `Absent : ${noteCounts.absent}`,
+        ]],
+        theme: 'plain',
+        bodyStyles: { fontSize: 8, textColor: DARK, fontStyle: 'bold', fillColor: LIGHT, cellPadding: { top: 4, bottom: 4, left: 4, right: 2 } },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 3;
+
+      doc.autoTable({
+        startY: y,
+        head: [['Évaluation', 'Date', 'Note', 'Score', 'Commentaire']],
+        body: notes.length > 0 ? notes.map(n => [
+          n.evaluation?.titre || 'Évaluation',
+          n.evaluation?.date ? new Date(n.evaluation.date).toLocaleDateString('fr-FR') : '—',
+          n.absent ? 'Absent' : (SCORE_LABEL[n.score] || '—'),
+          n.absent ? '—' : (SCORE_SUB[n.score] || '—'),
+          n.commentaire || '',
+        ]) : [['Aucune note enregistrée', '', '', '', '']],
+        theme: 'grid',
+        headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: 'bold', fontSize: 8.5 },
+        bodyStyles: { fontSize: 8, textColor: DARK },
+        alternateRowStyles: { fillColor: LIGHT },
+        columnStyles: {
+          0: { cellWidth: 52 },
+          1: { cellWidth: 26 },
+          2: { cellWidth: 16, halign: 'center' },
+          3: { cellWidth: 24 },
+          4: { cellWidth: 'auto' },
+        },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+
+      // ── Retards et Absences ──
+      if (y > pageH - 55) { doc.addPage(); y = 20; }
+      addSectionTitle('RETARDS ET ABSENCES');
+
+      const nbRetards  = absences.filter(a => a.type === 'retard').length;
+      const nbAbsences = absences.filter(a => a.type === 'absence').length;
+      doc.autoTable({
+        startY: y,
+        body: [[`Retards : ${nbRetards}`, `Absences : ${nbAbsences}`, `Total : ${absences.length}`]],
+        theme: 'plain',
+        bodyStyles: { fontSize: 8, textColor: DARK, fontStyle: 'bold', fillColor: LIGHT, cellPadding: { top: 4, bottom: 4, left: 4, right: 2 } },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 3;
+
+      doc.autoTable({
+        startY: y,
+        head: [['Type', 'Date', 'Commentaire']],
+        body: absences.length > 0 ? absences.map(item => [
+          item.type === 'retard' ? 'Retard' : 'Absence',
+          item.date ? new Date(item.date).toLocaleDateString('fr-FR') : '—',
+          item.commentaire || '',
+        ]) : [['Aucun retard ni absence enregistré', '', '']],
+        theme: 'grid',
+        headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: 'bold', fontSize: 8.5 },
+        bodyStyles: { fontSize: 8, textColor: DARK },
+        alternateRowStyles: { fillColor: LIGHT },
+        columnStyles: {
+          0: { cellWidth: 28 },
+          1: { cellWidth: 28 },
+          2: { cellWidth: 'auto' },
+        },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+
+      // ── Appréciations ──
+      if (y > pageH - 45) { doc.addPage(); y = 20; }
+      addSectionTitle('APPRÉCIATIONS');
+
+      const OBS_LABEL = { general: 'Général', comportement: 'Comportement', progression: 'Progression' };
+      const obsCounts = { general: 0, comportement: 0, progression: 0 };
+      observations.forEach(o => { if (obsCounts[o.type] !== undefined) obsCounts[o.type]++; });
+      doc.autoTable({
+        startY: y,
+        body: [[`Général : ${obsCounts.general}`, `Comportement : ${obsCounts.comportement}`, `Progression : ${obsCounts.progression}`]],
+        theme: 'plain',
+        bodyStyles: { fontSize: 8, textColor: DARK, fontStyle: 'bold', fillColor: LIGHT, cellPadding: { top: 4, bottom: 4, left: 4, right: 2 } },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 3;
+
+      doc.autoTable({
+        startY: y,
+        head: [['Type', 'Date', 'Appréciation']],
+        body: observations.length > 0 ? observations.map(obs => [
+          OBS_LABEL[obs.type] || obs.type,
+          obs.created_at ? new Date(obs.created_at).toLocaleDateString('fr-FR') : '—',
+          obs.contenu || '',
+        ]) : [['Aucune appréciation enregistrée', '', '']],
+        theme: 'grid',
+        headStyles: { fillColor: GOLD, textColor: WHITE, fontStyle: 'bold', fontSize: 8.5 },
+        bodyStyles: { fontSize: 8, textColor: DARK },
+        alternateRowStyles: { fillColor: LIGHT },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 28 },
+          2: { cellWidth: 'auto' },
+        },
+        margin: { left: margin, right: margin },
+      });
+
+      // ── Footer sur chaque page ──
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFillColor(...LIGHT);
+        doc.rect(0, pageH - 10, pageW, 10, 'F');
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...MID);
+        doc.text('Institut As-Safaa — Document confidentiel', margin, pageH - 4);
+        doc.text(`Page ${i} / ${totalPages}`, pageW - margin, pageH - 4, { align: 'right' });
+      }
+
+      doc.save(`fiche-eleve-${(selectedEleve.identifiant || 'eleve').toLowerCase()}.pdf`);
+    } catch (e) {
+      setError('Erreur lors de la génération du PDF.');
+      console.error(e);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   // ─── VUE LISTE ───────────────────────────────────────────────────────
