@@ -30,7 +30,7 @@ export function isBlocUtilisable(b) {
   if (!b) return false;
   if (b.useExisting && b.matchedParent) return true;
   const hasParent = (b.has_pere && b.pere_nom && b.pere_prenom) || (b.has_mere && b.mere_nom && b.mere_prenom);
-  return hasParent && b.email.trim() !== '' && b.telephone.trim() !== '';
+  return hasParent && (b.email.trim() !== '' || b.telephone.trim() !== '');
 }
 
 /**

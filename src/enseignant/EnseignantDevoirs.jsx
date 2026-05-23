@@ -159,33 +159,52 @@ export default function EnseignantDevoirs() {
 
       {/* ── Toolbar : filtres + bouton ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{
+          display: 'inline-flex',
+          background: C.paper,
+          border: `1px solid ${C.rule}`,
+          borderRadius: 999,
+          padding: 3,
+        }}>
           {[
             { k: 'encours',  l: 'En cours' },
             { k: 'termines', l: 'Terminés' },
             { k: 'tous',     l: 'Tous' },
-          ].map(({ k, l }) => (
-            <button
-              key={k}
-              onClick={() => setFilter(k)}
-              style={{
-                padding: '7px 16px', borderRadius: 999,
-                border: `1px solid ${filter === k ? C.ink : C.rule}`,
-                background: filter === k ? C.ink : 'transparent',
-                color: filter === k ? C.paper : C.ink2,
-                fontFamily: "'Manrope',sans-serif", fontSize: 12.5, fontWeight: filter === k ? 700 : 500,
-                cursor: 'pointer',
-              }}
-            >
-              {l} <span style={{ opacity: 0.6, fontSize: 11 }}>{counts[k]}</span>
-            </button>
-          ))}
+          ].map(({ k, l }) => {
+            const active = filter === k;
+            return (
+              <button
+                key={k}
+                onClick={() => setFilter(k)}
+                style={{
+                  padding: '6px 16px', borderRadius: 999,
+                  border: 'none',
+                  background: active ? C.gold : 'transparent',
+                  color: active ? C.paper : C.ink3,
+                  fontFamily: "'Manrope',sans-serif", fontSize: 12,
+                  fontWeight: active ? 700 : 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {l}
+                <span style={{
+                  fontFamily: "'Newsreader', Georgia, serif",
+                  fontStyle: 'italic',
+                  fontSize: 12,
+                  color: active ? C.goldSoft : C.gold,
+                }}>
+                  {counts[k]}
+                </span>
+              </button>
+            );
+          })}
         </div>
         <button
           onClick={openCreate}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 7,
-            padding: '9px 18px', borderRadius: '60px 60px 12px 12px',
+            padding: '9px 18px', borderRadius: 10,
             border: 'none', background: C.gold, color: C.paper,
             fontFamily: "'Manrope',sans-serif", fontSize: 13, fontWeight: 600,
             cursor: 'pointer',

@@ -53,35 +53,35 @@ $$;
 GRANT EXECUTE ON FUNCTION public.admin_fetch_inscriptions(UUID) TO anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.admin_update_inscription_statut(
-  p_admin_id UUID, p_id UUID, p_statut TEXT
+  p_admin_token TEXT, p_id BIGINT, p_statut TEXT
 )
 RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
-  IF NOT public._is_admin(p_admin_id) THEN
+  IF NOT public._is_admin(p_admin_token) THEN
     RAISE EXCEPTION 'Accès refusé : session admin requise';
   END IF;
   UPDATE public.inscriptions SET statut = p_statut WHERE id = p_id;
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.admin_update_inscription_statut(UUID, UUID, TEXT)
+GRANT EXECUTE ON FUNCTION public.admin_update_inscription_statut(TEXT, BIGINT, TEXT)
   TO anon, authenticated;
 
 -- Lier une inscription à un élève (post-conversion).
 CREATE OR REPLACE FUNCTION public.admin_update_inscription_eleve_id(
-  p_admin_id UUID, p_id UUID, p_eleve_id UUID
+  p_admin_token TEXT, p_id BIGINT, p_eleve_id UUID
 )
 RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
-  IF NOT public._is_admin(p_admin_id) THEN
+  IF NOT public._is_admin(p_admin_token) THEN
     RAISE EXCEPTION 'Accès refusé : session admin requise';
   END IF;
   UPDATE public.inscriptions SET eleve_id = p_eleve_id, statut = 'converti'
   WHERE id = p_id;
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.admin_update_inscription_eleve_id(UUID, UUID, UUID)
+GRANT EXECUTE ON FUNCTION public.admin_update_inscription_eleve_id(TEXT, BIGINT, UUID)
   TO anon, authenticated;
 
 -- ─── 2. MESSAGES (formulaire contact) ────────────────────────────────────────

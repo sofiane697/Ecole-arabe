@@ -131,13 +131,14 @@ export default function EnseignantAbsences() {
   const nbRetards  = Object.values(statuts).filter(s => s.status === 'retard').length;
   const nbAbsents  = Object.values(statuts).filter(s => s.status === 'absence').length;
 
-  const btnStyle = (active) => ({
-    padding: '7px 16px', borderRadius: 999,
-    border: `1px solid ${active ? C.ink : C.rule}`,
-    background: active ? C.ink : 'transparent',
+  const segItemStyle = (active) => ({
+    padding: '6px 16px', borderRadius: 999,
+    border: 'none',
+    background: active ? C.gold : 'transparent',
     color: active ? C.paper : C.ink3,
-    fontFamily: "'Manrope',sans-serif", fontSize: 12, fontWeight: 600,
-    cursor: 'pointer', transition: 'all 0.12s', whiteSpace: 'nowrap',
+    fontFamily: "'Manrope',sans-serif", fontSize: 12,
+    fontWeight: active ? 700 : 600,
+    cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
   });
 
   return (
@@ -166,9 +167,15 @@ export default function EnseignantAbsences() {
 
       {/* ── Barre : onglets classes + filtre temps ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{
+          display: 'inline-flex',
+          background: C.paper,
+          border: `1px solid ${C.rule}`,
+          borderRadius: 999,
+          padding: 3,
+        }}>
           {classes.map(c => (
-            <button key={c.id} onClick={() => setSelClasse(c.id)} style={btnStyle(selClasse === c.id)}>
+            <button key={c.id} onClick={() => setSelClasse(c.id)} style={segItemStyle(selClasse === c.id)}>
               {c.nom}
             </button>
           ))}

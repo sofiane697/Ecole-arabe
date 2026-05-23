@@ -194,3 +194,24 @@ export async function fetchDeclarationsParent(eleveId) {
   if (error) return { data: [], error };
   return { data: data || [], error: null };
 }
+
+// ─── ACCUSÉS DE RÉCEPTION DES NOTES ──────────────────────────────────────────
+
+/** Enregistre la signature du parent pour une note (idempotent). */
+export async function acknowledgeNote(noteId) {
+  const s = needSession(); if (s.error) throw new Error(s.error.error);
+  const { data, error } = await rpc('parent_acknowledge_note', {
+    p_token: s.token, p_note_id: noteId,
+  });
+  if (error) throw new Error(error);
+  return data;
+}
+
+/** Retourne les note_id déjà signés par CE parent pour un élève donné. */
+export async function fetchNoteAcks(eleveId) {
+  const s = needSession(); if (s.error) return { data: [], error: s.error.error };
+  const { data, error } = await rpc('fetch_note_acks_for_parent', {
+    p_token: s.token, p_eleve_id: eleveId,
+  });
+  return { data: data || [], error: error || null };
+}

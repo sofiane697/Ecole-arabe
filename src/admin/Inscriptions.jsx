@@ -6,6 +6,7 @@ import {
   updateInscriptionEleveId, fetchEleveById,
   updateEleveActif, updateEleve, updateEleveNiveauScolaire,
   createEleve, fetchEleveIdParIdentifiant,
+  markInscriptionViewed,
 } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
@@ -14,6 +15,7 @@ import ParentsSection, { ParentResults } from './ParentsSection';
 import EleveParentsSection from './EleveParentsSection';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import { safeMailtoHref } from './adminUtils';
+import { emitInscriptionsChanged } from './adminEvents';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 
@@ -104,6 +106,10 @@ export default function Inscriptions() {
     } else {
       setLinkedEleve(null);
     }
+    // Marquer comme "consultée" si c'est une nouvelle inscription non encore vue
+    if (insc.statut === 'nouveau') {
+      markInscriptionViewed(insc.id).then(() => emitInscriptionsChanged()).catch(() => {});
+    }
   };
 
   const avancerStatut = async (id, currentStatut) => {
@@ -112,6 +118,7 @@ export default function Inscriptions() {
     if (selected?.id === id) setSelected(prev => ({ ...prev, statut: next }));
     try {
       await updateInscriptionStatut(id, next);
+      emitInscriptionsChanged();
     } catch (err) {
       setData(prev => prev.map(i => i.id === id ? { ...i, statut: currentStatut } : i));
     }
@@ -122,6 +129,7 @@ export default function Inscriptions() {
     if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refuse' }));
     try {
       await updateInscriptionStatut(id, 'refuse');
+      emitInscriptionsChanged();
     } catch (err) {
       setData(prev => prev.map(i => i.id === id ? { ...i, statut: currentStatut } : i));
       if (selected?.id === id) setSelected(prev => ({ ...prev, statut: currentStatut }));
@@ -133,6 +141,7 @@ export default function Inscriptions() {
     if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'nouveau' }));
     try {
       await updateInscriptionStatut(id, 'nouveau');
+      emitInscriptionsChanged();
     } catch (err) {
       setData(prev => prev.map(i => i.id === id ? { ...i, statut: 'refuse' } : i));
       if (selected?.id === id) setSelected(prev => ({ ...prev, statut: 'refuse' }));
@@ -163,7 +172,7 @@ export default function Inscriptions() {
       const skipParents  = isMajor || !addParentsNow;
       const blocsValides = skipParents ? [] : parentsBlocs.filter(isBlocUtilisable);
       if (!skipParents && blocsValides.length === 0) {
-        throw new Error("Renseigne au moins un parent (père ou mère) avec email et téléphone, ou décoche « Ajouter les parents maintenant ».");
+        throw new Error("Renseigne au moins un parent (père ou mère) avec email ou téléphone, ou décoche « Ajouter les parents maintenant ».");
       }
 
       // Dernier check duplicate avant création (au cas où onBlur n'a pas eu lieu)

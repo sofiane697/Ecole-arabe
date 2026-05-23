@@ -296,31 +296,31 @@ export default function EnseignantMessages() {
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: 4, padding: '0 16px 12px' }}>
-            {[
-              { key: 'all',       label: 'Tous'      },
-              { key: 'parents',   label: 'Parents'   },
-              { key: 'direction', label: 'Direction' },
-            ].map(t => {
-              const active = sideTab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setSideTab(t.key)}
-                  style={{
-                    padding: active ? '7px 16px' : '7px 12px',
-                    borderRadius: active ? '60px 60px 10px 10px' : 999,
-                    border: 'none',
-                    background: active ? C.ink : 'transparent',
-                    color: active ? C.paper : C.ink2,
-                    fontSize: 12, fontWeight: active ? 700 : 600,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
+          <div style={{ padding: '0 16px 12px' }}>
+            <div style={{ display: 'inline-flex', background: C.paper, border: `1px solid ${C.rule}`, borderRadius: 999, padding: 3 }}>
+              {[
+                { key: 'all',       label: 'Tous'      },
+                { key: 'parents',   label: 'Parents'   },
+                { key: 'direction', label: 'Direction' },
+              ].map(t => {
+                const active = sideTab === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setSideTab(t.key)}
+                    style={{
+                      padding: '6px 14px', borderRadius: 999, border: 'none',
+                      background: active ? C.gold : 'transparent',
+                      color: active ? C.paper : C.ink3,
+                      fontSize: 12, fontWeight: active ? 700 : 600,
+                      cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* List */}
@@ -694,7 +694,7 @@ function ChatView({ eleve, messages, text, setText, handleSend, handleKeyDown, s
           onClick={handleSend}
           disabled={!text.trim() || sending}
           style={{
-            padding: '11px 24px', borderRadius: '60px 60px 12px 12px', border: 'none',
+            padding: '11px 24px', borderRadius: 10, border: 'none',
             background: (!text.trim() || sending) ? C.rule : C.gold,
             color:      (!text.trim() || sending) ? C.ink3 : C.paper,
             fontSize: 13.5, fontWeight: 600,
@@ -836,7 +836,7 @@ function BroadcastView({
           onClick={handleSend}
           disabled={!text.trim() || sending}
           style={{
-            padding: '11px 24px', borderRadius: '60px 60px 12px 12px', border: 'none',
+            padding: '11px 24px', borderRadius: 10, border: 'none',
             background: (!text.trim() || sending) ? C.rule : C.gold,
             color:      (!text.trim() || sending) ? C.ink3 : C.paper,
             fontSize: 13.5, fontWeight: 600,

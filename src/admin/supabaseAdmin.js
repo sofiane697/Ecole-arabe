@@ -838,6 +838,14 @@ export async function updateInscriptionEleveId(inscriptionId, eleveId) {
   }
 }
 
+/** Marquer une inscription comme consultée (viewed_at = NOW()). Utilisé pour
+ *  que le badge ne compte que les inscriptions "Nouveau" non encore vues. */
+export async function markInscriptionViewed(inscriptionId) {
+  await rpcAdminWrite('admin_mark_inscription_viewed',
+    { p_admin_token: requireAdminToken(), p_inscription_id: inscriptionId },
+    'Erreur marquage consultation');
+}
+
 /** Récupérer un élève par son id — phase RLS #2.D.2 : passe par RPC. */
 export async function fetchEleveById(eleveId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_eleve_by_id`, {
@@ -1207,4 +1215,13 @@ export async function adminMarkDeclarationsVues() {
     body: JSON.stringify({ p_admin_token: requireAdminToken() }),
   });
   await res.text().catch(() => {});
+}
+
+// ─── ACCUSÉS DE RÉCEPTION DES NOTES ──────────────────────────────────────────
+
+/** Accusés de réception des notes pour un élève (fiche élève admin). */
+export async function adminFetchNoteAcks(eleveId) {
+  return rpcAdminWrite('admin_fetch_note_acks',
+    { p_admin_token: requireAdminToken(), p_eleve_id: eleveId },
+    'Erreur chargement accusés de réception');
 }

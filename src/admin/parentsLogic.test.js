@@ -39,19 +39,24 @@ describe('isBlocUtilisable', () => {
     expect(isBlocUtilisable(b)).toBe(false);
   });
 
-  test('false si email vide', () => {
+  test('true si seulement téléphone (email vide)', () => {
     const b = { ...emptyBloc(), has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean', telephone: '06' };
-    expect(isBlocUtilisable(b)).toBe(false);
+    expect(isBlocUtilisable(b)).toBe(true);
   });
 
-  test('false si téléphone vide', () => {
+  test('true si seulement email (téléphone vide)', () => {
     const b = { ...emptyBloc(), has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean', email: 'a@b.c' };
+    expect(isBlocUtilisable(b)).toBe(true);
+  });
+
+  test('false si ni email ni téléphone', () => {
+    const b = { ...emptyBloc(), has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean' };
     expect(isBlocUtilisable(b)).toBe(false);
   });
 
-  test('false si email uniquement des espaces', () => {
+  test('true si email vide mais téléphone rempli (email = espaces)', () => {
     const b = { ...emptyBloc(), has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean', email: '   ', telephone: '06' };
-    expect(isBlocUtilisable(b)).toBe(false);
+    expect(isBlocUtilisable(b)).toBe(true);
   });
 
   test('true quand père complet + email + tel', () => {
@@ -79,9 +84,9 @@ describe('isBlocUtilisable', () => {
     expect(isBlocUtilisable(b)).toBe(false);
   });
 
-  test('false si téléphone contient uniquement des espaces', () => {
+  test('true si téléphone = espaces mais email rempli', () => {
     const b = { ...emptyBloc(), has_pere: true, pere_nom: 'Dupont', pere_prenom: 'Jean', email: 'a@b.c', telephone: '   ' };
-    expect(isBlocUtilisable(b)).toBe(false);
+    expect(isBlocUtilisable(b)).toBe(true);
   });
 
   test('true quand useExisting + matchedParent, même si tous les champs sont vides', () => {

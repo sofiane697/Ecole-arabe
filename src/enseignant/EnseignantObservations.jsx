@@ -248,42 +248,49 @@ export default function EnseignantObservations() {
 
       {/* ═══ Filter bar ═══ */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28 }}>
-        {filterCounts.map(f => {
-          const active = activeFilter === f.key;
-          return (
-            <button
-              key={f.key}
-              onClick={() => setActiveFilter(f.key)}
-              style={{
-                padding: active ? '8px 18px' : '8px 12px',
-                borderRadius: active ? '60px 60px 12px 12px' : '999px',
-                border: 'none',
-                background: active ? C.ink : 'transparent',
-                color: active ? C.paper : C.ink2,
-                fontFamily: "'Manrope', sans-serif",
-                fontSize: 13, fontWeight: active ? 700 : 600,
-                cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-              }}
-            >
-              {f.label}
-              <span style={{
-                fontFamily: "'Newsreader', Georgia, serif",
-                fontStyle: 'italic',
-                fontSize: 13, fontWeight: 500,
-                color: active ? C.goldSoft : C.gold,
-              }}>
-                {f.count}
-              </span>
-            </button>
-          );
-        })}
+        <div style={{
+          display: 'inline-flex',
+          background: C.paper,
+          border: `1px solid ${C.rule}`,
+          borderRadius: 999,
+          padding: 3,
+        }}>
+          {filterCounts.map(f => {
+            const active = activeFilter === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                style={{
+                  padding: '6px 16px', borderRadius: 999,
+                  border: 'none',
+                  background: active ? C.gold : 'transparent',
+                  color: active ? C.paper : C.ink3,
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: 12, fontWeight: active ? 700 : 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {f.label}
+                <span style={{
+                  fontFamily: "'Newsreader', Georgia, serif",
+                  fontStyle: 'italic',
+                  fontSize: 12,
+                  color: active ? C.goldSoft : C.gold,
+                }}>
+                  {f.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         <div style={{ flex: 1 }} />
         <button
           onClick={openNew}
           style={{
             padding: '10px 22px',
-            borderRadius: '60px 60px 12px 12px',
+            borderRadius: 10,
             border: 'none', background: C.gold, color: C.paper,
             fontFamily: "'Manrope', sans-serif",
             fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -505,7 +512,7 @@ export default function EnseignantObservations() {
                     onClick={() => setModalType(k)}
                     style={{
                       padding: active ? '7px 16px' : '7px 14px',
-                      borderRadius: active ? '60px 60px 12px 12px' : 999,
+                      borderRadius: active ? 10 : 999,
                       cursor: 'pointer',
                       border: active ? 'none' : `1px solid ${C.rule}`,
                       background: active ? C.ink : 'transparent',
@@ -556,7 +563,7 @@ export default function EnseignantObservations() {
                 onClick={handleSave}
                 disabled={saving || !modalEleve || !modalText.trim()}
                 style={{
-                  padding: '10px 22px', borderRadius: '60px 60px 12px 12px', border: 'none',
+                  padding: '10px 22px', borderRadius: 10, border: 'none',
                   background: (saving || !modalEleve || !modalText.trim()) ? C.rule : C.gold,
                   color:      (saving || !modalEleve || !modalText.trim()) ? C.ink3 : C.paper,
                   fontSize: 13, fontWeight: 600,

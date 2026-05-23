@@ -1,6 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { logoutAdmin, fetchInscriptions, fetchMessages, verifyAdminSession, adminCountNouvellesDeclarations } from './supabaseAdmin';
+import {
+  ADMIN_EVENT_INSCRIPTIONS_CHANGED,
+  ADMIN_EVENT_MESSAGES_CHANGED,
+  ADMIN_EVENT_DECLARATIONS_CHANGED,
+} from './adminEvents';
 import { AnimatePresence, motion, pageVariants } from '../animations';
 
 const IconDashboard = () => (
@@ -103,11 +108,54 @@ export default function AdminApp() {
   const [newInscriptions,  setNewInscriptions]  = useState(0);
   const [newDeclarations,  setNewDeclarations]  = useState(0);
 
-  useEffect(() => {
+  // Rafraîchit les compteurs du sidebar (badges). Utilisé au mount, à chaque
+  // navigation, en polling 60s, et sur événement custom déclenché par les
+  // pages qui modifient l'état (ex: Inscriptions.jsx change un statut).
+  const refreshCounters = useCallback(() => {
     fetchMessages().then(msgs => setUnreadMessages(msgs.filter(m => !m.lu).length)).catch(() => {});
-    fetchInscriptions().then(insc => setNewInscriptions(insc.filter(i => i.statut === 'nouveau').length)).catch(() => {});
+    fetchInscriptions().then(insc => setNewInscriptions(insc.filter(i => i.statut === 'nouveau' && !i.viewed_at).length)).catch(() => {});
     adminCountNouvellesDeclarations().then(setNewDeclarations).catch(() => {});
-  }, [location.pathname]); // recharger à chaque changement de page
+  }, []);
+
+  // Recharge à chaque navigation entre pages admin.
+  useEffect(() => { refreshCounters(); }, [location.pathname, refreshCounters]);
+
+  // Polling 60s : si l'admin laisse l'onglet ouvert, on capte les nouvelles
+  // pré-inscriptions / messages arrivés entre-temps. Pausé quand l'onglet est
+  // en arrière-plan (économie réseau) + refresh immédiat au retour visible.
+  useEffect(() => {
+    let intervalId = null;
+    const start = () => { if (intervalId == null) intervalId = setInterval(refreshCounters, 60000); };
+    const stop  = () => { if (intervalId != null) { clearInterval(intervalId); intervalId = null; } };
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        refreshCounters();
+        start();
+      }
+    };
+    if (!document.hidden) start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [refreshCounters]);
+
+  // Évènements custom : les pages déclenchent `inscriptions:changed` (etc.)
+  // après une mutation locale pour éviter d'attendre la prochaine navigation.
+  useEffect(() => {
+    const handler = () => refreshCounters();
+    const events = [
+      ADMIN_EVENT_INSCRIPTIONS_CHANGED,
+      ADMIN_EVENT_MESSAGES_CHANGED,
+      ADMIN_EVENT_DECLARATIONS_CHANGED,
+    ];
+    events.forEach(ev => window.addEventListener(ev, handler));
+    return () => events.forEach(ev => window.removeEventListener(ev, handler));
+  }, [refreshCounters]);
+
   const currentTitle    = PAGE_TITLES[location.pathname] || 'Admin';
 
   const today = new Date().toLocaleDateString('fr-FR', {

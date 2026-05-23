@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, adminCreateObservation, adminCreateRetardAbsence } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, adminCreateObservation, adminCreateRetardAbsence, adminFetchNoteAcks } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
@@ -113,6 +113,7 @@ export default function Eleves() {
   const [progression, setProgression] = useState([]);
   const [modules, setModules] = useState([]);
   const [notes, setNotes]               = useState([]);
+  const [noteAcks, setNoteAcks]         = useState([]);
   const [absences, setAbsences]         = useState([]);
   const [observations, setObservations] = useState([]);
   const [niveauxMap, setNiveauxMap] = useState({});
@@ -192,6 +193,7 @@ export default function Eleves() {
     setNiveauxMap({});
     setQcmNiveauxIds(new Set());
     setNotes([]);
+    setNoteAcks([]);
     setAbsences([]);
     setObservations([]);
     setAbsForm(null);
@@ -201,7 +203,7 @@ export default function Eleves() {
       if (token !== openEleveTokenRef.current) return;
       setModules(mods);
       const logFetchErr = (label) => (e) => { console.warn(`[openEleve] ${label}`, e); return []; };
-      const [prog, nivMap, nts, abs, obs] = await Promise.all([
+      const [prog, nivMap, nts, abs, obs, acks] = await Promise.all([
         fetchEleveProgression(eleve.id).catch(logFetchErr('progression')),
         Promise.all(mods.map(async (m) => {
           try { return [m.id, await fetchAllNiveauxForModule(m.id)]; } catch { return [m.id, []]; }
@@ -209,11 +211,13 @@ export default function Eleves() {
         fetchNotesEleve(eleve.id).catch(logFetchErr('notes')),
         fetchRetardsAbsencesEleve(eleve.id).catch(logFetchErr('absences')),
         fetchObservationsEleve(eleve.id).catch(logFetchErr('observations')),
+        adminFetchNoteAcks(eleve.id).catch(logFetchErr('noteAcks')),
       ]);
       if (token !== openEleveTokenRef.current) return;
       setProgression(prog);
       setNiveauxMap(nivMap);
       setNotes(nts);
+      setNoteAcks(Array.isArray(acks) ? acks : []);
       setAbsences(abs);
       setObservations(obs);
       // Charger quels niveaux ont un QCM (même logique que le portail élève)
@@ -870,43 +874,57 @@ export default function Eleves() {
                 <EleveEmptyState>Aucune note enregistrée pour l'instant.</EleveEmptyState>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {notes.map(n => (
-                    <div key={n.id} style={{
-                      padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
-                      background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
-                      display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center',
-                    }}>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--a-fg)' }}>
-                          {n.evaluation?.titre || 'Évaluation'}
-                        </div>
-                        {n.evaluation?.date && (
-                          <div style={{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 3 }}>
-                            {fmtDateFr(n.evaluation.date)}
+                  {notes.map(n => {
+                    const nAcks = noteAcks.filter(a => a.note_id === n.id);
+                    return (
+                      <div key={n.id} style={{
+                        padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
+                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                      }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--a-fg)' }}>
+                              {n.evaluation?.titre || 'Évaluation'}
+                            </div>
+                            {n.evaluation?.date && (
+                              <div style={{ fontSize: 12, color: 'var(--a-fg-mid)', marginTop: 3 }}>
+                                {fmtDateFr(n.evaluation.date)}
+                              </div>
+                            )}
+                            {n.commentaire && (
+                              <div style={{ fontSize: 13, color: 'var(--a-fg)', marginTop: 8, fontStyle: 'italic' }}>
+                                « {n.commentaire} »
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {n.commentaire && (
-                          <div style={{ fontSize: 13, color: 'var(--a-fg)', marginTop: 8, fontStyle: 'italic' }}>
-                            « {n.commentaire} »
+                          {(() => {
+                            const color = n.absent ? 'var(--a-fg-light)' : (SCORE_COLOR[n.score] || 'var(--a-fg-light)');
+                            return (
+                              <div style={{
+                                padding: '6px 14px', borderRadius: 999,
+                                background: `${color}22`,
+                                color: n.absent ? 'var(--a-fg-mid)' : color,
+                                fontSize: 14, fontWeight: 700,
+                                minWidth: 50, textAlign: 'center',
+                              }}>
+                                {n.absent ? 'Abs.' : (SCORE_LABEL[n.score] || '—')}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                        {nAcks.length > 0 && (
+                          <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--a-border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {nAcks.map((a, i) => (
+                              <span key={i} style={{ fontSize: 11, color: 'var(--a-fg-mid)' }}>
+                                <span style={{ color: '#30d158', marginRight: 3 }}>✓</span>
+                                {a.parent_label} · {new Date(a.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            ))}
                           </div>
                         )}
                       </div>
-                      {(() => {
-                        const color = n.absent ? 'var(--a-fg-light)' : (SCORE_COLOR[n.score] || 'var(--a-fg-light)');
-                        return (
-                          <div style={{
-                            padding: '6px 14px', borderRadius: 999,
-                            background: `${color}22`,
-                            color: n.absent ? 'var(--a-fg-mid)' : color,
-                            fontSize: 14, fontWeight: 700,
-                            minWidth: 50, textAlign: 'center',
-                          }}>
-                            {n.absent ? 'Abs.' : (SCORE_LABEL[n.score] || '—')}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </>

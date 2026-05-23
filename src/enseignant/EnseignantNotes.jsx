@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   getEnseignantUser, fetchMesClasses, fetchElevesDeClasse,
   fetchEvaluationsClasse, createEvaluation, updateEvaluation, deleteEvaluation,
-  fetchNotesEvaluation, upsertNote,
+  fetchNotesEvaluation, upsertNote, fetchNoteAcks, validerEvaluation,
 } from './supabaseEnseignant';
 import { Flourish, Star5 } from '../shared/Ornaments';
 import EleveAvatar from '../shared/EleveAvatar';
@@ -236,7 +236,8 @@ export default function EnseignantNotes() {
   const [fDate,        setFDate]        = useState('');
   const [saving,       setSaving]       = useState(false);
   const [lastSave,     setLastSave]     = useState(null);
-  const [validatedEval, setValidatedEval] = useState(null); // id de l'éval validée localement
+  const [validating,   setValidating]   = useState(false);
+  const [acksMap,      setAcksMap]      = useState({}); // { [note_id]: [{ parent_label, created_at }] }
 
   const today = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
@@ -271,14 +272,40 @@ export default function EnseignantNotes() {
 
   useEffect(() => { if (selClasse) loadData(selClasse); }, [selClasse, loadData]);
 
+  useEffect(() => {
+    if (!selEval?.id) { setAcksMap({}); return; }
+    let cancelled = false;
+    fetchNoteAcks(selEval.id).then(rows => {
+      if (cancelled) return;
+      const map = {};
+      rows.forEach(r => {
+        if (!map[r.note_id]) map[r.note_id] = [];
+        map[r.note_id].push({ parent_label: r.parent_label, created_at: r.created_at });
+      });
+      setAcksMap(map);
+    });
+    return () => { cancelled = true; };
+  }, [selEval?.id]);
+
+  // Si l'éval était validée, modifier une note la dévalide automatiquement
+  // (la validation = "je confirme l'état actuel des notes"). Best-effort côté
+  // serveur : on met l'UI à jour immédiatement et on persiste en arrière-plan.
+  const devaliderSiValidee = useCallback(async (evalId) => {
+    const ev = evaluations.find(e => e.id === evalId);
+    if (!ev?.valide_le) return;
+    setEvaluations(prev => prev.map(e => e.id === evalId ? { ...e, valide_le: null } : e));
+    setSelEval(prev => prev?.id === evalId ? { ...prev, valide_le: null } : prev);
+    try { await validerEvaluation(evalId, false); } catch {}
+  }, [evaluations]);
+
   const saveNote = useCallback(async (evalId, eleveId, score) => {
     const key = noteKey(evalId, eleveId);
     const current = notesMap[key];
     const result = await upsertNote(evalId, eleveId, score, false, current?.commentaire ?? null);
     setNotesMap(prev => ({ ...prev, [key]: result }));
     setLastSave(new Date());
-    setValidatedEval(v => v === evalId ? null : v);
-  }, [notesMap]);
+    devaliderSiValidee(evalId);
+  }, [notesMap, devaliderSiValidee]);
 
   const toggleAbsent = useCallback(async (evalId, eleveId) => {
     const key = noteKey(evalId, eleveId);
@@ -288,8 +315,8 @@ export default function EnseignantNotes() {
     const result = await upsertNote(evalId, eleveId, null, newAbsent, current?.commentaire ?? null);
     setNotesMap(prev => ({ ...prev, [key]: result }));
     setLastSave(new Date());
-    setValidatedEval(v => v === evalId ? null : v);
-  }, [notesMap]);
+    devaliderSiValidee(evalId);
+  }, [notesMap, devaliderSiValidee]);
 
   const saveComment = useCallback(async (evalId, eleveId, commentaire) => {
     const key = noteKey(evalId, eleveId);
@@ -298,11 +325,11 @@ export default function EnseignantNotes() {
     setNotesMap(prev => ({ ...prev, [key]: result }));
     setCommentModal(null);
     setLastSave(new Date());
-    setValidatedEval(v => v === evalId ? null : v);
-  }, [notesMap]);
+    devaliderSiValidee(evalId);
+  }, [notesMap, devaliderSiValidee]);
 
-  const handleValiderSerie = () => {
-    if (!selEval) return;
+  const handleValiderSerie = async () => {
+    if (!selEval || validating) return;
     const stats = evalStats(selEval);
     const manquants = stats.total - stats.noted;
     if (manquants > 0) {
@@ -311,7 +338,31 @@ export default function EnseignantNotes() {
       );
       if (!ok) return;
     }
-    setValidatedEval(selEval.id);
+    setValidating(true);
+    try {
+      const valideAt = await validerEvaluation(selEval.id, true);
+      setEvaluations(prev => prev.map(e => e.id === selEval.id ? { ...e, valide_le: valideAt } : e));
+      setSelEval(prev => prev?.id === selEval.id ? { ...prev, valide_le: valideAt } : prev);
+    } catch (e) {
+      window.alert(`Erreur lors de la validation : ${e.message || 'inconnue'}`);
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleDevaliderSerie = async () => {
+    if (!selEval || validating) return;
+    if (!window.confirm('Modifier la série ? Elle ne sera plus marquée comme validée tant que tu ne l\'auras pas revalidée.')) return;
+    setValidating(true);
+    try {
+      await validerEvaluation(selEval.id, false);
+      setEvaluations(prev => prev.map(e => e.id === selEval.id ? { ...e, valide_le: null } : e));
+      setSelEval(prev => prev?.id === selEval.id ? { ...prev, valide_le: null } : prev);
+    } catch (e) {
+      window.alert(`Erreur : ${e.message || 'inconnue'}`);
+    } finally {
+      setValidating(false);
+    }
   };
 
   const evalStats = (ev) => {
@@ -382,36 +433,37 @@ export default function EnseignantNotes() {
 
       {/* ── Onglets classes + bouton ── */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:22, flexWrap:'wrap', gap:10 }}>
-        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+        <div style={{
+          display: 'inline-flex',
+          background: C.paper,
+          border: `1px solid ${C.rule}`,
+          borderRadius: 999,
+          padding: 3,
+        }}>
           {classes.map(c => {
             const isActive = selClasse === c.id;
-            const elvCount = isActive ? eleves.length : 0;
             return (
               <button
                 key={c.id}
                 onClick={() => setSelClasse(c.id)}
                 style={{
-                  padding:'7px 16px', borderRadius:999, cursor:'pointer',
-                  border:`1px solid ${isActive ? C.ink : C.rule}`,
-                  background: isActive ? C.ink : 'transparent',
-                  color: isActive ? C.paper : C.ink2,
-                  fontFamily:"'Manrope',sans-serif", fontSize:12.5, fontWeight: isActive ? 700 : 500,
-                  display:'flex', flexDirection:'column', alignItems:'center', lineHeight:1.2,
+                  padding: '6px 16px', borderRadius: 999,
+                  border: 'none',
+                  background: isActive ? C.gold : 'transparent',
+                  color: isActive ? C.paper : C.ink3,
+                  fontFamily: "'Manrope',sans-serif", fontSize: 12,
+                  fontWeight: isActive ? 700 : 600,
+                  cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
                 }}
               >
-                <span>{c.nom}</span>
-                {isActive && c.niveaux_scolaires?.nom && (
-                  <span style={{ fontSize:9, opacity:0.7, letterSpacing:'0.05em', marginTop:1 }}>
-                    {c.niveaux_scolaires.nom} · {elvCount} él.
-                  </span>
-                )}
+                {c.nom}
               </button>
             );
           })}
         </div>
         <button
           onClick={() => { setFTitre(''); setFDate(''); setModal({ mode:'create' }); }}
-          style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:'60px 60px 12px 12px', border:'none', background:C.gold, color:C.paper, fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}
+          style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:10, border:'none', background:C.gold, color:C.paper, fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}
           onMouseEnter={e => e.currentTarget.style.opacity='0.85'}
           onMouseLeave={e => e.currentTarget.style.opacity='1'}
         >
@@ -466,7 +518,7 @@ export default function EnseignantNotes() {
                   {/* Status + actions */}
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
                     <span style={{ fontFamily:"'Manrope',sans-serif", fontSize:8.5, fontWeight:700, letterSpacing:'0.16em', textTransform:'uppercase', color:C.gold }}>
-                      EN COURS
+                      {ev.valide_le ? '✓ Validée' : 'EN COURS'}
                     </span>
                     {isOwn && (
                       <div style={{ display:'flex', gap:4 }}>
@@ -571,6 +623,13 @@ export default function EnseignantNotes() {
                       <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:11, color:C.ink3, marginTop:1 }}>
                         {note?.absent ? 'absent' : note?.score != null ? GRADES.find(g=>g.value===note.score)?.libelle : 'non saisi'}
                       </div>
+                      {note?.id && acksMap[note.id]?.length > 0 && (
+                        <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:10, color:C.gold, marginTop:3 }}>
+                          ✓ Lu · {acksMap[note.id].length === 1
+                            ? acksMap[note.id][0].parent_label
+                            : `${acksMap[note.id].length} parents`}
+                        </div>
+                      )}
                     </div>
                     {/* Saisie */}
                     <NoteInput
@@ -588,29 +647,45 @@ export default function EnseignantNotes() {
 
               {/* Footer autosave + valider */}
               {(() => {
-                const isValidated = validatedEval === selEval.id;
+                const isValidated = !!selEval.valide_le;
                 return (
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 22px', borderTop:`1px solid ${C.ruleSoft}` }}>
                     <span style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:11.5, color: isValidated ? C.gold : C.ink3 }}>
                       {isValidated
-                        ? `✓ Série validée · ${evalStats(selEval).noted} / ${evalStats(selEval).total} élèves notés`
+                        ? `✓ Série validée le ${fmt(selEval.valide_le)} · ${evalStats(selEval).noted} / ${evalStats(selEval).total} élèves notés`
                         : lastSave ? `Auto-sauvegardé · ${fmtAgo(lastSave)}` : 'Modifiez une note pour sauvegarder'}
                     </span>
-                    <button
-                      onClick={handleValiderSerie}
-                      disabled={isValidated}
-                      style={{
-                        padding:'9px 22px', borderRadius:999, border:'none',
-                        background: isValidated ? C.rule : C.ink,
-                        color: isValidated ? C.ink3 : C.paper,
-                        fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600,
-                        cursor: isValidated ? 'default' : 'pointer',
-                      }}
-                      onMouseEnter={e => { if (!isValidated) e.currentTarget.style.opacity='0.85'; }}
-                      onMouseLeave={e => { if (!isValidated) e.currentTarget.style.opacity='1'; }}
-                    >
-                      {isValidated ? '✓ Validée' : 'Valider la série →'}
-                    </button>
+                    {isValidated ? (
+                      <button
+                        onClick={handleDevaliderSerie}
+                        disabled={validating}
+                        style={{
+                          padding:'9px 22px', borderRadius:999,
+                          border:`1px solid ${C.rule}`, background:'transparent', color:C.ink2,
+                          fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600,
+                          cursor: validating ? 'default' : 'pointer',
+                          opacity: validating ? 0.6 : 1,
+                        }}
+                      >
+                        {validating ? 'Modification…' : 'Modifier la série'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleValiderSerie}
+                        disabled={validating}
+                        style={{
+                          padding:'9px 22px', borderRadius:999, border:'none',
+                          background:C.ink, color:C.paper,
+                          fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600,
+                          cursor: validating ? 'default' : 'pointer',
+                          opacity: validating ? 0.6 : 1,
+                        }}
+                        onMouseEnter={e => { if (!validating) e.currentTarget.style.opacity='0.85'; }}
+                        onMouseLeave={e => { if (!validating) e.currentTarget.style.opacity='1'; }}
+                      >
+                        {validating ? 'Validation…' : 'Valider la série →'}
+                      </button>
+                    )}
                   </div>
                 );
               })()}

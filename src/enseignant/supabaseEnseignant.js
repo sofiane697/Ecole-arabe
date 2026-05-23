@@ -274,9 +274,22 @@ export async function fetchEvaluationsClasse(classeId) {
       date_evaluation: r.date_evaluation,
       score_max: r.score_max,
       created_at: r.created_at,
+      valide_le: r.valide_le,
       enseignants: r.enseignant_id ? { nom: r.enseignant_nom, prenom: r.enseignant_prenom } : null,
     }));
   } catch { return []; }
+}
+
+/** Marque une série comme validée (p_valider=true) ou la dévalide (false).
+ *  Retourne la nouvelle valeur de `valide_le` (TIMESTAMPTZ ISO ou null). */
+export async function validerEvaluation(evaluationId, valider) {
+  const token = getEnseignantToken();
+  if (!token) throw new Error('Session expirée');
+  return await rpc('valider_evaluation_secure', {
+    p_token: token,
+    p_evaluation_id: evaluationId,
+    p_valider: valider,
+  });
 }
 
 export async function createEvaluation(data) {
@@ -330,6 +343,30 @@ export async function upsertNote(evaluationId, eleveId, score, absent, commentai
     p_absent: absent,
     p_commentaire: commentaire,
   });
+}
+
+/** Accusés de réception des parents pour toutes les notes d'une évaluation. */
+export async function fetchNoteAcks(evaluationId) {
+  const token = getEnseignantToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_note_acks_for_enseignant', {
+      p_token: token, p_evaluation_id: evaluationId,
+    });
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
+}
+
+/** Accusés de réception pour toutes les notes d'UN élève (fiche élève). */
+export async function fetchNoteAcksEleve(eleveId) {
+  const token = getEnseignantToken();
+  if (!token) return [];
+  try {
+    const rows = await rpc('fetch_note_acks_eleve_for_enseignant', {
+      p_token: token, p_eleve_id: eleveId,
+    });
+    return Array.isArray(rows) ? rows : [];
+  } catch { return []; }
 }
 
 // ─── OBSERVATIONS ─────────────────────────────────────────────────────────────
