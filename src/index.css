@@ -7,6 +7,8 @@
 @import './styles/portail-overrides.css';
 /* Phase 2 : admin + enseignant */
 @import './styles/admin-overrides.css';
+/* Coupole v1 : portail enseignant redesign */
+@import './styles/enseignant-coupole.css';
 /* Phase 3 : site public */
 @import './styles/site-base.css';
 @import './styles/site-keyframes.css';

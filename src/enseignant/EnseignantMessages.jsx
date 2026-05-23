@@ -5,121 +5,125 @@ import {
   deleteConversation, sendGroupMessage, fetchBroadcastsClasse,
   updateBroadcast, deleteBroadcast,
 } from './supabaseEnseignant';
+import { Flourish, Diamond } from '../shared/Ornaments';
 import EleveAvatar from '../shared/EleveAvatar';
-import { fmtPrenom, fmtNom } from '../shared/nameUtils';
+
+// ── Palette Coupole v1 ──────────────────────────────────────────────────────
+const C = {
+  bg:        '#F2EEDF',
+  paper:     '#FBFAF1',
+  ink:       '#1E2317',
+  ink2:      '#3F4A33',
+  ink3:      '#7A876A',
+  gold:      '#8A6B1F',
+  goldLight: '#C09844',
+  goldSoft:  '#DCBC6E',
+  rule:      'rgba(138,107,31,0.18)',
+  ruleSoft:  'rgba(138,107,31,0.10)',
+};
 
 const BROADCAST_MAX = 2000;
+
+function ini(e) {
+  return `${(e?.prenom || '')[0] || ''}${(e?.nom || '')[0] || ''}`.toUpperCase();
+}
 
 function fmtTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  const now = new Date();
-  if (d.toDateString() === now.toDateString())
-    return d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-  return d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) + ' ' +
-         d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-/* ── Static inline styles ── */
-const cls = {
-  page:          { display:'flex', overflow:'hidden', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', background:'var(--a-bg-card)' },
-  sidebar:       { width:280, flexShrink:0, borderRight:'1px solid var(--a-border)', display:'flex', flexDirection:'column', overflow:'hidden' },
-  sideTitle:     { padding:'14px 18px', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.5px', borderBottom:'1px solid var(--a-border)' },
-  sideSubTitle:  { padding:'12px 18px 6px', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.5px' },
-  search:        { padding:'10px 14px', borderBottom:'1px solid var(--a-border)' },
-  searchInput:   { width:'100%', padding:'8px 12px', borderRadius:20, border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:13, outline:'none', boxSizing:'border-box' },
-  listWrap:      { flex:1, overflowY:'auto' },
-  // Passé en fallbackStyle à <EleveAvatar> : les dimensions/forme viennent de .avatar-circle + inlineSize, on ne conserve que les couleurs.
-  eleveAvatar:   { background:'var(--a-gold)', color:'#fff' },
-  classeIcon:    { width:36, height:36, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 },
-  eleveName:     { fontSize:13, fontWeight:600, color:'var(--a-fg)' },
-  eleveId:       { fontSize:11, color:'var(--a-fg-light)', fontFamily:'var(--a-font-mono)', marginTop:2 },
-  badge:         { marginLeft:'auto', background:'var(--a-red)', color:'#fff', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:20, flexShrink:0 },
-  chat:          { flex:1, display:'flex', flexDirection:'column', overflow:'hidden' },
-  chatHeader:    { padding:'12px 18px', borderBottom:'1px solid var(--a-border)', display:'flex', alignItems:'center', gap:12 },
-  chatAvatar:    { background:'var(--a-gold)', color:'#fff' },
-  chatName:      { fontSize:14, fontWeight:700, color:'var(--a-fg)' },
-  chatSub:       { fontSize:11, color:'var(--a-fg-light)', fontFamily:'var(--a-font-mono)' },
-  messages:      { flex:1, overflowY:'auto', padding:16, display:'flex', flexDirection:'column', gap:8 },
-  broadcastBubble: { padding:'12px 16px', borderRadius:14, color:'var(--a-fg)', fontSize:13, lineHeight:1.5, wordBreak:'break-word', maxWidth:'85%' },
-  broadcastBadge: { fontSize:11, fontWeight:700, color:'var(--a-gold)', marginBottom:6, letterSpacing:'0.3px' },
-  inputRow:      { padding:'10px 14px', borderTop:'1px solid var(--a-border)', display:'flex', gap:8, alignItems:'flex-end' },
-  textarea:      { flex:1, padding:'9px 13px', borderRadius:16, border:'1px solid var(--a-border)', background:'var(--a-bg-input)', color:'var(--a-fg)', fontSize:13, outline:'none', resize:'none', minHeight:38, maxHeight:100, boxSizing:'border-box', fontFamily:'inherit', lineHeight:'normal' },
-  empty:         { flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', color:'var(--a-fg-light)', fontSize:14, gap:10 },
-};
+function fmtDayShort(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return fmtTime(iso);
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  if (d.toDateString() === yest.toDateString()) return 'hier';
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
 
-/* ── Remaining dynamic-only styles ── */
-const S = {
-  page:       { height:'calc(100vh - 130px)', gap:0 },
-  eleveItem:  (active) => ({ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', cursor:'pointer', background: active ? 'rgba(191,138,48,.1)' : 'transparent', borderBottom:'1px solid var(--a-border)', transition:'background .15s' }),
-  classeItem: (active) => ({ display:'flex', alignItems:'center', gap:10, padding:'12px 16px', cursor:'pointer', background: active ? 'rgba(191,138,48,.15)' : 'transparent', borderBottom:'1px solid var(--a-border)', transition:'background .15s', width:'100%', textAlign:'left', border:'none', color:'var(--a-fg)' }),
-  classeIcon: { background:'rgba(191,138,48,.15)', color:'var(--a-gold)' },
-  broadcastBubble: { background:'rgba(191,138,48,.12)', border:'1px solid rgba(191,138,48,.35)' },
-  bubble:     (mine) => ({
-    padding:'10px 14px', borderRadius: mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-    background: mine ? 'var(--a-gold)' : 'var(--a-bg)',
-    color: mine ? '#fff' : 'var(--a-fg)',
-    fontSize:13, lineHeight:1.5,
-    border: mine ? 'none' : '1px solid var(--a-border)',
-    wordBreak:'break-word',
-  }),
-  bubbleRow:  (mine) => ({ display:'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }),
-  bubbleWrap: (mine) => ({ maxWidth:'68%', display:'flex', flexDirection:'column', alignItems: mine ? 'flex-end' : 'flex-start' }),
-  bubbleTime: (mine) => ({ fontSize:11, color: mine ? 'rgba(255,255,255,.6)' : 'var(--a-fg-light)', marginTop:3, textAlign: mine ? 'right' : 'left' }),
-  sendBtn:    (disabled) => ({ padding:'9px 18px', borderRadius:16, border:'none', background: disabled ? 'var(--a-border)' : 'var(--a-gold)', color: disabled ? 'var(--a-fg-light)' : '#fff', fontSize:13, fontWeight:700, cursor: disabled ? 'not-allowed' : 'pointer', flexShrink:0, transition:'background .2s' }),
-};
+function frenchLongDate(d) {
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
 
+function dayLabel(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return "AUJOURD'HUI";
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  if (d.toDateString() === yest.toDateString()) return 'HIER';
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+}
+
+// ── Icons ──
+const IconSearch = ({ size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const IconClip = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+  </svg>
+);
+const IconCalendar = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const IconTrash = ({ size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  </svg>
+);
+const IconEdit = ({ size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+
+// ═════════════════════════════════════════════════════════════════════════════
 export default function EnseignantMessages() {
   const user = getEnseignantUser();
   const enseignantId = user?.id;
 
-  const [classes, setClasses]     = useState([]);
-  const [eleves, setEleves]       = useState(null);
-  const [filtered, setFiltered]   = useState([]);
-  const [search, setSearch]       = useState('');
-  const [selEleve, setSelEleve]   = useState(null);
-  const [selClasse, setSelClasse] = useState(null);
-  const [messages, setMessages]   = useState([]);
+  const [classes,    setClasses]    = useState([]);
+  const [eleves,     setEleves]     = useState(null);
+  const [search,     setSearch]     = useState('');
+  const [sideTab,    setSideTab]    = useState('all');
+  const [selEleve,   setSelEleve]   = useState(null);
+  const [selClasse,  setSelClasse]  = useState(null);
+  const [messages,   setMessages]   = useState([]);
   const [broadcasts, setBroadcasts] = useState([]);
-  const [text, setText]           = useState('');
-  const [sending, setSending]         = useState(false);
-  const [unreadMap, setUnreadMap]     = useState({});
+  const [text,       setText]       = useState('');
+  const [sending,    setSending]    = useState(false);
+  const [unreadMap,  setUnreadMap]  = useState({});
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [actionError, setActionError]     = useState('');
-  const [classeDropdownOpen, setClasseDropdownOpen] = useState(false);
-  const [editingBroadcast, setEditingBroadcast] = useState(null); // { id, broadcast_id, contenu }
-  const [editText, setEditText] = useState('');
-  const [confirmDeleteBroadcast, setConfirmDeleteBroadcast] = useState(null); // broadcast_id
-  const classeDropdownRef = useRef(null);
-  const bottomRef                 = useRef(null);
-  const pollRef                   = useRef(null);
+  const [actionError,   setActionError]   = useState('');
+  const [editingBroadcast,      setEditingBroadcast]      = useState(null);
+  const [editText,              setEditText]              = useState('');
+  const [confirmDeleteBroadcast, setConfirmDeleteBroadcast] = useState(null);
+  const bottomRef = useRef(null);
+  const pollRef   = useRef(null);
 
-  // Charger tous les élèves + classes + badge non-lus
+  // ── Load data ──
   useEffect(() => {
     if (!enseignantId) return;
     fetchMesClasses(enseignantId).then(setClasses).catch(() => setClasses([]));
     fetchTousLesElevesEnseignant(enseignantId).then(async (list) => {
       setEleves(list);
-      setFiltered(list);
       const map = {};
       await Promise.all(list.map(async e => {
         map[e.id] = await fetchUnreadCountParEleve(e.id, enseignantId).catch(() => 0);
       }));
       setUnreadMap(map);
-    }).catch(() => { setEleves([]); setFiltered([]); });
+    }).catch(() => { setEleves([]); });
   }, [enseignantId]);
 
-  // Filtre recherche
-  useEffect(() => {
-    if (!eleves) return;
-    const q = search.toLowerCase();
-    setFiltered(!q ? eleves : eleves.filter(e =>
-      `${e.prenom} ${e.nom}`.toLowerCase().includes(q) ||
-      (e.identifiant || '').toLowerCase().includes(q)
-    ));
-  }, [search, eleves]);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages, broadcasts]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, broadcasts]);
 
   const loadMessages = useCallback(async () => {
     if (!enseignantId || !selEleve) return;
@@ -155,19 +159,16 @@ export default function EnseignantMessages() {
 
   const handleSend = async () => {
     if (!text.trim() || sending) return;
-    setSending(true);
-    setActionError('');
+    setSending(true); setActionError('');
     try {
       if (selClasse) {
         await sendGroupMessage(enseignantId, selClasse.id, text.trim());
-        setText('');
-        await loadBroadcasts();
+        setText(''); await loadBroadcasts();
       } else if (selEleve) {
         await sendChatMessage(selEleve.id, enseignantId, text.trim(), 'enseignant');
-        setText('');
-        await loadMessages();
+        setText(''); await loadMessages();
       }
-    } catch(e) { setActionError(e.message || 'Erreur lors de l\'envoi du message.'); }
+    } catch (e) { setActionError(e.message || "Erreur lors de l'envoi."); }
     setSending(false);
   };
 
@@ -179,393 +180,674 @@ export default function EnseignantMessages() {
     if (!selEleve || !enseignantId) return;
     try {
       await deleteConversation(selEleve.id, enseignantId);
-      setMessages([]);
-      setConfirmDelete(false);
-    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression de la conversation.'); }
+      setMessages([]); setConfirmDelete(false);
+    } catch (e) { setActionError(e.message || 'Erreur.'); }
   };
 
   const selectEleve  = (e) => { setSelClasse(null); setSelEleve(e); };
-  const selectClasse = (c) => { setSelEleve(null); setSelClasse(c); setBroadcasts([]); setClasseDropdownOpen(false); };
-
-  // Fermer le dropdown au clic externe
-  useEffect(() => {
-    if (!classeDropdownOpen) return;
-    const onClick = (e) => {
-      if (classeDropdownRef.current && !classeDropdownRef.current.contains(e.target)) setClasseDropdownOpen(false);
-    };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
-  }, [classeDropdownOpen]);
+  const selectClasse = (c) => { setSelEleve(null); setSelClasse(c); setBroadcasts([]); };
 
   const startEditBroadcast = (b) => {
-    setActionError('');
-    setEditingBroadcast(b);
-    setEditText(b.contenu);
+    setActionError(''); setEditingBroadcast(b); setEditText(b.contenu);
     setConfirmDeleteBroadcast(null);
   };
-
   const saveEditBroadcast = async () => {
     if (!editingBroadcast || !editText.trim()) return;
     setActionError('');
     try {
       await updateBroadcast(enseignantId, editingBroadcast.broadcast_id, editText.trim());
-      setEditingBroadcast(null);
-      setEditText('');
-      await loadBroadcasts();
-    } catch(e) { setActionError(e.message || 'Erreur lors de la modification.'); }
+      setEditingBroadcast(null); setEditText(''); await loadBroadcasts();
+    } catch (e) { setActionError(e.message || 'Erreur.'); }
   };
-
-  const askDeleteBroadcast = (id) => {
-    setActionError('');
-    setConfirmDeleteBroadcast(id);
-  };
-
   const handleDeleteBroadcast = async (broadcastId) => {
     setActionError('');
     try {
       await deleteBroadcast(enseignantId, broadcastId);
-      setConfirmDeleteBroadcast(null);
-      await loadBroadcasts();
-    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression.'); }
+      setConfirmDeleteBroadcast(null); await loadBroadcasts();
+    } catch (e) { setActionError(e.message || 'Erreur.'); }
   };
 
-  if (eleves === null) return <div style={{ padding:32, color:'var(--a-fg-mid)' }}>Chargement…</div>;
+  // ── Filtre / recherche ──
+  const filteredEleves = (eleves || []).filter(e => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return `${e.prenom} ${e.nom}`.toLowerCase().includes(q) || (e.identifiant || '').toLowerCase().includes(q);
+  });
+
+  const totalUnread = Object.values(unreadMap).reduce((s, n) => s + (n || 0), 0);
+
+  const showParents   = sideTab === 'all' || sideTab === 'parents';
+  const showDirection = sideTab === 'all' || sideTab === 'direction';
+
+  const today = new Date();
+  const todayStr = frenchLongDate(today);
+
+  if (eleves === null) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: C.ink3, fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic' }}>
+        Chargement…
+      </div>
+    );
+  }
 
   return (
-    <div style={{ ...cls.page, ...S.page }}>
-      {/* Colonne gauche */}
-      <div style={cls.sidebar}>
-        <div style={cls.sideTitle}>Messages</div>
+    <div style={{ fontFamily: "'Manrope', system-ui, sans-serif", color: C.ink, padding: '24px 32px 32px' }}>
 
-        {classes.length === 1 && (
-          <>
-            <div style={cls.sideSubTitle}>Mes classes</div>
-            <div>
-              {classes.map(c => (
-                <button
-                  key={c.id}
-                  style={S.classeItem(selClasse?.id === c.id)}
-                  onClick={() => selectClasse(c)}
-                >
-                  <div style={{ ...cls.classeIcon, ...S.classeIcon }}>📢</div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={cls.eleveName}>{c.nom}</div>
-                    <div style={cls.eleveId}>Annonce à la classe</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {classes.length > 1 && (
-          <>
-            <div style={cls.sideSubTitle}>Annonce à une classe</div>
-            <div style={{ padding:'8px 14px 12px', borderBottom:'1px solid var(--a-border)', position:'relative' }} ref={classeDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setClasseDropdownOpen(v => !v)}
-                style={{
-                  width:'100%', display:'flex', alignItems:'center', gap:10,
-                  background: selClasse ? 'linear-gradient(135deg, rgba(191,138,48,.14) 0%, rgba(191,138,48,.04) 100%)' : 'var(--a-bg-input)',
-                  border:`1px solid ${selClasse || classeDropdownOpen ? 'var(--a-gold)' : 'var(--a-border)'}`,
-                  borderRadius:10, padding:'9px 12px', cursor:'pointer',
-                  fontFamily:'inherit', textAlign:'left',
-                  boxShadow: classeDropdownOpen ? '0 4px 14px rgba(191,138,48,.18)' : 'none',
-                  transition:'all .15s',
-                }}
-              >
-                <div style={{ width:28, height:28, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, flexShrink:0, background:'rgba(191,138,48,.18)', color:'var(--a-gold)' }}>📢</div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:'var(--a-fg-light)', letterSpacing:'0.5px', textTransform:'uppercase', marginBottom:1 }}>
-                    {selClasse ? 'Classe sélectionnée' : 'Annoncer à…'}
-                  </div>
-                  <div style={{ fontSize:13, fontWeight:600, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color: selClasse ? 'var(--a-fg)' : 'var(--a-fg-light)' }}>
-                    {selClasse ? selClasse.nom : 'Choisir une classe'}
-                  </div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:'var(--a-fg-light)', flexShrink:0, transform: classeDropdownOpen ? 'rotate(180deg)' : 'none', transition:'transform .2s' }}>
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </button>
-
-              {classeDropdownOpen && (
-                <div style={{ position:'absolute', top:'100%', left:0, right:0, zIndex:20, marginTop:4, background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:10, maxHeight:260, overflowY:'auto', padding:4, boxShadow:'0 8px 24px rgba(0,0,0,.18)' }}>
-                  {selClasse && (
-                    <button
-                      type="button"
-                      onClick={() => { setSelClasse(null); setBroadcasts([]); setClasseDropdownOpen(false); }}
-                      style={{ width:'100%', textAlign:'left', padding:'8px 10px', fontSize:12, color:'var(--a-fg-light)', background:'transparent', border:'none', borderRadius:6, cursor:'pointer', fontFamily:'inherit' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--a-bg)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                      ✕ Désélectionner
-                    </button>
-                  )}
-                  {classes.map(c => {
-                    const active = selClasse?.id === c.id;
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => selectClasse(c)}
-                        style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'9px 10px', borderRadius:6, cursor:'pointer', border:'none', fontFamily:'inherit', textAlign:'left', background: active ? 'rgba(191,138,48,.15)' : 'transparent', transition:'background .1s' }}
-                        onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'var(--a-bg)'; }}
-                        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
-                      >
-                        <div style={{ width:24, height:24, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0, background: active ? 'var(--a-gold)' : 'rgba(191,138,48,.15)', color: active ? '#fff' : 'var(--a-gold)' }}>📢</div>
-                        <div style={{ flex:1, fontSize:13, color:'var(--a-fg)', fontWeight: active ? 700 : 500 }}>{c.nom}</div>
-                        {active && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--a-gold)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        <div style={cls.sideSubTitle}>Mes élèves</div>
-        <div style={cls.search}>
-          <input
-            style={cls.searchInput}
-            placeholder="Rechercher un élève…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      {/* ═══ Page header ═══ */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 20 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <Flourish size={28} />
+            <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.22em', color: C.ink3, textTransform: 'uppercase' }}>
+              Conversations en cours
+            </span>
+          </div>
+          <h1 style={{
+            fontFamily: "'Newsreader', Georgia, serif",
+            fontSize: 38, fontWeight: 500, lineHeight: 1.05,
+            color: C.ink, margin: 0, letterSpacing: '-0.015em',
+          }}>
+            <em style={{ color: C.gold, fontWeight: 500 }}>Messages</em> & correspondance
+          </h1>
         </div>
-        <div style={cls.listWrap}>
-          {filtered.length === 0 && (
-            <div style={{ padding:'20px 16px', fontSize:13, color:'var(--a-fg-light)', textAlign:'center' }}>
-              {eleves.length === 0 ? 'Aucun élève dans vos classes.' : 'Aucun résultat.'}
-            </div>
-          )}
-          {filtered.map(e => {
-            const unread = unreadMap[e.id] || 0;
-            const active = selEleve?.id === e.id;
-            return (
-              <div key={e.id} style={S.eleveItem(active)} onClick={() => selectEleve(e)}>
-                <EleveAvatar eleve={e} size={36} fallbackStyle={cls.eleveAvatar} />
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={cls.eleveName}>{fmtPrenom(e.prenom)} {fmtNom(e.nom)}</div>
-                  <div style={cls.eleveId}>{(e.identifiant || '').toUpperCase()}</div>
-                </div>
-                {unread > 0 && <span style={cls.badge}>{unread}</span>}
-              </div>
-            );
-          })}
+        <div style={{ textAlign: 'right', flexShrink: 0, paddingTop: 6 }}>
+          <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic', fontSize: 14, color: C.ink2 }}>
+            {todayStr}
+          </div>
+          <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.22em', color: totalUnread > 0 ? C.gold : C.ink3, textTransform: 'uppercase', marginTop: 4 }}>
+            {totalUnread > 0 ? `${totalUnread} non lu${totalUnread > 1 ? 's' : ''}` : 'Tout lu'}
+          </div>
         </div>
       </div>
 
-      {/* Zone chat */}
-      <div style={cls.chat}>
-        {!selEleve && !selClasse ? (
-          <div style={cls.empty}>
-            <span style={{ fontSize:40 }}>💬</span>
-            <span>Sélectionnez un élève ou une classe pour commencer</span>
-          </div>
-        ) : selClasse ? (
-          <>
-            <div style={cls.chatHeader}>
-              <div style={{ ...cls.classeIcon, ...S.classeIcon, width:36, height:36 }}>📢</div>
-              <div style={{ flex:1 }}>
-                <div style={cls.chatName}>Annonce à la classe « {selClasse.nom} »</div>
-                <div style={cls.chatSub}>Message diffusé à tous les élèves de la classe (lecture seule)</div>
-              </div>
-            </div>
+      {/* ═══ Big card 2 colonnes ═══ */}
+      <div style={{
+        display: 'flex',
+        background: C.paper, borderRadius: 20,
+        border: `1px solid ${C.rule}`,
+        height: 'calc(100vh - 200px)', minHeight: 540, overflow: 'hidden',
+      }}>
 
-            <div style={cls.messages}>
-              {broadcasts.length === 0 && (
-                <div style={{ textAlign:'center', color:'var(--a-fg-light)', fontSize:13, marginTop:40 }}>
-                  Aucune annonce envoyée à cette classe pour l'instant.
-                </div>
-              )}
-              {broadcasts.map(m => {
-                const isEditing = editingBroadcast?.broadcast_id === m.broadcast_id;
-                const askDelete = confirmDeleteBroadcast === m.broadcast_id;
-                return (
-                  <div key={m.id} style={{ display:'flex', justifyContent:'flex-start' }}>
-                    <div style={{ maxWidth:'85%' }}>
-                      <div style={{ ...cls.broadcastBubble, ...S.broadcastBubble, maxWidth:'100%' }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
-                          <div style={cls.broadcastBadge}>📢 ANNONCE CLASSE</div>
-                          <div style={{ flex:1 }} />
-                          {!isEditing && !askDelete && (
-                            <>
-                              <button
-                                onClick={() => startEditBroadcast(m)}
-                                title="Modifier"
-                                style={{ background:'transparent', border:'none', cursor:'pointer', color:'var(--a-fg-light)', padding:4, borderRadius:6, display:'flex', alignItems:'center' }}
-                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--a-gold)'; e.currentTarget.style.background = 'rgba(191,138,48,.12)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--a-fg-light)'; e.currentTarget.style.background = 'transparent'; }}
-                              >
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                              </button>
-                              <button
-                                onClick={() => askDeleteBroadcast(m.broadcast_id)}
-                                title="Supprimer"
-                                style={{ background:'transparent', border:'none', cursor:'pointer', color:'var(--a-fg-light)', padding:4, borderRadius:6, display:'flex', alignItems:'center' }}
-                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--a-red)'; e.currentTarget.style.background = 'rgba(255,69,58,.12)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--a-fg-light)'; e.currentTarget.style.background = 'transparent'; }}
-                              >
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                              </button>
-                            </>
-                          )}
-                        </div>
-                        {isEditing ? (
-                          <>
-                            <textarea
-                              value={editText}
-                              onChange={e => setEditText(e.target.value.slice(0, BROADCAST_MAX))}
-                              rows={3}
-                              maxLength={BROADCAST_MAX}
-                              autoFocus
-                              style={{ width:'100%', padding:'8px 10px', borderRadius:8, border:'1px solid var(--a-gold)', background:'var(--a-bg-card)', color:'var(--a-fg)', fontSize:13, outline:'none', resize:'vertical', boxSizing:'border-box', fontFamily:'inherit', lineHeight:'normal' }}
-                            />
-                            {isEditing && actionError && (
-                              <div style={{ marginTop:6, padding:'6px 9px', borderRadius:7, color:'var(--a-red)', fontSize:12, background:'rgba(255,69,58,.1)', border:'1px solid rgba(255,69,58,.35)' }}>
-                                ⚠ {actionError}
-                              </div>
-                            )}
-                            <div style={{ display:'flex', gap:6, marginTop:6, justifyContent:'space-between', alignItems:'center' }}>
-                              <span style={{ fontSize:11, color: editText.length > BROADCAST_MAX * 0.9 ? 'var(--a-red)' : 'var(--a-fg-light)' }}>
-                                {editText.length} / {BROADCAST_MAX}
-                              </span>
-                              <div style={{ display:'flex', gap:6 }}>
-                                <button onClick={() => { setEditingBroadcast(null); setEditText(''); }} style={{ padding:'5px 12px', borderRadius:7, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:12, cursor:'pointer' }}>Annuler</button>
-                                <button onClick={saveEditBroadcast} disabled={!editText.trim()} style={{ padding:'5px 14px', borderRadius:7, border:'none', fontSize:12, fontWeight:600, background: editText.trim() ? 'var(--a-gold)' : 'var(--a-border)', color: editText.trim() ? '#fff' : 'var(--a-fg-light)', cursor: editText.trim() ? 'pointer' : 'not-allowed' }}>Enregistrer</button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <div>{m.contenu}</div>
-                        )}
-                      </div>
-                      {askDelete && (
-                        <div style={{ marginTop:6 }}>
-                          <div style={{ padding:'8px 10px', borderRadius:8, display:'flex', alignItems:'center', gap:8, fontSize:12, background:'rgba(255,69,58,.08)', border:'1px solid rgba(255,69,58,.3)' }}>
-                            <span style={{ flex:1, color:'var(--a-fg)' }}>Supprimer cette annonce pour tous les élèves ?</span>
-                            <button onClick={() => handleDeleteBroadcast(m.broadcast_id)} style={{ padding:'4px 10px', borderRadius:6, border:'none', background:'var(--a-red)', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>Confirmer</button>
-                            <button onClick={() => setConfirmDeleteBroadcast(null)} style={{ padding:'4px 10px', borderRadius:6, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:12, cursor:'pointer' }}>Annuler</button>
-                          </div>
-                          {actionError && (
-                            <div style={{ marginTop:6, padding:'6px 9px', borderRadius:7, color:'var(--a-red)', fontSize:12, background:'rgba(255,69,58,.1)', border:'1px solid rgba(255,69,58,.35)' }}>
-                              ⚠ {actionError}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:3 }}>{fmtTime(m.created_at)}</div>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={bottomRef} />
-            </div>
-
-            {actionError && <p style={{ fontSize:13, margin:'0 14px 4px', color:'#ff453a' }}>{actionError}</p>}
-            <div style={{ ...cls.inputRow, flexDirection:'column', alignItems:'stretch', gap:6 }}>
-              <div style={{ display:'flex', gap:8, alignItems:'flex-end' }}>
-                <textarea
-                  style={cls.textarea}
-                  placeholder={`Écrire une annonce à la classe ${selClasse.nom}…`}
-                  value={text}
-                  onChange={e => setText(e.target.value.slice(0, BROADCAST_MAX))}
-                  onKeyDown={handleKeyDown}
-                  maxLength={BROADCAST_MAX}
-                  rows={1}
-                />
-                <button style={S.sendBtn(!text.trim() || sending)} onClick={handleSend} disabled={!text.trim() || sending}>
-                  {sending ? '…' : 'Envoyer à la classe'}
-                </button>
-              </div>
-              <div style={{ fontSize:11, textAlign:'right', paddingRight:4, color: text.length > BROADCAST_MAX * 0.9 ? 'var(--a-red)' : 'var(--a-fg-light)' }}>
-                {text.length} / {BROADCAST_MAX}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div style={cls.chatHeader}>
-              <EleveAvatar eleve={selEleve} size={36} fallbackStyle={cls.chatAvatar} />
-              <div style={{ flex:1 }}>
-                <div style={cls.chatName}>{fmtPrenom(selEleve.prenom)} {fmtNom(selEleve.nom)}</div>
-                <div style={cls.chatSub}>{(selEleve.identifiant || '').toUpperCase()}</div>
-              </div>
-              {!confirmDelete ? (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  title="Effacer la conversation"
-                  style={{ background:'transparent', border:'1px solid var(--a-border)', borderRadius:8, padding:'6px 10px', cursor:'pointer', color:'var(--a-fg-light)', fontSize:12, display:'flex', alignItems:'center', gap:5, flexShrink:0, transition:'all .15s' }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                  Effacer
-                </button>
-              ) : (
-                <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                  <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>Supprimer ?</span>
-                  <button onClick={handleDeleteConversation} style={{ padding:'5px 12px', borderRadius:8, border:'none', background:'var(--a-red)', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer' }}>
-                    Confirmer
-                  </button>
-                  <button onClick={() => setConfirmDelete(false)} style={{ padding:'5px 10px', borderRadius:8, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:12, cursor:'pointer' }}>
-                    Annuler
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div style={cls.messages}>
-              {messages.length === 0 && (
-                <div style={{ textAlign:'center', color:'var(--a-fg-light)', fontSize:13, marginTop:40 }}>
-                  Aucun message avec cet élève pour l'instant.
-                </div>
-              )}
-              {messages.map(m => {
-                const mine = m.sender_role === 'enseignant';
-                const isBroadcast = !!m.broadcast_id;
-                if (isBroadcast) {
-                  return (
-                    <div key={m.id} style={{ display:'flex', justifyContent:'flex-start' }}>
-                      <div>
-                        <div style={{ ...cls.broadcastBubble, ...S.broadcastBubble }}>
-                          <div style={cls.broadcastBadge}>📢 ANNONCE CLASSE</div>
-                          {m.contenu}
-                        </div>
-                        <div style={{ fontSize:11, color:'var(--a-fg-light)', marginTop:3 }}>{fmtTime(m.created_at)}</div>
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={m.id} style={S.bubbleRow(mine)}>
-                    <div style={S.bubbleWrap(mine)}>
-                      <div style={S.bubble(mine)}>{m.contenu}</div>
-                      <div style={S.bubbleTime(mine)}>{fmtTime(m.created_at)}</div>
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={bottomRef} />
-            </div>
-
-            {actionError && <p style={{ fontSize:13, margin:'0 14px 4px', color:'#ff453a' }}>{actionError}</p>}
-            <div style={cls.inputRow}>
-              <textarea
-                style={cls.textarea}
-                placeholder="Écrire un message…"
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={1}
+        {/* ── Colonne gauche ── */}
+        <div style={{
+          width: 320, flexShrink: 0,
+          borderRight: `1px solid ${C.rule}`,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          background: 'rgba(242,238,223,0.4)',
+        }}>
+          {/* Search */}
+          <div style={{ padding: '16px 16px 10px' }}>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.ink3 }}>
+                <IconSearch />
+              </span>
+              <input
+                placeholder="Rechercher une conversation…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{
+                  width: '100%', padding: '9px 14px 9px 36px', borderRadius: 999,
+                  border: `1px solid ${C.rule}`, background: C.paper, color: C.ink,
+                  fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                  fontFamily: 'inherit', fontStyle: 'italic',
+                }}
               />
-              <button style={S.sendBtn(!text.trim() || sending)} onClick={handleSend} disabled={!text.trim() || sending}>
-                {sending ? '…' : 'Envoyer'}
-              </button>
             </div>
-          </>
+          </div>
+
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: 4, padding: '0 16px 12px' }}>
+            {[
+              { key: 'all',       label: 'Tous'      },
+              { key: 'parents',   label: 'Parents'   },
+              { key: 'direction', label: 'Direction' },
+            ].map(t => {
+              const active = sideTab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setSideTab(t.key)}
+                  style={{
+                    padding: active ? '7px 16px' : '7px 12px',
+                    borderRadius: active ? '60px 60px 10px 10px' : 999,
+                    border: 'none',
+                    background: active ? C.ink : 'transparent',
+                    color: active ? C.paper : C.ink2,
+                    fontSize: 12, fontWeight: active ? 700 : 600,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* List */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+
+            {/* Classes (Direction) */}
+            {showDirection && classes.map(c => {
+              const active = selClasse?.id === c.id;
+              return (
+                <ConvItem
+                  key={`c-${c.id}`}
+                  active={active}
+                  onClick={() => selectClasse(c)}
+                  avatar={<InitialsAvatar text="DR" size={36} />}
+                  name="Direction"
+                  subtitle={`Classe ${c.nom}`}
+                  preview="Annonces & communications collectives"
+                />
+              );
+            })}
+
+            {/* Élèves (Parents) */}
+            {showParents && filteredEleves.length === 0 && (
+              <div style={{ padding: '20px 16px', fontSize: 13, color: C.ink3, textAlign: 'center', fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic' }}>
+                {(eleves || []).length === 0 ? 'Aucun élève.' : 'Aucun résultat.'}
+              </div>
+            )}
+            {showParents && filteredEleves.map(e => {
+              const unread = unreadMap[e.id] || 0;
+              const active = selEleve?.id === e.id;
+              return (
+                <ConvItem
+                  key={e.id}
+                  active={active}
+                  onClick={() => selectEleve(e)}
+                  avatar={
+                    <EleveAvatar
+                      eleve={e}
+                      size={36}
+                      variant="enseignant"
+                      fallbackStyle={{
+                        background: C.ink, color: C.goldLight,
+                        fontWeight: 700, letterSpacing: '0.5px',
+                      }}
+                    />
+                  }
+                  name={(e.nom || '').toUpperCase()}
+                  subtitle={`${e.prenom} · ${(e.classes?.nom || e.classe_nom || '').trim()}`}
+                  unread={unread}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Colonne droite ── */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* Empty state */}
+          {!selEleve && !selClasse && (
+            <div style={{
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 14,
+            }}>
+              <Flourish size={42} />
+              <p style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 18, fontStyle: 'italic', color: C.ink3, margin: 0 }}>
+                Sélectionnez une conversation
+              </p>
+            </div>
+          )}
+
+          {/* ── Class broadcast view ── */}
+          {selClasse && (
+            <BroadcastView
+              classe={selClasse}
+              broadcasts={broadcasts}
+              editingBroadcast={editingBroadcast}
+              editText={editText}
+              setEditText={setEditText}
+              startEditBroadcast={startEditBroadcast}
+              saveEditBroadcast={saveEditBroadcast}
+              cancelEditBroadcast={() => { setEditingBroadcast(null); setEditText(''); }}
+              confirmDeleteBroadcast={confirmDeleteBroadcast}
+              setConfirmDeleteBroadcast={setConfirmDeleteBroadcast}
+              handleDeleteBroadcast={handleDeleteBroadcast}
+              actionError={actionError}
+              text={text}
+              setText={setText}
+              handleSend={handleSend}
+              handleKeyDown={handleKeyDown}
+              sending={sending}
+              bottomRef={bottomRef}
+            />
+          )}
+
+          {/* ── Individual chat view ── */}
+          {selEleve && (
+            <ChatView
+              eleve={selEleve}
+              messages={messages}
+              text={text}
+              setText={setText}
+              handleSend={handleSend}
+              handleKeyDown={handleKeyDown}
+              sending={sending}
+              actionError={actionError}
+              confirmDelete={confirmDelete}
+              setConfirmDelete={setConfirmDelete}
+              handleDeleteConversation={handleDeleteConversation}
+              bottomRef={bottomRef}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Composant : ligne de conversation dans la liste
+   ═════════════════════════════════════════════════════════════════════════ */
+function InitialsAvatar({ text, size = 36 }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      background: C.ink, color: C.goldLight,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: Math.round(size * 0.30), fontWeight: 700, letterSpacing: '0.5px',
+    }}>
+      {text}
+    </div>
+  );
+}
+
+function ConvItem({ active, onClick, avatar, name, subtitle, preview, unread, time }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 12,
+        padding: '14px 16px', cursor: 'pointer',
+        background: active ? 'rgba(138,107,31,0.10)' : 'transparent',
+        borderLeft: `3px solid ${active ? C.gold : 'transparent'}`,
+        borderBottom: `1px solid ${C.ruleSoft}`,
+        transition: 'background 0.12s',
+      }}
+    >
+      {avatar}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <span style={{
+            flex: 1, minWidth: 0,
+            fontFamily: "'Newsreader', Georgia, serif",
+            fontSize: 15, fontWeight: 500, color: C.ink,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {name}
+          </span>
+          {time && (
+            <span style={{ fontSize: 11, color: C.ink3, flexShrink: 0, fontFamily: "'JetBrains Mono', monospace" }}>
+              {time}
+            </span>
+          )}
+        </div>
+        {subtitle && (
+          <div style={{
+            fontFamily: "'Newsreader', Georgia, serif",
+            fontStyle: 'italic', fontSize: 12, color: C.gold,
+            marginTop: 1,
+          }}>
+            {subtitle}
+          </div>
+        )}
+        {preview && (
+          <div style={{
+            fontSize: 12, color: C.ink3, lineHeight: 1.4,
+            marginTop: 4,
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          }}>
+            {preview}
+          </div>
+        )}
+        {unread > 0 && (
+          <div style={{
+            marginTop: 6,
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.gold }} />
+            <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.18em', color: C.gold, textTransform: 'uppercase' }}>
+              {unread} non lu{unread > 1 ? 's' : ''}
+            </span>
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Composant : vue chat individuel (élève / parent)
+   ═════════════════════════════════════════════════════════════════════════ */
+function ChatView({ eleve, messages, text, setText, handleSend, handleKeyDown, sending, actionError, confirmDelete, setConfirmDelete, handleDeleteConversation, bottomRef }) {
+  // Group messages by day for date separators
+  const grouped = [];
+  let lastDay = '';
+  messages.forEach(m => {
+    const day = m.created_at ? new Date(m.created_at).toDateString() : '';
+    if (day !== lastDay) {
+      grouped.push({ kind: 'sep', label: dayLabel(m.created_at), id: `sep-${day}` });
+      lastDay = day;
+    }
+    grouped.push({ kind: 'msg', m });
+  });
+
+  return (
+    <>
+      {/* Header */}
+      <div style={{
+        padding: '16px 22px', borderBottom: `1px solid ${C.rule}`,
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <EleveAvatar
+          eleve={eleve}
+          size={40}
+          variant="enseignant"
+          fallbackStyle={{
+            background: C.ink, color: C.goldLight,
+            fontWeight: 700, letterSpacing: '0.5px',
+          }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 18, fontWeight: 500, color: C.ink }}>
+            {(eleve.nom || '').toUpperCase()}
+          </div>
+          <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic', fontSize: 12, color: C.gold, marginTop: 1 }}>
+            {eleve.prenom} · {(eleve.classes?.nom || eleve.classe_nom || '').trim()} · parent
+          </div>
+        </div>
+        {!confirmDelete ? (
+          <>
+            <button
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '8px 16px', borderRadius: 999,
+                border: `1px solid ${C.rule}`, background: 'transparent',
+                color: C.ink2, fontSize: 12.5, cursor: 'pointer',
+                fontFamily: 'inherit', fontWeight: 500,
+              }}
+              title="Programmer un rendez-vous"
+            >
+              <IconCalendar />
+              Programmer un rendez-vous
+            </button>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              title="Effacer la conversation"
+              style={{
+                background: 'transparent', border: `1px solid ${C.rule}`,
+                borderRadius: 999, padding: '7px 10px', cursor: 'pointer',
+                color: C.ink3, display: 'inline-flex', alignItems: 'center',
+              }}
+            >
+              <IconTrash />
+            </button>
+          </>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, color: C.ink3, fontStyle: 'italic', fontFamily: "'Newsreader', Georgia, serif" }}>Supprimer ?</span>
+            <button onClick={handleDeleteConversation} style={{ padding: '6px 14px', borderRadius: 999, border: 'none', background: '#8B3A1F', color: C.paper, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Confirmer</button>
+            <button onClick={() => setConfirmDelete(false)} style={{ padding: '6px 12px', borderRadius: 999, border: `1px solid ${C.rule}`, background: 'transparent', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+          </div>
+        )}
+      </div>
+
+      {/* Messages */}
+      <div style={{
+        flex: 1, overflowY: 'auto',
+        padding: '20px 22px',
+        display: 'flex', flexDirection: 'column', gap: 10,
+        background: 'rgba(242,238,223,0.25)',
+      }}>
+        {messages.length === 0 && (
+          <div style={{ textAlign: 'center', color: C.ink3, fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic', fontSize: 14, marginTop: 60 }}>
+            Aucun message avec cet élève.
+          </div>
+        )}
+        {grouped.map((g) => {
+          if (g.kind === 'sep') {
+            return (
+              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '8px 0 4px', justifyContent: 'center' }}>
+                <span style={{ color: C.goldSoft, display: 'inline-flex' }}><Diamond size={6} /></span>
+                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: C.ink3, textTransform: 'uppercase' }}>
+                  {g.label}
+                </span>
+                <span style={{ color: C.goldSoft, display: 'inline-flex' }}><Diamond size={6} /></span>
+              </div>
+            );
+          }
+          const m = g.m;
+          const mine        = m.sender_role === 'enseignant';
+          const isBroadcast = !!m.broadcast_id;
+          if (isBroadcast) {
+            return (
+              <div key={m.id} style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ maxWidth: '78%' }}>
+                  <div style={{
+                    padding: '11px 16px', borderRadius: '14px 14px 14px 4px',
+                    background: 'rgba(138,107,31,0.08)',
+                    border: `1px solid rgba(138,107,31,0.22)`,
+                    color: C.ink, fontSize: 13.5, lineHeight: 1.55,
+                  }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, marginBottom: 5, letterSpacing: '0.15em' }}>ANNONCE CLASSE</div>
+                    {m.contenu}
+                  </div>
+                  <div style={{ fontSize: 11, color: C.ink3, marginTop: 4, fontStyle: 'italic', fontFamily: "'Newsreader', Georgia, serif" }}>
+                    {fmtTime(m.created_at)}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
+              <div style={{ maxWidth: '72%', display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start' }}>
+                <div style={{
+                  padding: '11px 16px',
+                  borderRadius: mine ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                  background: mine ? C.ink : C.paper,
+                  color:      mine ? C.paper : C.ink,
+                  border:     mine ? 'none' : `1px solid ${C.rule}`,
+                  fontSize: 13.5, lineHeight: 1.55,
+                }}>
+                  {m.contenu}
+                </div>
+                <div style={{ fontSize: 11, color: C.ink3, marginTop: 4, fontStyle: 'italic', fontFamily: "'Newsreader', Georgia, serif" }}>
+                  {fmtDayShort(m.created_at) === 'hier' ? `hier · ${fmtTime(m.created_at)}` : fmtTime(m.created_at)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      {actionError && <p style={{ fontSize: 13, margin: '0 22px 4px', color: '#8B3A1F' }}>{actionError}</p>}
+      <div style={{ padding: '14px 18px', borderTop: `1px solid ${C.rule}`, display: 'flex', gap: 12, alignItems: 'center', background: C.paper }}>
+        <button
+          style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            color: C.ink3, padding: 8, display: 'inline-flex', borderRadius: 999,
+          }}
+          title="Joindre un fichier"
+        >
+          <IconClip />
+        </button>
+        <input
+          style={{
+            flex: 1, padding: '11px 16px', borderRadius: 999,
+            border: `1px solid ${C.rule}`, background: C.bg, color: C.ink,
+            fontSize: 13.5, outline: 'none', boxSizing: 'border-box',
+            fontFamily: 'inherit', fontStyle: 'italic',
+          }}
+          placeholder="Écrire une réponse…"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          onClick={handleSend}
+          disabled={!text.trim() || sending}
+          style={{
+            padding: '11px 24px', borderRadius: '60px 60px 12px 12px', border: 'none',
+            background: (!text.trim() || sending) ? C.rule : C.gold,
+            color:      (!text.trim() || sending) ? C.ink3 : C.paper,
+            fontSize: 13.5, fontWeight: 600,
+            cursor: (!text.trim() || sending) ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit', flexShrink: 0,
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          {sending ? 'Envoi…' : <>Envoyer <span style={{ fontSize: 16 }}>→</span></>}
+        </button>
+      </div>
+    </>
+  );
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Composant : vue broadcast classe
+   ═════════════════════════════════════════════════════════════════════════ */
+function BroadcastView({
+  classe, broadcasts,
+  editingBroadcast, editText, setEditText, startEditBroadcast, saveEditBroadcast, cancelEditBroadcast,
+  confirmDeleteBroadcast, setConfirmDeleteBroadcast, handleDeleteBroadcast,
+  actionError, text, setText, handleSend, handleKeyDown, sending, bottomRef,
+}) {
+  return (
+    <>
+      <div style={{
+        padding: '16px 22px', borderBottom: `1px solid ${C.rule}`,
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <InitialsAvatar text="DR" size={40} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontSize: 18, fontWeight: 500, color: C.ink }}>
+            Direction
+          </div>
+          <div style={{ fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic', fontSize: 12, color: C.gold, marginTop: 1 }}>
+            Annonce à la classe {classe.nom}
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        flex: 1, overflowY: 'auto',
+        padding: '20px 22px',
+        display: 'flex', flexDirection: 'column', gap: 10,
+        background: 'rgba(242,238,223,0.25)',
+      }}>
+        {broadcasts.length === 0 && (
+          <div style={{ textAlign: 'center', color: C.ink3, fontFamily: "'Newsreader', Georgia, serif", fontStyle: 'italic', fontSize: 14, marginTop: 60 }}>
+            Aucune annonce envoyée à cette classe.
+          </div>
+        )}
+        {broadcasts.map(m => {
+          const isEditing = editingBroadcast?.broadcast_id === m.broadcast_id;
+          const askDelete = confirmDeleteBroadcast === m.broadcast_id;
+          return (
+            <div key={m.id} style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{ maxWidth: '78%' }}>
+                <div style={{
+                  padding: '12px 16px', borderRadius: '14px 14px 14px 4px',
+                  background: 'rgba(138,107,31,0.08)',
+                  border: `1px solid rgba(138,107,31,0.22)`,
+                  color: C.ink, fontSize: 13.5, lineHeight: 1.55,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: C.gold, letterSpacing: '0.15em' }}>
+                      ANNONCE CLASSE
+                    </span>
+                    <div style={{ flex: 1 }} />
+                    {!isEditing && !askDelete && (
+                      <>
+                        <button onClick={() => startEditBroadcast(m)} title="Modifier" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: C.ink3, padding: 4, borderRadius: 6, display: 'flex' }}>
+                          <IconEdit />
+                        </button>
+                        <button onClick={() => setConfirmDeleteBroadcast(m.broadcast_id)} title="Supprimer" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: C.ink3, padding: 4, borderRadius: 6, display: 'flex' }}>
+                          <IconTrash />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  {isEditing ? (
+                    <>
+                      <textarea
+                        value={editText}
+                        onChange={e => setEditText(e.target.value.slice(0, BROADCAST_MAX))}
+                        rows={3} autoFocus
+                        style={{
+                          width: '100%', padding: '8px 10px', borderRadius: 10,
+                          border: `1px solid ${C.gold}`, background: C.paper,
+                          color: C.ink, fontSize: 13, outline: 'none',
+                          resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit',
+                        }}
+                      />
+                      {actionError && <div style={{ marginTop: 6, fontSize: 12, color: '#8B3A1F' }}>{actionError}</div>}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 6 }}>
+                        <button onClick={cancelEditBroadcast} style={{ padding: '5px 14px', borderRadius: 999, border: `1px solid ${C.rule}`, background: 'transparent', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+                        <button onClick={saveEditBroadcast} disabled={!editText.trim()} style={{ padding: '5px 14px', borderRadius: 999, border: 'none', fontSize: 12, fontWeight: 600, background: editText.trim() ? C.gold : C.rule, color: editText.trim() ? C.paper : C.ink3, cursor: editText.trim() ? 'pointer' : 'not-allowed' }}>Enregistrer</button>
+                      </div>
+                    </>
+                  ) : (
+                    <div>{m.contenu}</div>
+                  )}
+                </div>
+                {askDelete && (
+                  <div style={{ marginTop: 6, padding: '8px 12px', borderRadius: 10, background: 'rgba(139,58,31,0.08)', border: '1px solid rgba(139,58,31,0.3)', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                    <span style={{ flex: 1, color: C.ink, fontStyle: 'italic', fontFamily: "'Newsreader', Georgia, serif" }}>Supprimer cette annonce ?</span>
+                    <button onClick={() => handleDeleteBroadcast(m.broadcast_id)} style={{ padding: '4px 12px', borderRadius: 999, border: 'none', background: '#8B3A1F', color: C.paper, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Confirmer</button>
+                    <button onClick={() => setConfirmDeleteBroadcast(null)} style={{ padding: '4px 12px', borderRadius: 999, border: `1px solid ${C.rule}`, background: 'transparent', color: C.ink2, fontSize: 12, cursor: 'pointer' }}>Annuler</button>
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: C.ink3, marginTop: 4, fontStyle: 'italic', fontFamily: "'Newsreader', Georgia, serif" }}>
+                  {fmtTime(m.created_at)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+
+      {actionError && !editingBroadcast && <p style={{ fontSize: 13, margin: '0 22px 4px', color: '#8B3A1F' }}>{actionError}</p>}
+      <div style={{ padding: '14px 18px', borderTop: `1px solid ${C.rule}`, display: 'flex', gap: 12, alignItems: 'center', background: C.paper }}>
+        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: C.ink3, padding: 8, display: 'inline-flex', borderRadius: 999 }} title="Joindre un fichier">
+          <IconClip />
+        </button>
+        <input
+          style={{
+            flex: 1, padding: '11px 16px', borderRadius: 999,
+            border: `1px solid ${C.rule}`, background: C.bg, color: C.ink,
+            fontSize: 13.5, outline: 'none', boxSizing: 'border-box',
+            fontFamily: 'inherit', fontStyle: 'italic',
+          }}
+          placeholder={`Annoncer à la classe ${classe.nom}…`}
+          value={text}
+          onChange={e => setText(e.target.value.slice(0, BROADCAST_MAX))}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          onClick={handleSend}
+          disabled={!text.trim() || sending}
+          style={{
+            padding: '11px 24px', borderRadius: '60px 60px 12px 12px', border: 'none',
+            background: (!text.trim() || sending) ? C.rule : C.gold,
+            color:      (!text.trim() || sending) ? C.ink3 : C.paper,
+            fontSize: 13.5, fontWeight: 600,
+            cursor: (!text.trim() || sending) ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit', flexShrink: 0,
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          {sending ? 'Envoi…' : <>Envoyer <span style={{ fontSize: 16 }}>→</span></>}
+        </button>
+      </div>
+    </>
   );
 }

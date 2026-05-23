@@ -4,91 +4,49 @@ import {
   fetchRetardsAbsences, createRetardAbsence, updateRetardAbsence, deleteRetardAbsence,
   fetchDeclarationsClasse, markDeclarationVueEnseignant,
 } from './supabaseEnseignant';
-import { motion, tapScale } from '../animations';
-import { todayISO, fmtDateShort, fmtDateWeekday } from '../shared/dateUtils';
+import { todayISO } from '../shared/dateUtils';
+import { Flourish } from '../shared/Ornaments';
+import EleveAvatar from '../shared/EleveAvatar';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function todayStr() { return todayISO(); }
-
-function getEleveName(eleves, eleveId) {
-  const e = eleves.find(el => el.id === eleveId);
-  return e ? `${e.prenom} ${e.nom}` : '—';
-}
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const S = {
-  page:       { display:'flex', flexDirection:'column', gap:20, minHeight:'100%' },
-  topBar:     { display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 },
-  classeTabs: { display:'flex', gap:8, flexWrap:'wrap' },
-  classeTab:  (active) => ({
-    padding:'7px 16px', borderRadius:980,
-    border:`1.5px solid ${active ? 'var(--a-gold)' : 'var(--a-border)'}`,
-    background: active ? 'rgba(191,138,48,.12)' : 'transparent',
-    color: active ? 'var(--a-gold)' : 'var(--a-fg-mid)',
-    fontSize:13, fontWeight:600, cursor:'pointer',
-  }),
-  btnRow:     { display:'flex', gap:10, flexWrap:'wrap' },
-  btnRetard:  { display:'inline-flex', alignItems:'center', gap:7, padding:'8px 18px', borderRadius:980, border:'none', background:'rgba(240,180,41,0.18)', color:'var(--a-gold)', fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' },
-  btnAbsence: { display:'inline-flex', alignItems:'center', gap:7, padding:'8px 18px', borderRadius:980, border:'none', background:'rgba(255,69,58,0.12)', color:'var(--a-red)', fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' },
-  feedback: (ok) => ({
-    padding:'12px 18px', borderRadius:'var(--a-radius-sm)',
-    background: ok ? 'rgba(48,209,88,.1)' : 'rgba(255,69,58,.1)',
-    border:`1px solid ${ok ? 'rgba(48,209,88,.25)' : 'rgba(255,69,58,.25)'}`,
-    color: ok ? 'var(--a-green)' : 'var(--a-red)',
-    fontSize:13, fontWeight:600,
-  }),
-  statsRow: { display:'flex', gap:12, flexWrap:'wrap' },
-  statCard: { background:'var(--a-bg-card)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'16px 22px', flex:'1 1 120px', minWidth:120 },
-  statNum:  (color) => ({ fontFamily:'var(--a-font-display)', fontSize:28, fontWeight:800, color, lineHeight:1 }),
-  statLabel: { fontSize:12, color:'var(--a-fg-mid)', marginTop:4 },
-  tableWrap:   { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', border:'1px solid var(--a-border)', overflow:'hidden' },
-  tableHeader: { display:'grid', gridTemplateColumns:'110px 1fr 100px 1fr 120px 80px', gap:0, borderBottom:'1px solid var(--a-border)', padding:'10px 20px', fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.8px' },
-  tableRow: (i) => ({ display:'grid', gridTemplateColumns:'110px 1fr 100px 1fr 120px 80px', gap:0, padding:'13px 20px', borderBottom:'1px solid var(--a-border)', background: i%2===0 ? 'transparent' : 'rgba(127,127,127,0.02)', alignItems:'center' }),
-  badgeRetard:  { display:'inline-block', padding:'3px 10px', borderRadius:20, background:'rgba(240,180,41,0.15)', color:'var(--a-gold)', fontSize:12, fontWeight:700 },
-  badgeAbsence: { display:'inline-block', padding:'3px 10px', borderRadius:20, background:'rgba(255,69,58,0.1)', color:'var(--a-red)', fontSize:12, fontWeight:700 },
-  actionBtn: (danger) => ({ padding:'5px 10px', borderRadius:6, border:`1px solid ${danger ? 'rgba(255,69,58,.3)' : 'var(--a-border)'}`, background:'transparent', color: danger ? 'var(--a-red)' : 'var(--a-fg-mid)', fontSize:12, cursor:'pointer', marginLeft:6 }),
-  cell:    { fontSize:13, color:'var(--a-fg)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
-  cellMid: { fontSize:13, color:'var(--a-fg-mid)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
-  empty:   { textAlign:'center', padding:'60px 20px', color:'var(--a-fg-mid)', fontSize:14 },
-  overlay:    { position:'fixed', inset:0, background:'rgba(0,0,0,.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:16 },
-  modal:      { background:'var(--a-bg-card)', borderRadius:'var(--a-radius)', padding:28, width:'100%', maxWidth:440, boxShadow:'0 24px 80px rgba(0,0,0,.5)' },
-  modalTitle: { fontFamily:'var(--a-font-display)', fontSize:17, fontWeight:700, color:'var(--a-fg)', marginBottom:20, marginTop:0 },
-  fieldGroup: { marginBottom:16 },
-  label:      { display:'block', fontSize:11, fontWeight:600, color:'var(--a-fg-mid)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.5px' },
-  input:      { width:'100%', background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'8px 12px', color:'var(--a-fg)', fontSize:14, boxSizing:'border-box' },
-  textarea:   { width:'100%', background:'var(--a-bg)', border:'1px solid var(--a-border)', borderRadius:'var(--a-radius-sm)', padding:'8px 12px', color:'var(--a-fg)', fontSize:14, resize:'vertical', minHeight:80, boxSizing:'border-box', fontFamily:'inherit' },
-  typeToggleRow: { display:'flex', gap:10, marginBottom:16 },
-  typeBtn: (active, isRetard) => ({
-    flex:1, padding:10, borderRadius:'var(--a-radius-sm)',
-    border:`1.5px solid ${active ? (isRetard ? 'var(--a-gold)' : 'var(--a-red)') : 'var(--a-border)'}`,
-    background: active ? (isRetard ? 'rgba(240,180,41,0.12)' : 'rgba(255,69,58,0.08)') : 'transparent',
-    color: active ? (isRetard ? 'var(--a-gold)' : 'var(--a-red)') : 'var(--a-fg-mid)',
-    fontSize:13, fontWeight:700, cursor:'pointer',
-  }),
-  modalBtns:  { display:'flex', gap:10, justifyContent:'flex-end', marginTop:24 },
-  btnCancel:  { padding:'8px 20px', borderRadius:980, border:'1px solid var(--a-border)', background:'transparent', color:'var(--a-fg-mid)', fontSize:13, fontWeight:600, cursor:'pointer' },
-  btnSave:    { padding:'8px 20px', borderRadius:980, border:'none', background:'var(--a-gold)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', boxShadow:'0 2px 10px rgba(191,138,48,.3)' },
-  btnDanger:  { padding:'8px 20px', borderRadius:980, border:'none', background:'var(--a-red)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer' },
+const C = {
+  bg:       '#F2EEDF',
+  paper:    '#FBFAF1',
+  ink:      '#1E2317',
+  ink2:     '#3F4A33',
+  ink3:     '#7A876A',
+  gold:     '#8A6B1F',
+  goldSoft: '#DCBC6E',
+  rule:     'rgba(138,107,31,0.18)',
+  ruleSoft: 'rgba(138,107,31,0.10)',
 };
 
-// ─── Composant principal ──────────────────────────────────────────────────────
+function todayStr() { return todayISO(); }
+function initials(e) { return `${(e.prenom||'')[0]||''}${(e.nom||'')[0]||''}`.toUpperCase(); }
+function fmtDate(str) {
+  if (!str) return { day: '—', dow: '—', rel: '' };
+  const d = new Date(str);
+  const day = d.getDate();
+  const dow = d.toLocaleDateString('fr-FR', { weekday:'short' }).replace('.','');
+  const diffDays = Math.floor((Date.now() - d) / 86400000);
+  const rel = diffDays === 0 ? 'aujourd\'hui' : diffDays === 1 ? 'hier' : `il y a ${diffDays}j`;
+  return { day, dow, rel };
+}
+
 export default function EnseignantAbsences() {
   const user = getEnseignantUser();
-  const [classes,    setClasses]    = useState([]);
-  const [selClasse,  setSelClasse]  = useState(null);
-  const [eleves,     setEleves]     = useState([]);
-  const [entries,    setEntries]    = useState([]);
-  const [loading,    setLoading]    = useState(false);
-  const [modal,      setModal]      = useState(null);
-  const [confirmDel, setConfirmDel] = useState(null);
-  const [saving,     setSaving]     = useState(false);
-  const [feedback,   setFeedback]   = useState(null);
-  const [decls,      setDecls]      = useState([]);
+  const [classes,   setClasses]   = useState([]);
+  const [selClasse, setSelClasse] = useState(null);
+  const [eleves,    setEleves]    = useState([]);
+  const [entries,   setEntries]   = useState([]);   // all records for this class
+  const [statuts,   setStatuts]   = useState({});   // eleveId → { status, recordId }
+  const [saving,    setSaving]    = useState({});    // eleveId → bool
+  const [decls,     setDecls]     = useState([]);
+  const [timeFilter, setTimeFilter] = useState('today');
+  const [loading,   setLoading]   = useState(false);
 
-  const [fType,       setFType]       = useState('retard');
-  const [fEleve,      setFEleve]      = useState('');
-  const [fDate,       setFDate]       = useState(todayStr());
-  const [fCommentaire,setFCommentaire]= useState('');
+  const today = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const nowTime = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  const classeActive = classes.find(c => c.id === selClasse);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -109,6 +67,17 @@ export default function EnseignantAbsences() {
       setEleves(els);
       setEntries(ents);
       setDecls(dcls || []);
+
+      // Init statuts from today's records
+      const todayRecs = ents.filter(e => e.date === todayStr());
+      const map = {};
+      els.forEach(el => {
+        const rec = todayRecs.find(r => r.eleve_id === el.id);
+        map[el.id] = rec
+          ? { status: rec.type, recordId: rec.id, commentaire: rec.commentaire }
+          : { status: 'present', recordId: null, commentaire: null };
+      });
+      setStatuts(map);
     } catch {
       setEleves([]); setEntries([]); setDecls([]);
     }
@@ -117,341 +86,308 @@ export default function EnseignantAbsences() {
 
   useEffect(() => { load(); }, [load]);
 
-  const showFeedback = (ok, msg) => {
-    setFeedback({ ok, msg });
-    setTimeout(() => setFeedback(null), 3000);
-  };
-
-  const openCreate = (type) => {
-    setFType(type);
-    setFEleve(eleves[0]?.id || '');
-    setFDate(todayStr());
-    setFCommentaire('');
-    setModal({ mode: 'create', type });
-  };
-
-  const openEdit = (entry) => {
-    setFType(entry.type);
-    setFEleve(entry.eleve_id);
-    setFDate(entry.date);
-    setFCommentaire(entry.commentaire || '');
-    setModal({ mode: 'edit', entry });
-  };
-
-  const handleSave = async () => {
-    if (!fEleve || !fDate) return;
-    setSaving(true);
+  const handleStatus = async (eleveId, newStatus) => {
+    const current = statuts[eleveId] || { status: 'present', recordId: null };
+    if (current.status === newStatus) return;
+    setSaving(s => ({ ...s, [eleveId]: true }));
     try {
-      const data = {
-        enseignant_id: user.id,
-        classe_id:     selClasse,
-        eleve_id:      fEleve,
-        type:          fType,
-        date:          fDate,
-        commentaire:   fCommentaire.trim() || null,
-      };
-      if (modal.mode === 'create') {
-        await createRetardAbsence(data);
-        showFeedback(true, fType === 'retard' ? 'Retard enregistré.' : 'Absence enregistrée.');
+      if (newStatus === 'present') {
+        if (current.recordId) await deleteRetardAbsence(current.recordId, user.id);
+        setStatuts(s => ({ ...s, [eleveId]: { status: 'present', recordId: null } }));
+        setEntries(e => e.filter(r => r.id !== current.recordId));
       } else {
-        await updateRetardAbsence(modal.entry.id, {
-          type: fType, date: fDate, commentaire: fCommentaire.trim() || null,
-        }, user.id);
-        showFeedback(true, 'Entrée modifiée.');
+        if (current.recordId) {
+          await updateRetardAbsence(current.recordId, { type: newStatus, date: todayStr() }, user.id);
+          setStatuts(s => ({ ...s, [eleveId]: { ...s[eleveId], status: newStatus } }));
+          setEntries(e => e.map(r => r.id === current.recordId ? { ...r, type: newStatus } : r));
+        } else {
+          const rec = await createRetardAbsence({
+            enseignant_id: user.id, classe_id: selClasse,
+            eleve_id: eleveId, type: newStatus, date: todayStr(),
+          });
+          const newId = rec?.id || null;
+          setStatuts(s => ({ ...s, [eleveId]: { status: newStatus, recordId: newId } }));
+          if (rec) setEntries(e => [rec, ...e]);
+        }
       }
-      setModal(null);
-      await load();
-    } catch {
-      showFeedback(false, 'Une erreur est survenue.');
-    }
-    setSaving(false);
+    } catch {}
+    setSaving(s => ({ ...s, [eleveId]: false }));
   };
 
-  const handleDelete = async () => {
-    if (!confirmDel) return;
-    setSaving(true);
-    try {
-      await deleteRetardAbsence(confirmDel.id, user.id);
-      showFeedback(true, 'Entrée supprimée.');
-      setConfirmDel(null);
-      await load();
-    } catch {
-      showFeedback(false, 'Erreur lors de la suppression.');
-    }
-    setSaving(false);
-  };
+  // Historique filtered
+  const now = new Date();
+  const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay()); startOfWeek.setHours(0,0,0,0);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const historique = entries
+    .filter(e => {
+      const d = new Date(e.date);
+      if (timeFilter === 'today') return e.date === todayStr();
+      if (timeFilter === 'week') return d >= startOfWeek;
+      return d >= startOfMonth;
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  const nbRetards  = entries.filter(e => e.type === 'retard').length;
-  const nbAbsences = entries.filter(e => e.type === 'absence').length;
+  const nbPresents = Object.values(statuts).filter(s => s.status === 'present').length;
+  const nbRetards  = Object.values(statuts).filter(s => s.status === 'retard').length;
+  const nbAbsents  = Object.values(statuts).filter(s => s.status === 'absence').length;
+
+  const btnStyle = (active) => ({
+    padding: '7px 16px', borderRadius: 999,
+    border: `1px solid ${active ? C.ink : C.rule}`,
+    background: active ? C.ink : 'transparent',
+    color: active ? C.paper : C.ink3,
+    fontFamily: "'Manrope',sans-serif", fontSize: 12, fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.12s', whiteSpace: 'nowrap',
+  });
 
   return (
-    <div style={S.page}>
+    <div style={{ padding: '32px 40px 48px', minHeight: '100%', background: C.bg, fontFamily: "'Manrope',system-ui,sans-serif" }}>
 
-      {feedback && <div style={S.feedback(feedback.ok)}>{feedback.msg}</div>}
-
-      {/* Top bar */}
-      <div style={S.topBar}>
-        <div style={S.classeTabs}>
-          {classes.map(c => (
-            <motion.button key={c.id} style={S.classeTab(selClasse === c.id)}
-              {...tapScale}
-              onClick={() => setSelClasse(c.id)}>
-              {c.nom}
-            </motion.button>
-          ))}
-        </div>
-        {selClasse && (
-          <div style={S.btnRow}>
-            <motion.button style={S.btnRetard} {...tapScale} onClick={() => openCreate('retard')}>
-              ⏰ Ajouter un retard
-            </motion.button>
-            <motion.button style={S.btnAbsence} {...tapScale} onClick={() => openCreate('absence')}>
-              🚫 Ajouter une absence
-            </motion.button>
+      {/* ── En-tête ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+            <Flourish size={26} />
+            <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: C.ink3 }}>
+              Pointage du jour
+            </span>
           </div>
-        )}
+          <h1 style={{ fontFamily: "'Newsreader',Georgia,serif", fontSize: 40, fontWeight: 500, color: C.ink, margin: 0, lineHeight: 1.05, letterSpacing: '-0.015em' }}>
+            <em style={{ fontStyle: 'italic', color: C.gold }}>Retards</em> &amp; absences
+          </h1>
+        </div>
+        <div style={{ textAlign: 'right', paddingTop: 6 }}>
+          <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 12.5, color: C.ink2 }}>{today}</div>
+          <div style={{ fontFamily: "'Manrope',sans-serif", fontSize: 9.5, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.ink3, marginTop: 3 }}>
+            {new Date().toLocaleDateString('fr-FR',{weekday:'long'}).toUpperCase()} {nowTime}
+          </div>
+        </div>
       </div>
 
-      {/* Préavis des parents */}
-      {selClasse && decls.length > 0 && (
-        <div>
-          <div style={{
-            fontSize:12, fontWeight:700, color:'var(--a-gold)',
-            textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:10,
-          }}>
-            Préavis des parents ({decls.length})
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            {decls.map(d => {
-              const isRetard = d.type === 'retard';
-              const color = isRetard ? 'var(--a-gold)' : 'var(--a-red)';
-              const colorBg = isRetard ? 'rgba(191,138,48,.12)' : 'rgba(255,69,58,.10)';
-              const dateLabel = fmtDateWeekday(d.date);
-              const soumisLe = new Date(d.created_at).toLocaleString('fr-FR', {
-                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-              });
-              return (
-                <div key={d.id} style={{
-                  background: 'var(--a-bg-card)',
-                  border: '1px solid var(--a-border)',
-                  borderLeft: `4px solid ${d.vue_enseignant ? 'var(--a-border)' : color}`,
-                  borderRadius: 'var(--a-radius)',
-                  padding: '12px 16px',
-                  display: 'flex', flexDirection: 'column', gap: 7,
-                  opacity: d.vue_enseignant ? 0.55 : 1,
-                }}>
-                  {/* Ligne principale */}
-                  <div style={{ display:'flex', alignItems:'center', gap:9, flexWrap:'wrap' }}>
-                    <span style={{
-                      display:'inline-flex', alignItems:'center', gap:5,
-                      padding:'3px 10px', borderRadius:999,
-                      background: colorBg, color, fontSize:12, fontWeight:700, flexShrink:0,
-                    }}>
-                      {isRetard ? '⏰ Retard' : '🚫 Absence'}
+      {/* ── Barre : onglets classes + filtre temps ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {classes.map(c => (
+            <button key={c.id} onClick={() => setSelClasse(c.id)} style={btnStyle(selClasse === c.id)}>
+              {c.nom}
+            </button>
+          ))}
+        </div>
+        <div style={{
+          display: 'inline-flex',
+          background: C.paper,
+          border: `1px solid ${C.rule}`,
+          borderRadius: 999,
+          padding: 3,
+        }}>
+          {[
+            { k: 'today', l: "Aujourd'hui" },
+            { k: 'week',  l: 'Cette semaine' },
+            { k: 'month', l: 'Ce mois' },
+          ].map(({ k, l }) => {
+            const active = timeFilter === k;
+            return (
+              <button key={k} onClick={() => setTimeFilter(k)} style={{
+                padding: '6px 16px', borderRadius: 999,
+                border: 'none',
+                background: active ? C.gold : 'transparent',
+                color: active ? C.paper : C.ink3,
+                fontFamily: "'Manrope',sans-serif", fontSize: 12,
+                fontWeight: active ? 700 : 600,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}>
+                {l}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Corps principal (appel + historique) ── */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px 0', fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 16, color: C.ink3 }}>
+          Chargement…
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
+
+          {/* ── Panneau Appel ── */}
+          <div style={{ background: C.paper, borderRadius: 20, border: `1px solid ${C.rule}`, overflow: 'hidden' }}>
+            {/* Header panneau */}
+            <div style={{ padding: '18px 22px 14px', borderBottom: `1px solid ${C.ruleSoft}` }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 9.5, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.ink3 }}>
+                  Pointage · {classeActive?.nom || '…'}
+                </span>
+                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: C.ink3 }}>
+                  {nowTime}
+                </span>
+              </div>
+              <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontSize: 26, fontWeight: 500, color: C.ink, lineHeight: 1.1, marginBottom: 14 }}>
+                <em style={{ fontStyle: 'italic', color: C.gold }}>Appel</em> de ce matin
+              </div>
+              {/* Stats */}
+              <div style={{ display: 'flex', gap: 24 }}>
+                {[
+                  { val: nbPresents, lbl: 'Présents' },
+                  { val: nbRetards,  lbl: 'Retard' },
+                  { val: nbAbsents,  lbl: 'Absent' },
+                ].map((s, i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 20, fontWeight: 700, color: C.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                      {s.val}
                     </span>
-                    <span style={{ fontSize:14, fontWeight:700, color:'var(--a-fg)' }}>
-                      {d.eleve_prenom} {d.eleve_nom}
-                    </span>
-                    <span style={{ fontSize:13, color:'var(--a-fg)', fontWeight:500 }}>
-                      — {dateLabel}
-                    </span>
-                    {d.heure_prevue && (
-                      <span style={{
-                        fontSize:12, fontWeight:600, color,
-                        background: colorBg, padding:'2px 8px', borderRadius:6,
-                      }}>
-                        à {d.heure_prevue}
-                      </span>
-                    )}
-                    <span style={{ marginLeft:'auto', fontSize:11, color:'var(--a-fg-light)', whiteSpace:'nowrap' }}>
-                      Soumis le {soumisLe}
+                    <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 8, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.ink3 }}>
+                      {s.lbl}
                     </span>
                   </div>
+                ))}
+              </div>
+            </div>
 
-                  {/* Ligne secondaire : motif + bouton */}
-                  <div style={{ display:'flex', alignItems:'center', gap:12, flexWrap:'wrap' }}>
-                    {d.motif ? (
-                      <span style={{
-                        fontSize:12, color:'var(--a-fg-mid)', fontStyle:'italic',
-                        background:'var(--a-bg)', padding:'3px 10px',
-                        borderRadius:6, border:'1px solid var(--a-border)',
-                      }}>
-                        "{d.motif}"
-                      </span>
+            {/* Liste élèves */}
+            {eleves.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 15, color: C.ink3 }}>
+                Aucun élève dans cette classe.
+              </div>
+            ) : eleves.map((eleve, idx) => {
+              const st = statuts[eleve.id] || { status: 'present' };
+              const isSaving = saving[eleve.id];
+              const declEleve = decls.find(d => d.eleve_id === eleve.id && !d.vue_enseignant);
+              return (
+                <div key={eleve.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 14, padding: '12px 22px',
+                  borderBottom: idx < eleves.length - 1 ? `1px solid ${C.ruleSoft}` : 'none',
+                  opacity: isSaving ? 0.6 : 1,
+                }}>
+                  {/* Avatar */}
+                  <EleveAvatar
+                    eleve={eleve}
+                    size={40}
+                    variant="enseignant"
+                    fallbackStyle={{
+                      background: '#1E2317', color: '#C09844',
+                      fontWeight: 700, letterSpacing: '0.5px',
+                    }}
+                  />
+                  {/* Nom + note déclaration */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: "'Manrope',sans-serif", fontSize: 13, fontWeight: 600, color: C.ink }}>
+                      {eleve.prenom} <span style={{ textTransform: 'uppercase' }}>{eleve.nom}</span>
+                    </div>
+                    {declEleve ? (
+                      <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 11, color: C.gold, marginTop: 1 }}>
+                        {declEleve.type === 'retard' ? 'retard signalé' : 'absence signalée'}{declEleve.motif ? ` — ${declEleve.motif}` : ''}
+                      </div>
+                    ) : st.status !== 'present' ? (
+                      <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 11, color: C.gold, marginTop: 1 }}>
+                        {st.status === 'retard' ? 'retard enregistré' : 'absent'}
+                        {st.commentaire ? ` — ${st.commentaire}` : ''}
+                      </div>
                     ) : (
-                      <span style={{ fontSize:12, color:'var(--a-fg-light)' }}>Aucun motif renseigné</span>
+                      <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 11, color: C.ink3, marginTop: 1 }}>
+                        présent
+                      </div>
                     )}
-
-                    <span style={{ marginLeft:'auto' }}>
-                      {d.vue_enseignant ? (
-                        <span style={{
-                          fontSize:12, fontWeight:700, color:'var(--a-green)',
-                          display:'inline-flex', alignItems:'center', gap:5,
-                        }}>
-                          ✓ Pris en compte
-                        </span>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            const ok = await markDeclarationVueEnseignant(user.id, d.id);
-                            if (ok) {
-                              setDecls(prev => prev.map(x => x.id === d.id ? { ...x, vue_enseignant: true } : x));
-                              window.dispatchEvent(new CustomEvent('declaration-acknowledged'));
-                            }
-                          }}
-                          style={{
-                            padding:'4px 14px', borderRadius:980, fontSize:12, fontWeight:700,
-                            border:'1.5px solid var(--a-green)', background:'transparent',
-                            color:'var(--a-green)', cursor:'pointer',
-                          }}
-                        >
-                          Prendre en compte
-                        </button>
-                      )}
-                    </span>
+                  </div>
+                  {/* Boutons P / R / A */}
+                  <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+                    {[
+                      { key: 'present', label: 'Présent' },
+                      { key: 'retard',  label: 'Retard' },
+                      { key: 'absence', label: 'Absent' },
+                    ].map(({ key, label }) => (
+                      <button
+                        key={key}
+                        onClick={() => handleStatus(eleve.id, key)}
+                        disabled={isSaving}
+                        style={{
+                          padding: '5px 12px', borderRadius: 999,
+                          border: `1px solid ${st.status === key ? C.ink : C.rule}`,
+                          background: st.status === key ? C.ink : 'transparent',
+                          color: st.status === key ? C.paper : C.ink3,
+                          fontFamily: "'Manrope',sans-serif", fontSize: 11.5, fontWeight: 600,
+                          cursor: 'pointer', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
 
-      {/* Stats */}
-      {selClasse && entries.length > 0 && (
-        <div style={S.statsRow}>
-          <div style={S.statCard}>
-            <div style={S.statNum('var(--a-gold)')}>{nbRetards}</div>
-            <div style={S.statLabel}>Retard{nbRetards > 1 ? 's' : ''}</div>
-          </div>
-          <div style={S.statCard}>
-            <div style={S.statNum('var(--a-red)')}>{nbAbsences}</div>
-            <div style={S.statLabel}>Absence{nbAbsences > 1 ? 's' : ''}</div>
-          </div>
-          <div style={S.statCard}>
-            <div style={S.statNum('var(--a-fg)')}>{entries.length}</div>
-            <div style={S.statLabel}>Total</div>
-          </div>
-        </div>
-      )}
+          {/* ── Historique récent ── */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+              <Flourish size={22} />
+              <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 9.5, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.ink3 }}>
+                Historique récent
+              </span>
+            </div>
 
-      {/* Tableau */}
-      {!selClasse ? (
-        <div style={S.empty}>Sélectionne une classe pour voir les entrées.</div>
-      ) : loading ? (
-        <div style={S.empty}>Chargement...</div>
-      ) : entries.length === 0 ? (
-        <div style={S.empty}>
-          <div style={{ fontSize:40, marginBottom:12 }}>✅</div>
-          Aucun retard ni absence enregistré pour cette classe.
-        </div>
-      ) : (
-        <div style={S.tableWrap}>
-          <div style={S.tableHeader}>
-            <span>Date</span>
-            <span>Élève</span>
-            <span>Type</span>
-            <span>Commentaire</span>
-            <span>Par</span>
-            <span>Actions</span>
-          </div>
-          {entries.map((e, i) => {
-            const isOwn = e.enseignant_id === user.id;
-            return (
-              <div key={e.id} style={S.tableRow(i)}>
-                <span style={S.cell}>{fmtDateShort(e.date)}</span>
-                <span style={S.cell}>{getEleveName(eleves, e.eleve_id)}</span>
-                <span>
-                  {e.type === 'retard'
-                    ? <span style={S.badgeRetard}>⏰ Retard</span>
-                    : <span style={S.badgeAbsence}>🚫 Absence</span>
-                  }
-                </span>
-                <span style={S.cellMid}>{e.commentaire || '—'}</span>
-                <span style={{ fontSize:11, color: isOwn ? 'var(--a-fg-mid)' : 'var(--a-fg-light)', fontStyle: isOwn ? 'normal' : 'italic' }}>
-                  {isOwn ? 'Moi' : (e.enseignants ? `${e.enseignants.prenom} ${e.enseignants.nom}` : '—')}
-                </span>
-                <span>
-                  {isOwn ? (
-                    <>
-                      <button style={S.actionBtn(false)} onClick={() => openEdit(e)}>✏️</button>
-                      <button style={S.actionBtn(true)}  onClick={() => setConfirmDel(e)}>🗑️</button>
-                    </>
-                  ) : (
-                    <span style={{ fontSize:11, color:'var(--a-fg-light)' }}>—</span>
-                  )}
-                </span>
+            {historique.length === 0 ? (
+              <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 14, color: C.ink3, textAlign: 'center', padding: '20px 0' }}>
+                Aucune entrée sur cette période.
               </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Modal ajout / modification */}
-      {modal && (
-        <div style={S.overlay} onClick={e => { if (e.target === e.currentTarget) setModal(null); }}>
-          <div style={S.modal}>
-            <div style={S.modalTitle}>
-              {modal.mode === 'create' ? 'Nouvelle entrée' : 'Modifier l\'entrée'}
-            </div>
-
-            <div style={S.typeToggleRow}>
-              <button style={S.typeBtn(fType === 'retard', true)} onClick={() => setFType('retard')}>
-                ⏰ Retard
-              </button>
-              <button style={S.typeBtn(fType === 'absence', false)} onClick={() => setFType('absence')}>
-                🚫 Absence
-              </button>
-            </div>
-
-            {modal.mode === 'create' && (
-              <div style={S.fieldGroup}>
-                <label style={S.label}>Élève</label>
-                <select style={S.input} value={fEleve} onChange={e => setFEleve(e.target.value)}>
-                  {eleves.map(el => (
-                    <option key={el.id} value={el.id}>{el.prenom} {el.nom}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div style={S.fieldGroup}>
-              <label style={S.label}>Date</label>
-              <input type="date" style={S.input} value={fDate} onChange={e => setFDate(e.target.value)} />
-            </div>
-
-            <div style={S.fieldGroup}>
-              <label style={S.label}>Commentaire (optionnel)</label>
-              <textarea style={S.textarea} value={fCommentaire} onChange={e => setFCommentaire(e.target.value)}
-                placeholder="Ex : arrivé 10 min en retard, justifié..." />
-            </div>
-
-            <div style={S.modalBtns}>
-              <button style={S.btnCancel} onClick={() => setModal(null)} disabled={saving}>Annuler</button>
-              <button style={S.btnSave} onClick={handleSave} disabled={saving || !fEleve || !fDate}>
-                {saving ? 'Enregistrement...' : 'Enregistrer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal confirmation suppression */}
-      {confirmDel && (
-        <div style={S.overlay} onClick={e => { if (e.target === e.currentTarget) setConfirmDel(null); }}>
-          <div style={{ ...S.modal, maxWidth:380 }}>
-            <div style={{ fontSize:36, textAlign:'center', marginBottom:12 }}>⚠️</div>
-            <div style={{ ...S.modalTitle, textAlign:'center' }}>Supprimer cette entrée ?</div>
-            <p style={{ textAlign:'center', color:'var(--a-fg-mid)', fontSize:14, marginBottom:24, lineHeight:1.6 }}>
-              {confirmDel.type === 'retard' ? 'Retard' : 'Absence'} du {fmtDateShort(confirmDel.date)}<br />
-              pour {getEleveName(eleves, confirmDel.eleve_id)}
-            </p>
-            <div style={S.modalBtns}>
-              <button style={S.btnCancel} onClick={() => setConfirmDel(null)} disabled={saving}>Annuler</button>
-              <button style={S.btnDanger} onClick={handleDelete} disabled={saving}>
-                {saving ? 'Suppression...' : 'Supprimer'}
-              </button>
-            </div>
+            ) : historique.map((entry, idx) => {
+              const { day, dow } = fmtDate(entry.date);
+              const el = eleves.find(e => e.id === entry.eleve_id);
+              const isRetard = entry.type === 'retard';
+              return (
+                <div key={entry.id} style={{
+                  display: 'flex', gap: 12, alignItems: 'flex-start',
+                  paddingBottom: 14, marginBottom: 14,
+                  borderBottom: idx < historique.length - 1 ? `1px solid ${C.ruleSoft}` : 'none',
+                }}>
+                  {/* Date */}
+                  <div style={{ flexShrink: 0, textAlign: 'center', minWidth: 32 }}>
+                    <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 700, color: C.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                      {day}
+                    </div>
+                    <div style={{ fontFamily: "'Manrope',sans-serif", fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.ink3, marginTop: 2 }}>
+                      {dow}
+                    </div>
+                  </div>
+                  {/* Info */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Manrope',sans-serif", fontSize: 12, fontWeight: 600, color: C.ink }}>
+                      {el ? `${el.prenom} ${el.nom.toUpperCase()}` : '—'}
+                      {' '}
+                      <span style={{
+                        fontSize: 9.5, fontWeight: 700, padding: '1px 7px', borderRadius: 999,
+                        background: 'rgba(138,107,31,0.10)', color: C.gold,
+                      }}>
+                        {classeActive?.nom}
+                      </span>
+                    </div>
+                    <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 11.5, color: C.gold, marginTop: 2 }}>
+                      {isRetard ? 'retard' : 'absence'}
+                      {entry.commentaire ? ` — ${entry.commentaire}` : ''}
+                    </div>
+                    {/* Déclaration parent ? */}
+                    {decls.find(d => d.eleve_id === entry.eleve_id) && (
+                      <button
+                        onClick={async () => {
+                          const d = decls.find(x => x.eleve_id === entry.eleve_id && !x.vue_enseignant);
+                          if (!d) return;
+                          const ok = await markDeclarationVueEnseignant(user.id, d.id);
+                          if (ok) {
+                            setDecls(prev => prev.map(x => x.id === d.id ? { ...x, vue_enseignant: true } : x));
+                            window.dispatchEvent(new CustomEvent('declaration-acknowledged'));
+                          }
+                        }}
+                        style={{ marginTop: 4, fontSize: 10, color: C.gold, background: 'transparent', border: `1px solid ${C.rule}`, borderRadius: 999, padding: '2px 8px', cursor: 'pointer', fontFamily: "'Manrope',sans-serif", fontWeight: 600 }}
+                      >
+                        Valider préavis parent
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

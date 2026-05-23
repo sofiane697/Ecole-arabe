@@ -37,6 +37,17 @@ module.exports = {
         'a-red':      'var(--a-red)',
         'a-yellow':   'var(--a-yellow)',
 
+        /* Coupole v1 — Enseignant / Admin redesign (--c-*) */
+        'c-bg':         'var(--c-bg)',
+        'c-paper':      'var(--c-paper)',
+        'c-ink':        'var(--c-ink)',
+        'c-ink-2':      'var(--c-ink-2)',
+        'c-ink-3':      'var(--c-ink-3)',
+        'c-gold':       'var(--c-gold)',
+        'c-gold-light': 'var(--c-gold-light)',
+        'c-gold-soft':  'var(--c-gold-soft)',
+        'c-rule':       'var(--c-rule)',
+
         /* Site public (sans préfixe) */
         'site-bg':        'var(--bg)',
         'site-bg-alt':    'var(--bg-alt)',
@@ -69,6 +80,8 @@ module.exports = {
 
       /* ─── Border radius ─── */
       borderRadius: {
+        'arch':        '60px 60px 12px 12px',
+        'arch-strong': '120px 120px 14px 14px',
         'p':      'var(--p-radius)',
         'p-sm':   'var(--p-radius-sm)',
         'a':      'var(--a-radius)',
@@ -85,6 +98,11 @@ module.exports = {
         'p-body':    ["'Inter'", '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         'p-mono':    ["'JetBrains Mono'", "'Fira Code'", 'monospace'],
         'arabic':    ["'Scheherazade New'", 'serif'],
+        /* Coupole v1 */
+        'c-display': ["'Newsreader'", 'Georgia', 'serif'],
+        'c-body':    ["'Manrope'", 'system-ui', 'sans-serif'],
+        'c-arabic':  ["'Amiri'", 'serif'],
+        'c-mono':    ["'JetBrains Mono'", 'monospace'],
         'a-display': ['Georgia', "'Times New Roman'", 'serif'],
         'a-body':    ["'DM Sans'", 'system-ui', 'sans-serif'],
         'a-mono':    ["'JetBrains Mono'", "'Fira Code'", 'monospace'],

@@ -4,449 +4,212 @@ import {
   fetchEvaluationsClasse, createEvaluation, updateEvaluation, deleteEvaluation,
   fetchNotesEvaluation, upsertNote,
 } from './supabaseEnseignant';
+import { Flourish, Star5 } from '../shared/Ornaments';
 import EleveAvatar from '../shared/EleveAvatar';
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
+const C = {
+  bg:       '#F2EEDF',
+  paper:    '#FBFAF1',
+  ink:      '#1E2317',
+  ink2:     '#3F4A33',
+  ink3:     '#7A876A',
+  gold:     '#8A6B1F',
+  goldSoft: '#DCBC6E',
+  rule:     'rgba(138,107,31,0.18)',
+  ruleSoft: 'rgba(138,107,31,0.10)',
+};
+
+const GRADES = [
+  { value: 4, label: 'A+',  stars: 4, libelle: 'Excellent'              },
+  { value: 3, label: 'A',   stars: 3, libelle: 'Acquis'                 },
+  { value: 2, label: 'ECA', stars: 2, libelle: "En cours d'acquisition" },
+  { value: 1, label: 'NA',  stars: 1, libelle: 'Non acquis'             },
+];
+
+const noteKey = (evalId, eleveId) => `${evalId}_${eleveId}`;
+const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : null;
+const fmtAgo = (iso) => {
+  if (!iso) return '';
+  const diff = Math.floor((Date.now() - new Date(iso)) / 60000);
+  if (diff < 1) return 'à l\'instant';
+  if (diff < 60) return `il y a ${diff} minute${diff>1?'s':''}`;
+  return fmt(iso);
+};
+
+function initials(e) { return `${(e.prenom||'')[0]||''}${(e.nom||'')[0]||''}`.toUpperCase(); }
+
 const IconPlus = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 );
-const IconEdit2 = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-  </svg>
-);
-const IconTrash2 = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-  </svg>
-);
-const IconCheck = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
-const IconMessage = ({ size = 14 }) => (
+const IconMsg = ({ size = 13 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
 );
+const IconEdit = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+  </svg>
+);
+const IconTrash = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+  </svg>
+);
 
-// ─── Système de notation ──────────────────────────────────────────────────────
-const GRADES = [
-  { value: 4, label: 'A+',  libelle: 'Excellent',              color: '#30d158' },
-  { value: 3, label: 'A',   libelle: 'Acquis',                 color: '#0a84ff' },
-  { value: 2, label: 'ECA', libelle: "En cours d'acquisition", color: '#f7963a' },
-  { value: 1, label: 'NA',  libelle: 'Non acquis',             color: '#ff453a' },
-];
-
-const gradeFromScore = (score) => GRADES.find(g => g.value === score) || null;
-const noteKey = (evalId, eleveId) => `${evalId}_${eleveId}`;
-const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : null;
-
-// ─── CSS ─────────────────────────────────────────────────────────────────────
-const NOTES_CSS = `
-/* ── Layout ── */
-.en-tabs { display:flex; gap:6px; margin-bottom:28px; flex-wrap:wrap; }
-.en-tab {
-  padding:7px 20px; border-radius:980px; cursor:pointer; transition:all .18s;
-  font-weight:700; font-size:12.5px; letter-spacing:.01em;
-  border:1.5px solid var(--a-border); background:transparent; color:var(--a-fg-mid);
-}
-.en-tab.active {
-  background:var(--a-gold); border-color:var(--a-gold); color:#000;
-  box-shadow:0 2px 14px rgba(191,138,48,.28);
-}
-.en-tab:not(.active):hover { border-color:var(--a-fg-light); color:var(--a-fg); }
-
-.en-grid { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
-
-/* ── Left column ── */
-.en-col { display:flex; flex-direction:column; gap:10px; }
-.en-col-head {
-  display:flex; align-items:baseline; justify-content:space-between;
-  padding-bottom:14px; border-bottom:1px solid var(--a-border); margin-bottom:2px;
-}
-.en-col-title {
-  font-family:var(--a-font-display);
-  font-size:17px; font-weight:700; color:var(--a-fg); letter-spacing:-.01em;
-}
-.en-col-count {
-  font-family:var(--a-font-mono); font-size:10px;
-  color:var(--a-fg-light); font-weight:500;
+// ── Barème ──
+function Bareme() {
+  return (
+    <div style={{ background: C.paper, borderRadius: 16, border: `1px solid ${C.rule}`, padding: '14px 16px' }}>
+      <div style={{ fontFamily: "'Manrope',sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.ink3, marginBottom: 10 }}>
+        Barème · Échelle d'étoiles
+      </div>
+      {[...GRADES, { value: 0, label: 'Abs', stars: 0, libelle: 'Absent' }].map(g => (
+        <div key={g.label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
+          <span style={{ display: 'inline-flex', gap: 2, minWidth: 52 }}>
+            {[1,2,3,4].map(i => <Star5 key={i} size={10} filled={i <= g.stars} />)}
+          </span>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11.5, fontWeight: 700, color: C.gold, minWidth: 28 }}>
+            {g.label}
+          </span>
+          <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 11, color: C.ink3 }}>
+            {g.libelle}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
-.en-add-btn {
-  display:flex; align-items:center; justify-content:center; gap:7px;
-  padding:11px 16px; border-radius:12px; width:100%;
-  background:var(--a-gold); color:#000; font-weight:700; font-size:13px;
-  border:none; cursor:pointer; transition:all .2s;
-  letter-spacing:.01em;
-  box-shadow:0 2px 16px rgba(191,138,48,.18);
-}
-.en-add-btn:hover { box-shadow:0 4px 24px rgba(191,138,48,.3); transform:translateY(-1px); }
-
-.en-grade-legend { display:flex; flex-wrap:wrap; gap:4px; }
-.en-grade-pip {
-  font-size:10px; font-weight:700;
-  border-radius:6px; padding:2px 7px; letter-spacing:.02em;
-}
-
-/* ── Eval card ── */
-.en-eval-card {
-  border-radius:11px; border:1px solid var(--a-border); background:var(--a-bg-card);
-  cursor:pointer; transition:all .15s; overflow:hidden; position:relative;
-  padding:13px 14px 13px 18px;
-}
-.en-eval-card::before {
-  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
-  background:transparent; transition:background .15s; border-radius:3px 0 0 3px;
-}
-.en-eval-card:hover { border-color:rgba(191,138,48,.35); background:rgba(191,138,48,.03); }
-.en-eval-card.active { border-color:rgba(191,138,48,.4); background:rgba(191,138,48,.05); }
-.en-eval-card.active::before { background:var(--a-gold); }
-
-.en-eval-card-row1 { display:flex; align-items:flex-start; gap:8px; }
-.en-eval-title {
-  flex:1; min-width:0;
-  font-size:13.5px; font-weight:700;
-  color:var(--a-fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.35;
-}
-.en-eval-meta {
-  font-size:11px; color:var(--a-fg-light); margin-top:3px;
-  display:flex; align-items:center; gap:6px;
-}
-.en-eval-by { font-style:italic; color:var(--a-fg-light); }
-.en-eval-actions { display:flex; gap:3px; flex-shrink:0; }
-.en-eval-action-btn {
-  width:24px; height:24px; border-radius:7px; border:1px solid var(--a-border);
-  background:var(--a-bg); color:var(--a-fg-mid); cursor:pointer;
-  display:flex; align-items:center; justify-content:center; transition:all .12s;
-}
-.en-eval-action-btn:hover { border-color:var(--a-gold); color:var(--a-gold); }
-.en-eval-action-btn.del { border-color:rgba(255,69,58,.2); background:rgba(255,69,58,.05); color:#ff453a; }
-.en-eval-action-btn.del:hover { background:rgba(255,69,58,.15); }
-
-.en-eval-bar-row { display:flex; align-items:center; gap:8px; margin-top:10px; }
-.en-eval-bar-track { flex:1; height:3px; border-radius:2px; background:var(--a-border); overflow:hidden; }
-.en-eval-bar-fill { height:100%; border-radius:2px; background:var(--a-gold); transition:width .4s; }
-.en-eval-fraction {
-  font-family:var(--a-font-mono); font-size:10px;
-  color:var(--a-fg-light); white-space:nowrap;
-}
-.en-eval-grade-dots { display:flex; gap:3px; flex-wrap:wrap; }
-.en-eval-grade-dot {
-  font-size:9px; font-weight:800; border-radius:5px; padding:1px 5px;
-  }
-
-/* ── Right panel ── */
-.en-panel {
-  background:var(--a-bg-card); border-radius:16px;
-  border:1px solid var(--a-border); overflow:hidden;
-}
-.en-panel-head {
-  padding:22px 28px 18px;
-  border-bottom:1px solid var(--a-border);
-  background:linear-gradient(160deg, rgba(201,150,58,.07) 0%, transparent 60%);
-}
-.en-panel-title {
-  font-family:var(--a-font-display);
-  font-size:17px; font-weight:700; color:var(--a-fg);
-  letter-spacing:-.01em; line-height:1.25; margin:0 0 8px;
-}
-.en-panel-meta-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.en-panel-date {
-  font-size:12px; color:var(--a-fg-mid);
-}
-.en-panel-legend { display:flex; gap:5px; flex-wrap:wrap; }
-.en-panel-legend-pip {
-  font-size:10px; font-weight:700; border-radius:6px; padding:2px 7px;
-  }
-.en-panel-stats { display:flex; gap:24px; margin-left:auto; align-items:center; }
-.en-stat-num {
-  font-family:var(--a-font-display); font-size:28px; font-weight:800;
-  line-height:1; display:block; text-align:center;
-}
-.en-stat-lbl {
-  font-size:9px; font-weight:700;
-  color:var(--a-fg-mid); text-transform:uppercase; letter-spacing:.8px;
-  display:block; text-align:center; margin-top:2px;
-}
-
-.en-table-head {
-  display:grid; grid-template-columns:1fr 290px; gap:16px;
-  padding:10px 28px; background:rgba(0,0,0,.09);
-  border-bottom:1px solid var(--a-border);
-}
-.en-table-th {
-  font-size:10px; font-weight:700;
-  color:var(--a-fg-light); text-transform:uppercase; letter-spacing:1.2px;
-}
-
-.en-student-row {
-  display:grid; grid-template-columns:1fr 290px; gap:16px;
-  align-items:center; padding:13px 28px; transition:background .1s;
-}
-.en-student-row + .en-student-row { border-top:1px solid var(--a-border); }
-.en-student-row:hover { background:rgba(255,255,255,.018); }
-
-.en-avatar {
-  width:40px; height:40px; border-radius:50%; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:800;
-  transition:all .2s;
-}
-.en-student-name {
-  font-size:13.5px; font-weight:600;
-  color:var(--a-fg); line-height:1.3;
-}
-.en-student-sub {
-  font-size:11.5px; margin-top:2px;
-}
-
-/* ── Grade buttons ── */
-.en-grade-input { display:flex; gap:5px; align-items:center; }
-.en-grade-btn {
-  flex:1; height:40px; border-radius:10px;
-  font-weight:800;
-  cursor:pointer; transition:all .13s;
-  display:flex; align-items:center; justify-content:center;
-  letter-spacing:.02em; font-size:11.5px;
-}
-.en-abs-btn {
-  width:40px; height:40px; border-radius:10px;
-  border:1px solid var(--a-border); background:transparent;
-  color:var(--a-fg-light); cursor:pointer; flex-shrink:0;
-  font-size:10px; font-weight:700;
-  display:flex; align-items:center; justify-content:center; transition:all .13s;
-}
-.en-abs-btn:hover { border-color:#ff453a; color:#ff453a; }
-.en-comment-btn {
-  width:40px; height:40px; border-radius:10px;
-  border:1px solid var(--a-border); background:transparent;
-  color:var(--a-fg-light); cursor:pointer; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; transition:all .13s;
-}
-.en-comment-btn:hover { border-color:var(--a-gold); color:var(--a-gold); }
-.en-comment-btn.has-comment {
-  background:rgba(191,138,48,.12);
-  border-color:var(--a-gold);
-  color:var(--a-gold);
-}
-.en-comment-readonly {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:28px; height:28px; border-radius:8px;
-  border:1px solid var(--a-border); background:rgba(191,138,48,.1);
-  color:var(--a-gold); cursor:pointer; margin-left:8px; transition:all .13s;
-}
-.en-comment-readonly:hover { background:rgba(191,138,48,.18); border-color:var(--a-gold); }
-.en-comment-textarea {
-  width:100%;
-  background:var(--a-bg);
-  border:1px solid var(--a-border);
-  border-radius:10px;
-  padding:10px 14px;
-  color:var(--a-fg);
-  font-size:14px;
-  resize:vertical;
-  min-height:120px;
-  box-sizing:border-box;
-  font-family:inherit;
-  line-height:1.5;
-  transition:border-color .13s;
-}
-.en-comment-textarea:focus { outline:none; border-color:var(--a-gold); }
-.en-comment-textarea:read-only { cursor:default; opacity:.85; }
-.en-comment-counter {
-  font-family:var(--a-font-mono);
-  font-size:11px; color:var(--a-fg-light);
-  text-align:right; margin-top:6px;
-}
-.en-saved {
-  width:40px; height:40px; border-radius:10px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(48,209,88,.12); color:#30d158;
-}
-.en-absent-tag {
-  flex:1; height:40px; border-radius:10px;
-  display:flex; align-items:center; justify-content:center;
-  font-weight:700; font-size:10.5px; letter-spacing:.5px;
-  background:rgba(255,69,58,.1); border:1.5px solid rgba(255,69,58,.22); color:#ff453a;
-  }
-.en-absent-remove {
-  height:40px; border-radius:10px; padding:0 14px;
-  border:1px solid var(--a-border); background:transparent;
-  color:var(--a-fg-mid); cursor:pointer; font-size:11px; flex-shrink:0;
-  font-weight:600; transition:all .13s;
-}
-.en-absent-remove:hover { border-color:var(--a-fg-mid); color:var(--a-fg); }
-
-.en-readonly-grade {
-  display:flex; justify-content:center;
-}
-
-/* ── Panel footer ── */
-.en-panel-footer {
-  padding:16px 28px;
-  border-top:2px solid rgba(191,138,48,.1);
-  background:rgba(191,138,48,.03);
-  display:flex; align-items:center; justify-content:space-between;
-  flex-wrap:wrap; gap:10px;
-}
-.en-footer-label {
-  font-size:10px; font-weight:700;
-  color:var(--a-fg-mid); text-transform:uppercase; letter-spacing:1px;
-}
-.en-footer-grades { display:flex; gap:18px; }
-.en-footer-grade { text-align:center; }
-.en-footer-grade-num {
-  font-family:var(--a-font-display); font-size:22px; font-weight:800; line-height:1; display:block;
-}
-.en-footer-grade-lbl {
-  font-size:9px; font-weight:700;
-  text-transform:uppercase; letter-spacing:.8px; opacity:.65; display:block; margin-top:2px;
-}
-
-/* ── Empty / loading ── */
-.en-loading { text-align:center; color:var(--a-fg-mid); padding:80px 0; font-size:14px; }
-.en-empty-panel {
-  background:var(--a-bg-card); border-radius:16px;
-  border:1px solid var(--a-border); padding:80px 24px; text-align:center;
-}
-.en-empty-icon { font-size:38px; margin-bottom:14px; opacity:.12; }
-.en-empty-title {
-  font-family:var(--a-font-display);
-  font-size:17px; font-weight:700; color:var(--a-fg); margin-bottom:6px;
-}
-.en-empty-sub { font-size:13px; color:var(--a-fg-mid); }
-.en-no-evals {
-  text-align:center; border-radius:12px; color:var(--a-fg-mid);
-  font-size:13px; padding:28px 20px; border:1px dashed var(--a-border);
-  line-height:1.7; }
-
-/* ── Error ── */
-.en-error {
-  font-size:13px; margin-bottom:12px;
-  color:#ff453a; padding:10px 14px; border-radius:10px;
-  background:rgba(255,69,58,.07); border:1px solid rgba(255,69,58,.18);
-}
-
-/* ── Modal ── */
-.en-modal-backdrop {
-  position:fixed; inset:0; z-index:1000;
-  display:flex; align-items:center; justify-content:center; padding:20px;
-  background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
-}
-.en-modal {
-  background:var(--a-bg-card); border-radius:20px; padding:32px;
-  width:100%; max-width:420px; box-shadow:0 30px 80px rgba(0,0,0,.5);
-  border:1px solid var(--a-border);
-}
-.en-modal-title {
-  font-family:var(--a-font-display);
-  font-size:17px; font-weight:700; color:var(--a-fg); margin:0 0 4px;
-}
-.en-modal-sub { font-size:13px; color:var(--a-fg-mid); margin:0 0 22px; }
-.en-modal-legend { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:22px; padding:10px 12px; border-radius:10px; background:var(--a-bg); border:1px solid var(--a-border); }
-.en-modal-label {
-  display:block; font-size:10px; font-weight:700;
-  color:var(--a-fg-mid); text-transform:uppercase; letter-spacing:.8px; margin-bottom:8px;
-}
-.en-modal-field { margin-bottom:18px; }
-.en-modal-input {
-  width:100%; background:var(--a-bg); color:var(--a-fg); border-radius:12px;
-  font-size:14px; outline:none; box-sizing:border-box;
-  border:1.5px solid var(--a-border); padding:12px 16px;
-  transition:border-color .15s;
-}
-.en-modal-input:focus { border-color:var(--a-gold); }
-.en-modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:10px; }
-.en-modal-cancel {
-  border-radius:980px; border:1px solid var(--a-border); background:transparent;
-  color:var(--a-fg-mid); cursor:pointer; font-size:13px; padding:10px 22px; transition:all .15s;
-}
-.en-modal-cancel:hover { border-color:var(--a-fg-mid); color:var(--a-fg); }
-.en-modal-save {
-  border-radius:980px; border:none; background:var(--a-gold); color:#000;
-  font-weight:700; cursor:pointer; font-size:13px; padding:10px 24px; transition:opacity .15s;
-}
-.en-modal-save:hover { opacity:.9; }
-.en-modal-save:disabled { opacity:.45; cursor:not-allowed; }
-
-/* ── Confirm delete ── */
-.en-confirm-backdrop {
-  position:fixed; inset:0; z-index:1100;
-  display:flex; align-items:center; justify-content:center; padding:20px;
-  background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
-}
-.en-confirm {
-  background:var(--a-bg-card); border-radius:16px; max-width:380px; width:100%;
-  padding:28px; box-shadow:0 20px 60px rgba(0,0,0,.5); border:1px solid var(--a-border);
-}
-.en-confirm-title {
-  font-family:var(--a-font-display);
-  font-size:17px; font-weight:700; color:var(--a-fg); margin-bottom:10px;
-}
-.en-confirm-body { font-size:13px; color:var(--a-fg-mid); margin-bottom:24px; line-height:1.65; }
-.en-confirm-actions { display:flex; justify-content:flex-end; gap:10px; }
-.en-confirm-cancel {
-  border-radius:980px; border:1px solid var(--a-border); background:transparent;
-  color:var(--a-fg-mid); cursor:pointer; font-size:13px; padding:9px 20px;
-}
-.en-confirm-delete {
-  border-radius:980px; border:none; background:var(--a-red); color:#fff;
-  font-weight:700; cursor:pointer; font-size:13px; padding:9px 20px;
-}
-`;
-
-// ─── CommentModal ─────────────────────────────────────────────────────────────
-function CommentModal({ eleve, currentValue, onSave, onClose, readOnly = false }) {
-  const [value, setValue] = useState(currentValue || '');
+// ── Saisie note ──
+function NoteInput({ eleveId, evalId, note, isOwner, onSave, onToggleAbsent, onOpenComment }) {
   const [saving, setSaving] = useState(false);
-  const MAX = 500;
-
-  const handleSave = async () => {
+  const handleGrade = async (val) => {
+    if (!isOwner) return;
     setSaving(true);
-    try { await onSave(value.trim() || null); }
-    finally { setSaving(false); }
+    try { await onSave(note?.score === val ? null : val); } finally { setSaving(false); }
+  };
+  const handleAbsent = async () => {
+    if (!isOwner) return;
+    setSaving(true);
+    try { await onToggleAbsent(); } finally { setSaving(false); }
   };
 
+  if (!isOwner) {
+    const g = GRADES.find(x => x.value === note?.score);
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {note?.absent ? (
+          <span style={{ padding: '3px 12px', borderRadius: 999, background: 'rgba(179,64,64,0.10)', color: '#b34040', fontFamily: "'Manrope',sans-serif", fontSize: 11, fontWeight: 700 }}>Absent</span>
+        ) : g ? (
+          <span style={{ padding: '3px 12px', borderRadius: 999, background: 'rgba(138,107,31,0.10)', color: C.gold, fontFamily: "'Manrope',sans-serif", fontSize: 11, fontWeight: 700 }}>{g.label}</span>
+        ) : (
+          <span style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 12, color: C.ink3 }}>non saisi</span>
+        )}
+        {note?.commentaire && (
+          <button onClick={onOpenComment} style={{ width: 28, height: 28, borderRadius: '50%', border: `1px solid ${C.rule}`, background: 'rgba(138,107,31,0.08)', color: C.gold, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconMsg />
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  if (note?.absent) {
+    return (
+      <div style={{ display: 'flex', gap: 6 }}>
+        <span style={{ padding: '5px 14px', borderRadius: 999, background: 'rgba(179,64,64,0.10)', border: '1px solid rgba(179,64,64,0.25)', color: '#b34040', fontFamily: "'Manrope',sans-serif", fontSize: 11.5, fontWeight: 700 }}>
+          Absent
+        </span>
+        <button onClick={handleAbsent} disabled={saving} style={{ padding: '5px 12px', borderRadius: 999, border: `1px solid ${C.rule}`, background: 'transparent', color: C.ink3, fontFamily: "'Manrope',sans-serif", fontSize: 11, cursor: 'pointer' }}>
+          Retirer
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="en-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="en-modal">
-        <h3 className="en-modal-title">
-          {readOnly ? 'Commentaire' : 'Commentaire sur la note'}
-        </h3>
-        <p className="en-modal-sub">
-          {eleve?.prenom} {eleve?.nom}
-        </p>
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap' }}>
+      {GRADES.map(g => {
+        const active = note?.score === g.value;
+        return (
+          <button
+            key={g.label}
+            onClick={() => handleGrade(g.value)}
+            disabled={saving}
+            style={{
+              padding: '5px 11px', borderRadius: 999,
+              border: `1px solid ${active ? C.ink : C.rule}`,
+              background: active ? C.ink : 'transparent',
+              color: active ? C.paper : C.ink3,
+              fontFamily: "'Manrope',sans-serif", fontSize: 11.5, fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {g.label}
+          </button>
+        );
+      })}
+      <button
+        onClick={handleAbsent}
+        disabled={saving}
+        style={{
+          padding: '5px 11px', borderRadius: 999,
+          border: `1px solid ${C.rule}`, background: 'transparent',
+          color: C.ink3, fontFamily: "'Manrope',sans-serif", fontSize: 11.5, fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Abs
+      </button>
+      <button
+        onClick={onOpenComment}
+        style={{
+          width: 30, height: 30, borderRadius: '50%',
+          border: `1px solid ${note?.commentaire ? C.gold : C.rule}`,
+          background: note?.commentaire ? 'rgba(138,107,31,0.08)' : 'transparent',
+          color: note?.commentaire ? C.gold : C.ink3,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <IconMsg />
+      </button>
+    </div>
+  );
+}
 
-        <div className="en-modal-field">
-          <label className="en-modal-label">
-            {readOnly ? 'Appréciation de l\'enseignant' : 'Appréciation (facultatif)'}
-          </label>
-          <textarea
-            className="en-comment-textarea"
-            autoFocus={!readOnly}
-            readOnly={readOnly}
-            value={value}
-            maxLength={MAX}
-            onChange={e => setValue(e.target.value)}
-            placeholder={readOnly ? '' : 'Ex : Très bon travail sur la lecture, peut encore progresser à l\'oral.'}
-          />
-          {!readOnly && (
-            <div className="en-comment-counter">{value.length}/{MAX}</div>
-          )}
+// ── Modal commentaire ──
+function CommentModal({ eleve, currentValue, onSave, onClose, readOnly }) {
+  const [value, setValue] = useState(currentValue || '');
+  const [saving, setSaving] = useState(false);
+  const handleSave = async () => { setSaving(true); try { await onSave(value.trim() || null); } finally { setSaving(false); } };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,35,23,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: 20 }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.paper, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, border: `1px solid ${C.rule}` }}>
+        <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontSize: 20, fontWeight: 500, color: C.ink, marginBottom: 4 }}>
+          {readOnly ? 'Commentaire' : 'Appréciation'}
         </div>
-
-        <div className="en-modal-actions">
-          <button className="en-modal-cancel" onClick={onClose}>
+        <div style={{ fontFamily: "'Newsreader',Georgia,serif", fontStyle: 'italic', fontSize: 13, color: C.ink3, marginBottom: 18 }}>
+          {eleve?.prenom} {eleve?.nom}
+        </div>
+        <textarea
+          autoFocus={!readOnly}
+          readOnly={readOnly}
+          value={value}
+          maxLength={500}
+          onChange={e => setValue(e.target.value)}
+          placeholder={readOnly ? '' : 'Ex : Très bon travail, peut encore progresser...'}
+          style={{ width: '100%', background: C.bg, border: `1px solid ${C.rule}`, borderRadius: 12, padding: '10px 14px', fontFamily: "'Manrope',sans-serif", fontSize: 13, color: C.ink, outline: 'none', resize: 'vertical', minHeight: 100, boxSizing: 'border-box' }}
+        />
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 18 }}>
+          <button onClick={onClose} style={{ padding: '9px 20px', borderRadius: 999, border: `1px solid ${C.rule}`, background: 'transparent', color: C.ink2, fontFamily: "'Manrope',sans-serif", fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             {readOnly ? 'Fermer' : 'Annuler'}
           </button>
           {!readOnly && (
-            <button className="en-modal-save" onClick={handleSave} disabled={saving}>
+            <button onClick={handleSave} disabled={saving} style={{ padding: '9px 22px', borderRadius: 999, border: 'none', background: C.ink, color: C.paper, fontFamily: "'Manrope',sans-serif", fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               {saving ? 'Enregistrement…' : 'Enregistrer'}
             </button>
           )}
@@ -456,166 +219,26 @@ function CommentModal({ eleve, currentValue, onSave, onClose, readOnly = false }
   );
 }
 
-// ─── NoteLetterInput ──────────────────────────────────────────────────────────
-function NoteLetterInput({ note, onSave, onAbsent, onOpenComment }) {
-  const [saving, setSaving] = useState(false);
-  const [saved,  setSaved]  = useState(false);
-
-  const handleSelect = async (grade) => {
-    const newScore = note?.score === grade.value ? null : grade.value;
-    setSaving(true);
-    try {
-      await onSave(newScore);
-      if (newScore !== null) { setSaved(true); setTimeout(() => setSaved(false), 1400); }
-    } finally { setSaving(false); }
-  };
-
-  const hasComment = Boolean(note?.commentaire);
-
-  if (note?.absent) {
-    return (
-      <div className="en-grade-input">
-        <div className="en-absent-tag">ABSENT</div>
-        <button className="en-absent-remove" onClick={onAbsent}>Retirer</button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="en-grade-input">
-      {GRADES.map(g => {
-        const isSelected = note?.score === g.value;
-        return (
-          <button
-            key={g.label}
-            className="en-grade-btn"
-            onClick={() => handleSelect(g)}
-            disabled={saving}
-            title={g.libelle}
-            style={{
-              border: `1.5px solid ${isSelected ? g.color : 'var(--a-border)'}`,
-              background: isSelected ? g.color : 'var(--a-bg)',
-              color: isSelected ? '#fff' : 'var(--a-fg-mid)',
-              fontSize: g.label === 'ECA' ? 10 : 11.5,
-              cursor: saving ? 'wait' : 'pointer',
-            }}
-            onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = g.color; e.currentTarget.style.color = g.color; }}}
-            onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = 'var(--a-border)'; e.currentTarget.style.color = 'var(--a-fg-mid)'; }}}
-          >
-            {g.label}
-          </button>
-        );
-      })}
-      <button className="en-abs-btn" onClick={onAbsent} title="Marquer absent">Abs</button>
-      <button
-        type="button"
-        className={`en-comment-btn${hasComment ? ' has-comment' : ''}`}
-        onClick={onOpenComment}
-        title={hasComment ? 'Modifier le commentaire' : 'Ajouter un commentaire'}
-      >
-        <IconMessage />
-      </button>
-      {saved && (
-        <div className="en-saved"><IconCheck /></div>
-      )}
-    </div>
-  );
-}
-
-// ─── GradeBadge ───────────────────────────────────────────────────────────────
-function GradeBadge({ score }) {
-  const g = gradeFromScore(score);
-  if (!g) return <span style={{ color:'var(--a-fg-light)', fontSize:12 }}>—</span>;
-  return (
-    <span style={{
-      display:'inline-flex', alignItems:'center', gap:5, borderRadius:8,
-      fontWeight:800, padding:'4px 12px', fontSize:13,
-      background:`${g.color}18`, color:g.color, border:`1px solid ${g.color}35`,
-    }}>
-      {g.label}
-      <span style={{ fontSize:11, fontWeight:400, opacity:.8 }}>{g.libelle}</span>
-    </span>
-  );
-}
-
-// ─── EvalCard ─────────────────────────────────────────────────────────────────
-function EvalCard({ ev, isActive, user, stats, onClick, onEdit, onDelete }) {
-  const [hovered, setHovered] = useState(false);
-  const isOwn = ev.enseignant_id === user.id;
-  const pct   = stats.total > 0 ? stats.noted / stats.total : 0;
-
-  return (
-    <div
-      className={`en-eval-card${isActive ? ' active' : ''}`}
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="en-eval-card-row1">
-        <div style={{ flex:1, minWidth:0 }}>
-          <div className="en-eval-title">{ev.titre}</div>
-          <div className="en-eval-meta">
-            {ev.date_evaluation && <span>{fmt(ev.date_evaluation)}</span>}
-            {!isOwn && ev.enseignants && (
-              <span className="en-eval-by">par {ev.enseignants.prenom} {ev.enseignants.nom}</span>
-            )}
-          </div>
-        </div>
-        {isOwn && (hovered || isActive) && (
-          <div className="en-eval-actions">
-            <button className="en-eval-action-btn" onClick={onEdit}><IconEdit2/></button>
-            <button className="en-eval-action-btn del" onClick={onDelete}><IconTrash2/></button>
-          </div>
-        )}
-      </div>
-
-      {/* Barre de progression */}
-      <div className="en-eval-bar-row">
-        <div className="en-eval-bar-track">
-          <div className="en-eval-bar-fill" style={{ width: `${pct * 100}%` }} />
-        </div>
-        <span className="en-eval-fraction" style={{ color: pct === 1 ? '#30d158' : undefined, fontWeight: pct === 1 ? 700 : 400 }}>
-          {stats.noted}/{stats.total}
-        </span>
-      </div>
-
-      {/* Badges grades */}
-      {(stats.noted > 0 || stats.absent > 0) && (
-        <div className="en-eval-grade-dots" style={{ marginTop:7 }}>
-          {GRADES.map(g => stats.dist[g.label] > 0 && (
-            <span key={g.label} className="en-eval-grade-dot" style={{ background:`${g.color}15`, color:g.color }}>
-              {g.label}×{stats.dist[g.label]}
-            </span>
-          ))}
-          {stats.absent > 0 && (
-            <span className="en-eval-grade-dot" style={{ background:'rgba(255,69,58,.12)', color:'#ff453a' }}>
-              Abs×{stats.absent}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════
 export default function EnseignantNotes() {
   const user = getEnseignantUser();
-
-  const [classes,     setClasses]     = useState([]);
-  const [selClasse,   setSelClasse]   = useState(null);
-  const [eleves,      setEleves]      = useState([]);
-  const [evaluations, setEvaluations] = useState([]);
-  const [notesMap,    setNotesMap]    = useState({});
-  const [loading,     setLoading]     = useState(true);
-  const [selEval,     setSelEval]     = useState(null);
-  const [modal,       setModal]       = useState(null);
-  const [fTitre,      setFTitre]      = useState('');
-  const [fDate,       setFDate]       = useState('');
-  const [saving,      setSaving]      = useState(false);
-  const [confirmDel,  setConfirmDel]  = useState(null);
+  const [classes,      setClasses]      = useState([]);
+  const [selClasse,    setSelClasse]    = useState(null);
+  const [eleves,       setEleves]       = useState([]);
+  const [evaluations,  setEvaluations]  = useState([]);
+  const [notesMap,     setNotesMap]     = useState({});
+  const [loading,      setLoading]      = useState(true);
+  const [selEval,      setSelEval]      = useState(null);
+  const [modal,        setModal]        = useState(null);
+  const [confirmDel,   setConfirmDel]   = useState(null);
   const [commentModal, setCommentModal] = useState(null);
-  const [actionError, setActionError] = useState('');
+  const [fTitre,       setFTitre]       = useState('');
+  const [fDate,        setFDate]        = useState('');
+  const [saving,       setSaving]       = useState(false);
+  const [lastSave,     setLastSave]     = useState(null);
+  const [validatedEval, setValidatedEval] = useState(null); // id de l'éval validée localement
+
+  const today = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
@@ -630,14 +253,10 @@ export default function EnseignantNotes() {
     if (!classeId) return;
     setLoading(true);
     setSelEval(null);
-    setCommentModal(null);
     setEleves([]); setEvaluations([]); setNotesMap({});
     try {
-      const [elevs, evals] = await Promise.all([
-        fetchElevesDeClasse(classeId),
-        fetchEvaluationsClasse(classeId),
-      ]);
-      setEleves(elevs);
+      const [elvs, evals] = await Promise.all([fetchElevesDeClasse(classeId), fetchEvaluationsClasse(classeId)]);
+      setEleves(elvs);
       setEvaluations(evals);
       if (evals.length) {
         const arrays = await Promise.all(evals.map(e => fetchNotesEvaluation(e.id)));
@@ -655,10 +274,10 @@ export default function EnseignantNotes() {
   const saveNote = useCallback(async (evalId, eleveId, score) => {
     const key = noteKey(evalId, eleveId);
     const current = notesMap[key];
-    try {
-      const result = await upsertNote(evalId, eleveId, score, false, current?.commentaire ?? null);
-      setNotesMap(prev => ({ ...prev, [key]: result }));
-    } catch(e) { setActionError(e.message || 'Erreur lors de la sauvegarde de la note.'); }
+    const result = await upsertNote(evalId, eleveId, score, false, current?.commentaire ?? null);
+    setNotesMap(prev => ({ ...prev, [key]: result }));
+    setLastSave(new Date());
+    setValidatedEval(v => v === evalId ? null : v);
   }, [notesMap]);
 
   const toggleAbsent = useCallback(async (evalId, eleveId) => {
@@ -666,54 +285,57 @@ export default function EnseignantNotes() {
     const current = notesMap[key];
     const newAbsent = !current?.absent;
     setNotesMap(prev => ({ ...prev, [key]: { ...prev[key], evaluation_id:evalId, eleve_id:eleveId, score:null, absent:newAbsent } }));
-    try {
-      const result = await upsertNote(evalId, eleveId, null, newAbsent, current?.commentaire ?? null);
-      setNotesMap(prev => ({ ...prev, [key]: result }));
-    } catch(e) { setActionError(e.message || 'Erreur lors du marquage absent.'); }
+    const result = await upsertNote(evalId, eleveId, null, newAbsent, current?.commentaire ?? null);
+    setNotesMap(prev => ({ ...prev, [key]: result }));
+    setLastSave(new Date());
+    setValidatedEval(v => v === evalId ? null : v);
   }, [notesMap]);
 
   const saveComment = useCallback(async (evalId, eleveId, commentaire) => {
     const key = noteKey(evalId, eleveId);
     const current = notesMap[key];
-    try {
-      const result = await upsertNote(
-        evalId, eleveId,
-        current?.score ?? null,
-        current?.absent ?? false,
-        commentaire,
-      );
-      setNotesMap(prev => ({ ...prev, [key]: result }));
-      setCommentModal(null);
-    } catch(e) { setActionError(e.message || 'Erreur lors de la sauvegarde du commentaire.'); }
+    const result = await upsertNote(evalId, eleveId, current?.score ?? null, current?.absent ?? false, commentaire);
+    setNotesMap(prev => ({ ...prev, [key]: result }));
+    setCommentModal(null);
+    setLastSave(new Date());
+    setValidatedEval(v => v === evalId ? null : v);
   }, [notesMap]);
+
+  const handleValiderSerie = () => {
+    if (!selEval) return;
+    const stats = evalStats(selEval);
+    const manquants = stats.total - stats.noted;
+    if (manquants > 0) {
+      const ok = window.confirm(
+        `${manquants} élève${manquants > 1 ? 's' : ''} non noté${manquants > 1 ? 's' : ''} pour cette évaluation. Valider la série quand même ?`
+      );
+      if (!ok) return;
+    }
+    setValidatedEval(selEval.id);
+  };
 
   const evalStats = (ev) => {
     const noted  = eleves.filter(e => { const n = notesMap[noteKey(ev.id, e.id)]; return n && (n.absent || n.score != null); }).length;
     const absent = eleves.filter(e => notesMap[noteKey(ev.id, e.id)]?.absent).length;
-    const dist   = {};
-    GRADES.forEach(g => { dist[g.label] = eleves.filter(e => notesMap[noteKey(ev.id, e.id)]?.score === g.value).length; });
-    return { noted, absent, dist, total: eleves.length };
+    return { noted, absent, total: eleves.length };
   };
-
-  const openCreate = () => { setFTitre(''); setFDate(''); setModal({ mode:'create' }); };
-  const openEdit   = (ev, e) => { e.stopPropagation(); setFTitre(ev.titre); setFDate(ev.date_evaluation || ''); setModal({ mode:'edit', eval:ev }); };
 
   const handleSaveEval = async () => {
     if (!fTitre.trim()) return;
     setSaving(true);
     try {
-      const data = { titre:fTitre.trim(), classe_id:selClasse, enseignant_id:user.id, date_evaluation:fDate||null, score_max:4 };
+      const data = { titre: fTitre.trim(), classe_id: selClasse, enseignant_id: user.id, date_evaluation: fDate || null, score_max: 4 };
       if (modal.mode === 'create') {
         const created = await createEvaluation(data);
         setEvaluations(prev => [...prev, created]);
         setSelEval(created);
       } else {
-        await updateEvaluation(modal.eval.id, { titre:data.titre, date_evaluation:data.date_evaluation, score_max:4 }, user.id);
+        await updateEvaluation(modal.eval.id, { titre: data.titre, date_evaluation: data.date_evaluation, score_max: 4 }, user.id);
         setEvaluations(prev => prev.map(e => e.id === modal.eval.id ? { ...e, ...data } : e));
         setSelEval(prev => prev?.id === modal.eval.id ? { ...prev, ...data } : prev);
       }
       setModal(null);
-    } catch(e) { setActionError(e.message || 'Erreur lors de l\'enregistrement.'); }
+    } catch {}
     setSaving(false);
   };
 
@@ -723,271 +345,304 @@ export default function EnseignantNotes() {
       await deleteEvaluation(confirmDel.id, user.id);
       const next = evaluations.filter(e => e.id !== confirmDel.id);
       setEvaluations(next);
-      setNotesMap(prev => { const n={...prev}; Object.keys(n).forEach(k=>{if(k.startsWith(confirmDel.id+'_'))delete n[k];}); return n; });
       setSelEval(next.length ? next[0] : null);
-      setCommentModal(null);
-    } catch(e) { setActionError(e.message || 'Erreur lors de la suppression.'); }
+    } catch {}
     setConfirmDel(null);
   };
 
-  const className = classes.find(c => c.id === selClasse)?.nom || '';
+  const classeActive = classes.find(c => c.id === selClasse);
+  const inputStyle = { width:'100%', background:C.bg, border:`1px solid ${C.rule}`, borderRadius:12, padding:'9px 13px', fontFamily:"'Manrope',sans-serif", fontSize:13, color:C.ink, outline:'none', boxSizing:'border-box' };
+  const modalOverlay = { position:'fixed', inset:0, background:'rgba(30,35,23,0.45)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 };
 
-  // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div style={{ paddingBottom:32 }}>
-      <style>{NOTES_CSS}</style>
+    <div style={{ padding:'32px 40px 48px', minHeight:'100%', background:C.bg, fontFamily:"'Manrope',system-ui,sans-serif" }}>
 
-      {actionError && <div className="en-error">{actionError}</div>}
+      {/* ── En-tête ── */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:22 }}>
+        <div>
+          <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:4 }}>
+            <Flourish size={26} />
+            <span style={{ fontFamily:"'Manrope',sans-serif", fontSize:10, fontWeight:700, letterSpacing:'0.22em', textTransform:'uppercase', color:C.ink3 }}>
+              Espace évaluations
+            </span>
+          </div>
+          <h1 style={{ fontFamily:"'Newsreader',Georgia,serif", fontSize:40, fontWeight:500, color:C.ink, margin:0, lineHeight:1.05, letterSpacing:'-0.015em' }}>
+            <em style={{ fontStyle:'italic', color:C.gold }}>Notes</em> &amp; appréciations
+          </h1>
+        </div>
+        <div style={{ textAlign:'right', paddingTop:6 }}>
+          <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:12.5, color:C.ink2 }}>{today}</div>
+          {selEval && (
+            <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:9.5, fontWeight:700, letterSpacing:'0.16em', textTransform:'uppercase', color:C.ink3, marginTop:3 }}>
+              Semaine {Math.ceil(new Date().getDate()/7)} · Trimestre 3
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* ── Tabs classes ── */}
-      <div className="en-tabs">
-        {classes.map(c => (
-          <button
-            key={c.id}
-            className={`en-tab${selClasse === c.id ? ' active' : ''}`}
-            onClick={() => setSelClasse(c.id)}
-          >
-            {c.nom}
-          </button>
-        ))}
+      {/* ── Onglets classes + bouton ── */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:22, flexWrap:'wrap', gap:10 }}>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          {classes.map(c => {
+            const isActive = selClasse === c.id;
+            const elvCount = isActive ? eleves.length : 0;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setSelClasse(c.id)}
+                style={{
+                  padding:'7px 16px', borderRadius:999, cursor:'pointer',
+                  border:`1px solid ${isActive ? C.ink : C.rule}`,
+                  background: isActive ? C.ink : 'transparent',
+                  color: isActive ? C.paper : C.ink2,
+                  fontFamily:"'Manrope',sans-serif", fontSize:12.5, fontWeight: isActive ? 700 : 500,
+                  display:'flex', flexDirection:'column', alignItems:'center', lineHeight:1.2,
+                }}
+              >
+                <span>{c.nom}</span>
+                {isActive && c.niveaux_scolaires?.nom && (
+                  <span style={{ fontSize:9, opacity:0.7, letterSpacing:'0.05em', marginTop:1 }}>
+                    {c.niveaux_scolaires.nom} · {elvCount} él.
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <button
+          onClick={() => { setFTitre(''); setFDate(''); setModal({ mode:'create' }); }}
+          style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:'60px 60px 12px 12px', border:'none', background:C.gold, color:C.paper, fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.opacity='0.85'}
+          onMouseLeave={e => e.currentTarget.style.opacity='1'}
+        >
+          <IconPlus /> Nouvelle évaluation
+        </button>
       </div>
 
       {loading ? (
-        <div className="en-loading">Chargement…</div>
+        <div style={{ textAlign:'center', padding:'60px 0', fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:16, color:C.ink3 }}>
+          Chargement…
+        </div>
       ) : (
-        <div className="en-grid">
+        <div style={{ display:'grid', gridTemplateColumns:'280px 1fr', gap:20, alignItems:'start' }}>
 
-          {/* ══ COLONNE GAUCHE ══ */}
-          <div className="en-col">
-
-            <div className="en-col-head">
-              <span className="en-col-title">Évaluations — {className}</span>
+          {/* ── Colonne gauche : eval list + barème ── */}
+          <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            {/* Label section */}
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:"'Manrope',sans-serif", fontSize:9.5, fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase', color:C.ink3 }}>
+                Évaluations · {classeActive?.nom}
+              </span>
               {evaluations.length > 0 && (
-                <span className="en-col-count">{evaluations.length} au total</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.ink3 }}>
+                  {evaluations.length} au total
+                </span>
               )}
             </div>
 
-            <button className="en-add-btn" onClick={openCreate}>
-              <IconPlus /> Nouvelle évaluation
-            </button>
-
-            {/* Légende */}
-            <div className="en-grade-legend">
-              {GRADES.map(g => (
-                <span key={g.label} className="en-grade-pip" style={{ background:`${g.color}15`, color:g.color, border:`1px solid ${g.color}28` }}>
-                  {g.label} = {g.libelle}
-                </span>
-              ))}
-            </div>
-
-            {/* Liste */}
+            {/* Cards évaluations */}
             {evaluations.length === 0 ? (
-              <div className="en-no-evals">
-                Aucune évaluation pour le moment.<br/>
-                <span style={{ color:'var(--a-gold)', fontWeight:600 }}>↑ Créez-en une ci-dessus.</span>
+              <div style={{ textAlign:'center', padding:'24px', fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:14, color:C.ink3, border:`1px dashed ${C.rule}`, borderRadius:14 }}>
+                Aucune évaluation.<br/>Créez-en une ci-dessus.
               </div>
             ) : evaluations.map(ev => {
+              const isActive = selEval?.id === ev.id;
+              const isOwn = ev.enseignant_id === user.id;
               const s = evalStats(ev);
+              const firstWord = ev.titre.split(' ')[0];
+              const rest = ev.titre.slice(firstWord.length);
               return (
-                <EvalCard
+                <div
                   key={ev.id}
-                  ev={ev}
-                  isActive={selEval?.id === ev.id}
-                  user={user}
-                  stats={s}
                   onClick={() => setSelEval(ev)}
-                  onEdit={e => openEdit(ev, e)}
-                  onDelete={e => { e.stopPropagation(); setConfirmDel(ev); }}
-                />
+                  style={{
+                    background: C.paper,
+                    borderRadius: '30px 30px 16px 16px',
+                    border:`1px solid ${isActive ? C.gold : C.rule}`,
+                    padding:'14px 16px', cursor:'pointer',
+                    boxShadow: isActive ? `0 0 0 2px rgba(138,107,31,0.15)` : 'none',
+                  }}
+                >
+                  {/* Status + actions */}
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
+                    <span style={{ fontFamily:"'Manrope',sans-serif", fontSize:8.5, fontWeight:700, letterSpacing:'0.16em', textTransform:'uppercase', color:C.gold }}>
+                      EN COURS
+                    </span>
+                    {isOwn && (
+                      <div style={{ display:'flex', gap:4 }}>
+                        <button onClick={e => { e.stopPropagation(); setFTitre(ev.titre); setFDate(ev.date_evaluation||''); setModal({ mode:'edit', eval:ev }); }} style={{ width:24, height:24, borderRadius:6, border:`1px solid ${C.rule}`, background:'transparent', color:C.ink3, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <IconEdit />
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); setConfirmDel(ev); }} style={{ width:24, height:24, borderRadius:6, border:`1px solid rgba(179,64,64,0.25)`, background:'rgba(179,64,64,0.06)', color:'#b34040', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          <IconTrash />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Titre */}
+                  <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontSize:17, fontWeight:500, color:C.ink, letterSpacing:'-0.01em', marginBottom:4 }}>
+                    <em style={{ fontStyle:'italic', color:C.gold }}>{firstWord}</em>{rest}
+                  </div>
+
+                  {/* Date + count */}
+                  {(ev.date_evaluation || s.total > 0) && (
+                    <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:11, color:C.ink3, marginBottom:8 }}>
+                      {ev.date_evaluation && fmt(ev.date_evaluation)}
+                      {ev.date_evaluation && s.total > 0 && ' · '}
+                      {s.total > 0 && `${s.total} élève${s.total>1?'s':''}`}
+                    </div>
+                  )}
+
+                  {/* Étoiles niveau moyen */}
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 }}>
+                    <span style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:11, color:C.ink3 }}>Niveau moyen</span>
+                    <span style={{ display:'inline-flex', gap:2 }}>
+                      {[1,2,3,4].map(i => <Star5 key={i} size={10} filled={false} />)}
+                    </span>
+                  </div>
+
+                  {/* Progrès */}
+                  <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:11, color:C.ink3 }}>
+                    {s.noted} saisi sur {s.total}
+                  </div>
+                </div>
               );
             })}
+
+            {/* Barème */}
+            <Bareme />
           </div>
 
-          {/* ══ COLONNE DROITE ══ */}
+          {/* ── Colonne droite : panneau saisie ── */}
           {selEval ? (
-            <div className="en-panel">
-
-              {/* Header */}
-              <div className="en-panel-head">
-                <h3 className="en-panel-title">{selEval.titre}</h3>
-                <div className="en-panel-meta-row">
-                  {selEval.date_evaluation && (
-                    <span className="en-panel-date">{fmt(selEval.date_evaluation)}</span>
-                  )}
-                  <div className="en-panel-legend">
-                    {GRADES.map(g => (
-                      <span key={g.label} className="en-panel-legend-pip" style={{ background:`${g.color}18`, color:g.color }}>
-                        {g.label} = {g.libelle}
-                      </span>
-                    ))}
+            <div style={{ background:C.paper, borderRadius:20, border:`1px solid ${C.rule}`, overflow:'hidden' }}>
+              {/* Header panneau */}
+              <div style={{ padding:'18px 22px', borderBottom:`1px solid ${C.ruleSoft}` }}>
+                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+                  <div>
+                    <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:9.5, fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase', color:C.ink3, marginBottom:4 }}>
+                      Évaluation · {classeActive?.nom}
+                    </div>
+                    <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontSize:22, fontWeight:500, color:C.ink, letterSpacing:'-0.01em' }}>
+                      <em style={{ fontStyle:'italic', color:C.gold }}>{selEval.titre.split(' ')[0]}</em>
+                      {selEval.titre.slice(selEval.titre.split(' ')[0].length)}
+                    </div>
                   </div>
-                  {(() => {
-                    const s = evalStats(selEval);
-                    return (
-                      <div className="en-panel-stats">
-                        <div>
-                          <span className="en-stat-num" style={{ color:'var(--a-gold)' }}>{s.noted}</span>
-                          <span className="en-stat-lbl">saisis</span>
-                        </div>
-                        {s.absent > 0 && (
-                          <div>
-                            <span className="en-stat-num" style={{ color:'#ff453a' }}>{s.absent}</span>
-                            <span className="en-stat-lbl">absents</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  <div style={{ textAlign:'right', flexShrink:0 }}>
+                    <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:28, fontWeight:700, color:C.ink, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+                      {evalStats(selEval).noted}
+                    </div>
+                    <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:8.5, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', color:C.ink3, marginTop:2 }}>
+                      / {evalStats(selEval).total} élèves notés
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Table */}
+              {/* Tableau élèves */}
               {eleves.length === 0 ? (
-                <div style={{ textAlign:'center', color:'var(--a-fg-mid)', fontSize:14, padding:'60px 24px' }}>
-                  Aucun élève dans cette classe
+                <div style={{ textAlign:'center', padding:'40px', fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:15, color:C.ink3 }}>
+                  Aucun élève dans cette classe.
                 </div>
-              ) : (
-                <div>
-                  <div className="en-table-head">
-                    <span className="en-table-th">Élève</span>
-                    <span className="en-table-th" style={{ textAlign:'center' }}>Appréciation</span>
+              ) : eleves.map((eleve, idx) => {
+                const note = notesMap[noteKey(selEval.id, eleve.id)];
+                const isOwner = selEval.enseignant_id === user.id;
+                return (
+                  <div key={eleve.id} style={{
+                    display:'flex', alignItems:'center', gap:14, padding:'12px 22px',
+                    borderBottom: idx < eleves.length - 1 ? `1px solid ${C.ruleSoft}` : 'none',
+                  }}>
+                    {/* Avatar */}
+                    <EleveAvatar
+                      eleve={eleve}
+                      size={40}
+                      variant="enseignant"
+                      fallbackStyle={{
+                        background: '#1E2317', color: '#C09844',
+                        fontWeight: 700, letterSpacing: '0.5px',
+                      }}
+                    />
+                    {/* Nom */}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, color:C.ink }}>
+                        {eleve.prenom} <span style={{ textTransform:'uppercase' }}>{eleve.nom}</span>
+                      </div>
+                      <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:11, color:C.ink3, marginTop:1 }}>
+                        {note?.absent ? 'absent' : note?.score != null ? GRADES.find(g=>g.value===note.score)?.libelle : 'non saisi'}
+                      </div>
+                    </div>
+                    {/* Saisie */}
+                    <NoteInput
+                      eleveId={eleve.id}
+                      evalId={selEval.id}
+                      note={note}
+                      isOwner={isOwner}
+                      onSave={score => saveNote(selEval.id, eleve.id, score)}
+                      onToggleAbsent={() => toggleAbsent(selEval.id, eleve.id)}
+                      onOpenComment={() => setCommentModal({ eleve, note, readOnly: !isOwner, evalId: selEval.id })}
+                    />
                   </div>
+                );
+              })}
 
-                  {eleves.map((eleve) => {
-                    const note  = notesMap[noteKey(selEval.id, eleve.id)];
-                    const grade = (note && !note.absent && note.score != null) ? gradeFromScore(note.score) : null;
-                    return (
-                      <div key={eleve.id} className="en-student-row">
-                        {/* Identité */}
-                        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                          <EleveAvatar
-                            eleve={eleve}
-                            size={40}
-                            fallbackStyle={{
-                              background: grade ? `${grade.color}18` : 'rgba(255,255,255,.05)',
-                              border: `2px solid ${grade ? grade.color : 'var(--a-border)'}`,
-                              color: grade ? grade.color : 'var(--a-fg-mid)',
-                            }}
-                          />
-                          <div>
-                            <div className="en-student-name">{eleve.prenom} {eleve.nom}</div>
-                            <div className="en-student-sub" style={{ color: note?.absent ? '#ff453a' : grade ? grade.color : 'var(--a-fg-light)', fontWeight: grade || note?.absent ? 600 : 400 }}>
-                              {note?.absent ? 'Absent(e)' : grade ? `${grade.label} — ${grade.libelle}` : 'Non saisi'}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Saisie / affichage */}
-                        {selEval.enseignant_id === user.id ? (
-                          <NoteLetterInput
-                            note={note}
-                            onSave={(score) => saveNote(selEval.id, eleve.id, score)}
-                            onAbsent={() => toggleAbsent(selEval.id, eleve.id)}
-                            onOpenComment={() => setCommentModal({ eleve, note, readOnly: false, evalId: selEval.id })}
-                          />
-                        ) : (
-                          <div className="en-readonly-grade">
-                            {note?.absent
-                              ? <span style={{ fontSize:12, fontWeight:700, borderRadius:8, padding:'4px 12px', background:'rgba(255,69,58,.12)', color:'#ff453a' }}>ABSENT</span>
-                              : <GradeBadge score={note?.score} />
-                            }
-                            {note?.commentaire && (
-                              <button
-                                type="button"
-                                className="en-comment-readonly"
-                                title="Voir le commentaire"
-                                onClick={() => setCommentModal({ eleve, note, readOnly: true, evalId: selEval.id })}
-                              >
-                                <IconMessage size={13} />
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* Footer résultats */}
-                  {(() => {
-                    const s = evalStats(selEval);
-                    const hasNotes = GRADES.some(g => s.dist[g.label] > 0);
-                    if (!hasNotes) return null;
-                    return (
-                      <div className="en-panel-footer">
-                        <span className="en-footer-label">Résultats de classe</span>
-                        <div className="en-footer-grades">
-                          {GRADES.map(g => s.dist[g.label] > 0 && (
-                            <div key={g.label} className="en-footer-grade">
-                              <span className="en-footer-grade-num" style={{ color:g.color }}>{s.dist[g.label]}</span>
-                              <span className="en-footer-grade-lbl" style={{ color:g.color }}>{g.label}</span>
-                            </div>
-                          ))}
-                          {s.absent > 0 && (
-                            <div className="en-footer-grade">
-                              <span className="en-footer-grade-num" style={{ color:'#ff453a' }}>{s.absent}</span>
-                              <span className="en-footer-grade-lbl" style={{ color:'#ff453a' }}>Abs.</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+              {/* Footer autosave + valider */}
+              {(() => {
+                const isValidated = validatedEval === selEval.id;
+                return (
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 22px', borderTop:`1px solid ${C.ruleSoft}` }}>
+                    <span style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:11.5, color: isValidated ? C.gold : C.ink3 }}>
+                      {isValidated
+                        ? `✓ Série validée · ${evalStats(selEval).noted} / ${evalStats(selEval).total} élèves notés`
+                        : lastSave ? `Auto-sauvegardé · ${fmtAgo(lastSave)}` : 'Modifiez une note pour sauvegarder'}
+                    </span>
+                    <button
+                      onClick={handleValiderSerie}
+                      disabled={isValidated}
+                      style={{
+                        padding:'9px 22px', borderRadius:999, border:'none',
+                        background: isValidated ? C.rule : C.ink,
+                        color: isValidated ? C.ink3 : C.paper,
+                        fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600,
+                        cursor: isValidated ? 'default' : 'pointer',
+                      }}
+                      onMouseEnter={e => { if (!isValidated) e.currentTarget.style.opacity='0.85'; }}
+                      onMouseLeave={e => { if (!isValidated) e.currentTarget.style.opacity='1'; }}
+                    >
+                      {isValidated ? '✓ Validée' : 'Valider la série →'}
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           ) : (
-            <div className="en-empty-panel">
-              <div className="en-empty-icon">📋</div>
-              <div className="en-empty-title">Sélectionnez une évaluation</div>
-              <div className="en-empty-sub">ou créez-en une nouvelle depuis la colonne gauche.</div>
+            <div style={{ background:C.paper, borderRadius:20, border:`1px solid ${C.rule}`, padding:'60px 24px', textAlign:'center' }}>
+              <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:18, color:C.ink3 }}>
+                Sélectionnez une évaluation
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* ── Modal évaluation ── */}
+      {/* ── Modal créer / modifier évaluation ── */}
       {modal && (
-        <div className="en-modal-backdrop" onClick={e => { if (e.target===e.currentTarget) setModal(null); }}>
-          <div className="en-modal">
-            <h3 className="en-modal-title">
-              {modal.mode==='create' ? 'Nouvelle évaluation' : 'Modifier l\'évaluation'}
-            </h3>
-            <p className="en-modal-sub">
-              {modal.mode==='create' ? `Classe : ${className}` : 'Mettre à jour les informations'}
-            </p>
-
-            <div className="en-modal-legend">
-              {GRADES.map(g => (
-                <span key={g.label} className="en-grade-pip" style={{ background:`${g.color}18`, color:g.color, border:`1px solid ${g.color}28` }}>
-                  {g.label} = {g.libelle}
-                </span>
-              ))}
+        <div style={modalOverlay} onClick={e => { if (e.target===e.currentTarget) setModal(null); }}>
+          <div style={{ background:C.paper, borderRadius:20, padding:28, width:'100%', maxWidth:420, border:`1px solid ${C.rule}` }}>
+            <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontSize:22, fontWeight:500, color:C.ink, marginBottom:20 }}>
+              {modal.mode==='create' ? 'Nouvelle évaluation' : "Modifier l'évaluation"}
             </div>
-
-            <div className="en-modal-field">
-              <label className="en-modal-label">Titre de l'évaluation</label>
-              <input
-                className="en-modal-input"
-                autoFocus
-                value={fTitre}
-                onChange={e => setFTitre(e.target.value)}
-                placeholder="ex : Contrôle de lecture n°1"
-                onKeyDown={e => { if (e.key==='Enter' && fTitre.trim()) handleSaveEval(); }}
-              />
+            <div style={{ marginBottom:14 }}>
+              <label style={{ display:'block', fontFamily:"'Manrope',sans-serif", fontSize:9.5, fontWeight:700, letterSpacing:'0.16em', textTransform:'uppercase', color:C.ink3, marginBottom:6 }}>Titre *</label>
+              <input style={inputStyle} autoFocus value={fTitre} onChange={e => setFTitre(e.target.value)} placeholder="Ex : Contrôle de lecture n°1" />
             </div>
-            <div className="en-modal-field">
-              <label className="en-modal-label">Date (facultatif)</label>
-              <input
-                type="date"
-                className="en-modal-input"
-                value={fDate}
-                onChange={e => setFDate(e.target.value)}
-              />
+            <div style={{ marginBottom:24 }}>
+              <label style={{ display:'block', fontFamily:"'Manrope',sans-serif", fontSize:9.5, fontWeight:700, letterSpacing:'0.16em', textTransform:'uppercase', color:C.ink3, marginBottom:6 }}>Date (facultatif)</label>
+              <input type="date" style={inputStyle} value={fDate} onChange={e => setFDate(e.target.value)} />
             </div>
-
-            <div className="en-modal-actions">
-              <button className="en-modal-cancel" onClick={() => setModal(null)}>Annuler</button>
-              <button className="en-modal-save" onClick={handleSaveEval} disabled={saving || !fTitre.trim()}>
+            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+              <button onClick={() => setModal(null)} style={{ padding:'9px 20px', borderRadius:999, border:`1px solid ${C.rule}`, background:'transparent', color:C.ink2, fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Annuler</button>
+              <button onClick={handleSaveEval} disabled={saving||!fTitre.trim()} style={{ padding:'9px 22px', borderRadius:999, border:'none', background:C.ink, color:C.paper, fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer', opacity:saving||!fTitre.trim()?0.5:1 }}>
                 {saving ? 'Enregistrement…' : modal.mode==='create' ? 'Créer' : 'Enregistrer'}
               </button>
             </div>
@@ -999,24 +654,24 @@ export default function EnseignantNotes() {
       {commentModal && (
         <CommentModal
           eleve={commentModal.eleve}
-          currentValue={commentModal.note?.commentaire || ''}
+          currentValue={commentModal.note?.commentaire||''}
           readOnly={commentModal.readOnly}
           onClose={() => setCommentModal(null)}
-          onSave={(value) => saveComment(commentModal.evalId, commentModal.eleve.id, value)}
+          onSave={v => saveComment(commentModal.evalId, commentModal.eleve.id, v)}
         />
       )}
 
       {/* ── Confirmation suppression ── */}
       {confirmDel && (
-        <div className="en-confirm-backdrop">
-          <div className="en-confirm">
-            <div className="en-confirm-title">Supprimer cette évaluation ?</div>
-            <div className="en-confirm-body">
-              <strong style={{ color:'var(--a-fg)' }}>{confirmDel.titre}</strong> et toutes les notes associées seront supprimées définitivement.
-            </div>
-            <div className="en-confirm-actions">
-              <button className="en-confirm-cancel" onClick={() => setConfirmDel(null)}>Annuler</button>
-              <button className="en-confirm-delete" onClick={handleDeleteEval}>Supprimer</button>
+        <div style={modalOverlay} onClick={e => { if (e.target===e.currentTarget) setConfirmDel(null); }}>
+          <div style={{ background:C.paper, borderRadius:20, padding:28, width:'100%', maxWidth:380, border:`1px solid ${C.rule}`, textAlign:'center' }}>
+            <div style={{ fontFamily:"'Newsreader',Georgia,serif", fontSize:20, fontWeight:500, color:C.ink, marginBottom:10 }}>Supprimer l'évaluation ?</div>
+            <p style={{ fontFamily:"'Newsreader',Georgia,serif", fontStyle:'italic', fontSize:14, color:C.ink2, marginBottom:24 }}>
+              « {confirmDel.titre} » et toutes les notes seront supprimées.
+            </p>
+            <div style={{ display:'flex', gap:10, justifyContent:'center' }}>
+              <button onClick={() => setConfirmDel(null)} style={{ padding:'9px 20px', borderRadius:999, border:`1px solid ${C.rule}`, background:'transparent', color:C.ink2, fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Annuler</button>
+              <button onClick={handleDeleteEval} style={{ padding:'9px 22px', borderRadius:999, border:'none', background:'#b34040', color:'#fff', fontFamily:"'Manrope',sans-serif", fontSize:13, fontWeight:600, cursor:'pointer' }}>Supprimer</button>
             </div>
           </div>
         </div>
