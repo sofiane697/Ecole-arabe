@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { logoutParent, getParentUser } from './supabaseParent';
 import { ParentProvider, useParentCtx } from './ParentContext';
 import { usePageTransition } from '../animations';
+import { preloadRoute } from '../routeLoaders';
 import EleveAvatar from '../shared/EleveAvatar';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import { formatFoyer } from '../admin/adminUtils';
@@ -124,19 +125,19 @@ function ParentLayout() {
         <nav className="portail-nav">
           <div className="portail-nav-section">Navigation</div>
 
-          <NavLink to="/parent" end className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}>
+          <NavLink to="/parent" end className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')} onMouseEnter={() => preloadRoute('parent-dashboard')}>
             <span className="text-lg">🏠</span> Accueil
           </NavLink>
-          <NavLink to="/parent/notes" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}>
+          <NavLink to="/parent/notes" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')} onMouseEnter={() => preloadRoute('parent-notes')}>
             <span className="text-lg">📊</span> Notes
           </NavLink>
-          <NavLink to="/parent/observations" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}>
+          <NavLink to="/parent/observations" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')} onMouseEnter={() => preloadRoute('parent-observations')}>
             <span className="text-lg">👁️</span> Appréciations
           </NavLink>
-          <NavLink to="/parent/devoirs" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}>
+          <NavLink to="/parent/devoirs" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')} onMouseEnter={() => preloadRoute('parent-devoirs')}>
             <span className="text-lg">📝</span> Devoirs
           </NavLink>
-          <NavLink to="/parent/absences" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}>
+          <NavLink to="/parent/absences" className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')} onMouseEnter={() => preloadRoute('parent-absences')}>
             <span className="text-lg">⏰</span> Retards & absences
           </NavLink>
         </nav>

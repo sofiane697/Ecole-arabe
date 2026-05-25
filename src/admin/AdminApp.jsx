@@ -7,6 +7,7 @@ import {
   ADMIN_EVENT_DECLARATIONS_CHANGED,
 } from './adminEvents';
 import { usePageTransition } from '../animations';
+import { preloadRoute } from '../routeLoaders';
 
 const IconDashboard = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -187,6 +188,7 @@ export default function AdminApp() {
             to="/admin" end
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-dashboard')}
           >
             <IconDashboard /> Tableau de bord
           </NavLink>
@@ -195,6 +197,7 @@ export default function AdminApp() {
             to="/admin/inscriptions"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-inscriptions')}
           >
             <IconUsers /> Pré-inscriptions
             {newInscriptions > 0 && (
@@ -206,6 +209,7 @@ export default function AdminApp() {
             to="/admin/messages"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-messages')}
           >
             <IconMail /> Messages
             {unreadMessages > 0 && (
@@ -219,6 +223,7 @@ export default function AdminApp() {
             to="/admin/cours"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-cours')}
           >
             <IconBook /> Gestion des cours
           </NavLink>
@@ -227,6 +232,7 @@ export default function AdminApp() {
             to="/admin/classes"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-classes')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -239,6 +245,7 @@ export default function AdminApp() {
             to="/admin/eleves"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-eleves')}
           >
             <IconStudent /> Gestion des élèves
           </NavLink>
@@ -247,6 +254,7 @@ export default function AdminApp() {
             to="/admin/parents"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-parents')}
           >
             <IconUsers /> Gestion des parents
           </NavLink>
@@ -255,6 +263,7 @@ export default function AdminApp() {
             to="/admin/enseignants"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-enseignants')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -269,6 +278,7 @@ export default function AdminApp() {
             to="/admin/surveillance"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-surveillance')}
           >
             <IconEye /> Surveillance
           </NavLink>
@@ -277,6 +287,7 @@ export default function AdminApp() {
             to="/admin/declarations"
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-declarations')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>

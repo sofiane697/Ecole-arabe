@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession, verifyEleveSession, fetchEleveSelf } from './supabasePortail';
 import { usePageTransition } from '../animations';
+import { preloadRoute } from '../routeLoaders';
 import EleveAvatar from '../shared/EleveAvatar';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
@@ -291,6 +292,7 @@ export default function PortailApp() {
             to="/portail" end
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('portail-dashboard')}
           >
             <span className="text-lg">📚</span> Mes Modules
           </NavLink>
@@ -305,6 +307,7 @@ export default function PortailApp() {
               if (user?.id) localStorage.setItem(`devoirs_seen_at_${user.id}`, new Date().toISOString());
               setNewDevoirsCount(0);
             }}
+            onMouseEnter={() => preloadRoute('portail-devoirs')}
           >
             <span className="text-lg">📝</span> Mes devoirs
             {newDevoirsCount > 0 && (
@@ -321,6 +324,7 @@ export default function PortailApp() {
               if (user?.id) localStorage.setItem(`notes_seen_at_${user.id}`, new Date().toISOString());
               setNewNotesCount(0);
             }}
+            onMouseEnter={() => preloadRoute('portail-resultats')}
           >
             <span className="text-lg">📊</span> Mes résultats
             {newNotesCount > 0 && (
@@ -337,6 +341,7 @@ export default function PortailApp() {
               if (user?.id) localStorage.setItem(`obs_seen_at_${user.id}`, new Date().toISOString());
               setNewObsCount(0);
             }}
+            onMouseEnter={() => preloadRoute('portail-observations')}
           >
             <span className="text-lg">👁️</span> Mes observations
             {newObsCount > 0 && (
@@ -348,6 +353,7 @@ export default function PortailApp() {
             to="/portail/messages"
             className={({ isActive }) => 'portail-nav-link' + (isActive ? ' active' : '')}
             onClick={() => { setSidebarOpen(false); setUnreadCount(0); }}
+            onMouseEnter={() => preloadRoute('portail-messages')}
           >
             <span className="text-lg">💬</span> Messages
             {unreadCount > 0 && (

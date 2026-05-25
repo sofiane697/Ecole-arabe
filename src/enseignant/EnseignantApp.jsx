@@ -10,6 +10,7 @@ import {
   countDeclarationsEnseignant,
 } from './supabaseEnseignant';
 import { usePageTransition } from '../animations';
+import { preloadRoute } from '../routeLoaders';
 import { Rosette } from '../shared/Ornaments';
 
 const IconLogout = () => (
@@ -22,12 +23,12 @@ const IconLogout = () => (
 );
 
 const NAV_ITEMS = [
-  { to: '/enseignant/classes',      label: 'Mes classes' },
-  { to: '/enseignant/absences',     label: 'Retards & absences',  badge: 'decl' },
-  { to: '/enseignant/devoirs',      label: 'Devoirs' },
-  { to: '/enseignant/notes',        label: 'Notes & appréciations' },
-  { to: '/enseignant/observations', label: 'Observations' },
-  { to: '/enseignant/messages',     label: 'Messages',            badge: 'msg' },
+  { to: '/enseignant/classes',      label: 'Mes classes',                                  preload: 'ens-classes' },
+  { to: '/enseignant/absences',     label: 'Retards & absences',  badge: 'decl',           preload: 'ens-absences' },
+  { to: '/enseignant/devoirs',      label: 'Devoirs',                                      preload: 'ens-devoirs' },
+  { to: '/enseignant/notes',        label: 'Notes & appréciations',                        preload: 'ens-notes' },
+  { to: '/enseignant/observations', label: 'Observations',                                 preload: 'ens-observations' },
+  { to: '/enseignant/messages',     label: 'Messages',            badge: 'msg',            preload: 'ens-messages' },
 ];
 
 export default function EnseignantApp() {
@@ -189,6 +190,7 @@ export default function EnseignantApp() {
               to={item.to}
               className={({ isActive }) => `ens-nav-link${isActive ? ' active' : ''}`}
               onClick={() => setSidebarOpen(false)}
+              onMouseEnter={() => preloadRoute(item.preload)}
             >
               {({ isActive }) => (
                 <>

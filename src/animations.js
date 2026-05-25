@@ -10,6 +10,10 @@ export const DUR = { xs: 0.18, sm: 0.25, md: 0.35, lg: 0.5 };
 // Hook utilisé dans les *App.jsx (AdminApp, EnseignantApp, PortailApp, ParentApp)
 // pour animer l'Outlet à chaque changement de location.pathname.
 //
+// Durée courte (200ms) pour minimiser l'impact sur l'INP (Interaction to Next
+// Paint) — sinon l'animation rallonge artificiellement le délai perçu entre
+// clic et update visuelle.
+//
 // Usage :
 //   const outletRef = usePageTransition(location.pathname);
 //   <div ref={outletRef}><Outlet /></div>
@@ -20,8 +24,8 @@ export function usePageTransition(pathKey) {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ref.current,
-        { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: DUR.md, ease: EASE }
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.2, ease: EASE }
       );
     }, ref);
     return () => ctx.revert();
