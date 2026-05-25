@@ -126,10 +126,15 @@
     }
     </script>
 
-    <!-- Coupole v1 — Google Fonts -->
+    <!-- Coupole v1 — Google Fonts (chargement async non-bloquant)
+         Le navigateur télécharge le CSS en parallèle du rendu de la page
+         puis le transforme en stylesheet une fois prêt. display=swap dans
+         l'URL fait afficher d'abord une font système, puis swap dès que
+         les Google Fonts sont disponibles (~300ms imperceptible). -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Manrope:wght@300..800&family=JetBrains+Mono:wght@300..700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Manrope:wght@300..800&family=JetBrains+Mono:wght@300..700&family=Amiri:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Manrope:wght@300..800&family=JetBrains+Mono:wght@300..700&family=Amiri:wght@400;700&display=swap"></noscript>
 
     <style>
       *, *::before, *::after { box-sizing: border-box; }
