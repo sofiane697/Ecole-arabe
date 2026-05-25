@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchInscriptions, fetchMessages } from './supabaseAdmin';
-import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
+import gsap from 'gsap';
 
 const STATUT_LABEL = {
   nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau'  },
@@ -33,6 +33,15 @@ export default function Dashboard() {
   const lastInscriptions = inscriptions.slice(0, 5);
   const lastMessages     = messages.slice(0, 5);
 
+  const statBarRef = useRef(null);
+  useEffect(() => {
+    if (!loading && statBarRef.current) {
+      gsap.from(statBarRef.current.children, {
+        opacity: 0, y: 16, duration: 0.5, stagger: 0.08, ease: 'power2.out',
+      });
+    }
+  }, [loading]);
+
   if (loading) {
     return (
       <div style={{ textAlign:'center', padding:'4rem', color:'var(--a-fg-light)' }}>
@@ -44,33 +53,20 @@ export default function Dashboard() {
   return (
     <>
       {/* ── Stats ── */}
-      <motion.div
-        className="admin-stats-grid"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.div className="admin-stat-card gold" variants={fadeUp} {...cardHover}>
-          <span className="admin-stat-label">Total inscriptions</span>
-          <span className="admin-stat-value">{totalInscriptions}</span>
-          <span className="admin-stat-sub">Toutes les demandes</span>
-        </motion.div>
-        <motion.div className="admin-stat-card red" variants={fadeUp} {...cardHover}>
-          <span className="admin-stat-label">Nouvelles demandes</span>
-          <span className="admin-stat-value">{nouveaux}</span>
-          <span className="admin-stat-sub">En attente de traitement</span>
-        </motion.div>
-        <motion.div className="admin-stat-card blue" variants={fadeUp} {...cardHover}>
-          <span className="admin-stat-label">Total messages</span>
-          <span className="admin-stat-value">{totalMessages}</span>
-          <span className="admin-stat-sub">Formulaire contact</span>
-        </motion.div>
-        <motion.div className="admin-stat-card green" variants={fadeUp} {...cardHover}>
-          <span className="admin-stat-label">Messages non lus</span>
-          <span className="admin-stat-value">{nonLus}</span>
-          <span className="admin-stat-sub">À traiter</span>
-        </motion.div>
-      </motion.div>
+      <div ref={statBarRef} className="admin-stat-bar">
+        {[
+          { label: 'Total inscriptions', value: totalInscriptions, sub: 'Toutes les demandes',   color: 'gold'  },
+          { label: 'Nouvelles demandes', value: nouveaux,          sub: 'En attente de traitement', color: 'red' },
+          { label: 'Total messages',     value: totalMessages,     sub: 'Formulaire contact',    color: 'blue'  },
+          { label: 'Messages non lus',   value: nonLus,            sub: 'À traiter',             color: 'green' },
+        ].map((s, i) => (
+          <div key={i} className="admin-stat-bar-item">
+            <span className="admin-stat-label">{s.label}</span>
+            <span className={`admin-stat-value ${s.color}`}>{s.value}</span>
+            <span className="admin-stat-sub">{s.sub}</span>
+          </div>
+        ))}
+      </div>
 
       {/* ── Tableaux résumés ── */}
       <div className="admin-dash-grid">

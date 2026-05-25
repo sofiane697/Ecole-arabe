@@ -825,12 +825,29 @@
   flex: 1;
 }
 
-/* ─── Cartes stats ─── */
-.admin-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1rem;
+/* ─── Stat bar ─── */
+.admin-stat-bar {
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius);
+  display: flex;
+  overflow: hidden;
+  box-shadow: var(--a-shadow-sm);
   margin-bottom: 2.25rem;
+}
+.admin-stat-bar-item {
+  flex: 1;
+  padding: 1.25rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-right: 1px solid var(--a-border);
+}
+.admin-stat-bar-item:last-child { border-right: none; }
+@media (max-width: 700px) {
+  .admin-stat-bar { flex-direction: column; overflow-x: visible; }
+  .admin-stat-bar-item { border-right: none; border-bottom: 1px solid var(--a-border); }
+  .admin-stat-bar-item:last-child { border-bottom: none; }
 }
 .admin-stat-card {
   background: var(--a-bg-card);
@@ -880,6 +897,10 @@
   color: var(--a-fg-light);
   margin-top: 0.1rem;
 }
+.admin-stat-value.gold  { color: var(--a-gold); }
+.admin-stat-value.green { color: var(--a-green); }
+.admin-stat-value.blue  { color: var(--a-blue); }
+.admin-stat-value.red   { color: var(--a-red); }
 .admin-stat-card.gold  { border-color: rgba(var(--a-gold-rgb),0.2); }
 .admin-stat-card.green { border-color: rgba(52,212,114,0.2); }
 .admin-stat-card.blue  { border-color: rgba(85,150,247,0.2); }
@@ -1091,35 +1112,33 @@
    INSCRIPTIONS — REFONTE
 ═══════════════════════════════ */
 
-/* Stats mini */
+/* Stats mini — stat bar */
 .insc-stats {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.8rem;
+  display: flex;
+  background: var(--a-bg-card);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius);
+  overflow: hidden;
   margin-bottom: 1.2rem;
 }
 .insc-stat {
-  background: var(--a-bg-card);
-  border: 1px solid var(--a-border);
-  border-radius: var(--a-radius-sm);
+  flex: 1;
+  border-radius: 0;
+  border: none;
+  border-right: 1px solid var(--a-border);
   padding: 1rem 1.2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
   cursor: pointer;
-  transition: all 0.25s var(--a-ease);
+  transition: background 0.2s var(--a-ease);
   font-family: inherit;
+  background: transparent;
 }
-.insc-stat:hover {
-  border-color: rgba(var(--a-gold-rgb),0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-.insc-stat.active {
-  border-color: var(--a-gold);
-  background: rgba(var(--a-gold-rgb),0.06);
-}
+.insc-stat:last-child { border-right: none; }
+.insc-stat:hover { background: rgba(var(--a-gold-rgb), 0.04); }
+.insc-stat.active { background: rgba(var(--a-gold-rgb), 0.08); }
 .insc-stat-count {
   font-size: 1.6rem;
   font-weight: 700;
@@ -1133,7 +1152,8 @@
   letter-spacing: 0.04em;
 }
 @media (max-width: 600px) {
-  .insc-stats { grid-template-columns: repeat(3, 1fr); }
+  .insc-stats { overflow-x: auto; }
+  .insc-stat { min-width: 5rem; }
 }
 
 /* Filtre cours */
