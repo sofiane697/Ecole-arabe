@@ -2,11 +2,39 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Règle de développement
+## Contexte du projet
+
+**Nom :** ENT (Espace Numérique de Travail) — Institut As-Safaa
+**But :** Plateforme numérique pour une école d'arabe. Remplace les échanges par mail/papier entre l'administration, les enseignants, les élèves et leurs parents. Permet de gérer les cours, les notes, les absences, les devoirs, la messagerie et les inscriptions.
+**Client :** Institut As-Safaa (école d'arabe)
+**Développeur :** Sofiane (projet auto-entrepreneur)
+
+### Déploiement
+
+| Environnement | URL | Méthode |
+|---|---|---|
+| Production | `https://ecole-arabe.vercel.app` | Vercel |
+| Local | `http://localhost:3000` | `npm start` |
+
+**Pipeline CI/CD :** GitHub (`sofiane697/Ecole-arabe`, branche `main`) → Vercel (auto-déploiement à chaque push).
+**Base de données :** Supabase projet `nsdnzqdbpdncrksgxtar` (plan gratuit).
+**Variables d'env :** `REACT_APP_SUPABASE_URL` + `REACT_APP_SUPABASE_ANON` — configurées dans Vercel Dashboard (ne jamais commiter `.env.local`).
+
+### Accès MCP disponibles (utilisables directement)
+
+- **Supabase MCP** — exécuter du SQL, appliquer des migrations, gérer les Edge Functions, voir les logs → outils `mcp__supabase__*`
+- **GitHub** — push/pull via git en local, working dir `C:\Users\Sofiane\Desktop\Projet\ENT-ecole-arabe\Ecole-arabe`
+
+---
+
+## Règles de développement
 
 > **Toute nouvelle fonctionnalité, feature ou ajout de module DOIT passer par le skill `nouvelles-fonctionnalites`.**
 > Cela inclut les mots-clés : "ajoute", "crée", "intègre", "implémente", "je veux que", "nouvelle feature", "nouveau module", "mets en place".
 > Le workflow complet (planifier → coder → tester → débugger → sécuriser → simplifier) doit être respecté sans sauter d'étape.
+
+> **Avant tout `git commit` ou `git push`, demander explicitement l'autorisation à Sofiane.**
+> Même si une fonctionnalité est terminée et testée, ne jamais commiter/pusher de manière autonome. Présenter ce qui va être commité (liste des fichiers + message de commit proposé) et attendre la validation.
 
 ## Projet
 
