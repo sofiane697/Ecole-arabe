@@ -2,7 +2,6 @@ import './index.css';
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 
 const App = lazy(() => import('./App'));
 
@@ -77,9 +76,8 @@ function RouteFallback() {
 function AnimatedRoutes() {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
-      <Suspense fallback={<RouteFallback />}>
-        <Routes location={location} key={location.pathname.split('/')[1] || 'root'}>
+    <Suspense fallback={<RouteFallback />}>
+      <Routes location={location} key={location.pathname.split('/')[1] || 'root'}>
           {/* Site public */}
           <Route path="/" element={<App />} />
 
@@ -134,9 +132,8 @@ function AnimatedRoutes() {
             <Route path="devoirs"      element={<ParentDevoirs />} />
             <Route path="absences"     element={<ParentAbsences />} />
           </Route>
-        </Routes>
-      </Suspense>
-    </AnimatePresence>
+      </Routes>
+    </Suspense>
   );
 }
 

@@ -5,7 +5,13 @@ import {
   fetchClasses, createClasse, updateClasse, deleteClasse, fetchEleves,
   updateEleve, updateEleveNiveauScolaire,
 } from './supabaseAdmin';
-import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
+import gsap from 'gsap';
+
+// Référence stable pour le ref-callback (anime les enfants directs au mount).
+function animateGridChildren(el) {
+  if (!el || !el.children.length) return;
+  gsap.from(el.children, { opacity: 0, y: 18, duration: 0.35, stagger: 0.07, delay: 0.05, ease: 'power2.out', clearProps: 'opacity,transform' });
+}
 import EleveAvatar from '../shared/EleveAvatar';
 
 const IconBack  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
@@ -120,14 +126,13 @@ export default function Classes() {
           <div className={S.empty}>Aucun niveau créé.<br />Commencez par ajouter <strong>N1</strong>, <strong>N2</strong>…</div>
         )}
 
-        <motion.div className={S.niveauGrid} variants={staggerContainer} initial="hidden" animate="visible">
+        <div className={S.niveauGrid} ref={animateGridChildren}>
           {niveaux.map(n => (
-            <motion.div key={n.id} className={S.niveauCard}
-              variants={fadeUp}
-              {...cardHover}
+            <div key={n.id} className={S.niveauCard}
+              style={{ transition: 'transform .25s ease, box-shadow .2s ease, border-color .2s ease', cursor: 'pointer' }}
               onClick={() => openNiveau(n)}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
               <div className={S.niveauName}>{n.nom}</div>
               <div className={S.niveauFooter}>
                 <button className="a-action-btn blue" onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}>
@@ -137,19 +142,18 @@ export default function Classes() {
                   <IconTrash /> Supprimer
                 </button>
               </div>
-            </motion.div>
+            </div>
           ))}
 
-          <motion.div className={S.addNiveauCard}
-            variants={fadeUp}
-            {...cardHover}
+          <div className={S.addNiveauCard}
+            style={{ transition: 'transform .25s ease, border-color .2s ease, color .2s ease', cursor: 'pointer' }}
             onClick={() => setModal({ type:'niveau' })}
-            onMouseEnter={e => { e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
+            onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.borderColor='var(--a-gold)'; e.currentTarget.style.color='var(--a-gold)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.borderColor=''; e.currentTarget.style.color=''; }}>
             <div className="text-[32px] opacity-30">＋</div>
             <div>Ajouter un niveau</div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {modal?.type === 'niveau' && (
           <NiveauModal data={modal.data} loading={loading} onClose={() => setModal(null)}

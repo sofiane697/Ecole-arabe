@@ -9,7 +9,7 @@ import {
   verifyEnseignantSession,
   countDeclarationsEnseignant,
 } from './supabaseEnseignant';
-import { AnimatePresence, motion, pageVariants } from '../animations';
+import { usePageTransition } from '../animations';
 import { Rosette } from '../shared/Ornaments';
 
 const IconLogout = () => (
@@ -33,6 +33,7 @@ const NAV_ITEMS = [
 export default function EnseignantApp() {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const outletRef = usePageTransition(location.pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [declCount,   setDeclCount]   = useState(0);
@@ -247,17 +248,9 @@ export default function EnseignantApp() {
           </span>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <div ref={outletRef}>
+          <Outlet />
+        </div>
       </main>
     </div>
   );

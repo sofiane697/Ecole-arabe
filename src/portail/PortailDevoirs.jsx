@@ -1,9 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { fetchDevoirsEleve, fetchClasseIdEleve } from './supabasePortail';
-import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
 
 function getEleveUser() {
   try { return JSON.parse(sessionStorage.getItem('eleve_user')); } catch { return null; }
+}
+
+function SemaineGroup({ label, dvs, S, formatDate, joursRestants }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const cards = ref.current.querySelectorAll('[data-devoir-card]');
+    if (cards.length === 0) return;
+    const ctx = gsap.context(() => {
+      gsap.from(cards, { opacity: 0, y: 18, duration: 0.35, stagger: 0.07, delay: 0.05, ease: 'power2.out' });
+    }, ref);
+    return () => ctx.revert();
+  }, [dvs.length]);
+
+  return (
+    <div ref={ref} style={S.semaine}>
+      <div style={S.semaineLabel}>{label}</div>
+      {dvs.map(d => {
+        const jours = joursRestants(d.date_limite);
+        return (
+          <div
+            key={d.id}
+            data-devoir-card
+            style={{ ...S.card, transition: 'transform .25s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+          >
+            <div style={S.badge(jours)}>
+              <span style={S.badgeJours(jours)}>
+                {jours < 0 ? Math.abs(jours) : jours}
+              </span>
+              <span style={S.badgeLabel(jours)}>
+                {jours < 0 ? 'en retard' : jours === 0 ? "auj." : jours === 1 ? 'demain' : 'jours'}
+              </span>
+            </div>
+            <div style={S.cardBody}>
+              <div style={S.cardTitre}>{d.titre}</div>
+              <div style={S.cardDate}>📅 Pour le {formatDate(d.date_limite)}</div>
+              {d.description && <div style={S.cardDesc}>{d.description}</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function joursRestants(dateLimite) {
@@ -141,29 +186,14 @@ export default function PortailDevoirs() {
 
       {/* Devoirs à venir groupés par semaine */}
       {semaines.map(([lundiStr, dvs]) => (
-        <motion.div key={lundiStr} style={S.semaine} variants={staggerContainer} initial="hidden" animate="visible">
-          <div style={S.semaineLabel}>{labelSemaine(lundiStr)}</div>
-          {dvs.map(d => {
-            const jours = joursRestants(d.date_limite);
-            return (
-              <motion.div key={d.id} style={S.card} variants={fadeUp} {...cardHover}>
-                <div style={S.badge(jours)}>
-                  <span style={S.badgeJours(jours)}>
-                    {jours < 0 ? Math.abs(jours) : jours}
-                  </span>
-                  <span style={S.badgeLabel(jours)}>
-                    {jours < 0 ? 'en retard' : jours === 0 ? "auj." : jours === 1 ? 'demain' : 'jours'}
-                  </span>
-                </div>
-                <div style={S.cardBody}>
-                  <div style={S.cardTitre}>{d.titre}</div>
-                  <div style={S.cardDate}>📅 Pour le {formatDate(d.date_limite)}</div>
-                  {d.description && <div style={S.cardDesc}>{d.description}</div>}
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        <SemaineGroup
+          key={lundiStr}
+          label={labelSemaine(lundiStr)}
+          dvs={dvs}
+          S={S}
+          formatDate={formatDate}
+          joursRestants={joursRestants}
+        />
       ))}
 
       {/* Devoirs passés (repliables) */}

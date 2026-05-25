@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { logoutParent, getParentUser } from './supabaseParent';
 import { ParentProvider, useParentCtx } from './ParentContext';
-import { AnimatePresence, motion, pageVariants } from '../animations';
+import { usePageTransition } from '../animations';
 import EleveAvatar from '../shared/EleveAvatar';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import { formatFoyer } from '../admin/adminUtils';
@@ -68,6 +68,7 @@ function EnfantSelector() {
 function ParentLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const outletRef = usePageTransition(location.pathname);
   const { parent, enfants, loading } = useParentCtx();
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('parent_theme');
@@ -202,15 +203,9 @@ function ParentLayout() {
             </div>
           )}
           {!loading && enfants && enfants.length > 0 && (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                variants={pageVariants}
-                initial="initial" animate="animate" exit="exit"
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+            <div ref={outletRef}>
+              <Outlet />
+            </div>
           )}
         </div>
       </main>

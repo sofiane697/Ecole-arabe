@@ -6,7 +6,7 @@ import {
   ADMIN_EVENT_MESSAGES_CHANGED,
   ADMIN_EVENT_DECLARATIONS_CHANGED,
 } from './adminEvents';
-import { AnimatePresence, motion, pageVariants } from '../animations';
+import { usePageTransition } from '../animations';
 
 const IconDashboard = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -157,6 +157,7 @@ export default function AdminApp() {
   }, [refreshCounters]);
 
   const currentTitle    = PAGE_TITLES[location.pathname] || 'Admin';
+  const outletRef       = usePageTransition(location.pathname);
 
   const today = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -347,17 +348,9 @@ export default function AdminApp() {
         </header>
 
         <div className="admin-content">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <div ref={outletRef}>
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

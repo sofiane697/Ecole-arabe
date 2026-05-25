@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchMessages, updateMessageLu, deleteMessage } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
-import { motion, AnimatePresence, panelVariants } from '../animations';
+import gsap from 'gsap';
 import { usePageAnimation } from '../shared/usePageAnimation';
+
+// Fonction module-level : référence stable, animation jouée une seule fois par sélection.
+function animateReaderEnter(el) {
+  if (!el) return;
+  gsap.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+}
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 const PAGE_SIZE = 25;
@@ -335,11 +341,10 @@ export default function Messages() {
               <p className="msg-reader-empty-sub">Cliquez sur un message pour le lire</p>
             </div>
           ) : (
-            <motion.div
+            <div
               key={selected?.id}
               className="msg-reader-content max-h-[calc(100vh-220px)] overflow-y-auto"
-              variants={panelVariants}
-              initial="hidden" animate="visible" exit="exit"
+              ref={animateReaderEnter}
             >
               {/* Header */}
               <div className="msg-reader-header">
@@ -428,7 +433,7 @@ export default function Messages() {
                   <IconTrash /> Supprimer
                 </button>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>

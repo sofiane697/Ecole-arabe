@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence, overlayVariants, modalVariants } from '../animations';
+import { useModalAppear } from '../animations';
 
 /* ─── Icône SVG poubelle ───────────────────────────────────────────────────── */
 const IconTrash = () => (
@@ -116,42 +116,36 @@ export default function ConfirmModal({
   }, [onCancel]);
 
   const color = danger ? 'var(--a-red)' : 'var(--a-gold)';
+  const { overlayRef, cardRef } = useModalAppear();
 
   return (
-    <AnimatePresence>
-      <motion.div
-        style={S.overlay}
-        variants={overlayVariants}
-        initial="hidden" animate="visible" exit="exit"
-        onClick={onCancel}
-      >
-        <motion.div style={S.card} variants={modalVariants} onClick={e => e.stopPropagation()}>
+    <div ref={overlayRef} style={S.overlay} onClick={onCancel}>
+      <div ref={cardRef} style={S.card} onClick={e => e.stopPropagation()}>
 
-          {/* Icône */}
-          <div style={S.iconWrap(color)}>
-            {icon === 'warn' ? <IconWarn /> : <IconTrash />}
-          </div>
+        {/* Icône */}
+        <div style={S.iconWrap(color)}>
+          {icon === 'warn' ? <IconWarn /> : <IconTrash />}
+        </div>
 
-          {/* Texte */}
-          <div style={S.title}>{title}</div>
-          <div style={S.message}>{message}</div>
+        {/* Texte */}
+        <div style={S.title}>{title}</div>
+        <div style={S.message}>{message}</div>
 
-          {/* Boutons */}
-          <div style={S.row}>
-            <button style={S.btnCancel} onClick={onCancel}
-              onMouseEnter={e => e.currentTarget.style.background='var(--a-bg-hover)'}
-              onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-              {cancelLabel}
-            </button>
-            <button style={S.btnConfirm(color)} onClick={onConfirm}
-              onMouseEnter={e => e.currentTarget.style.opacity='.85'}
-              onMouseLeave={e => e.currentTarget.style.opacity='1'}>
-              {confirmLabel}
-            </button>
-          </div>
+        {/* Boutons */}
+        <div style={S.row}>
+          <button style={S.btnCancel} onClick={onCancel}
+            onMouseEnter={e => e.currentTarget.style.background='var(--a-bg-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+            {cancelLabel}
+          </button>
+          <button style={S.btnConfirm(color)} onClick={onConfirm}
+            onMouseEnter={e => e.currentTarget.style.opacity='.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity='1'}>
+            {confirmLabel}
+          </button>
+        </div>
 
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </div>
   );
 }

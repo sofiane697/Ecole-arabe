@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import gsap from 'gsap';
 import { logoutEleve, getEleveUser, fetchAllBadgeCounts, startSession, heartbeatSession, endSession, verifyEleveSession, fetchEleveSelf } from './supabasePortail';
-import { AnimatePresence, motion, pageVariants, staggerContainer } from '../animations';
+import { usePageTransition } from '../animations';
 import EleveAvatar from '../shared/EleveAvatar';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
-
-const LETTER_SPRING = { type: 'spring', stiffness: 280, damping: 20, mass: 0.6 };
 
 const BG_LETTERS = [
   // Zone gauche (bord sidebar)
@@ -61,15 +60,30 @@ function getPageEmoji(pathname) {
 }
 
 function TopbarFunTitle({ title, emoji }) {
+  const wrapRef = useRef(null);
   let ci = 0;
+
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const letters = wrapRef.current.querySelectorAll('.fun-letter');
+    if (letters.length === 0) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        letters,
+        { opacity: 0, y: -14, scale: 0.85 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.04, delay: 0.05, ease: 'back.out(1.6)' }
+      );
+    }, wrapRef);
+    return () => ctx.revert();
+  }, [title]);
+
   return (
     <>
       <style>{TOPBAR_KEYFRAMES}</style>
-      <motion.span
+      <span
+        ref={wrapRef}
         className="portail-topbar-fun-title"
         style={{ fontFamily:"'Nunito','Inter',sans-serif", display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 38, fontWeight: 900 }}
-        variants={{ hidden:{}, visible:{ transition:{ staggerChildren: 0.04, delayChildren: 0.05 } } }}
-        initial="hidden" animate="visible"
       >
         {/* Emoji gauche */}
         <span style={{ fontSize: 28, display: 'inline-block', animation:'topbarBubble 2.5s ease-in-out infinite' }}>{emoji}</span>
@@ -81,20 +95,15 @@ function TopbarFunTitle({ title, emoji }) {
               const floatDur = `${2.2 + (ci % 3) * 0.4}s`;
               ci++;
               return (
-                /* motion.span gère l'entrée (opacity+y+scale), span interne gère le float CSS sans conflit */
-                <motion.span
+                <span
                   key={ci}
-                  className="inline-block"
+                  className="inline-block fun-letter"
                   style={{ color, textShadow:`0 2px 10px ${color}55` }}
-                  variants={{
-                    hidden:  { opacity: 0, y: -14, scale: 0.85 },
-                    visible: { opacity: 1, y: 0,   scale: 1, transition: LETTER_SPRING },
-                  }}
                 >
                   <span className="inline-block" style={{ animation:`topbarLetterFloat ${floatDur} ease-in-out infinite` }}>
                     {char}
                   </span>
-                </motion.span>
+                </span>
               );
             })}
           </span>
@@ -102,7 +111,7 @@ function TopbarFunTitle({ title, emoji }) {
         {/* Étoiles droite */}
         <span className="portail-topbar-fun-stars" style={{ fontSize: 22, display: 'inline-block', animation:'topbarStarSpin 5s linear infinite' }}>⭐</span>
         <span className="portail-topbar-fun-stars" style={{ fontSize: 18, display: 'inline-block', animation:'topbarBubble 3s ease-in-out 0.8s infinite' }}>✨</span>
-      </motion.span>
+      </span>
     </>
   );
 }
@@ -118,6 +127,7 @@ const PAGE_TITLES = {
 export default function PortailApp() {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const outletRef = usePageTransition(location.pathname);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('portail_theme');
     return saved ? saved === 'dark' : false;
@@ -407,18 +417,9 @@ export default function PortailApp() {
           </div>
         </header>
         <div className="portail-content">
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              key={location.pathname}
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              style={{ width: '100%' }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <div ref={outletRef} style={{ width: '100%' }}>
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>

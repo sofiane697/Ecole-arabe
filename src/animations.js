@@ -1,107 +1,160 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 
-// Courbes et durées — discrètes, adaptées à un ENT
-const EASE = [0.22, 0.61, 0.36, 1];
-const DUR  = { xs: 0.18, sm: 0.25, md: 0.35, lg: 0.5 };
+// ─── Courbes & durées partagées ─────────────────────────────────────────────
+export const EASE = 'power2.out';
+export const EASE_IN = 'power2.in';
+export const DUR = { xs: 0.18, sm: 0.25, md: 0.35, lg: 0.5 };
 
-// ─── Transitions de page (fade + légère translation) ────────────────────────
-export const pageVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0,  transition: { duration: DUR.md, ease: EASE } },
-  exit:    { opacity: 0, y: -8, transition: { duration: DUR.sm, ease: EASE } },
-};
+// ─── usePageTransition ──────────────────────────────────────────────────────
+// Hook utilisé dans les *App.jsx (AdminApp, EnseignantApp, PortailApp, ParentApp)
+// pour animer l'Outlet à chaque changement de location.pathname.
+//
+// Usage :
+//   const outletRef = usePageTransition(location.pathname);
+//   <div ref={outletRef}><Outlet /></div>
+export function usePageTransition(pathKey) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ref.current,
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: DUR.md, ease: EASE }
+      );
+    }, ref);
+    return () => ctx.revert();
+  }, [pathKey]);
+  return ref;
+}
 
-// ─── Micro-interactions (boutons, liens cliquables) ─────────────────────────
-export const tapScale = {
-  whileHover: { scale: 1.02, transition: { duration: DUR.xs, ease: EASE } },
-  whileTap:   { scale: 0.97, transition: { duration: 0.1,    ease: EASE } },
-};
+// ─── useReveal ──────────────────────────────────────────────────────────────
+// Hook générique pour animer un élément au mount (fade + translation Y).
+//
+// Usage :
+//   const ref = useReveal();                       // valeurs par défaut
+//   const ref = useReveal({ y: 24, duration: 0.5, delay: 0.2 });
+//   <div ref={ref}>...</div>
+export function useReveal(opts = {}) {
+  const ref = useRef(null);
+  const { y = 18, opacity = 0, duration = DUR.md, delay = 0, ease = EASE } = opts;
+  useEffect(() => {
+    if (!ref.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(ref.current, { y, opacity, duration, delay, ease });
+    }, ref);
+    return () => ctx.revert();
+  }, []);
+  return ref;
+}
 
-// Variante plus discrète pour cartes cliquables
-export const cardHover = {
-  whileHover: { y: -3, transition: { duration: DUR.sm, ease: EASE } },
-  whileTap:   { scale: 0.99, transition: { duration: 0.1, ease: EASE } },
-};
+// ─── useStagger ─────────────────────────────────────────────────────────────
+// Hook pour animer les enfants directs d'un conteneur en cascade au mount.
+//
+// Usage :
+//   const ref = useStagger({ stagger: 0.07, y: 18 });
+//   <div ref={ref}>
+//     <div>item 1</div>
+//     <div>item 2</div>
+//   </div>
+//
+// Option `selector` pour cibler une sous-classe au lieu des enfants directs :
+//   const ref = useStagger({ selector: '.value' });
+export function useStagger(opts = {}) {
+  const ref = useRef(null);
+  const {
+    y = 18,
+    opacity = 0,
+    duration = DUR.md,
+    delay = 0.05,
+    stagger = 0.07,
+    ease = EASE,
+    selector = null,
+  } = opts;
+  useEffect(() => {
+    if (!ref.current) return;
+    const targets = selector
+      ? ref.current.querySelectorAll(selector)
+      : ref.current.children;
+    if (!targets || targets.length === 0) return;
+    const ctx = gsap.context(() => {
+      gsap.from(targets, { y, opacity, duration, delay, stagger, ease });
+    }, ref);
+    return () => ctx.revert();
+  }, []);
+  return ref;
+}
 
-// ─── Apparition au scroll ───────────────────────────────────────────────────
-export const fadeUp = {
-  hidden:  { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: DUR.md, ease: EASE } },
-};
+// ─── useModalAppear ─────────────────────────────────────────────────────────
+// Hook pour animer l'entrée d'une modale (overlay fade + carte scale-up).
+// L'animation d'exit est volontairement supprimée (le composant se démonte
+// instantanément à la fermeture — comportement standard React).
+//
+// Usage :
+//   const { overlayRef, cardRef } = useModalAppear();
+//   <div ref={overlayRef} className="overlay">
+//     <div ref={cardRef} className="modal-card">...</div>
+//   </div>
+export function useModalAppear() {
+  const overlayRef = useRef(null);
+  const cardRef = useRef(null);
+  useEffect(() => {
+    if (!overlayRef.current || !cardRef.current) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+      tl.from(overlayRef.current, { opacity: 0, duration: 0.18, ease: EASE })
+        .from(
+          cardRef.current,
+          { opacity: 0, scale: 0.92, y: 12, duration: 0.25, ease: EASE },
+          '-=0.08'
+        );
+    });
+    return () => ctx.revert();
+  }, []);
+  return { overlayRef, cardRef };
+}
 
-export const fadeIn = {
-  hidden:  { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: DUR.md, ease: EASE } },
-};
+// ─── usePanelAppear ─────────────────────────────────────────────────────────
+// Variante plus discrète pour un panneau latéral (juste fade + petit slide-up).
+export function usePanelAppear() {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(ref.current, { opacity: 0, y: 8, duration: 0.3, ease: EASE });
+    }, ref);
+    return () => ctx.revert();
+  }, []);
+  return ref;
+}
 
-// Conteneur avec enfants échelonnés (listes, grilles de cartes)
-export const staggerContainer = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
-};
+// ─── Composants pratiques ───────────────────────────────────────────────────
+// Wrappers prêts à l'emploi pour les cas simples sans avoir à gérer les refs.
 
-// ─── Entrée contenu de page (remplace adminSlideUp / portailSlideUp CSS) ────
-export const contentContainer = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
-};
-
-export const slideUp = {
-  hidden:  { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
-};
-
-// ─── Modales (remplace adminOverlayIn / adminModalIn / cmOverlayIn / cmCardIn) ─
-export const overlayVariants = {
-  hidden:  { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.18, ease: 'easeOut' } },
-  exit:    { opacity: 0, transition: { duration: 0.15, ease: 'easeIn'  } },
-};
-
-export const modalVariants = {
-  hidden:  { opacity: 0, scale: 0.92, y: 12 },
-  visible: { opacity: 1, scale: 1,    y: 0,  transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } },
-  exit:    { opacity: 0, scale: 0.95, y: 8,  transition: { duration: 0.15, ease: 'easeIn'  } },
-};
-
-// ─── Panneau détail latéral (remplace adminFadeIn CSS) ──────────────────────
-export const panelVariants = {
-  hidden:  { opacity: 0, y: 8  },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
-  exit:    { opacity: 0, y: 4, transition: { duration: 0.2, ease: 'easeIn'  } },
-};
-
-// ─── Composants prêts à l'emploi ────────────────────────────────────────────
-export function PageTransition({ children, style, className }) {
+export function PageTransition({ pathKey, children, className, style }) {
+  const ref = usePageTransition(pathKey);
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      style={style}
-      className={className}
-    >
+    <div ref={ref} className={className} style={style}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
-// Révèle l'élément quand il entre dans le viewport (une seule fois)
-export function Reveal({ children, variants = fadeUp, amount = 0.2, style, className, as = 'div' }) {
-  const MotionTag = motion[as] || motion.div;
+export function Reveal({ children, y, opacity, duration, delay, className, style, as: Tag = 'div' }) {
+  const ref = useReveal({ y, opacity, duration, delay });
   return (
-    <MotionTag
-      variants={variants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount }}
-      style={style}
-      className={className}
-    >
+    <Tag ref={ref} className={className} style={style}>
       {children}
-    </MotionTag>
+    </Tag>
   );
 }
 
-export { motion, AnimatePresence };
+export function Stagger({ children, y, stagger, delay, selector, className, style, as: Tag = 'div' }) {
+  const ref = useStagger({ y, stagger, delay, selector });
+  return (
+    <Tag ref={ref} className={className} style={style}>
+      {children}
+    </Tag>
+  );
+}

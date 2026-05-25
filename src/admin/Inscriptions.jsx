@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, panelVariants } from '../animations';
+import gsap from 'gsap';
 import { usePageAnimation } from '../shared/usePageAnimation';
+
+// Fonction module-level : référence stable, le ref-callback n'est PAS rappelé à
+// chaque re-render (seulement au mount/unmount du nœud DOM, et au remount via key).
+function animateDetailEnter(el) {
+  if (!el) return;
+  gsap.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+}
 import {
   fetchInscriptions, updateInscriptionStatut,
   fetchAllClasses,
@@ -403,11 +410,10 @@ export default function Inscriptions() {
             const next = STATUT_NEXT[selected.statut] || 'nouveau';
             const nextCfg = STATUT_CFG[next] || { label: next };
             return (
-              <motion.div
+              <div
                 className="insc-detail-content"
                 key={selected.id}
-                variants={panelVariants}
-                initial="hidden" animate="visible" exit="exit"
+                ref={animateDetailEnter}
               >
                 {/* Header */}
                 <div className="insc-detail-header">
@@ -726,7 +732,7 @@ export default function Inscriptions() {
                   </div>
                 )}
 
-              </motion.div>
+              </div>
             );
           })()}
         </div>

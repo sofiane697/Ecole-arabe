@@ -1,7 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import gsap from 'gsap';
 import { NAV, COURSES, VALUES, CONTACT_INFO, CORAN_FEATURES, TESTIMONIALS } from './data';
 import { useScrollReveal, useActiveSection, useCounter } from './hooks';
-import { motion, Reveal, staggerContainer, fadeUp, tapScale, cardHover } from './animations';
+
+// Style helper pour les éléments avec effet hover/tap (boutons, cartes cliquables)
+const hoverScaleProps = {
+  style: { transition: 'transform .18s ease' },
+  onMouseEnter: e => { e.currentTarget.style.transform = 'scale(1.02)'; },
+  onMouseLeave: e => { e.currentTarget.style.transform = ''; },
+  onMouseDown:  e => { e.currentTarget.style.transform = 'scale(0.97)'; },
+  onMouseUp:    e => { e.currentTarget.style.transform = 'scale(1.02)'; },
+};
+const cardHoverProps = {
+  style: { transition: 'transform .25s ease' },
+  onMouseEnter: e => { e.currentTarget.style.transform = 'translateY(-3px)'; },
+  onMouseLeave: e => { e.currentTarget.style.transform = ''; },
+};
 
 // ─── Palettes de couleurs ─────────────────────────────────────────────────────
 const THEMES = [
@@ -517,29 +531,29 @@ function PreInscriptionModal({ cours, onClose }) {
   );
 }
 
-// ─── Variantes d'entrée page ──────────────────────────────────────────────────
-const SPRING = { type: 'spring', stiffness: 60, damping: 18, mass: 0.8 };
-const EASE_OUT = [0.22, 1, 0.36, 1];
+// ─── Animations d'entrée GSAP ────────────────────────────────────────────────
+// Anime la nav (slide-down) + les éléments du hero en stagger.
+function useHomeEntranceAnim() {
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.nav', { y: -24, opacity: 0, duration: 0.8, ease: 'power3.out' });
 
-const navVariants = {
-  hidden:  { opacity: 0, y: -24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } },
-};
+      const heroChildren = document.querySelectorAll(
+        '.hero-eyebrow, .hero-title-row, .hero-title-fr, .hero-desc, .hero-actions'
+      );
+      if (heroChildren.length) {
+        gsap.from(heroChildren, {
+          y: 28, opacity: 0,
+          duration: 0.9, ease: 'power3.out',
+          stagger: 0.13, delay: 0.15,
+        });
+      }
 
-const heroContainer = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.13, delayChildren: 0.15 } },
-};
-
-const heroItem = {
-  hidden:  { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { ...SPRING } },
-};
-
-const heroItemScale = {
-  hidden:  { opacity: 0, scale: 0.88, y: 10 },
-  visible: { opacity: 1, scale: 1,    y: 0,  transition: { ...SPRING } },
-};
+      gsap.from('.scroll-hint', { opacity: 0, duration: 0.8, delay: 1.1, ease: 'power2.out' });
+    });
+    return () => ctx.revert();
+  }, []);
+}
 
 /* ══════════════════════════════════════════════════════
    APP
@@ -578,6 +592,7 @@ export default function App() {
   /* — Hooks — */
   const active = useActiveSection();
   useScrollReveal();
+  useHomeEntranceAnim();
 
   /* — Bloquer le scroll quand le menu mobile est ouvert — */
   useEffect(() => {
@@ -650,7 +665,7 @@ export default function App() {
       {/* ─────────────────────────────
           NAVIGATION
       ───────────────────────────── */}
-      <motion.nav className="nav" variants={navVariants} initial="hidden" animate="visible">
+      <nav className="nav">
 
         {/* Logo */}
         <button className="logo" onClick={() => goTo('accueil')}>
@@ -696,7 +711,7 @@ export default function App() {
           </button>
         </div>
 
-      </motion.nav>
+      </nav>
 
 
       {/* ─────────────────────────────
@@ -728,32 +743,27 @@ export default function App() {
         <div className="hero-glow" />
         <HeroDeco />
 
-        <motion.div className="hero-inner" variants={heroContainer} initial="hidden" animate="visible">
-          <motion.div className="hero-eyebrow" variants={heroItemScale}>Bienvenue à l'Institut As-Safaa</motion.div>
-          <motion.div className="hero-title-row" variants={heroItem}>
+        <div className="hero-inner">
+          <div className="hero-eyebrow">Bienvenue à l'Institut As-Safaa</div>
+          <div className="hero-title-row">
             <span className="hero-title-fr-name">Institut As-Safaa</span>
             <h1 className="hero-title-ar">الصفاء</h1>
-          </motion.div>
-          <motion.p className="hero-title-fr" variants={heroItem}>Transmettre le savoir, éclairer les cœurs</motion.p>
-          <motion.p className="hero-desc" variants={heroItem}>
+          </div>
+          <p className="hero-title-fr">Transmettre le savoir, éclairer les cœurs</p>
+          <p className="hero-desc">
             Une institution d'excellence dédiée à l'enseignement de la lecture du Coran,
             aux sciences islamiques et à la langue arabe — pour enfants et adultes.
-          </motion.p>
-          <motion.div className="hero-actions" variants={heroItem}>
-            <motion.button className="btn-fill" onClick={() => goTo('tarifs')} {...tapScale}>Découvrir les cours</motion.button>
-            <motion.a href="/portail/login" className="btn-outline no-underline inline-flex items-center justify-content-center" {...tapScale}>Mon portail</motion.a>
-          </motion.div>
-        </motion.div>
+          </p>
+          <div className="hero-actions">
+            <button className="btn-fill" onClick={() => goTo('tarifs')} {...hoverScaleProps}>Découvrir les cours</button>
+            <a href="/portail/login" className="btn-outline no-underline inline-flex items-center justify-content-center" {...hoverScaleProps}>Mon portail</a>
+          </div>
+        </div>
 
-        <motion.div
-          className="scroll-hint"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.1, ease: EASE_OUT }}
-        >
+        <div className="scroll-hint">
           <div className="scroll-hint-line" />
           <span className="scroll-hint-text">Défiler</span>
-        </motion.div>
+        </div>
       </section>
 
 
@@ -797,23 +807,17 @@ export default function App() {
           </div>
 
           {/* Colonne valeurs */}
-          <motion.div
-            className="values sr d2"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-          >
+          <div className="values sr d2">
             {VALUES.map((v, i) => (
-              <motion.div key={i} className="value" variants={fadeUp}>
+              <div key={i} className="value">
                 <div className="value-ico">{v.icon}</div>
                 <div>
                   <div className="value-name">{v.name}</div>
                   <div className="value-desc">{v.desc}</div>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
         </div>
       </section>
@@ -848,21 +852,14 @@ export default function App() {
         {/* Carrousel mobile */}
         <CarouselCards onInscribe={setModalCours} />
 
-        <motion.div
-          className="wrap grid-cards"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-        >
+        <div className="wrap grid-cards">
 
           {/* 3 cartes niveaux */}
           {COURSES.map((c, i) => (
-            <motion.div
+            <div
               key={i}
               className={`card sr ${c.featured ? 'feat' : ''} ${i > 0 ? `d${i}` : ''}`}
-              variants={fadeUp}
-              {...cardHover}
+              {...cardHoverProps}
             >
               {c.featured && <div className="card-badge">Recommandé</div>}
               <p className="card-lvl">{c.level}</p>
@@ -879,14 +876,14 @@ export default function App() {
                   <li key={j}><span className="card-dot" />{f}</li>
                 ))}
               </ul>
-              <motion.button className="card-cta" onClick={() => setModalCours(c.fr)} {...tapScale}>
+              <button className="card-cta" onClick={() => setModalCours(c.fr)} {...hoverScaleProps}>
                 S'inscrire
-              </motion.button>
-            </motion.div>
+              </button>
+            </div>
           ))}
 
           {/* Carte spécialisation Coran — pleine largeur */}
-          <motion.div className="card card-wide sr" variants={fadeUp} {...cardHover}>
+          <div className="card card-wide sr" {...cardHoverProps}>
             <div>
               <p className="card-lvl">Spécialisation</p>
               <div className="card-ar">تحفيظ القرآن الكريم</div>
@@ -910,13 +907,13 @@ export default function App() {
                 </div>
                 <div className="card-freq">2 séances / semaine · 1h</div>
               </div>
-              <motion.button className="card-cta" onClick={() => setModalCours('Lecture & Mémorisation Coranique')} {...tapScale}>
+              <button className="card-cta" onClick={() => setModalCours('Lecture & Mémorisation Coranique')} {...hoverScaleProps}>
                 S'inscrire
-              </motion.button>
+              </button>
             </div>
-          </motion.div>
+          </div>
 
-        </motion.div>
+        </div>
       </section>
 
 

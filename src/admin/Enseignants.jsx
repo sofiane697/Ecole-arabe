@@ -8,7 +8,13 @@ import {
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
-import { motion, staggerContainer, fadeUp, cardHover } from '../animations';
+import gsap from 'gsap';
+
+// Référence stable pour le ref-callback (anime les enfants directs au mount).
+function animateGridChildren(el) {
+  if (!el || !el.children.length) return;
+  gsap.from(el.children, { opacity: 0, y: 18, duration: 0.35, stagger: 0.07, delay: 0.05, ease: 'power2.out', clearProps: 'opacity,transform' });
+}
 
 // ─── Formatage des noms ──────────────────────────────────────────────────────
 const PAGE_SIZE = 25;
@@ -201,17 +207,16 @@ export default function Enseignants() {
         const safePage   = Math.min(page, totalPages - 1);
         const paginated  = enseignants.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
         return (<>
-        <motion.div className={S.grid} variants={staggerContainer} initial="hidden" animate="visible" key={safePage}>
+        <div className={S.grid} key={safePage} ref={animateGridChildren}>
           {paginated.map(ens => {
             const initiales = (fmtPrenom(ens.prenom || '')?.[0] || '') + (fmtNom(ens.nom || '')?.[0] || '');
             const classeIds = classesMap[ens.id] || [];
             const classeObjs = allClasses.filter(c => classeIds.includes(c.id));
             return (
-              <motion.div key={ens.id} className={S.card}
-                variants={fadeUp}
-                {...cardHover}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
+              <div key={ens.id} className={S.card}
+                style={{ transition: 'transform .25s ease, box-shadow .2s ease, border-color .2s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,.15)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
                 <div className={S.cardTop}>
                   <div className={S.avatar}>{initiales}</div>
                   <div className="flex-1 min-w-0">
@@ -248,10 +253,10 @@ export default function Enseignants() {
                     <IconTrash /> Supprimer
                   </button>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
         {totalPages > 1 && (
           <div className="a-pagination">
             <button className="a-page-btn" disabled={safePage === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>← Précédent</button>

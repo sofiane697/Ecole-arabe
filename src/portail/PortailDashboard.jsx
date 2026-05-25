@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import gsap from 'gsap';
 import { fetchModulesEleve, fetchEleveNiveauScolaireId } from './supabasePortail';
-import { motion, AnimatePresence, staggerContainer, fadeUp, cardHover, tapScale } from '../animations';
 import { coverImgStyle, isSafeCoverUrl } from '../shared/imageCrop';
-
-const DASH_SPRING = { type: 'spring', stiffness: 80, damping: 18, mass: 0.8 };
-const EASE_OUT = [0.22, 1, 0.36, 1];
 
 // Variable module-level : reset au refresh de page, persiste lors de la navigation React Router
 let _salamHasAnimated = false;
@@ -26,21 +23,30 @@ const S = {
   welcomeSub: { fontSize: 15, color: 'var(--p-fg-mid)', marginTop: 14 },
 };
 
-const salamTransition = { duration: 0.75, ease: EASE_OUT };
-
 function SalamGreeting({ prenom }) {
+  const ref = useRef(null);
   const [shouldAnimate] = useState(() => {
     if (_salamHasAnimated) return false;
     _salamHasAnimated = true;
     return true;
   });
 
+  useEffect(() => {
+    if (!shouldAnimate || !ref.current) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ref.current,
+        { opacity: 0, y: -16, filter: 'blur(4px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.75, delay: 0.05, ease: 'power2.out' }
+      );
+    }, ref);
+    return () => ctx.revert();
+  }, [shouldAnimate]);
+
   return (
-    <motion.div
+    <div
+      ref={ref}
       style={{ display:'flex', alignItems:'baseline', gap:12, flexWrap:'wrap', overflow:'hidden' }}
-      initial={shouldAnimate ? { opacity:0, y:-16, filter:'blur(4px)' } : false}
-      animate={{ opacity:1, y:0, filter:'blur(0px)' }}
-      transition={{ ...salamTransition, delay: 0.05 }}
     >
       {prenom && (
         <span style={{ fontFamily:'var(--p-font-display)', fontSize:34, fontWeight:800, color:'var(--p-fg)', lineHeight:1.2 }}>
@@ -51,7 +57,7 @@ function SalamGreeting({ prenom }) {
         السلام عليكم
       </span>
       <span style={{ fontSize:30 }}>👋</span>
-    </motion.div>
+    </div>
   );
 };
 
@@ -59,6 +65,7 @@ export default function PortailDashboard() {
   const navigate = useNavigate();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const gridRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,6 +100,16 @@ export default function PortailDashboard() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    if (loading || modules.length === 0 || !gridRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(gridRef.current.children, {
+        opacity: 0, y: 18, duration: 0.35, stagger: 0.07, delay: 0.05, ease: 'power2.out',
+      });
+    }, gridRef);
+    return () => ctx.revert();
+  }, [loading, modules.length]);
 
   if (loading) return <div className={S.loading}>Chargement de vos cours...</div>;
 
@@ -131,22 +148,20 @@ export default function PortailDashboard() {
           );
         })()
       ) : (
-        <motion.div
+        <div
+          ref={gridRef}
           className="portail-modules-grid"
           style={{ '--grid-cols': Math.min(modules.length, 4) }}
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
         >
           {modules.map((m, index) => {
             const palette = CARD_PASTELS[index % CARD_PASTELS.length];
 
             return (
-              <motion.div key={m.id}
+              <div key={m.id}
                 className="portail-module-card"
-                style={{ background: palette.bg }}
-                variants={fadeUp}
-                {...cardHover}
+                style={{ background: palette.bg, cursor: 'pointer', transition: 'transform .25s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
                 onClick={() => navigate(`/portail/module/${m.id}`)}>
                 {isSafeCoverUrl(m.image_url) ? (
                   <img
@@ -163,17 +178,20 @@ export default function PortailDashboard() {
                 <div className="portail-module-card-body">
                   <h3 className="portail-module-card-title">{m.titre}</h3>
                   {m.description && <p className="portail-module-card-desc">{m.description}</p>}
-                  <motion.button
+                  <button
                     className="portail-module-card-btn"
-                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}` }}
-                    {...tapScale}>
+                    style={{ background: palette.btnGrad, boxShadow: `0 4px 14px ${palette.btnShadow}`, transition: 'transform .15s ease' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+                    onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.97)'; }}
+                    onMouseUp={e => { e.currentTarget.style.transform = 'scale(1.02)'; }}>
                     Commencer
-                  </motion.button>
+                  </button>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
       )}
     </div>
   );

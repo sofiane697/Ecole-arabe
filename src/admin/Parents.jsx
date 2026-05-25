@@ -9,7 +9,12 @@ import {
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword, normalizeTelephone, formatFoyer, safeMailtoHref, safeTelHref, getParentInitials } from './adminUtils';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
-import { motion, staggerContainer, fadeUp } from '../animations';
+import gsap from 'gsap';
+
+function staggerOnMount(el) {
+  if (!el || !el.children.length) return;
+  gsap.from(el.children, { opacity: 0, y: 18, duration: 0.4, stagger: 0.07, delay: 0.05, ease: 'power2.out', clearProps: 'opacity,transform' });
+}
 
 const PAGE_SIZE = 25;
 
@@ -138,18 +143,18 @@ export default function Parents() {
   }
 
   return (
-    <motion.div className={CLS.page} variants={staggerContainer} initial="initial" animate="animate">
-      <motion.div className={CLS.header} variants={fadeUp}>
+    <div className={CLS.page} ref={staggerOnMount}>
+      <div className={CLS.header}>
         <div className={CLS.headerLeft}>
-          <span>{total} parent{total > 1 ? 's' : ''}</span>
+          <span className="a-section-count">{total} parent{total > 1 ? 's' : ''}</span>
         </div>
         <button className={CLS.addBtn} onClick={() => setModal('create')}>
           <IconPlus /> Nouveau parent
         </button>
-      </motion.div>
+      </div>
 
       {/* Recherche */}
-      <motion.div variants={fadeUp} className="a-search-wrap" style={{ marginBottom: '1.75rem' }}>
+      <div className="a-search-wrap" style={{ marginBottom: '1.75rem' }}>
         <span className="a-search-icon"><IconSearch /></span>
         <input
           className="a-search-input"
@@ -157,14 +162,14 @@ export default function Parents() {
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
         />
-      </motion.div>
+      </div>
 
       {loading ? null : rows.length === 0 ? (
-        <motion.div variants={fadeUp} className={CLS.empty}>
+        <div className={CLS.empty}>
           {search ? 'Aucun parent trouvé pour cette recherche.' : 'Aucun parent enregistré. Créez-en un avec le bouton ci-dessus.'}
-        </motion.div>
+        </div>
       ) : (
-        <motion.div variants={fadeUp} className={CLS.grid} style={{ gap: '1.25rem' }}>
+        <div className={CLS.grid} style={{ gap: '1.25rem' }}>
           {rows.map(p => (
             <ParentCard
               key={p.id}
@@ -173,7 +178,7 @@ export default function Parents() {
               onDelete={() => setConfirm({ parent: p })}
             />
           ))}
-        </motion.div>
+        </div>
       )}
 
       {pageCount > 1 && (
@@ -205,7 +210,7 @@ export default function Parents() {
           onCancel={() => setConfirm(null)}
         />
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -454,15 +459,15 @@ function ParentDetail({ parent: initialParent, onBack, onChanged, onResetResult 
   const telHref  = safeTelHref(parent.telephone);
 
   return (
-    <motion.div className="parent-detail" variants={staggerContainer} initial="initial" animate="animate">
+    <div className="parent-detail" ref={staggerOnMount}>
 
       {/* ─── Breadcrumb ── */}
-      <motion.button className="parent-detail-back" onClick={onBack} variants={fadeUp}>
+      <button className="parent-detail-back" onClick={onBack}>
         <IconBack /> <span>Retour à la liste</span>
-      </motion.button>
+      </button>
 
       {/* ─── Hero header : avatar XL + identité + actions ─── */}
-      <motion.section className="parent-detail-hero" variants={fadeUp}>
+      <section className="parent-detail-hero">
         <span className="parent-detail-hero-accent" aria-hidden="true" />
 
         <div className="parent-detail-hero-avatar" aria-hidden="true">
@@ -496,17 +501,17 @@ function ParentDetail({ parent: initialParent, onBack, onChanged, onResetResult 
             </button>
           </div>
         )}
-      </motion.section>
+      </section>
 
       {error && (
-        <motion.div className="parent-detail-error" variants={fadeUp}>
+        <div className="parent-detail-error">
           <span aria-hidden="true">✕</span>
           <span>{error}</span>
-        </motion.div>
+        </div>
       )}
 
       {/* ─── Coordonnées ─── */}
-      <motion.section className="parent-detail-section" variants={fadeUp}>
+      <section className="parent-detail-section">
         <header className="parent-detail-section-head">
           <h3 className="parent-detail-section-title">Coordonnées</h3>
         </header>
@@ -585,10 +590,10 @@ function ParentDetail({ parent: initialParent, onBack, onChanged, onResetResult 
             </div>
           </dl>
         )}
-      </motion.section>
+      </section>
 
       {/* ─── Enfants rattachés ─── */}
-      <motion.section className="parent-detail-section" variants={fadeUp}>
+      <section className="parent-detail-section">
         <header className="parent-detail-section-head">
           <h3 className="parent-detail-section-title">
             Enfants rattachés
@@ -654,7 +659,7 @@ function ParentDetail({ parent: initialParent, onBack, onChanged, onResetResult 
             })}
           </ul>
         )}
-      </motion.section>
+      </section>
 
       {linkModal && (
         <LinkEleveModal
@@ -687,7 +692,7 @@ function ParentDetail({ parent: initialParent, onBack, onChanged, onResetResult 
           onCancel={() => setUnlinkConfirm(null)}
         />
       )}
-    </motion.div>
+    </div>
   );
 }
 
