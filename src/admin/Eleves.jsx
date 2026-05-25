@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { usePageAnimation } from '../shared/usePageAnimation';
 import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, adminCreateObservation, adminCreateRetardAbsence, adminFetchNoteAcks } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
@@ -132,6 +133,8 @@ export default function Eleves() {
   const [photoError, setPhotoError] = useState('');
   const [confirmRemovePhoto, setConfirmRemovePhoto] = useState(false);
   const photoInputRef = useRef(null);
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, []);
   const [allClasses, setAllClasses] = useState([]);
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
   const [detailModule, setDetailModule] = useState(null); // module ouvert dans le panneau latéral
@@ -1661,7 +1664,7 @@ export default function Eleves() {
 
   // ─── VUE LISTE ───────────────────────────────────────────────────────
   return (
-    <div className={CLS.page}>
+    <div ref={pageRef} className={CLS.page}>
       <div className={CLS.header}>
         <div className={CLS.headerLeft}>
           <span className="a-section-count">{eleves.length} élève{eleves.length !== 1 ? 's' : ''} inscrit{eleves.length !== 1 ? 's' : ''}</span>

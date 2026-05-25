@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { fetchMessages, updateMessageLu, deleteMessage } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { motion, AnimatePresence, panelVariants } from '../animations';
+import { usePageAnimation } from '../shared/usePageAnimation';
 
 const COURS = ['tous', 'Débutant — Alphabet', 'Intermédiaire — Lecture', 'Avancé — Expression', 'Lecture & Mémorisation Coran'];
 const PAGE_SIZE = 25;
@@ -86,6 +87,8 @@ export default function Messages() {
   const [page,        setPage]        = useState(0);
   const [selected,    setSelected]    = useState(null);
   const [confirm,     setConfirm]     = useState(null);
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, [loading]);
 
   useEffect(() => {
     fetchMessages()
@@ -179,7 +182,7 @@ export default function Messages() {
   }
 
   return (
-    <>
+    <div ref={pageRef}>
       {/* Stats */}
       <div className="msg-stats">
         {[
@@ -438,6 +441,6 @@ export default function Messages() {
           onCancel={() => setConfirm(null)}
         />
       )}
-    </>
+    </div>
   );
 }

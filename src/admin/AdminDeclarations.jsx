@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { usePageAnimation } from '../shared/usePageAnimation';
 import { adminFetchDeclarations, adminMarkDeclarationsVues } from './supabaseAdmin';
 import { fmtDateLong } from '../shared/dateUtils';
 
@@ -22,6 +23,8 @@ export default function AdminDeclarations() {
   const [page,    setPage]    = useState(0);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, [loading]);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -45,7 +48,7 @@ export default function AdminDeclarations() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div>
+    <div ref={pageRef}>
       <p style={{ fontSize: 14, color: 'var(--a-fg-mid)', margin: '0 0 20px' }}>
         Préavis de retards et absences transmis par les familles
         {total > 0 && (

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchEnseignants, createEnseignant, updateEnseignant, deleteEnseignant,
   fetchEnseignantClasses, setEnseignantClasses,
@@ -73,6 +74,8 @@ export default function Enseignants() {
   const [countdown, setCountdown]           = useState(30);
   const [resetPwdVisible, setResetPwdVisible] = useState(true);
   const [resetCountdown, setResetCountdown]   = useState(30);
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, []);
 
   const load = useCallback(async () => {
     try {
@@ -179,7 +182,7 @@ export default function Enseignants() {
   };
 
   return (
-    <div className={S.page}>
+    <div ref={pageRef} className={S.page}>
       <div className={S.header}>
         <div className={S.headerLeft}>
           <span className="a-section-count">{enseignants.length} enseignant{enseignants.length > 1 ? 's' : ''}</span>

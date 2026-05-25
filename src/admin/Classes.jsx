@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchNiveauxScolaires, createNiveauScolaire, updateNiveauScolaire, deleteNiveauScolaire,
   fetchClasses, createClasse, updateClasse, deleteClasse, fetchEleves,
@@ -78,6 +79,8 @@ export default function Classes() {
   const [selEleve, setSelEleve]   = useState(null);
   const [modal, setModal]         = useState(null);
   const [loading, setLoading]     = useState(false);
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, [selNiveau?.id, selClasse?.id]);
 
   const loadAll = useCallback(async () => {
     try {
@@ -103,7 +106,7 @@ export default function Classes() {
   // ─── VUE 1 : Liste des niveaux scolaires ──────────────────────────────────────
   if (!selNiveau) {
     return (
-      <div className={S.page}>
+      <div ref={pageRef} className={S.page}>
         <div className={S.header}>
           <div className={S.headerLeft}>
             <span className="a-section-count">{niveaux.length} niveau{niveaux.length > 1 ? 'x' : ''} scolaire{niveaux.length > 1 ? 's' : ''}</span>

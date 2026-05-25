@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { usePageAnimation } from '../shared/usePageAnimation';
 import RichTextEditor from './RichTextEditor';
 import {
   fetchModules, createModule, updateModule, deleteModule,
@@ -159,6 +160,8 @@ export default function Cours() {
   const [confirm, setConfirm] = useState(null); // { title, message, onConfirm }
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('contenus'); // 'contenus' | 'qcm'
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, [view]);
   const [niveauxScolaires, setNiveauxScolaires] = useState([]);
 
   // ─── Chargement des modules ─────────────────────────────────────────
@@ -445,7 +448,7 @@ export default function Cours() {
   // ─── VUE MODULES ───────────────────────────────────────────────────
   if (view === 'modules') {
     return (
-      <div className={S.page}>
+      <div ref={pageRef} className={S.page}>
         <div className={S.grid}>
           {modules.map(m => (
             <div key={m.id} className={S.card} onClick={() => openModule(m)}>
@@ -497,7 +500,7 @@ export default function Cours() {
   // ─── VUE THÉMATIQUES ───────────────────────────────────────────────
   if (view === 'thematiques') {
     return (
-      <div className={S.page}>
+      <div ref={pageRef} className={S.page}>
         <div className={S.breadcrumb} onClick={goBack}>
           <IconBack />
           <span>Modules</span>
@@ -555,7 +558,7 @@ export default function Cours() {
   // ─── VUE LEÇONS ────────────────────────────────────────────────────
   if (view === 'lecons') {
     return (
-      <div className={S.page}>
+      <div ref={pageRef} className={S.page}>
         <div className={S.breadcrumb} onClick={goBack}>
           <IconBack />
           <span>Thématiques</span>
@@ -609,7 +612,7 @@ export default function Cours() {
   // ─── VUE NIVEAUX ───────────────────────────────────────────────────
   if (view === 'niveaux') {
     return (
-      <div className={S.page}>
+      <div ref={pageRef} className={S.page}>
         <div className={S.breadcrumb} onClick={goBack}>
           <IconBack />
           <span>Leçons</span>
@@ -650,7 +653,7 @@ export default function Cours() {
 
   // ─── VUE DÉTAIL NIVEAU (Contenus + QCM) ────────────────────────────
   return (
-    <div className={S.page}>
+    <div ref={pageRef} className={S.page}>
       <div className={S.breadcrumb} onClick={goBack}>
         <IconBack />
         <span>{selLecon ? 'Leçons' : 'Niveaux'}</span>

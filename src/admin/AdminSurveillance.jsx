@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchAllConversations, fetchConversationMessages } from './supabaseAdmin';
 import EleveAvatar from '../shared/EleveAvatar';
+import { usePageAnimation } from '../shared/usePageAnimation';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,8 @@ export default function AdminSurveillance() {
   const messagesEndRef     = useRef(null);
   const messagesContainerRef = useRef(null);
   const prevMsgCountRef    = useRef(0);
+  const pageRef            = useRef(null);
+  usePageAnimation(pageRef, [loading]);
 
   // Chargement conversations + polling 10s
   useEffect(() => {
@@ -141,7 +144,7 @@ export default function AdminSurveillance() {
     c.eleve_id === selected.eleve_id && c.enseignant_id === selected.enseignant_id;
 
   return (
-    <div className="surv-wrap">
+    <div ref={pageRef} className="surv-wrap">
 
       {/* ── Sidebar : liste des conversations ── */}
       <div className="surv-sidebar">

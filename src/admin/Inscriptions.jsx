@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, panelVariants } from '../animations';
+import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchInscriptions, updateInscriptionStatut,
   fetchAllClasses,
@@ -72,6 +73,8 @@ export default function Inscriptions() {
   const [parentsMode,   setParentsMode]   = useState('ensemble'); // 'ensemble' | 'separes'
   const [parentsBlocs,  setParentsBlocs]  = useState([emptyBloc()]);
   const [parentResults, setParentResults] = useState([]); // [{kind:'created'|'linked', label, identifiant, password?}]
+  const pageRef = useRef(null);
+  usePageAnimation(pageRef, [loading]);
 
   useEffect(() => {
     fetchInscriptions().then(setData).catch(() => {}).finally(() => setLoading(false));
@@ -305,7 +308,7 @@ export default function Inscriptions() {
   }
 
   return (
-    <>
+    <div ref={pageRef}>
       <div className="admin-page-header">
         <div>
           <p className="admin-page-subtitle">Gérez les demandes d'inscription et leur avancement</p>
@@ -728,7 +731,7 @@ export default function Inscriptions() {
           })()}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
