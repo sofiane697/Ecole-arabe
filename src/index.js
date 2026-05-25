@@ -1,107 +1,141 @@
 import './index.css';
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import App from './App';
-import AdminLogin from './admin/AdminLogin';
-import AdminApp from './admin/AdminApp';
-import Dashboard from './admin/Dashboard';
-import Inscriptions from './admin/Inscriptions';
-import Messages from './admin/Messages';
-import Cours from './admin/Cours';
-import Classes from './admin/Classes';
-import Eleves from './admin/Eleves';
-import Enseignants from './admin/Enseignants';
-import Parents from './admin/Parents';
-import AdminSurveillance   from './admin/AdminSurveillance';
-import AdminDeclarations   from './admin/AdminDeclarations';
-import EnseignantLogin      from './enseignant/EnseignantLogin';
-import EnseignantApp        from './enseignant/EnseignantApp';
-import EnseignantMesClasses from './enseignant/EnseignantMesClasses';
-import EnseignantClasse     from './enseignant/EnseignantClasse';
-import EnseignantMessages   from './enseignant/EnseignantMessages';
-import EnseignantAbsences     from './enseignant/EnseignantAbsences';
-import EnseignantEleveProfile from './enseignant/EnseignantEleveProfile';
-import EnseignantDevoirs      from './enseignant/EnseignantDevoirs';
-import EnseignantNotes        from './enseignant/EnseignantNotes';
-import EnseignantObservations from './enseignant/EnseignantObservations';
-import PortailLogin from './portail/PortailLogin';
-import PortailApp from './portail/PortailApp';
-import PortailDashboard from './portail/PortailDashboard';
-import PortailModule from './portail/PortailModule';
-import PortailDevoirs from './portail/PortailDevoirs';
-import PortailResultats from './portail/PortailResultats';
-import PortailObservations from './portail/PortailObservations';
-import PortailMessages     from './portail/PortailMessages';
-import ParentLogin         from './parent/ParentLogin';
-import ParentApp           from './parent/ParentApp';
-import ParentDashboard     from './parent/ParentDashboard';
-import ParentNotes         from './parent/ParentNotes';
-import ParentObservations  from './parent/ParentObservations';
-import ParentDevoirs       from './parent/ParentDevoirs';
-import ParentAbsences      from './parent/ParentAbsences';
+
+const App = lazy(() => import('./App'));
+
+const AdminLogin         = lazy(() => import('./admin/AdminLogin'));
+const AdminApp           = lazy(() => import('./admin/AdminApp'));
+const Dashboard          = lazy(() => import('./admin/Dashboard'));
+const Inscriptions       = lazy(() => import('./admin/Inscriptions'));
+const Messages           = lazy(() => import('./admin/Messages'));
+const Cours              = lazy(() => import('./admin/Cours'));
+const Classes            = lazy(() => import('./admin/Classes'));
+const Eleves             = lazy(() => import('./admin/Eleves'));
+const Enseignants        = lazy(() => import('./admin/Enseignants'));
+const Parents            = lazy(() => import('./admin/Parents'));
+const AdminSurveillance  = lazy(() => import('./admin/AdminSurveillance'));
+const AdminDeclarations  = lazy(() => import('./admin/AdminDeclarations'));
+
+const EnseignantLogin       = lazy(() => import('./enseignant/EnseignantLogin'));
+const EnseignantApp         = lazy(() => import('./enseignant/EnseignantApp'));
+const EnseignantMesClasses  = lazy(() => import('./enseignant/EnseignantMesClasses'));
+const EnseignantClasse      = lazy(() => import('./enseignant/EnseignantClasse'));
+const EnseignantMessages    = lazy(() => import('./enseignant/EnseignantMessages'));
+const EnseignantAbsences    = lazy(() => import('./enseignant/EnseignantAbsences'));
+const EnseignantEleveProfile= lazy(() => import('./enseignant/EnseignantEleveProfile'));
+const EnseignantDevoirs     = lazy(() => import('./enseignant/EnseignantDevoirs'));
+const EnseignantNotes       = lazy(() => import('./enseignant/EnseignantNotes'));
+const EnseignantObservations= lazy(() => import('./enseignant/EnseignantObservations'));
+
+const PortailLogin        = lazy(() => import('./portail/PortailLogin'));
+const PortailApp          = lazy(() => import('./portail/PortailApp'));
+const PortailDashboard    = lazy(() => import('./portail/PortailDashboard'));
+const PortailModule       = lazy(() => import('./portail/PortailModule'));
+const PortailDevoirs      = lazy(() => import('./portail/PortailDevoirs'));
+const PortailResultats    = lazy(() => import('./portail/PortailResultats'));
+const PortailObservations = lazy(() => import('./portail/PortailObservations'));
+const PortailMessages     = lazy(() => import('./portail/PortailMessages'));
+
+const ParentLogin        = lazy(() => import('./parent/ParentLogin'));
+const ParentApp          = lazy(() => import('./parent/ParentApp'));
+const ParentDashboard    = lazy(() => import('./parent/ParentDashboard'));
+const ParentNotes        = lazy(() => import('./parent/ParentNotes'));
+const ParentObservations = lazy(() => import('./parent/ParentObservations'));
+const ParentDevoirs      = lazy(() => import('./parent/ParentDevoirs'));
+const ParentAbsences     = lazy(() => import('./parent/ParentAbsences'));
+
+function RouteFallback() {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#0a0a0a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          border: '2px solid rgba(191,138,48,.2)',
+          borderTopColor: '#bf8a30',
+          borderRadius: '50%',
+          animation: 'route-spin .8s linear infinite',
+        }}
+      />
+      <style>{`@keyframes route-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname.split('/')[1] || 'root'}>
-        {/* Site public */}
-        <Route path="/" element={<App />} />
+      <Suspense fallback={<RouteFallback />}>
+        <Routes location={location} key={location.pathname.split('/')[1] || 'root'}>
+          {/* Site public */}
+          <Route path="/" element={<App />} />
 
-        {/* Admin */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminApp />}>
-          <Route index element={<Dashboard />} />
-          <Route path="inscriptions" element={<Inscriptions />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="cours" element={<Cours />} />
-          <Route path="classes" element={<Classes />} />
-          <Route path="eleves" element={<Eleves />} />
-          <Route path="parents" element={<Parents />} />
-          <Route path="enseignants" element={<Enseignants />} />
-          <Route path="surveillance"  element={<AdminSurveillance />} />
-          <Route path="declarations"  element={<AdminDeclarations />} />
-        </Route>
+          {/* Admin */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminApp />}>
+            <Route index element={<Dashboard />} />
+            <Route path="inscriptions" element={<Inscriptions />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="cours" element={<Cours />} />
+            <Route path="classes" element={<Classes />} />
+            <Route path="eleves" element={<Eleves />} />
+            <Route path="parents" element={<Parents />} />
+            <Route path="enseignants" element={<Enseignants />} />
+            <Route path="surveillance"  element={<AdminSurveillance />} />
+            <Route path="declarations"  element={<AdminDeclarations />} />
+          </Route>
 
-        {/* Portail enseignant */}
-        <Route path="/enseignant/login" element={<EnseignantLogin />} />
-        <Route path="/enseignant" element={<EnseignantApp />}>
-          <Route index element={<Navigate to="classes" replace />} />
-          <Route path="classes" element={<EnseignantMesClasses />} />
-          <Route path="classe/:id" element={<EnseignantClasse />} />
-          <Route path="absences"     element={<EnseignantAbsences />} />
-          <Route path="eleve/:eleveId" element={<EnseignantEleveProfile />} />
-          <Route path="devoirs"      element={<EnseignantDevoirs />} />
-          <Route path="notes"        element={<EnseignantNotes />} />
-          <Route path="observations" element={<EnseignantObservations />} />
-          <Route path="messages"     element={<EnseignantMessages />} />
-        </Route>
+          {/* Portail enseignant */}
+          <Route path="/enseignant/login" element={<EnseignantLogin />} />
+          <Route path="/enseignant" element={<EnseignantApp />}>
+            <Route index element={<Navigate to="classes" replace />} />
+            <Route path="classes" element={<EnseignantMesClasses />} />
+            <Route path="classe/:id" element={<EnseignantClasse />} />
+            <Route path="absences"     element={<EnseignantAbsences />} />
+            <Route path="eleve/:eleveId" element={<EnseignantEleveProfile />} />
+            <Route path="devoirs"      element={<EnseignantDevoirs />} />
+            <Route path="notes"        element={<EnseignantNotes />} />
+            <Route path="observations" element={<EnseignantObservations />} />
+            <Route path="messages"     element={<EnseignantMessages />} />
+          </Route>
 
-        {/* Portail élève */}
-        <Route path="/portail/login" element={<PortailLogin />} />
-        <Route path="/portail" element={<PortailApp />}>
-          <Route index element={<PortailDashboard />} />
-          <Route path="module/:id" element={<PortailModule />} />
-          <Route path="module/:moduleId/thematique/:thId" element={<PortailModule />} />
-          <Route path="module/:moduleId/thematique/:thId/lecon/:leconId" element={<PortailModule />} />
-          <Route path="devoirs" element={<PortailDevoirs />} />
-          <Route path="resultats" element={<PortailResultats />} />
-          <Route path="observations" element={<PortailObservations />} />
-          <Route path="messages" element={<PortailMessages />} />
-        </Route>
+          {/* Portail élève */}
+          <Route path="/portail/login" element={<PortailLogin />} />
+          <Route path="/portail" element={<PortailApp />}>
+            <Route index element={<PortailDashboard />} />
+            <Route path="module/:id" element={<PortailModule />} />
+            <Route path="module/:moduleId/thematique/:thId" element={<PortailModule />} />
+            <Route path="module/:moduleId/thematique/:thId/lecon/:leconId" element={<PortailModule />} />
+            <Route path="devoirs" element={<PortailDevoirs />} />
+            <Route path="resultats" element={<PortailResultats />} />
+            <Route path="observations" element={<PortailObservations />} />
+            <Route path="messages" element={<PortailMessages />} />
+          </Route>
 
-        {/* Portail parent */}
-        <Route path="/parent/login" element={<ParentLogin />} />
-        <Route path="/parent" element={<ParentApp />}>
-          <Route index              element={<ParentDashboard />} />
-          <Route path="notes"        element={<ParentNotes />} />
-          <Route path="observations" element={<ParentObservations />} />
-          <Route path="devoirs"      element={<ParentDevoirs />} />
-          <Route path="absences"     element={<ParentAbsences />} />
-        </Route>
-      </Routes>
+          {/* Portail parent */}
+          <Route path="/parent/login" element={<ParentLogin />} />
+          <Route path="/parent" element={<ParentApp />}>
+            <Route index              element={<ParentDashboard />} />
+            <Route path="notes"        element={<ParentNotes />} />
+            <Route path="observations" element={<ParentObservations />} />
+            <Route path="devoirs"      element={<ParentDevoirs />} />
+            <Route path="absences"     element={<ParentAbsences />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 }
