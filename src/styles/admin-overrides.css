@@ -199,7 +199,9 @@
 .ens-form-panel input::placeholder,
 .ens-form-panel input::-webkit-input-placeholder,
 .portail-form-panel input::placeholder,
-.portail-form-panel input::-webkit-input-placeholder {
+.portail-form-panel input::-webkit-input-placeholder,
+.parent-form-panel input::placeholder,
+.parent-form-panel input::-webkit-input-placeholder {
   color: #6e6e73;
   opacity: 1;
 }
@@ -212,7 +214,8 @@
    renforce la couleur. */
 .admin-form-panel input,
 .ens-form-panel input,
-.portail-form-panel input {
+.portail-form-panel input,
+.parent-form-panel input {
   border-color: rgba(191, 138, 48, 0.28) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -232,7 +235,10 @@
 .ens-form-panel input:-webkit-autofill:active,
 .portail-form-panel input:-webkit-autofill,
 .portail-form-panel input:-webkit-autofill:hover,
-.portail-form-panel input:-webkit-autofill:active {
+.portail-form-panel input:-webkit-autofill:active,
+.parent-form-panel input:-webkit-autofill,
+.parent-form-panel input:-webkit-autofill:hover,
+.parent-form-panel input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #2c2c2e inset !important;
           box-shadow: 0 0 0 1000px #2c2c2e inset !important;
   -webkit-text-fill-color: #f5f5f7 !important;
@@ -246,10 +252,26 @@
    ET le halo externe doré du focus. */
 .admin-form-panel input:-webkit-autofill:focus,
 .ens-form-panel input:-webkit-autofill:focus,
-.portail-form-panel input:-webkit-autofill:focus {
+.portail-form-panel input:-webkit-autofill:focus,
+.parent-form-panel input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px #2c2c2e inset, 0 0 0 3px rgba(191, 138, 48, 0.18) !important;
           box-shadow: 0 0 0 1000px #2c2c2e inset, 0 0 0 3px rgba(191, 138, 48, 0.18) !important;
   border-color: #bf8a30 !important;
+}
+
+/* ─── Responsive mobile pour les 4 login ─────────────────────────────────────
+   En dessous de 768px, le panneau de marque (gauche) est masqué et la carte
+   formulaire prend tout l'écran. Remplace l'injection JS de <style> qui était
+   faite dans chaque fichier login. */
+@media (max-width: 767px) {
+  .admin-brand-panel,
+  .ens-brand-panel,
+  .portail-brand-panel,
+  .parent-brand-panel { display: none !important; }
+  .admin-form-panel,
+  .ens-form-panel,
+  .portail-form-panel,
+  .parent-form-panel { padding: 24px 20px !important; }
 }
 
 /* ─── Login Page ─── */

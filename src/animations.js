@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 // ─── Courbes & durées partagées ─────────────────────────────────────────────
@@ -161,4 +161,43 @@ export function Stagger({ children, y, stagger, delay, selector, className, styl
       {children}
     </Tag>
   );
+}
+
+// ─── useLoginCinematic ───────────────────────────────────────────────────────
+// Anime l'entrée cinématique des pages de login : halo → panneau → carte.
+// Usage :
+//   const { haloRef, brandRef, cardRef } = useLoginCinematic();
+//   <div ref={haloRef} />   ← halo décoratif principal
+//   <div ref={brandRef} />  ← panneau gauche branding
+//   <div ref={cardRef} />   ← carte glass formulaire
+export function useLoginCinematic() {
+  const haloRef  = useRef(null);
+  const brandRef = useRef(null);
+  const cardRef  = useRef(null);
+
+  useLayoutEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const targets = [haloRef.current, brandRef.current, cardRef.current].filter(Boolean);
+    const ctx = gsap.context(() => {
+      if (prefersReduced) {
+        gsap.from(targets, { opacity: 0, duration: 0.3 });
+        return;
+      }
+      gsap.fromTo(haloRef.current,
+        { scale: 0.3, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1.2, ease: 'expo.out' }
+      );
+      gsap.fromTo(brandRef.current,
+        { x: -30, opacity: 0, scale: 0.97 },
+        { x: 0, opacity: 1, scale: 1, duration: 1.1, ease: 'expo.out', delay: 0.1 }
+      );
+      gsap.fromTo(cardRef.current,
+        { y: 22, opacity: 0, scale: 0.95 },
+        { y: 0, opacity: 1, scale: 1, duration: 1.0, ease: 'expo.out', delay: 0.35 }
+      );
+    });
+    return () => ctx.revert();
+  }, []);
+
+  return { haloRef, brandRef, cardRef };
 }
