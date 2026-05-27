@@ -27,6 +27,59 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## ⚠️ Actions Supabase en attente (audit 2026-05-27)
+
+> Un audit complet (base de données + synchronisation inter-portails) a été conduit le 2026-05-27. Les actions ci-dessous doivent être exécutées **via le MCP `mcp__supabase__*`** sur la base `nsdnzqdbpdncrksgxtar`. À traiter dans l'ordre de priorité.
+
+### 🔴 Priorité 1 — Appliquer les 2 migrations SQL déjà commitées
+
+Les 2 fichiers ont été créés et poussés sur la branche `claude/project-work-mobile-WW7IG` (commit `3df580a`). À appliquer **dans cet ordre** :
+
+1. `supabase/sql/update_devoir_secure_classe_id.sql` — DROP + CREATE de `update_devoir_secure` avec un 6ᵉ paramètre `p_classe_id UUID` (fix bug : un devoir réassigné à une nouvelle classe restait visible côté ancienne classe).
+2. `supabase/sql/fetch_notes_validation_filter.sql` — Backfill `valide_le = NOW()` sur évaluations existantes puis `CREATE OR REPLACE fetch_notes_for_parent` avec filtre `WHERE e.valide_le IS NOT NULL` (fix bug : les parents voyaient les notes saisies AVANT validation par l'enseignant).
+
+Le frontend qui consomme ces RPCs est déjà déployé dans le même commit (`updateDevoir` passe maintenant `p_classe_id`). **Appliquer SQL avant que le frontend ne soit en prod**, sinon fenêtre d'erreur RPC pour les enseignants qui modifient un devoir.
+
+### 🔴 Priorité 2 — Vérifier 4 RPCs admin potentiellement vulnérables
+
+Le frontend appelle ces 4 RPCs **sans `p_admin_token`** (cf. `src/admin/supabaseAdmin.js:304, 598, 801, 810`). Si l'auth check `_is_admin()` n'est pas fait en interne, n'importe qui avec la clé `anon` publique peut créer des comptes et reset des mots de passe → **faille RGPD critique**.
+
+Lancer `pg_get_functiondef` sur chaque fonction et vérifier la présence d'un check admin :
+
+- `admin_create_user`
+- `admin_reset_eleve_password`
+- `admin_create_enseignant`
+- `admin_reset_enseignant_password`
+
+Si une seule de ces 4 RPCs accepte des appels non-authentifiés, créer une migration de fix immédiate qui ajoute le check `IF NOT public._is_admin(p_admin_token) THEN RAISE EXCEPTION 'Accès refusé'; END IF;` en tête de fonction.
+
+### 🔴 Priorité 3 — Versionner le drift (≈24 RPCs non versionnées)
+
+La base contient des RPCs en production qui ne sont **pas dans `supabase/sql/`** (drift documenté dans `notes_obs_evals_lockdown.sql:18-19`). Toute restauration de la base depuis le repo échouera. La Phase 3.B (~70 appels `p_admin_token` côté frontend) est notamment hors-repo.
+
+Récupérer les définitions actuelles via `pg_get_functiondef` puis créer une migration `supabase/sql/drift_recovery_phase3b.sql`. RPCs à versionner :
+
+- **Phase 3.B admin sessions** : toutes les RPCs admin qui prennent `p_admin_token TEXT`
+- **Admin** : `admin_create_user`, `admin_create_enseignant`, `admin_reset_eleve_password`, `admin_reset_enseignant_password`, `admin_update_eleve_niveau_scolaire`
+- **Helpers** : `_resolve_eleve_session`, `_resolve_enseignant_session`, `_enseignant_owns_classe`, `_enseignant_owns_eleve`, `check_auth_rate_limit`
+- **Sessions élève** : `start_eleve_session`, `heartbeat_eleve_session`, `end_eleve_session`, `update_presence_secure`
+- **Notes/devoirs** : `fetch_notes_for_eleve`, `create_devoir_secure`, `delete_devoir_secure`, `fetch_devoirs_classe_secure`, `fetch_devoirs_for_eleve`, `count_new_devoirs_for_eleve`
+
+### 🟡 Priorité 4 — Autres correctifs DB
+
+- **`fetch_notes_for_eleve`** : appliquer le même filtre `e.valide_le IS NOT NULL` que côté parent (récupérer le corps actuel d'abord — drift).
+- **Storage policies** : aucune policy versionnée pour les buckets `cours`, `Cours de coran`, `Images`. Vérifier qu'elles ne sont pas en accès libre et les versionner dans `supabase/sql/storage_policies.sql`.
+- **`niveaux.score_requis`** : ajouter `CHECK (score_requis BETWEEN 50 AND 100)` (défense en profondeur — actuellement un admin compromis peut neutraliser l'anti-triche QCM).
+- **`pg_cron`** : programmer un job quotidien de purge des sessions expirées sur les 4 tables `parent_sessions`, `admin_sessions`, `eleve_auth_sessions`, `enseignant_auth_sessions`.
+- **RLS ENABLE explicite** : ajouter `ALTER TABLE … ENABLE ROW LEVEL SECURITY;` en tête de chaque migration de lockdown pour idempotence garantie.
+
+### 🟢 Quand tout est fait
+
+- Supprimer cette section du CLAUDE.md et la convertir en entrée historique
+- Mettre à jour la liste "Bugs connus" en bas
+
+---
+
 ## Règles de développement
 
 > **Toute nouvelle fonctionnalité, feature ou ajout de module DOIT passer par le skill `nouvelles-fonctionnalites`.**
@@ -181,7 +234,8 @@ Les migrations SQL dans `supabase/sql/` implémentent un verrouillage progressif
 - `eleve_qcm_lockdown.sql`, `notes_obs_evals_lockdown.sql`
 - `inscriptions_messages_chat_lockdown.sql`, `classes_niveaux_scolaires_lockdown.sql`
 - `parents_rls_lockdown.sql`, `declarations_parents_migration.sql`
-- `admin_sessions_phase3.sql` — Phase 3 : token de session admin (à appliquer)
+- `admin_sessions_phase3.sql` — Phase 3.A : token de session admin (appliquée). **Phase 3.B (RPCs admin migrées vers `p_admin_token`) existe en base mais N'EST PAS dans le repo** — voir section "Actions Supabase en attente" en haut.
+- `update_devoir_secure_classe_id.sql`, `fetch_notes_validation_filter.sql` — fixes audit 2026-05-27 (à appliquer)
 
 ### Storage
 
@@ -230,10 +284,23 @@ INSERT INTO profils_admins (identifiant, password_hash, display_name)
 VALUES ('admin2', extensions.crypt('MonMDP!', extensions.gen_salt('bf')), 'Admin 2');
 ```
 
-## Bugs connus (audit 2026-05-08)
+## Bugs connus
 
-- **B1** — `sendWelcomeEmail` non importé dans `Eleves.jsx:230`
-- **B2** — `updateDevoir` ignore silencieusement `classe_id`
-- **B3** — Conflit signature `_parent_owns_eleve` dans les 2 migrations parents
-- **B4** — Présence enseignant écrasée à `en_ligne` à chaque reload
-- **B7** — `Classes.jsx:456` ferme la modale même si la suppression échoue
+### Audit 2026-05-08 — tous résolus
+
+- ~~**B1** — `sendWelcomeEmail` non importé dans `Eleves.jsx`~~ (résolu)
+- ~~**B2** — `updateDevoir` ignore silencieusement `classe_id`~~ (résolu côté JS au commit `3df580a` ; SQL en attente d'application — voir prio 1 en haut)
+- ~~**B3** — Conflit signature `_parent_owns_eleve`~~ (résolu, signatures alignées)
+- ~~**B4** — Présence enseignant écrasée à `en_ligne` à chaque reload~~ (résolu)
+- ~~**B7** — `Classes.jsx` ferme la modale même si la suppression échoue~~ (résolu)
+
+### Audit 2026-05-27 — voir section "Actions Supabase en attente" en haut
+
+Sync inter-portails restant à corriger (côté frontend, non bloquant) :
+- `DECLARATION_TYPE_CFG` partagé jamais importé → 2 duplications locales
+- `SCORE_SUB` divergent entre 3 portails (libellés différents pour le même score)
+- Pas de refetch auto des notes côté élève/parent (badge se met à jour mais pas la page)
+- Contrat `evaluation` divergent : `date_evaluation` (élève) vs `date` (parent/admin)
+- Dashboard admin sans rafraîchissement
+- `score_max` default incohérent (4 vs 20)
+- Présence enseignant + observations : libellés/couleurs divergents entre portails
