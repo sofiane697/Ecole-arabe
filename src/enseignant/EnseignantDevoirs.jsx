@@ -96,7 +96,7 @@ export default function EnseignantDevoirs() {
       if (modal.mode === 'create') {
         await createDevoir({ enseignant_id: user.id, classe_id: fClasse, titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate });
       } else {
-        await updateDevoir(modal.devoir.id, { titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate }, user.id);
+        await updateDevoir(modal.devoir.id, { titre: fTitre.trim(), description: fDesc.trim() || null, date_limite: fDate, classe_id: fClasse }, user.id);
       }
       await load(); setModal(null);
     } catch {}

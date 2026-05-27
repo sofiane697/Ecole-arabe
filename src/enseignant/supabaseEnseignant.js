@@ -249,6 +249,7 @@ export async function updateDevoir(id, data, _enseignantId) {
     p_titre: data.titre,
     p_description: data.description ?? null,
     p_date_limite: data.date_limite,
+    p_classe_id: data.classe_id,
   });
 }
 
