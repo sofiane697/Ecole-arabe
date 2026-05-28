@@ -173,15 +173,17 @@ REACT_APP_SUPABASE_ANON=<anon-key>
 
 `login_admin_custom`, `admin_create_user`, `admin_reset_eleve_password`, `login_eleve`, `change_eleve_password`, `save_progression`, `get_progression`, `login_enseignant`, `change_enseignant_password`, `admin_create_enseignant`, `admin_reset_enseignant_password`, `start_eleve_session`, `heartbeat_eleve_session`, `end_eleve_session`, `admin_update_eleve_niveau_scolaire`, `get_eleve_niveau_scolaire`, `login_parent`, `_resolve_parent_session`
 
-### RLS Lockdown (en cours)
+### RLS Lockdown (terminé)
 
-Les migrations SQL dans `supabase/sql/` implémentent un verrouillage progressif des RLS (Row Level Security). Avant ce travail, la clé `anon` publique avait accès libre à toutes les tables. Fichiers :
+Les migrations SQL dans `supabase/sql/` ont implémenté un verrouillage progressif des RLS (Row Level Security). Avant ce travail, la clé `anon` publique avait accès libre à toutes les tables. **16 tables verrouillées, toutes les migrations appliquées au 2026-05-08.**
 
 - `profils_eleves_lockdown.sql`, `enseignants_lockdown.sql`, `cours_rls_lockdown.sql`
 - `eleve_qcm_lockdown.sql`, `notes_obs_evals_lockdown.sql`
 - `inscriptions_messages_chat_lockdown.sql`, `classes_niveaux_scolaires_lockdown.sql`
 - `parents_rls_lockdown.sql`, `declarations_parents_migration.sql`
-- `admin_sessions_phase3.sql` — Phase 3 : token de session admin (à appliquer)
+- `admin_sessions_phase3.sql` — Phase 3 : auth admin par token (appliquée). Toutes les RPCs `admin_*` prennent désormais `p_admin_token TEXT` (jamais `p_admin_id UUID`).
+
+**Règle d'accès :** toute table verrouillée doit passer par une RPC `SECURITY DEFINER` (jamais REST direct depuis le front).
 
 ### Storage
 
