@@ -25,7 +25,16 @@ export function usePageTransition(pathKey) {
       gsap.fromTo(
         ref.current,
         { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.2, ease: EASE }
+        {
+          opacity: 1, y: 0, duration: 0.2, ease: EASE,
+          // CRUCIAL : sans clearProps, GSAP laisse un `transform: translate(0,0)`
+          // résiduel sur ce wrapper. Un transform sur un parent redéfinit le
+          // référentiel des descendants `position: fixed` → les modales/overlays
+          // (ConfirmModal, tiroir d'inscription…) se positionnent par rapport à
+          // ce wrapper (souvent très haut) au lieu du viewport, d'où la modale
+          // décalée tout en bas qu'il fallait scroller pour atteindre.
+          clearProps: 'transform',
+        }
       );
     }, ref);
     return () => ctx.revert();

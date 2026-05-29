@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { usePageAnimation } from '../shared/usePageAnimation';
 
@@ -80,6 +80,12 @@ export default function Inscriptions() {
   const [parentsMode,   setParentsMode]   = useState('ensemble'); // 'ensemble' | 'separes'
   const [parentsBlocs,  setParentsBlocs]  = useState([emptyBloc()]);
   const [parentResults, setParentResults] = useState([]); // [{kind:'created'|'linked', label, identifiant, password?}]
+
+  // ─── Tiroir de conversion (bottom sheet plein écran) ────────────────────────
+  const [convertOpen, setConvertOpen] = useState(false);
+  const sheetOverlayRef = useRef(null);
+  const sheetRef        = useRef(null);
+
   const pageRef = useRef(null);
   usePageAnimation(pageRef, [loading]);
 
@@ -87,6 +93,54 @@ export default function Inscriptions() {
     fetchInscriptions().then(setData).catch(() => {}).finally(() => setLoading(false));
     fetchAllClasses().then(setClasses).catch(() => {});
   }, []);
+
+  // Animation d'entrée du tiroir : overlay fade + tiroir qui monte du bas.
+  // useLayoutEffect → joue avant le paint, pas de flash. Respecte prefers-reduced-motion.
+  useLayoutEffect(() => {
+    if (!convertOpen || !sheetOverlayRef.current || !sheetRef.current) return;
+    // Verrouille le scroll de l'arrière-plan tant que la carte est ouverte.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(sheetOverlayRef.current, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power2.out' });
+      gsap.fromTo(
+        sheetRef.current,
+        { yPercent: prefersReduced ? 0 : 100, opacity: prefersReduced ? 0 : 1 },
+        { yPercent: 0, opacity: 1, duration: prefersReduced ? 0.25 : 0.45, ease: 'power3.out' }
+      );
+    });
+    return () => { ctx.revert(); document.body.style.overflow = prevOverflow; };
+  }, [convertOpen]);
+
+  // Fermeture animée : tiroir qui redescend + overlay fade-out, puis démontage.
+  const closeConvertSheet = () => {
+    const overlay = sheetOverlayRef.current;
+    const sheet   = sheetRef.current;
+    const finish = () => {
+      setConvertOpen(false);
+      // Inscription convertie → elle disparaît déjà de la liste filtrée : on
+      // désélectionne pour ne pas laisser un panneau détail à moitié vide.
+      setSelected(prev => (prev && prev.statut === 'converti' ? null : prev));
+    };
+    if (!overlay || !sheet) { finish(); return; }
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tl = gsap.timeline({ onComplete: finish });
+    if (prefersReduced) {
+      tl.to(overlay, { opacity: 0, duration: 0.2, ease: 'power2.in' });
+    } else {
+      tl.to(sheet, { yPercent: 100, duration: 0.35, ease: 'power3.in' })
+        .to(overlay, { opacity: 0, duration: 0.2, ease: 'power2.in' }, '-=0.2');
+    }
+  };
+
+  // Fermer le tiroir avec Échap
+  useEffect(() => {
+    if (!convertOpen) return;
+    const handler = (e) => { if (e.key === 'Escape') closeConvertSheet(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [convertOpen]);
 
   const filtered = data.filter(i => {
     if (i.statut === 'converti') return false;
@@ -512,7 +566,24 @@ export default function Inscriptions() {
                     >
                       Remettre en traitement <IconArrow />
                     </button>
-                  ) : selected.statut === 'converti' ? null : (
+                  ) : selected.statut === 'converti' ? null : selected.statut === 'inscrit' ? (
+                    <>
+                      <button
+                        className="msg-action-primary"
+                        onClick={() => setConvertOpen(true)}
+                      >
+                        {(!selected.eleve_id && !linkedEleve)
+                          ? '✓ Créer le compte élève'
+                          : 'Gérer le compte élève'} <IconArrow />
+                      </button>
+                      <button
+                        className="msg-action-danger"
+                        onClick={() => refuserInscription(selected.id, selected.statut)}
+                      >
+                        ✕ Refuser l'inscription
+                      </button>
+                    </>
+                  ) : (
                     <>
                       <button
                         className="msg-action-primary"
@@ -530,19 +601,50 @@ export default function Inscriptions() {
                   )}
                 </div>
 
-                {/* ── Conversion : visible uniquement si statut = inscrit et pas encore converti ── */}
-                {selected.statut === 'inscrit' && !selected.eleve_id && !linkedEleve && (
-                  <>
-                    <div className="insc-detail-sep" />
-                    <div className="insc-convert-panel">
-                      <p className="insc-convert-title">Créer le compte élève + parents</p>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
 
+      {/* ─── Tiroir de conversion (bottom sheet plein écran) ─── */}
+      {convertOpen && selected && (() => {
+        const hasAccount = Boolean(linkedEleve || selected.eleve_id);
+        const showForm   = !hasAccount; // pas encore de compte → formulaire de création
+        return (
+          <div className="insc-sheet-overlay" ref={sheetOverlayRef} onClick={closeConvertSheet}>
+            <div className="insc-sheet" ref={sheetRef} onClick={e => e.stopPropagation()}>
+              <button className="insc-sheet-close" onClick={closeConvertSheet} aria-label="Fermer le panneau">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+
+              {/* Header */}
+              <div className="insc-sheet-header">
+                <div className="insc-detail-avatar">{getInitials(selected.prenom, selected.nom)}</div>
+                <div>
+                  <div className="insc-sheet-title">Inscription de {selected.prenom} {selected.nom}</div>
+                  <div className="insc-sheet-sub">
+                    {selected.cours || 'Cours non précisé'}
+                    {selected.date_naissance ? ` · ${calcAge(selected.date_naissance)} ans` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <div className="insc-sheet-body">
+
+                {/* ── Colonne gauche : détails de l'inscription ── */}
+                <div className="insc-sheet-col">
+                  <p className="insc-sheet-col-title">Détails de l'inscription</p>
+
+                  {showForm ? (
+                    <>
                       <label className="insc-convert-label">
-                        1. Assigner une classe
+                        <span className="insc-step">1</span>
+                        Assigner une classe
                         {selected.cours && (
-                          <span className="ml-2 text-[11px] font-normal text-a-fg-light">
-                            (cours souhaité : {selected.cours})
-                          </span>
+                          <span className="insc-convert-hint">cours souhaité : {selected.cours}</span>
                         )}
                       </label>
                       <select
@@ -554,7 +656,7 @@ export default function Inscriptions() {
                         {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
                       </select>
 
-                      <label className="insc-convert-label mt-4">2. Date de naissance</label>
+                      <label className="insc-convert-label mt-4"><span className="insc-step">2</span>Date de naissance</label>
                       <input
                         type="date"
                         className="insc-convert-select"
@@ -563,7 +665,7 @@ export default function Inscriptions() {
                         onChange={e => setConvertForm(f => ({ ...f, dateNaissance: e.target.value }))}
                       />
 
-                      <label className="insc-convert-label mt-4">3. Téléphone</label>
+                      <label className="insc-convert-label mt-4"><span className="insc-step">3</span>Téléphone</label>
                       <input
                         type="tel"
                         className="insc-convert-select"
@@ -573,7 +675,9 @@ export default function Inscriptions() {
                       />
 
                       <label className="insc-convert-label mt-4">
-                        4. Email de contact (identifiants envoyés à cette adresse)
+                        <span className="insc-step">4</span>
+                        Email de contact
+                        <span className="insc-convert-hint">identifiants envoyés à cette adresse</span>
                       </label>
                       <input
                         type="email"
@@ -583,8 +687,118 @@ export default function Inscriptions() {
                         onChange={e => setConvertForm(f => ({ ...f, emailContact: e.target.value }))}
                       />
 
-                      {/* Section Parents (optionnelle, toggle) */}
-                      <label className="insc-convert-label mt-4">5. Parents</label>
+                      {convertError && <p className="insc-convert-error">{convertError}</p>}
+                      <button
+                        className="insc-convert-btn"
+                        disabled={convertLoading}
+                        onClick={handleConvertToEleve}
+                      >
+                        {convertLoading ? 'Création en cours…' : (addParentsNow ? '✓ Créer élève + parent(s)' : '✓ Créer l\'élève')}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Identifiants générés */}
+                      {convertResult && (
+                        <div className="insc-creds-box">
+                          <p className="insc-creds-title">✓ Compte élève créé</p>
+                          <p className="insc-creds-row">Identifiant : <strong>{convertResult.identifiant}</strong></p>
+                          <p className="insc-creds-row">Mot de passe provisoire : <strong>{convertResult.password}</strong></p>
+                        </div>
+                      )}
+
+                      {/* Activation (compte pas encore actif) */}
+                      {linkedEleve && !linkedEleve.actif && (
+                        <div className="insc-status-card pending">
+                          <span className="insc-status-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                          </span>
+                          <div className="insc-status-body">
+                            <div className="insc-status-title">Compte en attente d'activation</div>
+                            <div className="insc-status-desc">
+                              Le compte est créé mais l'élève ne peut pas encore se connecter.
+                            </div>
+                          </div>
+                          <button
+                            className="insc-status-cta"
+                            disabled={activating}
+                            onClick={handleActivateEleve}
+                          >
+                            {activating ? 'Activation…' : "Activer l'accès"}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Compte actif */}
+                      {linkedEleve && linkedEleve.actif && (
+                        <div className="insc-status-card success">
+                          <span className="insc-status-icon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          </span>
+                          <div className="insc-status-body">
+                            <div className="insc-status-title">Élève actif</div>
+                            <div className="insc-status-desc">L'accès au portail est ouvert.</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mail envoyé avec identifiants */}
+                      {mailEnvoye && (() => {
+                        const href = safeMailtoHref(mailEnvoye);
+                        return (
+                          <div className="insc-status-card success">
+                            <span className="insc-status-icon" aria-hidden="true">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                              </svg>
+                            </span>
+                            <div className="insc-status-body">
+                              <div className="insc-status-title">Identifiants envoyés par email</div>
+                              <div className="insc-status-desc">
+                                {href ? (
+                                  <a href={href} className="insc-status-link">{mailEnvoye}</a>
+                                ) : (
+                                  <span className="insc-status-mono">{mailEnvoye}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Pas d'email de contact */}
+                      {mailEnvoye === false && (
+                        <div className="insc-status-card warn">
+                          <span className="insc-status-icon" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                              <line x1="12" y1="9" x2="12" y2="13"/>
+                              <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                          </span>
+                          <div className="insc-status-body">
+                            <div className="insc-status-title">Aucun email de contact</div>
+                            <div className="insc-status-desc">
+                              Transmettez les identifiants manuellement au parent (vive voix, SMS ou note papier).
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* ── Colonne droite : parents ── */}
+                <div className="insc-sheet-col">
+                  <p className="insc-sheet-col-title">Parents</p>
+
+                  {showForm && (
+                    <>
                       <label
                         className="flex items-start gap-3 p-3 rounded-lg cursor-pointer text-[13px] mb-2 transition-all duration-150"
                         style={{
@@ -619,124 +833,23 @@ export default function Inscriptions() {
                           }}
                         />
                       )}
+                    </>
+                  )}
 
-                      {convertError && <p className="insc-convert-error">{convertError}</p>}
-                      <button
-                        className="insc-convert-btn"
-                        disabled={convertLoading}
-                        onClick={handleConvertToEleve}
-                      >
-                        {convertLoading ? 'Création en cours…' : (addParentsNow ? '✓ Créer élève + parent(s)' : '✓ Créer l\'élève')}
-                      </button>
-                    </div>
-                  </>
-                )}
+                  {/* Résultats parents (créés, rattachés ou échoués) */}
+                  <ParentResults results={parentResults} />
 
-                {/* ── Identifiants générés ── */}
-                {convertResult && (
-                  <div className="insc-creds-box">
-                    <p className="insc-creds-title">✓ Compte élève créé</p>
-                    <p className="insc-creds-row">Identifiant : <strong>{convertResult.identifiant}</strong></p>
-                    <p className="insc-creds-row">Mot de passe provisoire : <strong>{convertResult.password}</strong></p>
-                  </div>
-                )}
-
-                {/* ── Résultats parents (créés, rattachés ou échoués) ── */}
-                <ParentResults results={parentResults} />
-
-                {/* ── Gestion parents de l'élève converti (rattacher/détacher) ── */}
-                {linkedEleve && (
-                  <EleveParentsSection eleveId={linkedEleve.id} />
-                )}
-
-                {/* ── Banner activation (compte pas encore actif) ── */}
-                {linkedEleve && !linkedEleve.actif && (
-                  <div className="insc-status-card pending">
-                    <span className="insc-status-icon" aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                      </svg>
-                    </span>
-                    <div className="insc-status-body">
-                      <div className="insc-status-title">Compte en attente d'activation</div>
-                      <div className="insc-status-desc">
-                        Le compte est créé mais l'élève ne peut pas encore se connecter.
-                      </div>
-                    </div>
-                    <button
-                      className="insc-status-cta"
-                      disabled={activating}
-                      onClick={handleActivateEleve}
-                    >
-                      {activating ? 'Activation…' : "Activer l'accès"}
-                    </button>
-                  </div>
-                )}
-
-                {/* ── Compte actif ── */}
-                {linkedEleve && linkedEleve.actif && (
-                  <div className="insc-status-card success">
-                    <span className="insc-status-icon" aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    </span>
-                    <div className="insc-status-body">
-                      <div className="insc-status-title">Élève actif</div>
-                      <div className="insc-status-desc">L'accès au portail est ouvert.</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── Mail envoyé avec identifiants ── */}
-                {mailEnvoye && (() => {
-                  const href = safeMailtoHref(mailEnvoye);
-                  return (
-                    <div className="insc-status-card success">
-                      <span className="insc-status-icon" aria-hidden="true">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                          <polyline points="22,6 12,13 2,6"/>
-                        </svg>
-                      </span>
-                      <div className="insc-status-body">
-                        <div className="insc-status-title">Identifiants envoyés par email</div>
-                        <div className="insc-status-desc">
-                          {href ? (
-                            <a href={href} className="insc-status-link">{mailEnvoye}</a>
-                          ) : (
-                            <span className="insc-status-mono">{mailEnvoye}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* ── Pas d'email de contact ── */}
-                {mailEnvoye === false && (
-                  <div className="insc-status-card warn">
-                    <span className="insc-status-icon" aria-hidden="true">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                        <line x1="12" y1="9" x2="12" y2="13"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                      </svg>
-                    </span>
-                    <div className="insc-status-body">
-                      <div className="insc-status-title">Aucun email de contact</div>
-                      <div className="insc-status-desc">
-                        Transmettez les identifiants manuellement au parent (vive voix, SMS ou note papier).
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  {/* Gestion parents de l'élève converti (rattacher/détacher) */}
+                  {linkedEleve && (
+                    <EleveParentsSection eleveId={linkedEleve.id} />
+                  )}
+                </div>
 
               </div>
-            );
-          })()}
-        </div>
-      </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
