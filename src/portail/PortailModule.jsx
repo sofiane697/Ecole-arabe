@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import {
@@ -53,7 +53,8 @@ const S = {
 
 
 const TYPE_COLORS = { video: '#ff453a', pdf: '#0a84ff', texte: '#30d158', word: '#2b579a', ppt: '#c43e1c', genially: '#ff6b2b' };
-const TYPE_LABELS = { video: '▶ Vidéo', texte: '📝 Texte', word: '📃 Word', ppt: '📊 PowerPoint', genially: '🎨 Genially' };
+const TYPE_ICON   = { video: '▶', pdf: '📄', texte: '📝', word: '📃', ppt: '📊', genially: '🎨' };
+const TYPE_NAME   = { video: 'Vidéo', pdf: 'PDF', texte: 'Texte', word: 'Word', ppt: 'PowerPoint', genially: 'Genially' };
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <polyline points="15 18 9 12 15 6"/>
@@ -412,10 +413,20 @@ const NS = {
   heroGradientTitle: { fontFamily:'var(--p-font-display)', fontSize:20, fontWeight:700, color:'var(--p-fg)', lineHeight:1.3 },
   heroGradientDesc: { fontSize:13, color:'var(--p-fg-mid)', marginTop:5, lineHeight:1.55 },
   contentBody: { padding:20 },
-  contentItem: { background:'var(--p-bg-card)', borderRadius:'var(--p-radius-sm)', border:'1px solid var(--p-border)', marginBottom:14, overflow:'hidden' },
-  contentItemHeader: { display:'flex', alignItems:'center', gap:10, padding:'12px 16px', borderBottom:'1px solid var(--p-border)' },
-  contentTypeBadge: (c) => ({ fontSize:11, fontWeight:600, padding:'2px 8px', borderRadius:20, background:`${c}18`, color:c, flexShrink:0 }),
-  contentItemTitle: { fontSize:13, fontWeight:600, color:'var(--p-fg)' },
+  // Sommaire — "Dans cette leçon"
+  toc: { background:'var(--p-bg)', border:'1px solid var(--p-border)', borderRadius:'var(--p-radius-sm)', padding:'14px 14px 8px', marginBottom:22 },
+  tocTitle: { display:'flex', alignItems:'center', gap:8, fontSize:11, fontWeight:700, color:'var(--p-fg-light)', textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:8, paddingLeft:2 },
+  tocItem: { display:'flex', alignItems:'center', gap:10, width:'100%', textAlign:'left', padding:'8px 10px', marginBottom:4, borderRadius:10, border:'none', background:'transparent', cursor:'pointer', fontSize:13.5, color:'var(--p-fg)', transition:'background .15s' },
+  tocNum: (c) => ({ width:22, height:22, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, background:`${c}1A`, color:c }),
+  tocLabel: { overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
+  // Section de contenu numérotée
+  sectionWrap: { marginBottom:22, scrollMarginTop:80 },
+  sectionHeader: { display:'flex', alignItems:'center', gap:10, marginBottom:10, flexWrap:'wrap' },
+  sectionNum: (c) => ({ width:28, height:28, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, background:c, color:'#fff', boxShadow:`0 3px 10px ${c}55` }),
+  sectionBadge: (c) => ({ fontSize:10.5, fontWeight:700, padding:'3px 9px', borderRadius:20, background:`${c}18`, color:c, textTransform:'uppercase', letterSpacing:'0.4px', flexShrink:0 }),
+  sectionTitle: { fontSize:14.5, fontWeight:700, color:'var(--p-fg)' },
+  sectionBox: { borderRadius:'var(--p-radius-sm)', border:'1px solid var(--p-border)', overflow:'hidden', background:'var(--p-bg-card)' },
+  docOpenBtn: { marginLeft:'auto', display:'inline-flex', alignItems:'center', gap:6, padding:'6px 13px', borderRadius:980, border:'1px solid var(--p-border)', background:'var(--p-bg-card)', color:'var(--p-fg-mid)', fontSize:12, fontWeight:600, cursor:'pointer', textDecoration:'none', flexShrink:0 },
   videoFrame: { width:'100%', aspectRatio:'16/9', border:'none', display:'block' },
   textContent: { padding:'14px 16px', fontSize:14, color:'var(--p-fg)', lineHeight:1.7 },
   successBanner: { display:'flex', alignItems:'center', gap:10, background:'rgba(48,209,88,0.08)', border:'1px solid rgba(48,209,88,0.2)', borderRadius:'var(--p-radius-sm)', padding:'13px 16px', marginBottom:16, fontSize:14, fontWeight:600, color:'var(--p-green)' },
@@ -462,6 +473,7 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
   const [niveauxWithQCM, setNiveauxWithQCM] = useState(new Set());
   const [submitting, setSubmitting]         = useState(false); // garde anti double-soumission
   const [submitError, setSubmitError]       = useState('');
+  const contentRefs = useRef({}); // refs des sections pour le scroll depuis le sommaire
   const eleveId = getEleveId();
 
   const loadData = useCallback(async () => {
@@ -765,48 +777,80 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
                 Aucun contenu disponible pour ce niveau.
               </div>
             )}
-            {contenus.map(c => (
-              <div key={c.id} style={NS.contentItem}>
-                {c.type !== 'pdf' && (
-                  <div style={NS.contentItemHeader}>
-                    <span style={NS.contentTypeBadge(TYPE_COLORS[c.type] || '#aaa')}>{TYPE_LABELS[c.type] || c.type}</span>
-                    <span style={NS.contentItemTitle}>{c.titre}</span>
-                  </div>
-                )}
+            {/* Sommaire — visible dès qu'il y a au moins 2 contenus */}
+            {contenus.length > 1 && (
+              <div style={NS.toc}>
+                <div style={NS.tocTitle}>📋 Dans cette leçon</div>
+                {contenus.map((c, i) => {
+                  const color = TYPE_COLORS[c.type] || '#aaa';
+                  return (
+                    <button key={c.id} style={NS.tocItem}
+                      onClick={() => contentRefs.current[c.id]?.scrollIntoView({ behavior:'smooth', block:'start' })}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(127,127,127,0.07)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                      <span style={NS.tocNum(color)}>{i + 1}</span>
+                      <span style={{ flexShrink:0 }}>{TYPE_ICON[c.type] || '•'}</span>
+                      <span style={NS.tocLabel}>{c.titre || TYPE_NAME[c.type] || 'Contenu'}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {contenus.map((c, i) => {
+              const color = TYPE_COLORS[c.type] || '#aaa';
+              const isDoc = c.type === 'pdf' || c.type === 'word' || c.type === 'ppt';
+              return (
+              <div key={c.id} ref={el => { contentRefs.current[c.id] = el; }} style={NS.sectionWrap}>
+                <div style={NS.sectionHeader}>
+                  <span style={NS.sectionNum(color)}>{i + 1}</span>
+                  <span style={NS.sectionBadge(color)}>{TYPE_ICON[c.type] || ''} {TYPE_NAME[c.type] || c.type}</span>
+                  {c.titre && <span style={NS.sectionTitle}>{c.titre}</span>}
+                  {isDoc && (
+                    <a href={c.contenu} target="_blank" rel="noreferrer" style={NS.docOpenBtn}>
+                      ⤢ Ouvrir
+                    </a>
+                  )}
+                </div>
+
                 {c.type === 'video' && getYouTubeId(c.contenu) && (
-                  <iframe style={NS.videoFrame}
-                    src={`https://www.youtube.com/embed/${getYouTubeId(c.contenu)}`}
-                    title={c.titre} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                  <div style={NS.sectionBox}>
+                    <iframe style={NS.videoFrame}
+                      src={`https://www.youtube.com/embed/${getYouTubeId(c.contenu)}`}
+                      title={c.titre} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                  </div>
                 )}
                 {c.type === 'pdf' && (
-                  <div style={{ padding:'14px' }}>
-                    <a href={c.contenu} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderRadius:'var(--p-radius-sm)', background:'rgba(10,132,255,0.06)', border:'1px solid rgba(10,132,255,0.18)', textDecoration:'none', gap:12 }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                        <span style={{ fontSize:30, flexShrink:0 }}>📄</span>
-                        <div>
-                          <div style={{ fontSize:14, fontWeight:600, color:'var(--p-fg)' }}>{c.titre}</div>
-                          <div style={{ fontSize:12, color:'var(--p-fg-mid)', marginTop:2 }}>Appuyer pour ouvrir le document</div>
-                        </div>
+                  <a href={c.contenu} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 18px', borderRadius:'var(--p-radius-sm)', background:'rgba(10,132,255,0.06)', border:'1px solid rgba(10,132,255,0.18)', textDecoration:'none', gap:12 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                      <span style={{ fontSize:30, flexShrink:0 }}>📄</span>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:600, color:'var(--p-fg)' }}>{c.titre || 'Document PDF'}</div>
+                        <div style={{ fontSize:12, color:'var(--p-fg-mid)', marginTop:2 }}>Appuyer pour ouvrir le document</div>
                       </div>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--p-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                      </svg>
-                    </a>
-                  </div>
+                    </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--p-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}>
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                  </a>
                 )}
                 {c.type === 'texte' && (
-                  <div className="portail-rich-text" style={NS.textContent}
-                    {...(c.contenu?.startsWith('<')
-                      ? { dangerouslySetInnerHTML: { __html: DOMPurify.sanitize(c.contenu) } }
-                      : { children: c.contenu }
-                    )} />
+                  <div style={NS.sectionBox}>
+                    <div className="portail-rich-text" style={NS.textContent}
+                      {...(c.contenu?.startsWith('<')
+                        ? { dangerouslySetInnerHTML: { __html: DOMPurify.sanitize(c.contenu) } }
+                        : { children: c.contenu }
+                      )} />
+                  </div>
                 )}
                 {(c.type === 'word' || c.type === 'ppt') && (
-                  <iframe
-                    src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(c.contenu)}`}
-                    style={{ width:'100%', border:'none', ...(c.type === 'ppt' ? { aspectRatio:'16/9' } : { height:'600px' }) }}
-                    title={c.titre} allowFullScreen />
+                  <div style={NS.sectionBox}>
+                    <iframe
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(c.contenu)}`}
+                      style={{ width:'100%', border:'none', display:'block', ...(c.type === 'ppt' ? { aspectRatio:'16/9' } : { height:'600px' }) }}
+                      title={c.titre} allowFullScreen />
+                  </div>
                 )}
                 {c.type === 'genially' && isValidGeniallyUrl(c.contenu) && (
                   <div style={{ position:'relative', width:'100%', paddingBottom:'56.25%' }}>
@@ -821,7 +865,8 @@ function NiveauxView({ fetchId, byThematique, byLecon, stepperTitle, onBack }) {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
 
             {/* Bandeau succès */}
             {niveauxWithQCM.has(selNiveau.id) && isPassed(selNiveau.id) && (
