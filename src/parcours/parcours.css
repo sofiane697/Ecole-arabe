@@ -14,10 +14,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: center;       /* accueil : bloc centré verticalement */
   overflow: hidden;
   background: var(--bg);
 }
+/* Sous-vues (après avoir cliqué un sticker) : bloc remonté près de la navbar */
+.parcours.is-deep { justify-content: flex-start; }
+.parcours.is-deep .parcours-inner { padding-top: 1.2rem; }
 
 /* Halo doré de fond (ADN du hero actuel) */
 .parcours-glow {
@@ -127,16 +130,40 @@
   text-align: center;
   gap: 0.9rem;
   padding: 2.6rem 1.8rem;
-  background: var(--bg-card);
+  background: linear-gradient(180deg, #ffffff 0%, #fcfaf5 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 30px -14px rgba(31, 29, 26, 0.20),
+    0 3px 10px -6px rgba(31, 29, 26, 0.10);
+  transition: box-shadow .45s var(--ease-out), border-color .45s var(--ease-out);
   will-change: transform;
+}
+/* Liseré doré révélé au survol */
+.sticker::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transition: width .5s var(--ease-out);
+}
+.sticker:not(.is-disabled):hover::before { width: 64%; }
+.sticker:not(.is-disabled):hover {
+  border-color: rgba(191, 138, 48, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 26px 54px -20px rgba(191, 138, 48, 0.30),
+    0 8px 20px -10px rgba(31, 29, 26, 0.14);
 }
 .sticker.is-disabled {
   cursor: not-allowed;
   opacity: 0.55;
+  box-shadow: var(--shadow-sm);
 }
 
 .sticker-ico {
@@ -149,9 +176,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gold-soft);
+  background: radial-gradient(circle at 50% 32%, rgba(212, 162, 69, 0.20), rgba(191, 138, 48, 0.07));
+  border: 1px solid rgba(191, 138, 48, 0.18);
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.85),
+    inset 0 -3px 8px rgba(191, 138, 48, 0.14),
+    0 7px 16px -8px rgba(191, 138, 48, 0.35);
+  transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out);
+}
+.sticker:not(.is-disabled):hover .sticker-ico {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 8px rgba(191, 138, 48, 0.18),
+    0 14px 26px -8px rgba(191, 138, 48, 0.46);
 }
 .sticker-label {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
@@ -220,33 +260,52 @@
   display: flex;
   flex-direction: column;
   padding: 2.6rem 1.9rem 2rem;
-  background: var(--bg-card);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbf6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
-  box-shadow: var(--shadow-sm);
-  transition: border-color .35s var(--ease), box-shadow .35s var(--ease);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 14px 34px -18px rgba(31, 29, 26, 0.18),
+    0 3px 10px -6px rgba(31, 29, 26, 0.10);
+  transition: border-color .4s var(--ease-out), box-shadow .4s var(--ease-out);
   will-change: transform;
 }
+/* Liseré doré en haut de carte */
+.tarif-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: linear-gradient(90deg, transparent, rgba(191, 138, 48, 0.55), transparent);
+  opacity: 0;
+  transition: opacity .4s var(--ease-out);
+}
+.tarif-card:hover::before { opacity: 1; }
 .tarif-card:hover {
-  border-color: rgba(191, 138, 48, 0.32);
-  box-shadow: var(--shadow-lg);
+  border-color: rgba(191, 138, 48, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 30px 58px -22px rgba(191, 138, 48, 0.24),
+    0 8px 22px -10px rgba(31, 29, 26, 0.12);
 }
 
-/* Badge « Recommandé » */
+/* Badge « Recommandé » — plein or */
 .tarif-flag {
   position: absolute;
   top: 1.1rem; right: 1.1rem;
   font-size: 0.56rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--gold);
-  background: var(--gold-soft);
-  border: 1px solid rgba(191, 138, 48, 0.3);
-  padding: 0.3rem 0.7rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  border: none;
+  padding: 0.34rem 0.72rem;
   border-radius: 980px;
+  box-shadow: 0 6px 16px -6px rgba(191, 138, 48, 0.6);
 }
 
 /* Niveau (eyebrow) */
@@ -280,29 +339,35 @@
 }
 
 /* Prix */
-.tarif-price { display: flex; align-items: baseline; gap: 0.25rem; }
+.tarif-price-block { margin-bottom: 0.2rem; }
+.tarif-price { display: flex; align-items: flex-start; gap: 0.18rem; }
 .tarif-amount {
   font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2.8rem, 7vw, 3.6rem);
+  font-size: clamp(2.9rem, 7vw, 3.7rem);
   font-weight: 500;
   line-height: 0.9;
   color: var(--fg-title);
   letter-spacing: -0.02em;
 }
 .tarif-amount-sm {
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-style: italic;
   color: var(--fg-mid);
 }
 .tarif-unit {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
-  color: var(--fg-light);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-top: 0.35rem;       /* € surélevé en exposant élégant */
 }
 .tarif-freq {
-  font-size: 0.74rem;
-  letter-spacing: 0.02em;
-  color: var(--fg-light);
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.96rem;
+  letter-spacing: 0.01em;
+  color: var(--fg-mid);
   margin-top: 0.55rem;
 }
 
@@ -332,12 +397,23 @@
   line-height: 1.55;
   color: var(--fg-mid);
 }
-.tarif-dot {
-  width: 11px; height: 1.5px;
-  background: var(--gold);
-  margin-top: 0.62rem;
+.tarif-check {
+  position: relative;
+  width: 15px; height: 15px;
   flex-shrink: 0;
-  opacity: 0.7;
+  margin-top: 0.12rem;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  border: 1px solid rgba(191, 138, 48, 0.32);
+}
+.tarif-check::after {
+  content: '';
+  position: absolute;
+  left: 5px; top: 2.5px;
+  width: 3px; height: 6.5px;
+  border: solid var(--gold);
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
 }
 .tarif-note {
   font-size: 0.73rem;
@@ -352,6 +428,10 @@
   margin-top: auto;
   width: 100%;
   padding: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
   text-align: center;
   font-size: 0.78rem;
   font-weight: 500;
@@ -363,47 +443,155 @@
   cursor: pointer;
   transition: background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
 }
-.tarif-pick:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+.tarif-pick-arrow {
+  display: inline-block;
+  transition: transform .3s var(--ease-out);
+}
+.tarif-card:hover .tarif-pick { background: var(--gold); color: #fff; border-color: var(--gold); }
+.tarif-card:hover .tarif-pick-arrow { transform: translateX(4px); }
 
 /* Carte « recommandée » — distinction par l'or, pas par le noir */
 .tarif-card.feat {
   border-color: var(--gold);
-  background: linear-gradient(180deg, var(--gold-soft) 0%, var(--bg-card) 30%);
-  box-shadow: 0 16px 50px rgba(191, 138, 48, 0.14);
+  background: linear-gradient(180deg, rgba(212, 162, 69, 0.10) 0%, #fffdf9 26%, #ffffff 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 26px 64px -24px rgba(191, 138, 48, 0.34),
+    0 6px 18px -8px rgba(191, 138, 48, 0.18);
+}
+.tarif-card.feat::before { display: none; }
+.tarif-card.feat:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 36px 74px -24px rgba(191, 138, 48, 0.42),
+    0 10px 24px -10px rgba(191, 138, 48, 0.22);
 }
 .tarif-card.feat .tarif-pick {
   background: var(--gold);
   color: #fff;
   border-color: var(--gold);
+  box-shadow: 0 8px 18px -8px rgba(191, 138, 48, 0.5);
 }
-.tarif-card.feat .tarif-pick:hover { background: var(--gold-light); }
+.tarif-card.feat:hover .tarif-pick { background: var(--gold-light); border-color: var(--gold-light); }
 
-/* ─── Récapitulatif ─────────────────────────────────────── */
+/* ─── Récapitulatif (compte rendu) — layout « checkout » ──── */
 .recap {
-  max-width: 620px;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  max-width: 880px;
   margin-inline: auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 2.6rem;
-  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 24px 60px -28px rgba(31, 29, 26, 0.28),
+    0 6px 18px -10px rgba(31, 29, 26, 0.12);
 }
-.recap-list { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.8rem; }
-.recap-row {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid var(--border);
-}
-.recap-row:last-child { border-bottom: none; }
-.recap-key { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-light); }
-.recap-val { font-size: 0.95rem; font-weight: 600; color: var(--fg-title); text-align: right; }
-.recap-total .recap-val { color: var(--gold); font-size: 1.3rem; }
 
-.recap-form { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem; }
-.recap-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.recap-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.1rem;
+}
+
+/* ── Colonne résumé / pack ── */
+.recap-summary {
+  display: flex;
+  flex-direction: column;
+  padding: 2.4rem 2rem;
+  background: linear-gradient(180deg, rgba(212, 162, 69, 0.07) 0%, var(--bg-alt) 100%);
+  border-right: 1px solid var(--border);
+}
+.recap-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--fg-mid);
+  margin-bottom: 1.3rem;
+}
+.recap-sep { color: var(--gold); margin: 0 0.2rem; opacity: 0.7; }
+.recap-crumb:last-child { color: var(--fg-title); font-weight: 600; }
+
+.recap-formule { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.55rem; }
+.recap-formule-nom {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--fg-title);
+}
+.recap-formule-ar {
+  font-family: 'Scheherazade New', serif;
+  direction: rtl;
+  font-size: 1rem;
+  color: var(--gold);
+  opacity: 0.8;
+}
+.recap-rythme {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--fg-mid);
+  margin-top: 0.4rem;
+}
+.recap-feats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 1.3rem 0;
+}
+.recap-feats li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--fg-mid);
+}
+.recap-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1.3rem;
+  border-top: 1px solid var(--border);
+}
+.recap-total-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-light);
+}
+.recap-total-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--gold);
+}
+
+/* ── Colonne formulaire ── */
+.recap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  padding: 2.4rem 2rem;
+}
+.recap-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
 .recap-field { display: flex; flex-direction: column; gap: 0.4rem; }
 .recap-field label {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--fg-light);
 }
 .recap-field input {
@@ -416,17 +604,31 @@
   outline: none;
   transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
 }
+.recap-field input::placeholder { color: var(--fg-light); opacity: 0.65; }
 .recap-field input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
 .recap-send {
-  margin-top: 0.6rem;
+  margin-top: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   font-size: 0.9rem; font-weight: 500;
   background: var(--gold); color: #fff;
   border: none; border-radius: 980px;
   padding: 0.95rem 2rem;
   cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(191, 138, 48, 0.55);
   transition: background .25s var(--ease);
 }
 .recap-send:hover { background: var(--gold-light); }
+.recap-send-arrow { display: inline-block; transition: transform .3s var(--ease-out); }
+.recap-send:hover .recap-send-arrow { transform: translateX(4px); }
+.recap-reassure {
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--fg-light);
+  margin-top: 0.1rem;
+}
 
 /* ─── Écran de confirmation (envoi factice) ─────────────── */
 .parcours-done {
@@ -469,7 +671,9 @@
   .tarif-grid { grid-template-columns: 1fr; max-width: 440px; margin-inline: auto; }
   .tarif-titre { min-height: 0; }      /* plus besoin d'aligner quand empilé */
 
-  .recap { padding: 2rem 1.5rem; }
+  /* Récap : empilé en une colonne */
+  .recap { grid-template-columns: 1fr; max-width: 460px; }
+  .recap-summary { border-right: none; border-bottom: 1px solid var(--border); }
   .recap-row2 { grid-template-columns: 1fr; }
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
@@ -485,6 +689,5 @@
 
   .parcours-bar { margin-bottom: 1.1rem; }
   .parcours-back { padding: 0.4rem 0.85rem; font-size: 0.76rem; }
-  .recap-row { flex-wrap: wrap; gap: 0.25rem; }
-  .recap-val { text-align: left; }
+  .recap-summary, .recap-form { padding: 1.8rem 1.4rem; }
 }

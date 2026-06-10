@@ -316,6 +316,79 @@ html.dark .s-body { color: var(--fg-mid); }
 
 
 /* ═══════════════════════════════
+   À PROPOS
+═══════════════════════════════ */
+.apropos {
+  background: var(--bg-alt);
+  position: relative;
+  overflow: hidden;
+}
+.apropos-deco {
+  position: absolute;
+  right: -3rem; top: -8rem;
+  font-family: 'Scheherazade New', serif;
+  font-size: 26rem;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.022);
+  pointer-events: none;
+  user-select: none;
+}
+.apropos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 5rem;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.apropos-piliers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.pilier {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.8rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+}
+.pilier:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+.pilier-ar {
+  display: block;
+  font-family: 'Scheherazade New', serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  direction: rtl;
+  opacity: 0.85;
+}
+.pilier-titre {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--fg-title);
+  margin: 0.1rem 0 0.4rem;
+  line-height: 1.1;
+}
+.pilier-desc {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--fg-mid);
+  margin: 0;
+}
+@media (max-width: 860px) {
+  .apropos-grid { grid-template-columns: 1fr; gap: 2.8rem; }
+}
+
+
+/* ═══════════════════════════════
    CONTACT
 ═══════════════════════════════ */
 .contact {
@@ -323,6 +396,7 @@ html.dark .s-body { color: var(--fg-mid); }
   color: #f5f5f7;
   position: relative;
   overflow: hidden;
+  padding-top: 5%;
 }
 .contact-deco {
   position: absolute;

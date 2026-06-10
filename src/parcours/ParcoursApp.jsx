@@ -80,7 +80,7 @@ export default function ParcoursApp({ onAtHomeChange }) {
   const showBar = !done && (path.length > 0 || !!tarif);
 
   return (
-    <section className="parcours" id="accueil">
+    <section className={`parcours${atHome ? '' : ' is-deep'}`} id="accueil">
       <div className="parcours-glow" />
       <div className="parcours-inner" ref={stageRef}>
 

@@ -30,6 +30,7 @@ function checkRateLimit(key) {
 // Liens de navigation
 const NAV_LINKS = [
   { id: 'accueil', label: 'Accueil' },
+  { id: 'apropos', label: 'À propos' },
   { id: 'contact', label: 'Contact' },
 ];
 
@@ -50,7 +51,9 @@ export default function App() {
     document.documentElement.classList.remove('dark');
   }, []);
 
-  useScrollReveal();
+  // [atHome] : réobserve les .sr quand Contact / À propos réapparaissent
+  // après un retour à l'accueil depuis un parcours.
+  useScrollReveal([atHome]);
 
   /* — Bloquer le scroll quand le menu mobile est ouvert — */
   useEffect(() => {
@@ -65,16 +68,16 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const goContact = useCallback(() => {
+  const scrollToId = useCallback((id) => {
     setMenuOpen(false);
     if (!atHome) setHomeKey((k) => k + 1); // dans le parcours → revenir à l'accueil d'abord
     setTimeout(() => {
-      const el = document.getElementById('contact');
+      const el = document.getElementById(id);
       if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
     }, atHome ? 60 : 220);
   }, [atHome]);
 
-  const onNav = (id) => (id === 'contact' ? goContact() : goHome());
+  const onNav = (id) => (id === 'accueil' ? goHome() : scrollToId(id));
 
   /* — Formulaire contact — */
   const handleChange = (e) => setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -155,6 +158,46 @@ export default function App() {
       {/* CONTACT + FOOTER : visibles uniquement sur l'accueil (parcours = plein écran) */}
       {atHome && (
       <>
+      {/* À PROPOS */}
+      <section className="section apropos" id="apropos">
+        <div className="apropos-deco">ن</div>
+        <div className="wrap apropos-grid">
+          <div className="apropos-intro sr">
+            <p className="s-eyebrow">À propos</p>
+            <h2 className="s-title">Qui sommes-nous&nbsp;?</h2>
+            <p className="s-title-ar">من نحن</p>
+            <p className="s-body">
+              Educamoov est un institut dédié à la transmission de la langue arabe et
+              des sciences religieuses, au soutien scolaire et à l'entraide. Notre vocation :
+              accompagner chacun — enfant comme adulte — dans un cadre bienveillant,
+              structuré et exigeant.
+            </p>
+            <p className="s-body">
+              Des enseignants qualifiés, des parcours progressifs et une attention portée
+              à chaque élève, pour apprendre dans la durée et avec sens.
+            </p>
+          </div>
+
+          <ul className="apropos-piliers">
+            <li className="pilier sr d1">
+              <span className="pilier-ar">العِلم</span>
+              <h3 className="pilier-titre">Transmission</h3>
+              <p className="pilier-desc">Arabe, Coran et éducation islamique, enseignés avec rigueur et pédagogie.</p>
+            </li>
+            <li className="pilier sr d2">
+              <span className="pilier-ar">النجاح</span>
+              <h3 className="pilier-titre">Réussite</h3>
+              <p className="pilier-desc">Un soutien scolaire académique pour consolider les acquis et progresser.</p>
+            </li>
+            <li className="pilier sr d3">
+              <span className="pilier-ar">التضامن</span>
+              <h3 className="pilier-titre">Solidarité</h3>
+              <p className="pilier-desc">Un engagement social de proximité : entraide, garde d'enfants, aide aux aînés.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
       {/* CONTACT (conservé) */}
       <section className="section contact" id="contact">
         <div className="contact-deco">ع</div>
