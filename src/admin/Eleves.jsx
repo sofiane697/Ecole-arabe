@@ -697,7 +697,7 @@ export default function Eleves() {
                 }}>📋 Copier</button>
                 <button style={{ padding:'8px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }} onClick={() => {
                   const msg = encodeURIComponent(
-                    `🕌 Institut As-Safaa — Portail Élève\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/portail/login\n\n⚠️ Changez votre mot de passe à la connexion.`
+                    `🕌 Educamoov — Portail Élève\n\nBonjour ${resetResult.prenom},\n\nVotre mot de passe a été réinitialisé :\n\n👤 Identifiant : ${resetResult.identifiant}\n🔑 Nouveau mot de passe : ${resetResult.tempPassword}\n\n📱 ${window.location.origin}/portail/login\n\n⚠️ Changez votre mot de passe à la connexion.`
                   );
                   window.open(`https://wa.me/?text=${msg}`, '_blank');
                 }}>💬 WhatsApp</button>
@@ -1359,7 +1359,7 @@ export default function Eleves() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `eleves-raqib-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `eleves-educamoov-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1393,7 +1393,7 @@ export default function Eleves() {
       doc.text('FICHE ÉLÈVE', margin, 11);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text('Institut As-Safaa — ENT', margin, 18);
+      doc.text('Educamoov — ENT', margin, 18);
       const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
       doc.setFontSize(8);
       doc.text(`Généré le ${dateGen}`, pageW - margin, 18, { align: 'right' });
@@ -1649,7 +1649,7 @@ export default function Eleves() {
         doc.setFontSize(7.5);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...MID);
-        doc.text('Institut As-Safaa — Document confidentiel', margin, pageH - 4);
+        doc.text('Educamoov — Document confidentiel', margin, pageH - 4);
         doc.text(`Page ${i} / ${totalPages}`, pageW - margin, pageH - 4, { align: 'right' });
       }
 
@@ -1967,7 +1967,7 @@ function CreateEleveModal({ onClose, onCreated }) {
             </button>
             <button style={{ padding:'8px 16px', borderRadius:980, border:'none', background:'#25D366', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }} onClick={() => {
               const msg = encodeURIComponent(
-                `🕌 Institut As-Safaa — Portail Élève\n\n` +
+                `🕌 Educamoov — Portail Élève\n\n` +
                 `Bonjour ${prenom},\n\n` +
                 `Voici vos identifiants de connexion :\n\n` +
                 `👤 Identifiant : ${result.identifiant}\n` +
@@ -1999,7 +1999,7 @@ function CreateEleveModal({ onClose, onCreated }) {
                   .url { font-size: 11px; color: #666; margin-top: 12px; word-break: break-all; }
                 </style></head><body>
                 <div class="card">
-                  <h1>الصفاء — Institut As-Safaa</h1>
+                  <h1>Educamoov</h1>
                   <h2>Portail Élève</h2>
                   <div class="name">${escapeHtml(prenom)} ${escapeHtml(nom)}</div>
                   <div class="field">

@@ -116,10 +116,9 @@ export default function App() {
       {/* NAVIGATION */}
       <nav className="nav">
         <button className="logo" onClick={goHome}>
-          <img src="/aa.png" alt="Institut As-Safaa" className="logo-img" />
+          <img src="/aa.png" alt="Educamoov" className="logo-img" />
           <div className="logo-text">
-            <span className="logo-ar">الصفاء</span>
-            <span className="logo-fr">Institut As-Safaa</span>
+            <span className="logo-fr">Educamoov</span>
           </div>
         </button>
 
@@ -257,8 +256,8 @@ export default function App() {
 
       {/* FOOTER */}
       <footer className="footer">
-        <div className="footer-logo">الصفاء — Institut As-Safaa</div>
-        <span className="footer-copy">© 2025 Institut As-Safaa — Tous droits réservés</span>
+        <div className="footer-logo">Educamoov</div>
+        <span className="footer-copy">© 2026 Educamoov — Tous droits réservés</span>
         <ul className="footer-nav">
           <li><a href="#">Mentions légales</a></li>
           <li><a href="#">Confidentialité</a></li>

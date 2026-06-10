@@ -97,8 +97,7 @@ export default function AdminLogin() {
       <div className="admin-form-panel" style={S.formPanel}>
         <div ref={cardRef} style={S.card}>
           <div style={S.cardBrand}>
-            <span style={S.cardArabic}>الصفاء</span>
-            <span style={S.cardName}>Institut As-Safaa</span>
+            <span style={S.cardName}>Educamoov</span>
             <span style={S.cardBadge}>Administration</span>
           </div>
 

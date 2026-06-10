@@ -202,8 +202,7 @@ export const EyeIcon = ({ open }) => open
 export function BrandPanel({ brandRef, panelClass, title, description, features, showFeatures }) {
   return (
     <div className={panelClass} ref={brandRef} style={S.brandPanel}>
-      <span style={S.brandArabic}>الصفاء</span>
-      <span style={S.brandName}>Institut As-Safaa</span>
+      <span style={S.brandName}>Educamoov</span>
       <div style={S.brandDivider} />
       <h1 style={S.brandTitle}>{title}</h1>
       <p style={S.brandDesc}>{description}</p>

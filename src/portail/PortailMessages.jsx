@@ -403,7 +403,7 @@ export default function PortailMessages() {
                           transform:'rotate(-8deg)',
                           fontFamily:'"Playfair Display", Georgia, serif',
                         }}>
-                          As-<br/>Safaa
+                          Educa<br/>moov
                         </div>
                       </div>
                     </header>

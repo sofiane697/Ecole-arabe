@@ -8,9 +8,7 @@ import EleveAvatar from '../shared/EleveAvatar';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import { formatFoyer } from '../admin/adminUtils';
 
-// Titre affiché dans la topbar selon la route — deux langues pour le rendu
-// éditorial (français en gros + calligraphie arabe dessous, cohérent avec
-// l'identité Institut As-Safaa).
+// Titre affiché dans la topbar selon la route, cohérent avec l'identité Educamoov.
 const PAGE_TITLES = {
   '/parent':               { fr: 'Accueil',             ar: 'الرئيسية' },
   '/parent/notes':         { fr: 'Notes',               ar: 'العلامات' },
@@ -114,9 +112,8 @@ function ParentLayout() {
         <div className="portail-sidebar-brand">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img src="/logo-eleve.png" alt="" style={{ height: 44, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
-            <span className="arabic" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.4 }}>
-              <span>Institut As-Safaa</span>
-              <span style={{ textAlign: 'right' }}>الصفاء</span>
+            <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.4 }}>
+              <span>Educamoov</span>
             </span>
           </div>
           <span className="label">Portail Parent</span>

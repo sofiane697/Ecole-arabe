@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Contexte du projet
 
-**Nom :** ENT (Espace Numérique de Travail) — Institut As-Safaa
+**Nom :** ENT (Espace Numérique de Travail) — Educamoov
 **But :** Plateforme numérique pour une école d'arabe. Remplace les échanges par mail/papier entre l'administration, les enseignants, les élèves et leurs parents. Permet de gérer les cours, les notes, les absences, les devoirs, la messagerie et les inscriptions.
-**Client :** Institut As-Safaa (école d'arabe)
+**Client :** Educamoov (école d'arabe)
 **Développeur :** Sofiane (projet auto-entrepreneur)
 
 ### Déploiement
@@ -38,7 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Projet
 
-ENT (Espace Numérique de Travail) pour l'Institut As-Safaa (école d'arabe). Site vitrine + **4 portails** (admin, enseignant, élève, parent).
+ENT (Espace Numérique de Travail) pour l'Educamoov (école d'arabe). Site vitrine + **4 portails** (admin, enseignant, élève, parent).
 Stack : **React 18** (CRACO + CRA), **React Router v6**, **Tailwind CSS 3** + CSS variables, **Supabase** (REST + Storage), **DOMPurify**, **Framer Motion**.
 
 ## Commandes

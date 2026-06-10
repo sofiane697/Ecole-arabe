@@ -175,8 +175,7 @@ export default function EnseignantApp() {
           <span className="ens-logo-rosette">
             <Rosette size={140} opacity={0.08} />
           </span>
-          <span className="ens-logo-arabic">الصفاء</span>
-          <span className="ens-logo-name">Institut As-Safaa</span>
+          <span className="ens-logo-name">Educamoov</span>
           <span className="ens-logo-role">Enseignant</span>
         </div>
 
@@ -245,8 +244,8 @@ export default function EnseignantApp() {
         {/* Topbar mobile */}
         <div className="ens-topbar">
           <button className="ens-hamburger" onClick={() => setSidebarOpen(o => !o)}>☰</button>
-          <span style={{ fontFamily: 'var(--c-arabic)', fontSize: 18, color: 'var(--c-gold)' }}>
-            الصفاء
+          <span style={{ fontWeight: 700, fontSize: 18, color: 'var(--c-gold)' }}>
+            Educamoov
           </span>
         </div>
 

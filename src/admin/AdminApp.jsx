@@ -176,8 +176,7 @@ export default function AdminApp() {
       {/* ── Sidebar ── */}
       <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="admin-sidebar-brand">
-          <span className="admin-brand-logo">الصفاء</span>
-          <span className="admin-brand-name">Institut As-Safaa</span>
+          <span className="admin-brand-name">Educamoov</span>
           <span className="admin-brand-badge">Espace Administrateur</span>
         </div>
 

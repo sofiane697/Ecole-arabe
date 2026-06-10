@@ -277,9 +277,8 @@ export default function PortailApp() {
         <div className="portail-sidebar-brand">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img src="/logo-eleve.png" alt="Logo" style={{ height: 44, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
-            <span className="arabic" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.4 }}>
-              <span>Institut As-Safaa</span>
-              <span style={{ textAlign: 'right' }}>الصفاء</span>
+            <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.4 }}>
+              <span>Educamoov</span>
             </span>
           </div>
           <span className="label">Portail Élève</span>

@@ -416,7 +416,7 @@ export default function Messages() {
               <div className="msg-reader-actions">
                 <a
                   className="msg-action-primary"
-                  href={`mailto:${selected.email}?subject=Institut As-Safaa — Réponse à votre message`}
+                  href={`mailto:${selected.email}?subject=Educamoov — Réponse à votre message`}
                 >
                   <IconReply /> Répondre par email
                 </a>

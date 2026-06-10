@@ -1,1 +1,1 @@
-# Design System — Institut As-Safaa
+# Design System — Educamoov

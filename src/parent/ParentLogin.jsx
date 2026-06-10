@@ -140,8 +140,7 @@ export default function ParentLogin() {
         <div className="parent-form-panel" style={S.formPanel}>
           <div ref={cardRef} style={S.card}>
             <div style={S.cardBrand}>
-              <span style={S.cardArabic}>الصفاء</span>
-              <span style={S.cardName}>Institut As-Safaa</span>
+              <span style={S.cardName}>Educamoov</span>
               <span style={S.cardBadge}>Première connexion</span>
             </div>
 
@@ -203,8 +202,7 @@ export default function ParentLogin() {
       <div className="parent-form-panel" style={S.formPanel}>
         <div ref={cardRef} style={S.card}>
           <div style={S.cardBrand}>
-            <span style={S.cardArabic}>الصفاء</span>
-            <span style={S.cardName}>Institut As-Safaa</span>
+            <span style={S.cardName}>Educamoov</span>
             <span style={S.cardBadge}>Portail Parent</span>
           </div>
 

@@ -1,4 +1,4 @@
-# Refonte de la Landing Page — Institut As-Safaa
+# Refonte de la Landing Page — Educamoov
 
 > Document de travail. On le remplit ensemble avant de planifier et de coder.
 > Statut : 🟢 Prototype branche Adulte implémenté (2026-06-09) — suite à dérouler

@@ -70,9 +70,8 @@ export default function ParcoursApp({ onAtHomeChange }) {
     eyebrow = 'Tarifs'; title = node.label; titleAr = node.ar;
     sub = 'Choisissez la formule qui vous convient.';
   } else if (path.length === 0) {
-    eyebrow = 'Institut As-Safaa';
+    eyebrow = 'Educamoov';
     title = 'Que souhaitez-vous découvrir ?';
-    titleAr = 'الصفاء';
     sub = 'Choisissez un domaine pour commencer.';
   } else {
     eyebrow = 'Choisissez'; title = node.label; titleAr = node.ar; sub = node.desc;
