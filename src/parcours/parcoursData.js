@@ -10,7 +10,7 @@
 //
 //  Tarif (une formule) :
 //    { id, titre, niveau?, ar?, prix(number|null), prixNote?, rythme?,
-//      features?:string[], featured?, note? }
+//      features?:string[], note? }
 //
 //  Données issues de la maquette de Sofiane (niveau Adulte).
 //  Les branches Enfant / Soutien scolaire / Social restent à dérouler.
@@ -40,7 +40,6 @@ const TARIFS_ARABE = [
     ar: 'متوسط',
     prix: 149,
     rythme: '20 séances · 40 min / séance',
-    featured: true,
     features: [
       'Lecture fluide de textes simples',
       'Introduction à la grammaire arabe',
@@ -86,7 +85,6 @@ const TARIFS_CORAN = [
     titre: 'Je sais lire, je veux apprendre les règles',
     prix: 149,
     rythme: '15 séances · 40 min / séance',
-    featured: true,
     features: [
       'Apprentissage des règles de tajwid',
       'Ghunna, Idgham, Iqlab, Idhar',
@@ -135,7 +133,6 @@ const TARIFS_EDI = [
     titre: 'Fiqh — Prière',
     prix: 99,
     rythme: '15 séances · 40 min / séance',
-    featured: true,
     features: [
       'Conditions de la prière',
       'Piliers de la prière',
@@ -219,7 +216,61 @@ export const PARCOURS = {
           ar: 'الأطفال',
           ico: 'ط',
           desc: 'Formations destinées aux enfants.',
-          disabled: true, // ⏳ à dérouler plus tard
+          children: [
+            {
+              id: 'enfant-autonomie',
+              label: 'Autonomie',
+              ico: 'س',
+              desc: "L’enfant apprend en autonomie.",
+              children: [
+                {
+                  id: 'enfant-auto-coran',
+                  label: 'Coran',
+                  ar: 'القرآن الكريم',
+                  ico: 'ق',
+                  desc: 'Lecture, Tajwid et mémorisation.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-auto-edi',
+                  label: 'Éducation islamique',
+                  ar: 'التربية الإسلامية',
+                  ico: 'إ',
+                  desc: 'Modules de sciences islamiques.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-auto-arabe',
+                  label: 'Arabe',
+                  ar: 'اللغة العربية',
+                  ico: 'ع',
+                  desc: 'Apprentissage de la langue arabe.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-auto-combo',
+                  label: 'Coran + Éducation islamique',
+                  ico: 'ج',
+                  desc: 'Formule combinée Coran et éducation islamique.',
+                  children: [], // 🚧 à dérouler
+                },
+              ],
+            },
+            {
+              id: 'enfant-visio',
+              label: 'Visioconférence',
+              ico: 'ر',
+              desc: 'Cours en visioconférence.',
+              children: [], // 🚧 à dérouler
+            },
+            {
+              id: 'enfant-particulier',
+              label: 'Cours particulier',
+              ico: 'خ',
+              desc: 'Cours particuliers individuels.',
+              children: [], // 🚧 à dérouler
+            },
+          ],
         },
       ],
     },

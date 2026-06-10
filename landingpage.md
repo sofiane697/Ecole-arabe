@@ -1,7 +1,7 @@
 # Refonte de la Landing Page — Educamoov
 
 > Document de travail. On le remplit ensemble avant de planifier et de coder.
-> Statut : 🟢 Prototype branche Adulte implémenté (2026-06-09) — suite à dérouler
+> Statut : 🟢 Branche Adulte complète + structure Enfant en cours (2026-06-10) — tarifs Enfant à remplir
 
 ---
 
@@ -81,8 +81,14 @@ Enseignement religieux
 │    ├── Arabe                → écran Tarifs (différentes tarifications) → choix ajouté au pack
 │    ├── Coran                → écran Tarifs (différentes tarifications) → choix ajouté au pack
 │    └── Éducation islamique  → écran Tarifs (différentes tarifications) → choix ajouté au pack
-└── Enfant
-     └── … (à dérouler)
+└── Enfant                          ← débloqué le 2026-06-10
+     ├── Autonomie
+     │    ├── Coran                       → … (tarifs à dérouler)
+     │    ├── Éducation islamique         → … (tarifs à dérouler)
+     │    ├── Arabe                        → … (tarifs à dérouler)
+     │    └── Coran + Éducation islamique  → … (tarifs à dérouler)
+     ├── Visioconférence            → … (à dérouler)
+     └── Cours particulier          → … (à dérouler)
 ```
 
 **Écran Tarifs** : après avoir choisi une matière (Arabe / Coran / Éducation islamique), l'utilisateur voit les **tarifications** correspondantes et en sélectionne une. Ce choix (matière + formule + prix) s'ajoute au « pack ».
@@ -93,14 +99,14 @@ Enseignement religieux
 | Persona | Niveau | Prix | Rythme |
 |---|---|---|---|
 | Je pars de zéro | Débutant — Alphabet (مبتدئ) | 149 € | 20 séances · 40 min |
-| Je connais l'alphabet, je déchiffre des mots ⭐ | Intermédiaire — Lecture (متوسط) | 149 € | 20 séances · 40 min |
+| Je connais l'alphabet, je déchiffre des mots | Intermédiaire — Lecture (متوسط) | 149 € | 20 séances · 40 min |
 | Je sais lire sans bégayer | Avancé — Expression (متقدم) | 149 € | 20 séances · 40 min |
 
 **Coran** — _prérequis sur certaines formules_
 | Persona | Prix | Rythme |
 |---|---|---|
 | Je ne sais pas lire — j'apprends à lire le Coran | 149 € | 20 séances · 40 min |
-| Je sais lire, je veux apprendre les règles ⭐ | 149 € | 15 séances · 40 min |
+| Je sais lire, je veux apprendre les règles | 149 € | 15 séances · 40 min |
 | J'apprends des sourates (Juzz 'Amma, Yâsîn) | **Sur demande** _(décision : pas de prix affiché)_ | — |
 | Je veux qu'on me corrige mes sourates _(prérequis : savoir lire + tajwid)_ | 49 € | Cours particuliers · 5 séances |
 
@@ -108,12 +114,10 @@ Enseignement religieux
 | Module | Prix | Rythme |
 |---|---|---|
 | Sira | 99 € | 15 séances · 40 min |
-| Fiqh — Prière ⭐ | 99 € | 15 séances · 40 min |
+| Fiqh — Prière | 99 € | 15 séances · 40 min |
 | Les rites du pèlerinage | 99 € | 15 séances · 40 min |
 | Lavage mortuaire | 99 € | 15 séances · 40 min |
 | Zakat | 99 € | 15 séances · 40 min |
-
-⭐ = carte « recommandée » (fond sombre).
 
 ➡️ Destination finale de chaque branche : récapitulatif du « pack » (voir §2 ter).
 
@@ -173,8 +177,10 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
   - `ParcoursApp.jsx` — orchestrateur (state machine + transitions GSAP).
   - `StickerGrid.jsx`, `TarifCard.jsx`, `RecapStep.jsx`, `hoverLift.js`, `parcours.css`.
 - **Branche complète Enseignement religieux → Adulte** : Arabe / Coran / Éducation islamique → écran Tarifs (vrais tarifs de la maquette) → Récap + formulaire → envoi **factice** (pas de DB).
-- Stickers inactifs (« Bientôt ») : Enfant, Soutien scolaire, Social.
-- **Design des cartes tarifs** refait en « luxe éditorial épuré » (serif, filet doré, carte recommandée par l'or).
+- **Branche Enfant débloquée (2026-06-10)** : Enfant → Autonomie / Visioconférence / Cours particulier. Autonomie → Coran / Éducation islamique / Arabe / Coran + Éducation islamique. Tarifs encore à dérouler (grilles vides en attendant le contenu de Sofiane).
+- Stickers inactifs (« Bientôt ») : Soutien scolaire, Social.
+- **Design des cartes tarifs** refait en « luxe éditorial épuré » (serif, filet doré). **Cartes uniformisées** : badge « Recommandé » et style mis en avant supprimés (toutes identiques).
+- **Alignement carte tarif corrigé** : niveau (doré) et titre (noir) empilés verticalement (`.tarif-top` en colonne), plus de chevauchement.
 - **Accueil** = 3 stickers + section Contact en dessous ; **parcours** = plein écran `100vh` (Contact/footer masqués), corrigé pour tenir compte de la navbar.
 - **Responsive** retravaillé (paliers 1024 / 768 / 480, grilles fluides, `100svh`).
 - **Menu « Me connecter »** (`LoginMenu.jsx`) : dropdown animé GSAP vers les 4 portails (élève, enseignant, parent, admin), + version menu mobile.
@@ -189,9 +195,10 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
 
 ### ⏳ Reste à faire
 - Brancher l'envoi du « pack » côté Supabase + portail admin (aujourd'hui factice).
-- Dérouler : branche **Enfant**, pôles **Soutien scolaire** et **Social**.
+- **Remplir les tarifs de la branche Enfant** : Autonomie (Coran / Éducation islamique / Arabe / combinée) + dérouler Visioconférence et Cours particulier.
+- Dérouler les pôles **Soutien scolaire** et **Social**.
 - Nettoyages différés (transverses) : exports morts d'`animations.js`, règles `html.dark` publiques, classe `.theme-toggle`.
 
 ---
 
-_Dernière mise à jour : 2026-06-09_
+_Dernière mise à jour : 2026-06-10_

@@ -2,19 +2,18 @@ import { cardEnter, cardLeave } from './hoverLift';
 
 /**
  * Une carte de tarif (formule). Style « luxe éditorial épuré ».
- * @param {Object}   tarif   { titre, niveau?, ar?, prix|prixNote, rythme?, features?, featured?, note? }
+ * @param {Object}   tarif   { titre, niveau?, ar?, prix|prixNote, rythme?, features?, note? }
  * @param {Function} onChoose Appelé au clic sur la carte
  */
 export default function TarifCard({ tarif: t, onChoose }) {
   return (
     <button
       type="button"
-      className={`tarif-card parcours-anim ${t.featured ? 'feat' : ''}`}
+      className="tarif-card parcours-anim"
       onClick={onChoose}
       onMouseEnter={cardEnter}
       onMouseLeave={cardLeave}
     >
-      {t.featured && <span className="tarif-flag">Recommandé</span>}
       <div className="tarif-top">
         {t.niveau && (
           <span className="tarif-niveau">
