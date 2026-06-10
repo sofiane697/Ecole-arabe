@@ -69,7 +69,8 @@ export default function ParcoursApp({ onAtHomeChange }) {
   } else if (tarif) {
     eyebrow = 'Récapitulatif'; title = 'Votre demande';
   } else if (atDevis) {
-    eyebrow = 'Cours particulier'; title = 'Devis personnalisé';
+    eyebrow = path.length > 1 ? path[path.length - 2].label : 'Devis';
+    title = node.label;
     sub = 'Dites-nous votre besoin, nous revenons vers vous sous 24h.';
   } else if (atTarifs) {
     eyebrow = 'Tarifs'; title = node.label; titleAr = node.ar;

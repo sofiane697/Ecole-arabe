@@ -1,7 +1,7 @@
 # Refonte de la Landing Page — Educamoov
 
 > Document de travail. On le remplit ensemble avant de planifier et de coder.
-> Statut : 🟢 Branche Adulte complète + structure Enfant en cours (2026-06-10) — tarifs Enfant à remplir
+> Statut : 🟢 Branches Adulte + Enfant complètes (2026-06-10) — placeholders « cf programme Nx » à remplacer
 
 ---
 
@@ -81,18 +81,18 @@ Enseignement religieux
 │    ├── Arabe                → écran Tarifs (différentes tarifications) → choix ajouté au pack
 │    ├── Coran                → écran Tarifs (différentes tarifications) → choix ajouté au pack
 │    └── Éducation islamique  → écran Tarifs (différentes tarifications) → choix ajouté au pack
-└── Enfant                          ← débloqué le 2026-06-10
-     ├── Autonomie
-     │    ├── Coran                       → … (tarifs à dérouler)
-     │    ├── Éducation islamique         → … (tarifs à dérouler)
-     │    ├── Arabe                        → … (tarifs à dérouler)
-     │    └── Coran & Éducation islamique  → … (tarifs à dérouler)
-     ├── Visioconférence
-     │    ├── Coran                       → … (tarifs à dérouler)
-     │    ├── Éducation islamique         → … (tarifs à dérouler)
-     │    ├── Arabe                        → … (tarifs à dérouler)
-     │    ├── Coran & Éducation islamique  → … (tarifs à dérouler)
-     │    └── Accompagnement spécifique    → … (tarifs à dérouler)
+└── Enfant                          ← débloqué + tarifs remplis le 2026-06-10
+     ├── Autonomie                       (40 min/sem · jusqu'à fin du module)
+     │    ├── Coran                       → 90 € · 3 personas
+     │    ├── Éducation islamique         → 90 € · Module 1/2/3 (cf programme N1)
+     │    ├── Arabe                        → 90 € · Module 1/2/3 (Débutant/Inter/Avancé)
+     │    └── Coran & Éducation islamique  → 149 € · Module 1/2/3 · 2×40 min/sem
+     ├── Visioconférence                 (tarifs majorés vs Autonomie)
+     │    ├── Coran                       → 190 € · 3 personas
+     │    ├── Éducation islamique         → 190 € · Module 1/2/3
+     │    ├── Arabe                        → 190 € · Module 1/2/3
+     │    ├── Coran & Éducation islamique  → 290 € · Module 1/2/3 · 2×40 min/sem
+     │    └── Accompagnement spécifique    → formulaire de devis sur mesure (DevisStep)
      └── Cours particulier
           └── Devis personnalisé          → formulaire de devis sur mesure (DevisStep)
 ```
@@ -184,11 +184,11 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
   - `ParcoursApp.jsx` — orchestrateur (state machine + transitions GSAP).
   - `StickerGrid.jsx`, `TarifCard.jsx`, `RecapStep.jsx`, `hoverLift.js`, `parcours.css`.
 - **Branche complète Enseignement religieux → Adulte** : Arabe / Coran / Éducation islamique → écran Tarifs (vrais tarifs de la maquette) → Récap + formulaire → envoi **factice** (pas de DB).
-- **Branche Enfant débloquée (2026-06-10)** : Enfant → Autonomie / Visioconférence / Cours particulier.
-  - **Autonomie** → Coran / Éducation islamique / Arabe / Coran & Éducation islamique.
-  - **Visioconférence** → mêmes que Autonomie + **Accompagnement spécifique**.
-  - **Cours particulier** → **Devis personnalisé** = nouveau type d'étape `devis` → formulaire sur mesure (`DevisStep.jsx` : prénom, nom, téléphone, email, sujet, besoin) → envoi factice.
-  - Les grilles de tarifs (Coran / EDI / Arabe / combinée, pour Autonomie & Visio) restent **vides** en attendant le contenu de Sofiane.
+- **Branche Enfant complète (2026-06-10)** : Enfant → Autonomie / Visioconférence / Cours particulier.
+  - **Autonomie** (90 € / 149 € combinée) & **Visioconférence** (190 € / 290 € combinée) : Coran / Éducation islamique / Arabe / Coran & Éducation islamique → tarifs réels remplis.
+  - **Accompagnement spécifique** (Visio) & **Devis personnalisé** (Cours particulier) → nouveau type d'étape `devis` → formulaire sur mesure (`DevisStep.jsx` : prénom, nom, téléphone, email, sujet, besoin) → envoi factice. En-tête et intitulé du devis générés dynamiquement selon le sticker.
+  - ⚠️ Notes « cf programme Nx » (EDI + combinée) = **placeholders** des maquettes, à remplacer par les vrais points.
+- **Réglages visuels parcours** : barre Retour/fil d'Ariane décalée à gauche (`margin-left: -3rem`, neutralisée ≤768px) ; bloc des sous-vues remonté (`is-deep` padding-top 0.4rem).
 - Stickers inactifs (« Bientôt ») : Soutien scolaire, Social.
 - **Design des cartes tarifs** refait en « luxe éditorial épuré » (serif, filet doré). **Cartes uniformisées** : badge « Recommandé » et style mis en avant supprimés (toutes identiques).
 - **Alignement carte tarif corrigé** : niveau (doré) et titre (noir) empilés verticalement (`.tarif-top` en colonne), plus de chevauchement.
@@ -206,7 +206,7 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
 
 ### ⏳ Reste à faire
 - Brancher l'envoi du « pack » côté Supabase + portail admin (aujourd'hui factice).
-- **Remplir les tarifs de la branche Enfant** : grilles de Autonomie & Visioconférence (Coran / Éducation islamique / Arabe / combinée + Accompagnement spécifique). Structure faite, contenus vides.
+- **Remplacer les placeholders « cf programme Nx »** (Enfant · EDI & combinée) par les vrais points de programme.
 - Dérouler les pôles **Soutien scolaire** et **Social**.
 - Nettoyages différés (transverses) : exports morts d'`animations.js`, règles `html.dark` publiques, classe `.theme-toggle`.
 

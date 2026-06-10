@@ -164,6 +164,264 @@ const TARIFS_EDI = [
   },
 ];
 
+// ─── Enfant · Autonomie · Arabe ───
+const TARIFS_ARABE_ENFANT = [
+  {
+    id: 'enf-ar-mod1',
+    niveau: 'Module 1',
+    titre: 'Débutant — Alphabet',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [
+      'Apprentissage de l’alphabet arabe',
+      'Lecture des lettres isolées & liées',
+      'Premiers mots du vocabulaire courant',
+      'Exercices écrits & oraux',
+      'Support de cours inclus',
+    ],
+  },
+  {
+    id: 'enf-ar-mod2',
+    niveau: 'Module 2',
+    titre: 'Intermédiaire — Lecture',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [
+      'Lecture fluide de textes simples',
+      'Introduction à la grammaire arabe',
+      'Conjugaison des verbes courants',
+      'Expression orale guidée',
+      'Accès à la plateforme en ligne',
+    ],
+  },
+  {
+    id: 'enf-ar-mod3',
+    niveau: 'Module 3',
+    titre: 'Avancé — Expression',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [
+      'Grammaire & syntaxe approfondies',
+      'Rédaction en arabe classique',
+      'Littérature & textes authentiques',
+      'Expression orale avancée',
+      'Suivi personnalisé mensuel',
+    ],
+  },
+];
+
+// ─── Enfant · Autonomie · Éducation islamique ───
+// ⚠️ « cf programme N1 » = placeholder de la maquette, à remplacer par les vrais points.
+const TARIFS_EDI_ENFANT = [
+  {
+    id: 'enf-edi-mod1',
+    titre: 'Module 1',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+  {
+    id: 'enf-edi-mod2',
+    titre: 'Module 2',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+  {
+    id: 'enf-edi-mod3',
+    titre: 'Module 3',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+];
+
+// ─── Enfant · Autonomie · Coran ───
+const TARIFS_CORAN_ENFANT = [
+  {
+    id: 'enf-co-lire',
+    titre: 'J’apprends à lire le Coran — je ne sais pas lire',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+  },
+  {
+    id: 'enf-co-regles',
+    titre: 'Je sais lire, je veux apprendre les règles',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+  },
+  {
+    id: 'enf-co-correction',
+    titre: 'Je veux que l’on me corrige mes sourates',
+    prix: 90,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+  },
+];
+
+// ─── Enfant · Autonomie · Coran & Éducation islamique (combinée) ───
+// ⚠️ « cf programme Nx » = placeholder de la maquette, à remplacer par les vrais points.
+const TARIFS_COMBO_ENFANT = [
+  {
+    id: 'enf-combo-mod1',
+    titre: 'Module 1',
+    prix: 149,
+    rythme: '2 × 40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+  {
+    id: 'enf-combo-mod2',
+    titre: 'Module 2',
+    prix: 149,
+    rythme: '2 × 40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N2',
+  },
+  {
+    id: 'enf-combo-mod3',
+    titre: 'Module 3',
+    prix: 149,
+    rythme: '2 × 40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N3',
+  },
+];
+
+// ─── Enfant · Visioconférence · Arabe (mêmes contenus que l'Autonomie, prix 190 €) ───
+const TARIFS_ARABE_ENFANT_VISIO = [
+  {
+    id: 'enf-ar-visio-mod1',
+    niveau: 'Module 1',
+    titre: 'Débutant — Alphabet',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [
+      'Apprentissage de l’alphabet arabe',
+      'Lecture des lettres isolées & liées',
+      'Premiers mots du vocabulaire courant',
+      'Exercices écrits & oraux',
+      'Support de cours inclus',
+    ],
+  },
+  {
+    id: 'enf-ar-visio-mod2',
+    niveau: 'Module 2',
+    titre: 'Intermédiaire — Lecture',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [
+      'Lecture fluide de textes simples',
+      'Introduction à la grammaire arabe',
+      'Conjugaison des verbes courants',
+      'Expression orale guidée',
+      'Accès à la plateforme en ligne',
+    ],
+  },
+  {
+    id: 'enf-ar-visio-mod3',
+    niveau: 'Module 3',
+    titre: 'Avancé — Expression',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [
+      'Grammaire & syntaxe approfondies',
+      'Rédaction en arabe classique',
+      'Littérature & textes authentiques',
+      'Expression orale avancée',
+      'Suivi personnalisé mensuel',
+    ],
+  },
+];
+
+// ─── Enfant · Visioconférence · Éducation islamique (prix 190 €) ───
+// ⚠️ « cf programme N1 » = placeholder de la maquette, à remplacer par les vrais points.
+const TARIFS_EDI_ENFANT_VISIO = [
+  {
+    id: 'enf-edi-visio-mod1',
+    titre: 'Module 1',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+  {
+    id: 'enf-edi-visio-mod2',
+    titre: 'Module 2',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+  {
+    id: 'enf-edi-visio-mod3',
+    titre: 'Module 3',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+];
+
+// ─── Enfant · Visioconférence · Coran (prix 190 €) ───
+const TARIFS_CORAN_ENFANT_VISIO = [
+  {
+    id: 'enf-co-visio-lire',
+    titre: 'J’apprends à lire le Coran — je ne sais pas lire',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+  },
+  {
+    id: 'enf-co-visio-regles',
+    titre: 'Je sais lire, je veux apprendre les règles',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+  },
+  {
+    id: 'enf-co-visio-correction',
+    titre: 'Je veux que l’on me corrige mes sourates',
+    prix: 190,
+    rythme: '40 min / semaine · jusqu’à fin du module',
+    features: [],
+  },
+];
+
+// ─── Enfant · Visioconférence · Coran & Éducation islamique (prix 290 €) ───
+// ⚠️ « cf programme Nx » = placeholder de la maquette, à remplacer par les vrais points.
+const TARIFS_COMBO_ENFANT_VISIO = [
+  {
+    id: 'enf-combo-visio-mod1',
+    titre: 'Module 1',
+    prix: 290,
+    rythme: '2 × 40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N1',
+  },
+  {
+    id: 'enf-combo-visio-mod2',
+    titre: 'Module 2',
+    prix: 290,
+    rythme: '2 × 40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N2',
+  },
+  {
+    id: 'enf-combo-visio-mod3',
+    titre: 'Module 3',
+    prix: 290,
+    rythme: '2 × 40 min / semaine · jusqu’à fin du module',
+    features: [],
+    note: 'cf programme N3',
+  },
+];
+
 export const PARCOURS = {
   id: 'root',
   children: [
@@ -230,7 +488,7 @@ export const PARCOURS = {
                   ar: 'القرآن الكريم',
                   ico: 'ق',
                   desc: 'Lecture, Tajwid et mémorisation.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_CORAN_ENFANT,
                 },
                 {
                   id: 'enfant-auto-edi',
@@ -238,7 +496,7 @@ export const PARCOURS = {
                   ar: 'التربية الإسلامية',
                   ico: 'إ',
                   desc: 'Modules de sciences islamiques.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_EDI_ENFANT,
                 },
                 {
                   id: 'enfant-auto-arabe',
@@ -246,14 +504,14 @@ export const PARCOURS = {
                   ar: 'اللغة العربية',
                   ico: 'ع',
                   desc: 'Apprentissage de la langue arabe.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_ARABE_ENFANT,
                 },
                 {
                   id: 'enfant-auto-combo',
                   label: 'Coran & Éducation islamique',
                   ico: 'ج',
                   desc: 'Formule combinée Coran et éducation islamique.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_COMBO_ENFANT,
                 },
               ],
             },
@@ -269,7 +527,7 @@ export const PARCOURS = {
                   ar: 'القرآن الكريم',
                   ico: 'ق',
                   desc: 'Lecture, Tajwid et mémorisation.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_CORAN_ENFANT_VISIO,
                 },
                 {
                   id: 'enfant-visio-edi',
@@ -277,7 +535,7 @@ export const PARCOURS = {
                   ar: 'التربية الإسلامية',
                   ico: 'إ',
                   desc: 'Modules de sciences islamiques.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_EDI_ENFANT_VISIO,
                 },
                 {
                   id: 'enfant-visio-arabe',
@@ -285,21 +543,21 @@ export const PARCOURS = {
                   ar: 'اللغة العربية',
                   ico: 'ع',
                   desc: 'Apprentissage de la langue arabe.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_ARABE_ENFANT_VISIO,
                 },
                 {
                   id: 'enfant-visio-combo',
                   label: 'Coran & Éducation islamique',
                   ico: 'ج',
                   desc: 'Formule combinée Coran et éducation islamique.',
-                  children: [], // 🚧 à dérouler
+                  tarifs: TARIFS_COMBO_ENFANT_VISIO,
                 },
                 {
                   id: 'enfant-visio-accompagnement',
                   label: 'Accompagnement spécifique',
                   ico: 'ص',
                   desc: 'Accompagnement adapté aux besoins de l’enfant.',
-                  children: [], // 🚧 à dérouler
+                  devis: true, // ⇒ sur devis : mène au formulaire DevisStep
                 },
               ],
             },

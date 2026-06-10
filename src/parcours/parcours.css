@@ -20,7 +20,7 @@
 }
 /* Sous-vues (après avoir cliqué un sticker) : bloc remonté près de la navbar */
 .parcours.is-deep { justify-content: flex-start; }
-.parcours.is-deep .parcours-inner { padding-top: 1.2rem; }
+.parcours.is-deep .parcours-inner { padding-top: 0.4rem; }
 
 /* Halo doré de fond (ADN du hero actuel) */
 .parcours-glow {
@@ -49,6 +49,7 @@
   gap: 0.7rem 1rem;
   min-height: 2.2rem;
   margin-bottom: 1.6rem;
+  margin-left: -3rem; /* déborde le padding de .parcours-inner pour coller plus à gauche */
 }
 .parcours-back {
   display: inline-flex;
@@ -637,6 +638,7 @@
 @media (max-width: 768px) {
   .parcours-inner { padding: 2rem 1.2rem 3rem; }
   .parcours-head { margin-bottom: 2rem; }
+  .parcours-bar { margin-left: 0; }
 
   /* Une seule colonne, centrée */
   .sticker-grid,
@@ -661,7 +663,7 @@
 
   .tarif-card { padding: 2.1rem 1.5rem 1.7rem; }
 
-  .parcours-bar { margin-bottom: 1.1rem; }
+  .parcours-bar { margin-bottom: 1.1rem; margin-left: 0; }
   .parcours-back { padding: 0.4rem 0.85rem; font-size: 0.76rem; }
   .recap-summary, .recap-form { padding: 1.8rem 1.4rem; }
 }

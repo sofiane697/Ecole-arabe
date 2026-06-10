@@ -19,6 +19,9 @@ export default function DevisStep({ path, onSent }) {
   });
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
+  // Intitulé = dernier nœud du parcours (ex. « Devis personnalisé » ou « Accompagnement spécifique »)
+  const titre = path[path.length - 1]?.label || 'Devis personnalisé';
+
   const submit = (e) => {
     e.preventDefault();
     const { prenom, nom, telephone, email, ...reste } = form;
@@ -46,7 +49,7 @@ export default function DevisStep({ path, onSent }) {
         </nav>
 
         <div className="recap-formule">
-          <span className="recap-formule-nom">Devis personnalisé</span>
+          <span className="recap-formule-nom">{titre}</span>
         </div>
         <p className="recap-rythme">
           Chaque accompagnement est unique : décrivez votre besoin, nous vous
