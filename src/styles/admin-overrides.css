@@ -141,24 +141,6 @@
 .admin-root.admin-light .badge-nonlu    { background: rgba(212,56,56,0.08);   color: var(--a-red);    border-color: rgba(212,56,56,0.18); }
 .admin-root.admin-light .badge-lu       { background: rgba(26,154,82,0.08);   color: var(--a-green);  border-color: rgba(26,154,82,0.18); }
 
-/* ─── Toggle thème admin ─── */
-.admin-theme-toggle {
-  background: rgba(var(--a-gold-rgb),0.1);
-  border: none;
-  border-radius: 50%;
-  width: 2.2rem; height: 2.2rem;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  color: var(--a-gold);
-  font-size: 0.95rem;
-  transition: all 0.3s var(--a-ease);
-  flex-shrink: 0;
-}
-.admin-theme-toggle:hover {
-  background: var(--a-gold);
-  color: #fff;
-  transform: scale(1.08);
-}
 .admin-topbar-right {
   display: flex;
   align-items: center;
@@ -617,10 +599,6 @@
   }
   .admin-login-split .admin-login-card {
     padding: 2.5rem 1.8rem;
-  }
-  .admin-theme-toggle {
-    top: 1rem !important;
-    right: 1rem !important;
   }
 }
 

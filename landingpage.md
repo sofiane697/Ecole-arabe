@@ -92,7 +92,8 @@ Enseignement religieux
      │    ├── Éducation islamique         → 190 € · Module 1/2/3
      │    ├── Arabe                        → 190 € · Module 1/2/3
      │    ├── Coran & Éducation islamique  → 290 € · Module 1/2/3 · 2×40 min/sem
-     │    └── Accompagnement spécifique    → formulaire de devis sur mesure (DevisStep)
+     │    └── Accompagnement spécifique    → 7 stickers (Prière et ablution, Sira, Mon Seigneur,
+     │                                        Adam, Nouh, Souleyman, Ibrahim) — désactivés, suite à venir
      └── Cours particulier
           └── Devis personnalisé          → formulaire de devis sur mesure (DevisStep)
 ```
@@ -203,12 +204,13 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
 - Keyframes orphelins supprimés.
 - **Palettes de couleurs supprimées** (les 6 thèmes + `site-themes.css`) → palette de base uniquement.
 - **Mode sombre supprimé** de la landing (CSS `html.dark` laissé intact car partagé par les 4 portails).
+- **Mode sombre supprimé des 4 portails** (admin, enseignant, élève, parent) : states `darkMode`, effets `localStorage` (`*_theme`) et boutons toggle ☀/☾ retirés → mode clair forcé en dur. CSS des toggles supprimé. Styles « dark » de base laissés **inertes** (ils portent la structure ; purge à faire en tâche dédiée).
 
 ### ⏳ Reste à faire
 - Brancher l'envoi du « pack » côté Supabase + portail admin (aujourd'hui factice).
 - **Remplacer les placeholders « cf programme Nx »** (Enfant · EDI & combinée) par les vrais points de programme.
 - Dérouler les pôles **Soutien scolaire** et **Social**.
-- Nettoyages différés (transverses) : exports morts d'`animations.js`, règles `html.dark` publiques, classe `.theme-toggle`.
+- Nettoyages différés (transverses) : exports morts d'`animations.js`, règles `html.dark` publiques, purge des styles « dark » de base inertes des 4 portails.
 
 ---
 

@@ -266,19 +266,6 @@
 .portail-topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .portail-topbar-date { font-family: var(--p-font-mono); font-size: 0.75rem; color: var(--p-fg-light); white-space: nowrap; }
 
-.portail-theme-toggle {
-  background: var(--p-bg-card);
-  border: 1px solid var(--p-border);
-  color: var(--p-fg-mid);
-  border-radius: 50%;
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  font-size: 15px;
-  transition: all .2s;
-}
-.portail-theme-toggle:hover { color: var(--p-gold); border-color: var(--p-gold); }
-
 /* ─── Content ─── */
 .portail-content {
   padding: 40px 40px;

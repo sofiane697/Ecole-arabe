@@ -556,8 +556,18 @@ export const PARCOURS = {
                   id: 'enfant-visio-accompagnement',
                   label: 'Accompagnement spécifique',
                   ico: 'ص',
-                  desc: 'Accompagnement adapté aux besoins de l’enfant.',
-                  devis: true, // ⇒ sur devis : mène au formulaire DevisStep
+                  desc: 'Thématiques spécifiques à choisir.',
+                  // Stickers désactivés pour l'instant (pas de suite / tarifs à venir).
+                  // Rythmes prévus (maquette) : à brancher plus tard.
+                  children: [
+                    { id: 'enfant-visio-acc-priere', label: 'Prière et ablution', ico: 'ص', disabled: true }, // 30 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-sira', label: 'Sira', ico: 'س', disabled: true }, // 30 min/sem · 10 séances
+                    { id: 'enfant-visio-acc-seigneur', label: 'Mon Seigneur', ico: 'ر', disabled: true }, // 30 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-adam', label: 'Adam', ico: 'أ', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-nouh', label: 'Nouh', ico: 'ن', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-souleyman', label: 'Souleyman', ico: 'ل', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-ibrahim', label: 'Ibrahim', ico: 'ب', disabled: true }, // 20 min/sem · 5 séances
+                  ],
                 },
               ],
             },

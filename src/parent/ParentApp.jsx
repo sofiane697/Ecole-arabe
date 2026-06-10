@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { logoutParent, getParentUser } from './supabaseParent';
 import { ParentProvider, useParentCtx } from './ParentContext';
@@ -69,21 +69,11 @@ function ParentLayout() {
   const location = useLocation();
   const outletRef = usePageTransition(location.pathname);
   const { parent, enfants, loading } = useParentCtx();
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('parent_theme');
-    return saved ? saved === 'dark' : false;
-  });
-
+  // Mode clair uniquement (le mode sombre a été retiré).
   useEffect(() => {
-    document.body.style.background = darkMode
-      ? '#000'
-      : 'linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%)';
+    document.body.style.background = 'linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%)';
     return () => { document.body.style.background = ''; };
-  }, [darkMode]);
-
-  useEffect(() => {
-    localStorage.setItem('parent_theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
+  }, []);
 
   useEffect(() => {
     if (!parent?.session_token) navigate('/parent/login');
@@ -106,7 +96,7 @@ function ParentLayout() {
     .filter(Boolean).join('').toUpperCase() || 'P';
 
   return (
-    <div className={`portail-root portail-layout${darkMode ? '' : ' portail-light'}`}>
+    <div className="portail-root portail-layout portail-light">
       {/* Sidebar */}
       <aside className="portail-sidebar">
         <div className="portail-sidebar-brand">
@@ -171,14 +161,6 @@ function ParentLayout() {
             <EnfantSelector />
           </div>
           <div className="portail-topbar-right">
-            <button
-              type="button"
-              className="portail-theme-toggle"
-              onClick={() => setDarkMode(d => !d)}
-              aria-label={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
-            >
-              {darkMode ? '☀' : '☾'}
-            </button>
             <span className="portail-topbar-date">{today}</span>
           </div>
         </header>

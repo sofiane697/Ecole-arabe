@@ -129,10 +129,6 @@ export default function PortailApp() {
   const navigate  = useNavigate();
   const location  = useLocation();
   const outletRef = usePageTransition(location.pathname);
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('portail_theme');
-    return saved ? saved === 'dark' : false;
-  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [newDevoirsCount, setNewDevoirsCount] = useState(0);
@@ -141,14 +137,11 @@ export default function PortailApp() {
   const [photoInfo, setPhotoInfo] = useState(null);
   const classeIdRef = useRef(null);
 
+  // Mode clair uniquement (le mode sombre a été retiré).
   useEffect(() => {
-    document.body.style.background = darkMode ? '#000' : 'linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%)';
+    document.body.style.background = 'linear-gradient(160deg, #ffffff 0%, #e4e8ed 100%)';
     return () => { document.body.style.background = ''; };
-  }, [darkMode]);
-
-  useEffect(() => {
-    localStorage.setItem('portail_theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
+  }, []);
 
   // Garde auth (vérification côté serveur)
   useEffect(() => {
@@ -254,7 +247,7 @@ export default function PortailApp() {
   });
 
   return (
-    <div className={`portail-root portail-layout${darkMode ? '' : ' portail-light'}`}>
+    <div className="portail-root portail-layout portail-light">
       {/* Lettres arabes de fond */}
       <div className="portail-bg-letters" aria-hidden="true">
         {BG_LETTERS.map((l, i) => (
@@ -415,9 +408,6 @@ export default function PortailApp() {
             <TopbarFunTitle key={currentTitle} title={currentTitle} emoji={getPageEmoji(location.pathname)} />
           </div>
           <div className="portail-topbar-right">
-            <button className="portail-theme-toggle" onClick={() => setDarkMode(d => !d)}>
-              {darkMode ? '☀' : '☾'}
-            </button>
             <span className="portail-topbar-date">{today}</span>
           </div>
         </header>
