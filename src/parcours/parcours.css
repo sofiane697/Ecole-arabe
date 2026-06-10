@@ -563,18 +563,23 @@
   font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--fg-light);
 }
-.recap-field input {
+.recap-field input,
+.recap-field textarea {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.8rem 1rem;
   font-size: 0.92rem;
+  font-family: inherit;
   color: var(--fg);
   outline: none;
   transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
 }
-.recap-field input::placeholder { color: var(--fg-light); opacity: 0.65; }
-.recap-field input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+.recap-field textarea { resize: vertical; min-height: 5.5rem; line-height: 1.5; }
+.recap-field input::placeholder,
+.recap-field textarea::placeholder { color: var(--fg-light); opacity: 0.65; }
+.recap-field input:focus,
+.recap-field textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
 .recap-send {
   margin-top: 0.4rem;
   display: inline-flex;

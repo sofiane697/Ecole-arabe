@@ -4,6 +4,7 @@ import { PARCOURS } from './parcoursData';
 import StickerGrid from './StickerGrid';
 import TarifCard from './TarifCard';
 import RecapStep from './RecapStep';
+import DevisStep from './DevisStep';
 import './parcours.css';
 
 /* ══════════════════════════════════════════════════════
@@ -21,6 +22,7 @@ export default function ParcoursApp({ onAtHomeChange }) {
   // Nœud courant : dernier du chemin, ou la racine si on est à l'accueil
   const node = path.length ? path[path.length - 1] : PARCOURS;
   const atTarifs = !!node.tarifs && !tarif && !done;
+  const atDevis = !!node.devis && !done; // feuille « devis sur mesure »
 
   // À l'accueil (racine) → on autorise les sections en dessous (Contact, footer).
   // Dès qu'on entre dans le parcours → écrans plein écran, rien en dessous.
@@ -66,6 +68,9 @@ export default function ParcoursApp({ onAtHomeChange }) {
     eyebrow = null;
   } else if (tarif) {
     eyebrow = 'Récapitulatif'; title = 'Votre demande';
+  } else if (atDevis) {
+    eyebrow = 'Cours particulier'; title = 'Devis personnalisé';
+    sub = 'Dites-nous votre besoin, nous revenons vers vous sous 24h.';
   } else if (atTarifs) {
     eyebrow = 'Tarifs'; title = node.label; titleAr = node.ar;
     sub = 'Choisissez la formule qui vous convient.';
@@ -128,6 +133,8 @@ export default function ParcoursApp({ onAtHomeChange }) {
           </div>
         ) : tarif ? (
           <RecapStep path={path} tarif={tarif} onSent={(pack) => { setDone(pack); toTop(); }} />
+        ) : atDevis ? (
+          <DevisStep path={path} onSent={(pack) => { setDone(pack); toTop(); }} />
         ) : atTarifs ? (
           <div className="tarif-wrap">
             {node.meta && <p className="tarif-meta parcours-anim">{node.meta}</p>}

@@ -5,8 +5,9 @@
 //  Ajouter un sticker = ajouter un nœud. Aucun composant à modifier.
 //
 //  Nœud de catégorie :
-//    { id, label, ar?, ico, desc?, disabled?, children?:[...], tarifs?:[...] }
-//    → un nœud "feuille" porte `tarifs` (et `meta?`, `adhesion?`).
+//    { id, label, ar?, ico, desc?, disabled?, children?:[...], tarifs?:[...], devis? }
+//    → un nœud "feuille" porte `tarifs` (et `meta?`, `adhesion?`),
+//      ou `devis: true` pour mener à un formulaire de devis sur mesure.
 //
 //  Tarif (une formule) :
 //    { id, titre, niveau?, ar?, prix(number|null), prixNote?, rythme?,
@@ -249,7 +250,7 @@ export const PARCOURS = {
                 },
                 {
                   id: 'enfant-auto-combo',
-                  label: 'Coran + Éducation islamique',
+                  label: 'Coran & Éducation islamique',
                   ico: 'ج',
                   desc: 'Formule combinée Coran et éducation islamique.',
                   children: [], // 🚧 à dérouler
@@ -261,14 +262,61 @@ export const PARCOURS = {
               label: 'Visioconférence',
               ico: 'ر',
               desc: 'Cours en visioconférence.',
-              children: [], // 🚧 à dérouler
+              children: [
+                {
+                  id: 'enfant-visio-coran',
+                  label: 'Coran',
+                  ar: 'القرآن الكريم',
+                  ico: 'ق',
+                  desc: 'Lecture, Tajwid et mémorisation.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-visio-edi',
+                  label: 'Éducation islamique',
+                  ar: 'التربية الإسلامية',
+                  ico: 'إ',
+                  desc: 'Modules de sciences islamiques.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-visio-arabe',
+                  label: 'Arabe',
+                  ar: 'اللغة العربية',
+                  ico: 'ع',
+                  desc: 'Apprentissage de la langue arabe.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-visio-combo',
+                  label: 'Coran & Éducation islamique',
+                  ico: 'ج',
+                  desc: 'Formule combinée Coran et éducation islamique.',
+                  children: [], // 🚧 à dérouler
+                },
+                {
+                  id: 'enfant-visio-accompagnement',
+                  label: 'Accompagnement spécifique',
+                  ico: 'ص',
+                  desc: 'Accompagnement adapté aux besoins de l’enfant.',
+                  children: [], // 🚧 à dérouler
+                },
+              ],
             },
             {
               id: 'enfant-particulier',
               label: 'Cours particulier',
               ico: 'خ',
               desc: 'Cours particuliers individuels.',
-              children: [], // 🚧 à dérouler
+              children: [
+                {
+                  id: 'enfant-particulier-devis',
+                  label: 'Devis personnalisé',
+                  ico: 'ط',
+                  desc: 'Décrivez votre besoin, nous vous recontactons avec une proposition.',
+                  devis: true, // ⇒ mène à un formulaire de devis (DevisStep), pas à des tarifs
+                },
+              ],
             },
           ],
         },

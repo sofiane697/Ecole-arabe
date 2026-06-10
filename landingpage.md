@@ -86,9 +86,15 @@ Enseignement religieux
      │    ├── Coran                       → … (tarifs à dérouler)
      │    ├── Éducation islamique         → … (tarifs à dérouler)
      │    ├── Arabe                        → … (tarifs à dérouler)
-     │    └── Coran + Éducation islamique  → … (tarifs à dérouler)
-     ├── Visioconférence            → … (à dérouler)
-     └── Cours particulier          → … (à dérouler)
+     │    └── Coran & Éducation islamique  → … (tarifs à dérouler)
+     ├── Visioconférence
+     │    ├── Coran                       → … (tarifs à dérouler)
+     │    ├── Éducation islamique         → … (tarifs à dérouler)
+     │    ├── Arabe                        → … (tarifs à dérouler)
+     │    ├── Coran & Éducation islamique  → … (tarifs à dérouler)
+     │    └── Accompagnement spécifique    → … (tarifs à dérouler)
+     └── Cours particulier
+          └── Devis personnalisé          → formulaire de devis sur mesure (DevisStep)
 ```
 
 **Écran Tarifs** : après avoir choisi une matière (Arabe / Coran / Éducation islamique), l'utilisateur voit les **tarifications** correspondantes et en sélectionne une. Ce choix (matière + formule + prix) s'ajoute au « pack ».
@@ -155,6 +161,7 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
 | `src/parcours/ParcoursApp.jsx` | Orchestrateur : étape courante + pile de choix + animations GSAP |
 | `src/parcours/StickerGrid.jsx` | Grille de stickers d'un niveau |
 | `src/parcours/RecapStep.jsx` | Récap + formulaire coordonnées + envoi factice |
+| `src/parcours/DevisStep.jsx` | Formulaire de devis sur mesure (feuille `devis: true`) |
 | `src/parcours/parcours.css` | Styles (réutilise les CSS variables existantes) |
 | `src/App.jsx` (réécrit) | Nav + Parcours + section Contact conservée + footer + thème |
 
@@ -177,7 +184,11 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
   - `ParcoursApp.jsx` — orchestrateur (state machine + transitions GSAP).
   - `StickerGrid.jsx`, `TarifCard.jsx`, `RecapStep.jsx`, `hoverLift.js`, `parcours.css`.
 - **Branche complète Enseignement religieux → Adulte** : Arabe / Coran / Éducation islamique → écran Tarifs (vrais tarifs de la maquette) → Récap + formulaire → envoi **factice** (pas de DB).
-- **Branche Enfant débloquée (2026-06-10)** : Enfant → Autonomie / Visioconférence / Cours particulier. Autonomie → Coran / Éducation islamique / Arabe / Coran + Éducation islamique. Tarifs encore à dérouler (grilles vides en attendant le contenu de Sofiane).
+- **Branche Enfant débloquée (2026-06-10)** : Enfant → Autonomie / Visioconférence / Cours particulier.
+  - **Autonomie** → Coran / Éducation islamique / Arabe / Coran & Éducation islamique.
+  - **Visioconférence** → mêmes que Autonomie + **Accompagnement spécifique**.
+  - **Cours particulier** → **Devis personnalisé** = nouveau type d'étape `devis` → formulaire sur mesure (`DevisStep.jsx` : prénom, nom, téléphone, email, sujet, besoin) → envoi factice.
+  - Les grilles de tarifs (Coran / EDI / Arabe / combinée, pour Autonomie & Visio) restent **vides** en attendant le contenu de Sofiane.
 - Stickers inactifs (« Bientôt ») : Soutien scolaire, Social.
 - **Design des cartes tarifs** refait en « luxe éditorial épuré » (serif, filet doré). **Cartes uniformisées** : badge « Recommandé » et style mis en avant supprimés (toutes identiques).
 - **Alignement carte tarif corrigé** : niveau (doré) et titre (noir) empilés verticalement (`.tarif-top` en colonne), plus de chevauchement.
@@ -195,7 +206,7 @@ Parcours animé en **une seule vue React** (state machine interne), pas 5 pages 
 
 ### ⏳ Reste à faire
 - Brancher l'envoi du « pack » côté Supabase + portail admin (aujourd'hui factice).
-- **Remplir les tarifs de la branche Enfant** : Autonomie (Coran / Éducation islamique / Arabe / combinée) + dérouler Visioconférence et Cours particulier.
+- **Remplir les tarifs de la branche Enfant** : grilles de Autonomie & Visioconférence (Coran / Éducation islamique / Arabe / combinée + Accompagnement spécifique). Structure faite, contenus vides.
 - Dérouler les pôles **Soutien scolaire** et **Social**.
 - Nettoyages différés (transverses) : exports morts d'`animations.js`, règles `html.dark` publiques, classe `.theme-toggle`.
 
