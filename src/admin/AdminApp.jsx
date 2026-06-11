@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { logoutAdmin, fetchInscriptions, fetchMessages, verifyAdminSession, adminCountNouvellesDeclarations } from './supabaseAdmin';
+import { logoutAdmin, fetchPreinscriptions, fetchMessages, verifyAdminSession, adminCountNouvellesDeclarations } from './supabaseAdmin';
 import {
   ADMIN_EVENT_INSCRIPTIONS_CHANGED,
   ADMIN_EVENT_MESSAGES_CHANGED,
@@ -100,7 +100,7 @@ export default function AdminApp() {
   // pages qui modifient l'état (ex: Inscriptions.jsx change un statut).
   const refreshCounters = useCallback(() => {
     fetchMessages().then(msgs => setUnreadMessages(msgs.filter(m => !m.lu).length)).catch(() => {});
-    fetchInscriptions().then(insc => setNewInscriptions(insc.filter(i => i.statut === 'nouveau' && !i.viewed_at).length)).catch(() => {});
+    fetchPreinscriptions().then(insc => setNewInscriptions(insc.filter(i => i.statut === 'nouveau' && !i.viewed_at).length)).catch(() => {});
     adminCountNouvellesDeclarations().then(setNewDeclarations).catch(() => {});
   }, []);
 

@@ -1170,25 +1170,61 @@
   color: var(--a-fg-light);
 }
 
-/* Layout */
-.insc-layout {
+/* ─── Grille de blocs (un bloc par format) ─── */
+.insc-blocks {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 1.2rem;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
   align-items: start;
-  min-height: 55vh;
 }
-@media (max-width: 1100px) {
-  .insc-layout { grid-template-columns: 1fr; }
-}
-
-/* Liste */
-.insc-list {
+.insc-block {
   background: var(--a-bg-card);
   border: 1px solid var(--a-border);
-  border-radius: var(--a-radius);
+  border-radius: 16px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 14px 32px -22px rgba(0, 0, 0, 0.16);
 }
+.insc-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 1.05rem 1.3rem;
+  border-bottom: 1px solid rgba(var(--a-gold-rgb), 0.16);
+}
+.insc-block-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.7rem;
+  color: var(--a-gold);
+}
+.insc-block-count {
+  font-size: 0.7rem;
+  color: #fff;
+  background: var(--a-gold);
+  border-radius: 980px;
+  padding: 0.1rem 0.6rem;
+  font-weight: 600;
+}
+.insc-block-list { max-height: 460px; overflow-y: auto; padding: 0.6rem; }
+
+/* Emplacement « créer l'élève + parent » (désactivé, branché plus tard) */
+.insc-sheet-soon {
+  margin-top: 1.25rem;
+  border: 1px dashed var(--a-border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: var(--a-fg-light);
+  font-size: 0.82rem;
+}
+.insc-sheet-soon-title { font-weight: 600; color: var(--a-fg-mid); }
+
 .insc-empty {
   text-align: center;
   padding: 4rem 2rem;
@@ -1197,26 +1233,20 @@
 .insc-empty svg { opacity: 0.15; margin-bottom: 1rem; }
 .insc-empty p { font-size: 0.88rem; }
 
-/* Item inscription */
+/* Item inscription (ligne dans un bloc) — empilée et aérée */
 .insc-item {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.9rem 0.95rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s var(--a-ease);
-  border-bottom: 1px solid var(--a-border);
+  transition: background 0.18s var(--a-ease);
 }
-.insc-item:last-child { border-bottom: none; }
 .insc-item:hover { background: var(--a-bg-hover); }
-.insc-item.selected {
-  background: rgba(var(--a-gold-rgb),0.06);
-  border-left: 3px solid var(--a-gold);
-  padding-left: calc(1.25rem - 3px);
-}
 
 .insc-item-avatar {
-  width: 2.6rem; height: 2.6rem;
+  width: 2.5rem; height: 2.5rem;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--a-gold), var(--a-gold-l));
   color: #fff;
@@ -1227,99 +1257,65 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   flex-shrink: 0;
+  margin-top: 0.15rem;
 }
-.insc-item-content {
+.insc-item-main {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
-.insc-item-top {
+.insc-item-row1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.1rem;
+  gap: 0.75rem;
 }
 .insc-item-name {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--a-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.insc-item-time {
-  font-size: 0.7rem;
-  color: var(--a-fg-light);
-  white-space: nowrap;
-  flex-shrink: 0;
+/* Descriptif sous le nom : matière (doré) + public (micro-libellé majuscule) */
+.insc-item-desc {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.55rem;
 }
-.insc-item-course {
-  font-size: 0.72rem;
+.insc-desc-matiere {
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--a-gold);
-  font-weight: 500;
-  margin-bottom: 0.2rem;
+  line-height: 1.3;
 }
-.insc-item-bottom {
+.insc-desc-public {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.insc-desc-public.is-enfant { color: var(--a-blue); }
+.insc-desc-public.is-adulte { color: var(--a-fg-mid); }
+.insc-item-meta {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-}
-.insc-item-info {
-  font-size: 0.75rem;
-  color: var(--a-fg-mid);
-}
-.insc-item-sep {
+  gap: 0.5rem;
+  font-size: 0.74rem;
   color: var(--a-fg-light);
-  font-size: 0.65rem;
 }
+.insc-item-price {
+  color: var(--a-fg-mid);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.insc-item-dot { color: var(--a-border); }
 
 /* Panneau détail */
-.insc-detail {
-  background: var(--a-bg-card);
-  border: 1px solid var(--a-border);
-  border-radius: var(--a-radius);
-  position: sticky;
-  top: 4.5rem;
-  overflow: hidden;
-}
-.insc-detail-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 5rem 2rem;
-  text-align: center;
-}
-.insc-detail-empty-icon {
-  width: 5rem; height: 5rem;
-  border-radius: 50%;
-  background: var(--a-bg-hover);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.2rem;
-}
-.insc-detail-empty-icon svg { opacity: 0.2; }
-.insc-detail-empty-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--a-fg-mid);
-  margin-bottom: 0.3rem;
-}
-.insc-detail-empty-sub {
-  font-size: 0.82rem;
-  color: var(--a-fg-light);
-}
-
-.insc-detail-content {
-  padding: 1.8rem;
-}
-
-.insc-detail-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
 .insc-detail-avatar {
   width: 3.2rem; height: 3.2rem;
   border-radius: 50%;
@@ -1332,20 +1328,6 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   flex-shrink: 0;
-}
-.insc-detail-sender { flex: 1; min-width: 0; }
-.insc-detail-name {
-  display: block;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--a-fg);
-  letter-spacing: -0.01em;
-}
-.insc-detail-sub {
-  display: block;
-  font-size: 0.78rem;
-  color: var(--a-fg-mid);
-  margin-top: 0.1rem;
 }
 
 .insc-detail-sep {
@@ -1383,6 +1365,17 @@
   gap: 0.4rem;
 }
 .insc-detail-field-date svg { color: var(--a-fg-light); flex-shrink: 0; }
+.insc-detail-field-text { white-space: pre-wrap; line-height: 1.55; }
+
+/* Fil du parcours choisi */
+.insc-detail-path {
+  font-size: 0.9rem;
+  color: var(--a-fg-mid);
+  line-height: 1.6;
+  margin-top: -0.4rem;
+}
+.insc-detail-path b { color: var(--a-gold); font-weight: 600; }
+.insc-detail-path-sep { color: var(--a-fg-light); }
 
 /* Titre section */
 .insc-detail-section-title {
@@ -2364,7 +2357,6 @@
   .admin-topbar-date { display: none; }
 
   .admin-msg-layout { grid-template-columns: 1fr; }
-  .insc-layout { grid-template-columns: 1fr; }
 }
 
 /* ─── Responsive — mobile (≤ 600px) ─── */

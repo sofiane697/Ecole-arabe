@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import gsap from 'gsap';
+import CoordonneesFields, { emptyCoordForm, splitIdentity } from './CoordonneesFields';
+import { submitPreinscription, derivePathMeta } from './supabasePreinscription';
 
 const btnEnter = (e) => gsap.to(e.currentTarget, { y: -2, duration: 0.25, ease: 'power3.out' });
 const btnLeave = (e) => gsap.to(e.currentTarget, { y: 0, duration: 0.25, ease: 'power3.out' });
@@ -7,30 +9,38 @@ const btnLeave = (e) => gsap.to(e.currentTarget, { y: 0, duration: 0.25, ease: '
 /**
  * Écran « Devis personnalisé » : pas de tarif fixe.
  * Le visiteur décrit son besoin (sujet + message) + ses coordonnées.
- * Layout « checkout » réutilisé : résumé du parcours à gauche, formulaire à droite.
- * PROTOTYPE — l'envoi est factice (pas d'écriture Supabase pour l'instant).
+ * Layout « checkout » réutilisé. L'envoi écrit en base via `submit_preinscription`.
  *
- * @param {Array}    path   Nœuds traversés (pôle → … → Devis personnalisé)
- * @param {Function} onSent Appelé quand le formulaire est « envoyé »
+ * @param {Array}    path   Nœuds traversés (pôle → … → Devis / Accompagnement)
+ * @param {Function} onSent Appelé après envoi réussi
  */
 export default function DevisStep({ path, onSent }) {
-  const [form, setForm] = useState({
-    prenom: '', nom: '', telephone: '', email: '', sujet: '', besoin: '',
-  });
+  const [form, setForm]       = useState({ ...emptyCoordForm, sujet: '', besoin: '' });
+  const [sending, setSending] = useState(false);
+  const [error, setError]     = useState('');
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  // Intitulé = dernier nœud du parcours (ex. « Devis personnalisé » ou « Accompagnement spécifique »)
+  const { est_enfant: estEnfant } = derivePathMeta(path);
+  // Intitulé = dernier nœud du parcours (« Devis personnalisé » / « Accompagnement spécifique »)
   const titre = path[path.length - 1]?.label || 'Devis personnalisé';
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    const { prenom, nom, telephone, email, ...reste } = form;
-    // ⚠️ PROTOTYPE : on ne fait que remonter la demande. Aucun envoi réseau.
-    onSent({
-      choix: path.map((n) => n.label),
-      devis: reste, // { sujet, besoin }
-      coord: { prenom, nom, telephone, email },
-    });
+    setSending(true); setError('');
+    try {
+      const { eleve, contact } = splitIdentity(form, estEnfant);
+      await submitPreinscription({
+        type: 'devis',
+        path,
+        devis: { sujet: form.sujet.trim(), besoin: form.besoin.trim() },
+        eleve, contact, estEnfant,
+      });
+      onSent({ choix: path.map((n) => n.label), coord: { prenom: contact.prenom } });
+    } catch (err) {
+      setError(err.message || "L’envoi a échoué, réessayez.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -64,46 +74,31 @@ export default function DevisStep({ path, onSent }) {
 
       {/* ─ Colonne formulaire ─ */}
       <form className="recap-form" onSubmit={submit}>
-        <div className="recap-eyebrow">Vos coordonnées</div>
+        <div className="recap-eyebrow">
+          {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
+        </div>
 
-        <div className="recap-row2">
-          <div className="recap-field">
-            <label htmlFor="d-prenom">Prénom</label>
-            <input id="d-prenom" name="prenom" type="text" required
-              value={form.prenom} onChange={change} placeholder="Votre prénom" />
-          </div>
-          <div className="recap-field">
-            <label htmlFor="d-nom">Nom</label>
-            <input id="d-nom" name="nom" type="text" required
-              value={form.nom} onChange={change} placeholder="Votre nom" />
-          </div>
-        </div>
-        <div className="recap-field">
-          <label htmlFor="d-tel">Téléphone</label>
-          <input id="d-tel" name="telephone" type="tel" required
-            value={form.telephone} onChange={change} placeholder="+33 6 12 34 56 78" />
-        </div>
-        <div className="recap-field">
-          <label htmlFor="d-email">Email</label>
-          <input id="d-email" name="email" type="email" required
-            value={form.email} onChange={change} placeholder="votre@email.com" />
-        </div>
+        <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="d" />
+
+        <p className="recap-group-label">Votre besoin</p>
         <div className="recap-field">
           <label htmlFor="d-sujet">Sujet</label>
           <input id="d-sujet" name="sujet" type="text" required
             value={form.sujet} onChange={change} placeholder="Ex. : Coran pour mon enfant de 8 ans" />
         </div>
         <div className="recap-field">
-          <label htmlFor="d-besoin">Votre besoin</label>
+          <label htmlFor="d-besoin">Décrivez votre besoin</label>
           <textarea id="d-besoin" name="besoin" rows={4} required
             value={form.besoin} onChange={change}
-            placeholder="Décrivez le niveau, les objectifs, le rythme souhaité…" />
+            placeholder="Niveau, objectifs, rythme souhaité…" />
         </div>
 
-        <button type="submit" className="recap-send"
+        {error && <p className="recap-error">{error}</p>}
+
+        <button type="submit" className="recap-send" disabled={sending}
           onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
-          Envoyer ma demande de devis
-          <span className="recap-send-arrow" aria-hidden="true">→</span>
+          {sending ? 'Envoi…' : 'Envoyer ma demande de devis'}
+          {!sending && <span className="recap-send-arrow" aria-hidden="true">→</span>}
         </button>
         <p className="recap-reassure">Réponse sous 24h · sans engagement</p>
       </form>

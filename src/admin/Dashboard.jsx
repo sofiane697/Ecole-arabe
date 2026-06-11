@@ -1,36 +1,36 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchInscriptions, fetchMessages } from './supabaseAdmin';
+import { fetchPreinscriptions, fetchMessages } from './supabaseAdmin';
 import gsap from 'gsap';
 
 const STATUT_LABEL = {
   nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau'  },
   contacté: { label: 'Contacté', cls: 'badge-contacte' },
-  inscrit:  { label: 'Inscrit',  cls: 'badge-inscrit'  },
-  refuse:   { label: 'Refusé',   cls: 'badge-refuse'   },
+  traité:   { label: 'Traité',   cls: 'badge-inscrit'  },
+  refusé:   { label: 'Refusé',   cls: 'badge-refuse'   },
 };
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [inscriptions, setInscriptions] = useState([]);
-  const [messages, setMessages]         = useState([]);
-  const [loading, setLoading]           = useState(true);
+  const [preinscriptions, setPreinscriptions] = useState([]);
+  const [messages, setMessages]               = useState([]);
+  const [loading, setLoading]                 = useState(true);
 
   useEffect(() => {
-    Promise.all([fetchInscriptions(), fetchMessages()])
-      .then(([insc, msgs]) => { setInscriptions(insc); setMessages(msgs); })
+    Promise.all([fetchPreinscriptions(), fetchMessages()])
+      .then(([insc, msgs]) => { setPreinscriptions(insc); setMessages(msgs); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   // Stats
-  const totalInscriptions = inscriptions.length;
-  const nouveaux          = inscriptions.filter(i => i.statut === 'nouveau').length;
+  const totalInscriptions = preinscriptions.length;
+  const nouveaux          = preinscriptions.filter(i => i.statut === 'nouveau').length;
   const totalMessages     = messages.length;
   const nonLus            = messages.filter(m => !m.lu).length;
 
   // 5 derniers
-  const lastInscriptions = inscriptions.slice(0, 5);
+  const lastInscriptions = preinscriptions.slice(0, 5);
   const lastMessages     = messages.slice(0, 5);
 
   const statBarRef = useRef(null);
@@ -78,25 +78,26 @@ export default function Dashboard() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Élève</th>
-                  <th>Cours</th>
+                  <th>Apprenant</th>
+                  <th>Demande</th>
                   <th>Statut</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {lastInscriptions.length === 0 ? (
-                  <tr><td colSpan="4" style={{ textAlign:'center', padding:'2rem', color:'var(--a-fg-light)' }}>Aucune inscription</td></tr>
+                  <tr><td colSpan="4" style={{ textAlign:'center', padding:'2rem', color:'var(--a-fg-light)' }}>Aucune préinscription</td></tr>
                 ) : lastInscriptions.map(i => {
                   const s = STATUT_LABEL[i.statut] || { label: i.statut, cls: '' };
                   const date = new Date(i.created_at).toLocaleDateString('fr-FR');
+                  const demande = i.type === 'devis' ? 'Devis sur mesure' : (i.matiere || 'Formule');
                   return (
                     <tr key={i.id} onClick={() => navigate('/admin/inscriptions')}>
                       <td>
-                        <strong>{i.prenom} {i.nom}</strong>
-                        <span className="muted" style={{ display:'block' }}>{i.age} ans</span>
+                        <strong>{i.eleve_prenom} {i.eleve_nom}</strong>
+                        <span className="muted" style={{ display:'block' }}>{i.est_enfant ? 'Enfant' : 'Adulte'}</span>
                       </td>
-                      <td className="muted">{(i.cours || '').split('—')[0].trim()}</td>
+                      <td className="muted">{demande}</td>
                       <td><span className={`badge ${s.cls}`}>● {s.label}</span></td>
                       <td className="muted">{date}</td>
                     </tr>

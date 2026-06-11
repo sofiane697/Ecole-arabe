@@ -581,6 +581,27 @@
 .recap-field textarea::placeholder { color: var(--fg-light); opacity: 0.65; }
 .recap-field input:focus,
 .recap-field textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+
+/* Sous-titre de groupe dans le formulaire (ex. « L'enfant », « Le parent »). */
+.recap-group-label {
+  margin: 0.4rem 0 -0.2rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-light);
+}
+
+/* Message d'erreur d'envoi. */
+.recap-error {
+  font-size: 0.82rem;
+  color: #b3261e;
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid rgba(179, 38, 30, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+}
+
 .recap-send {
   margin-top: 0.4rem;
   display: inline-flex;
@@ -596,6 +617,7 @@
   transition: background .25s var(--ease);
 }
 .recap-send:hover { background: var(--gold-light); }
+.recap-send:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
 .recap-send-arrow { display: inline-block; transition: transform .3s var(--ease-out); }
 .recap-send:hover .recap-send-arrow { transform: translateX(4px); }
 .recap-reassure {

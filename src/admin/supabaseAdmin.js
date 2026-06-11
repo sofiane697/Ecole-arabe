@@ -15,14 +15,15 @@ async function authFetch(url, options = {}) {
   });
 }
 
-// Phase RLS #2.E : `inscriptions` et `messages` ont l'INSERT public ouvert
-// (formulaires site App.jsx) mais SELECT/UPDATE/DELETE admin-only via RPCs.
+// Préinscriptions : insertion publique via RPC `submit_preinscription` (parcours),
+// SELECT/UPDATE admin-only via RPCs token-gated ci-dessous. `messages` : INSERT
+// public ouvert (formulaire contact), SELECT/UPDATE/DELETE admin-only via RPCs.
 
-/** Récupérer toutes les inscriptions */
-export async function fetchInscriptions() {
-  return rpcAdminWrite('admin_fetch_inscriptions',
+/** Récupérer toutes les préinscriptions (les plus récentes d'abord). */
+export async function fetchPreinscriptions() {
+  return rpcAdminWrite('admin_fetch_preinscriptions',
     { p_admin_token: requireAdminToken() },
-    'Erreur chargement inscriptions');
+    'Erreur chargement préinscriptions');
 }
 
 /** Récupérer tous les messages */
@@ -32,11 +33,11 @@ export async function fetchMessages() {
     'Erreur chargement messages');
 }
 
-/** Mettre à jour le statut d'une inscription */
-export async function updateInscriptionStatut(id, statut) {
-  await rpcAdminWrite('admin_update_inscription_statut',
+/** Mettre à jour le statut d'une préinscription */
+export async function updatePreinscriptionStatut(id, statut) {
+  await rpcAdminWrite('admin_update_preinscription_statut',
     { p_admin_token: requireAdminToken(), p_id: id, p_statut: statut },
-    'Erreur modification inscription');
+    'Erreur modification préinscription');
 }
 
 /** Marquer un message comme lu / non lu */
@@ -826,23 +827,11 @@ export async function fetchEleveIdParIdentifiant(identifiant) {
   }
 }
 
-/** Lier une inscription à un élève et passer le statut à 'converti' */
-export async function updateInscriptionEleveId(inscriptionId, eleveId) {
-  try {
-    await rpcAdminWrite('admin_update_inscription_eleve_id',
-      { p_admin_token: requireAdminToken(), p_id: inscriptionId, p_eleve_id: eleveId },
-      'Erreur conversion inscription');
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Marquer une inscription comme consultée (viewed_at = NOW()). Utilisé pour
- *  que le badge ne compte que les inscriptions "Nouveau" non encore vues. */
-export async function markInscriptionViewed(inscriptionId) {
-  await rpcAdminWrite('admin_mark_inscription_viewed',
-    { p_admin_token: requireAdminToken(), p_inscription_id: inscriptionId },
+/** Marquer une préinscription comme consultée (viewed_at = NOW()). Utilisé pour
+ *  que le badge ne compte que les préinscriptions "Nouveau" non encore vues. */
+export async function markPreinscriptionViewed(id) {
+  await rpcAdminWrite('admin_mark_preinscription_viewed',
+    { p_admin_token: requireAdminToken(), p_id: id },
     'Erreur marquage consultation');
 }
 
