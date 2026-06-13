@@ -47,8 +47,14 @@ export default function App() {
 
 
   /* — Le site public reste toujours en thème clair (pas de mode sombre) — */
+  /* — On réserve l'espace de la scrollbar tant que le site public est monté :
+       évite que la navbar fixe se décale de quelques pixels quand la barre de
+       défilement apparaît/disparaît entre deux écrans du parcours. Scopé au
+       site public (retiré au démontage) → aucun impact sur les portails. — */
   useEffect(() => {
     document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('site-scroll-stable');
+    return () => document.documentElement.classList.remove('site-scroll-stable');
   }, []);
 
   // [atHome] : réobserve les .sr quand Contact / À propos réapparaissent

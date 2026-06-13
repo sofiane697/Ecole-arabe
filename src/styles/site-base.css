@@ -58,6 +58,9 @@ html.theme-transition *::after {
 
 /* ─── Base ─── */
 html { scroll-behavior: smooth; }
+/* Réserve l'espace de la scrollbar (site public uniquement, classe posée par App)
+   → la navbar fixe ne se décale plus quand la barre de défilement apparaît/disparaît. */
+html.site-scroll-stable { scrollbar-gutter: stable; }
 body {
   /* Styles neutres uniquement — ne pas mettre background/color ici :
      ils interféreraient avec les portails admin/enseignant/élève
