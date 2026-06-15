@@ -44,6 +44,7 @@ export default function App() {
   const [contactRlMsg, setContactRlMsg] = useState(null);
   const [homeKey, setHomeKey] = useState(0); // remonte le parcours quand on clique « Accueil »
   const [atHome, setAtHome] = useState(true); // true = accueil (3 stickers) → Contact + footer visibles
+  const [islamUniverse, setIslamUniverse] = useState(false); // dans la branche « Enseignement religieux » → navbar thématisée
 
 
   /* — Le site public reste toujours en thème clair (pas de mode sombre) — */
@@ -121,7 +122,7 @@ export default function App() {
 
   /* ════════════ RENDU ════════════ */
   return (
-    <div className="site-root">
+    <div className={`site-root${islamUniverse ? ' is-islam-universe' : ''}`}>
       {/* NAVIGATION */}
       <nav className="nav">
         <button className="logo" onClick={goHome}>
@@ -159,7 +160,7 @@ export default function App() {
       </div>
 
       {/* PARCOURS PAR STICKERS (remplace hero / présentation / tarifs / témoignages) */}
-      <ParcoursApp key={homeKey} onAtHomeChange={setAtHome} />
+      <ParcoursApp key={homeKey} onAtHomeChange={setAtHome} onIslamChange={setIslamUniverse} />
 
       {/* CONTACT + FOOTER : visibles uniquement sur l'accueil (parcours = plein écran) */}
       {atHome && (

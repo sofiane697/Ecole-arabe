@@ -13,7 +13,7 @@ import './parcours.css';
    Une seule vue React qui change d'étape via un state interne.
    Les transitions entre niveaux de stickers sont animées en GSAP.
 ══════════════════════════════════════════════════════ */
-export default function ParcoursApp({ onAtHomeChange }) {
+export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
   const [path, setPath] = useState([]);   // nœuds traversés (pôle → public → matière)
   const [tarif, setTarif] = useState(null); // formule sélectionnée
   const [done, setDone] = useState(null);   // pack envoyé (confirmation)
@@ -33,6 +33,7 @@ export default function ParcoursApp({ onAtHomeChange }) {
   // Dès qu'on entre dans le parcours → écrans plein écran, rien en dessous.
   const atHome = path.length === 0 && !tarif && !done;
   useEffect(() => { onAtHomeChange?.(atHome); }, [atHome, onAtHomeChange]);
+  useEffect(() => { onIslamChange?.(inIslam); }, [inIslam, onIslamChange]);
 
   const toTop = () => window.scrollTo({ top: 0 });
 

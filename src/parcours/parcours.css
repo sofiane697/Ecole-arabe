@@ -797,6 +797,22 @@
 
 .islam-stickers { margin: 0 auto; }
 
+/* ─── Navbar thématisée dans l'univers « sources du savoir » ─── */
+.site-root.is-islam-universe .nav {
+  background: rgba(250, 244, 233, 0.82);
+  border-bottom-color: rgba(191, 138, 48, 0.22);
+}
+.site-root.is-islam-universe .logo-fr { color: var(--gold); }
+.site-root.is-islam-universe .nav-btn { color: #8a6a2c; }
+.site-root.is-islam-universe .nav-btn:hover,
+.site-root.is-islam-universe .nav-btn.active { color: var(--fg-title); }
+/* Bouton « Me connecter » : doré plein, légèrement renforcé */
+.site-root.is-islam-universe .login-trigger {
+  box-shadow: 0 8px 22px -10px rgba(191, 138, 48, 0.6);
+}
+/* Hamburger (mobile) : barres dorées */
+.site-root.is-islam-universe .hamburger span { background: var(--gold); }
+
 @media (max-width: 480px) {
   .parcours-inner { padding: 1.6rem 1rem 2.4rem; }
   .parcours-head { margin-bottom: 1.6rem; }
