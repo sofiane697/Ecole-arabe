@@ -676,6 +676,169 @@
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   UNIVERS ISLAMIQUE — "Les sources du savoir"
+═══════════════════════════════════════════════════════════ */
+
+.parcours.is-islam {
+  background: linear-gradient(160deg, #080f1c 0%, #0a1326 55%, #070e1a 100%);
+}
+.parcours.is-islam .parcours-glow {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 5%, rgba(191,138,48,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 45% at 82% 85%, rgba(191,138,48,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 55% at 15% 75%, rgba(70,130,220,0.04) 0%, transparent 60%);
+}
+.parcours.is-islam.is-deep .parcours-inner {
+  padding-top: 0.8rem;
+}
+.parcours.is-islam .parcours-back {
+  color: rgba(240, 225, 190, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(191, 138, 48, 0.22);
+}
+.parcours.is-islam .parcours-back:hover {
+  color: var(--gold);
+  background: rgba(191, 138, 48, 0.10);
+  border-color: rgba(191, 138, 48, 0.55);
+}
+.parcours.is-islam .parcours-crumbs { color: rgba(240, 225, 190, 0.35); }
+.parcours.is-islam .parcours-crumbs b { color: var(--gold); }
+
+/* Grille de points — ambiance ciel étoilé */
+.islam-geo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(191,138,48,0.10) 1px, transparent 1px);
+  background-size: 52px 52px;
+  opacity: 0.55;
+}
+
+.islam-universe { position: relative; width: 100%; }
+
+/* ─── Header sacré ─────────────────────────────── */
+.islam-header {
+  text-align: center;
+  padding: 1rem 1rem 2.2rem;
+}
+
+.islam-bismillah {
+  font-family: 'Scheherazade New', serif;
+  font-size: clamp(1.3rem, 2.8vw, 1.95rem);
+  color: rgba(212, 175, 95, 0.72);
+  direction: rtl;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 32px rgba(191, 138, 48, 0.38);
+  margin-bottom: 1.6rem;
+}
+
+/* Séparateur ornemental */
+.islam-deco {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: 300px;
+  margin: 0 auto 1.6rem;
+}
+.islam-deco-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(191,138,48,0.42), transparent);
+}
+.islam-deco-gem {
+  font-size: 0.65rem;
+  color: var(--gold);
+  opacity: 0.70;
+  flex-shrink: 0;
+}
+
+/* Titre principal */
+.islam-main-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 5.5vw, 3.9rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: 0.015em;
+  color: #f5e9cc;
+  text-shadow: 0 2px 40px rgba(191, 138, 48, 0.20);
+  margin-bottom: 0.55rem;
+}
+
+.islam-main-ar {
+  font-family: 'Scheherazade New', serif;
+  direction: rtl;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  color: var(--gold);
+  opacity: 0.88;
+  text-shadow: 0 0 22px rgba(191, 138, 48, 0.42);
+  margin-bottom: 1.7rem;
+}
+
+/* Verset coranique */
+.islam-quote {
+  margin: 0 auto 1.7rem;
+  max-width: 440px;
+}
+.islam-quote-ar {
+  display: block;
+  font-family: 'Scheherazade New', serif;
+  direction: rtl;
+  font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+  color: rgba(212, 175, 95, 0.68);
+  text-shadow: 0 0 18px rgba(191, 138, 48, 0.28);
+  margin-bottom: 0.55rem;
+}
+.islam-quote cite {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: rgba(240, 225, 190, 0.38);
+  letter-spacing: 0.02em;
+}
+
+/* "Choisissez votre parcours" */
+.islam-nav-label {
+  font-size: 0.70rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(240, 225, 190, 0.45);
+  margin-top: 0.4rem;
+}
+
+/* ─── Stickers adaptés au fond sombre ─────────── */
+.islam-stickers { margin: 0 auto; }
+
+.islam-stickers .sticker {
+  background: linear-gradient(160deg, rgba(18,28,52,0.82) 0%, rgba(10,18,36,0.88) 100%);
+  border-color: rgba(191, 138, 48, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 30px -14px rgba(0, 0, 0, 0.65),
+    0 3px 10px -6px rgba(0, 0, 0, 0.35);
+}
+.islam-stickers .sticker:not(.is-disabled):hover {
+  border-color: rgba(191, 138, 48, 0.48);
+  background: linear-gradient(160deg, rgba(38,28,10,0.90) 0%, rgba(28,20,6,0.94) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 26px 54px -20px rgba(191, 138, 48, 0.24),
+    0 8px 20px -10px rgba(0, 0, 0, 0.55);
+}
+.islam-stickers .sticker-label { color: #f0e4c8; }
+.islam-stickers .sticker-ar    { color: var(--gold); opacity: 0.88; }
+.islam-stickers .sticker-desc  { color: rgba(240, 225, 190, 0.46); }
+.islam-stickers .sticker-ico {
+  background: radial-gradient(circle at 50% 32%, rgba(212,162,69,0.16), rgba(191,138,48,0.06));
+  border-color: rgba(191, 138, 48, 0.26);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.10),
+    inset 0 -3px 8px rgba(191, 138, 48, 0.10),
+    0 7px 16px -8px rgba(191, 138, 48, 0.30);
+}
+
 @media (max-width: 480px) {
   .parcours-inner { padding: 1.6rem 1rem 2.4rem; }
   .parcours-head { margin-bottom: 1.6rem; }

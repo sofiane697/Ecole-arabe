@@ -5,6 +5,7 @@ import StickerGrid from './StickerGrid';
 import TarifCard from './TarifCard';
 import RecapStep from './RecapStep';
 import DevisStep from './DevisStep';
+import IslamUniverse from './IslamUniverse';
 import './parcours.css';
 
 /* ══════════════════════════════════════════════════════
@@ -23,6 +24,7 @@ export default function ParcoursApp({ onAtHomeChange }) {
   const node = path.length ? path[path.length - 1] : PARCOURS;
   const atTarifs = !!node.tarifs && !tarif && !done;
   const atDevis = !!node.devis && !done; // feuille « devis sur mesure »
+  const atIslamUniverse = path.length === 1 && path[0].id === 'enseignement-religieux' && !tarif && !done;
 
   // À l'accueil (racine) → on autorise les sections en dessous (Contact, footer).
   // Dès qu'on entre dans le parcours → écrans plein écran, rien en dessous.
@@ -86,7 +88,7 @@ export default function ParcoursApp({ onAtHomeChange }) {
   const showBar = !done && (path.length > 0 || !!tarif);
 
   return (
-    <section className={`parcours${atHome ? '' : ' is-deep'}`} id="accueil">
+    <section className={`parcours${atHome ? '' : ' is-deep'}${atIslamUniverse ? ' is-islam' : ''}`} id="accueil">
       <div className="parcours-glow" />
       <div className="parcours-inner" ref={stageRef}>
 
@@ -109,8 +111,8 @@ export default function ParcoursApp({ onAtHomeChange }) {
           </div>
         )}
 
-        {/* En-tête de niveau */}
-        {!done && (
+        {/* En-tête de niveau (masqué dans l'univers islamique qui a son propre header) */}
+        {!done && !atIslamUniverse && (
           <div className="parcours-head parcours-anim">
             {eyebrow && <div className="parcours-eyebrow">{eyebrow}</div>}
             <h1 className="parcours-title">{title}</h1>
@@ -119,7 +121,7 @@ export default function ParcoursApp({ onAtHomeChange }) {
           </div>
         )}
 
-        {/* Corps : grille / tarifs / récap / confirmation */}
+        {/* Corps : univers / grille / tarifs / récap / confirmation */}
         {done ? (
           <div className="parcours-done parcours-anim">
             <div className="parcours-done-ico">✓</div>
@@ -132,6 +134,8 @@ export default function ParcoursApp({ onAtHomeChange }) {
               Faire une nouvelle demande
             </button>
           </div>
+        ) : atIslamUniverse ? (
+          <IslamUniverse node={node} onPick={pick} />
         ) : tarif ? (
           <RecapStep path={path} tarif={tarif} onSent={(pack) => { setDone(pack); toTop(); }} />
         ) : atDevis ? (
