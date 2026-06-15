@@ -802,10 +802,10 @@
   background: rgba(250, 244, 233, 0.82);
   border-bottom-color: rgba(191, 138, 48, 0.22);
 }
-.site-root.is-islam-universe .logo-fr { color: var(--gold); }
-.site-root.is-islam-universe .nav-btn { color: #8a6a2c; }
+.site-root.is-islam-universe .logo-fr { color: var(--fg-title); }
+.site-root.is-islam-universe .nav-btn { color: var(--fg-title); }
 .site-root.is-islam-universe .nav-btn:hover,
-.site-root.is-islam-universe .nav-btn.active { color: var(--fg-title); }
+.site-root.is-islam-universe .nav-btn.active { color: #000; }
 /* Bouton « Me connecter » : doré plein, légèrement renforcé */
 .site-root.is-islam-universe .login-trigger {
   box-shadow: 0 8px 22px -10px rgba(191, 138, 48, 0.6);
