@@ -839,6 +839,130 @@
     0 7px 16px -8px rgba(191, 138, 48, 0.30);
 }
 
+/* ─── Univers appliqué aux niveaux profonds (stickers + tarifs) ─── */
+/* En-tête de niveau */
+.parcours.is-islam .parcours-eyebrow {
+  color: var(--gold);
+  background: rgba(191, 138, 48, 0.12);
+}
+.parcours.is-islam .parcours-title { color: #f0e4c8; }
+.parcours.is-islam .parcours-sub   { color: rgba(240, 225, 190, 0.52); }
+
+/* Stickers profonds (mêmes overrides que .islam-stickers) */
+.parcours.is-islam .sticker {
+  background: linear-gradient(160deg, rgba(18,28,52,0.82) 0%, rgba(10,18,36,0.88) 100%);
+  border-color: rgba(191, 138, 48, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 30px -14px rgba(0, 0, 0, 0.65),
+    0 3px 10px -6px rgba(0, 0, 0, 0.35);
+}
+.parcours.is-islam .sticker:not(.is-disabled):hover {
+  border-color: rgba(191, 138, 48, 0.48);
+  background: linear-gradient(160deg, rgba(38,28,10,0.90) 0%, rgba(28,20,6,0.94) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 26px 54px -20px rgba(191, 138, 48, 0.24),
+    0 8px 20px -10px rgba(0, 0, 0, 0.55);
+}
+.parcours.is-islam .sticker-label { color: #f0e4c8; }
+.parcours.is-islam .sticker-ar    { color: var(--gold); opacity: 0.88; }
+.parcours.is-islam .sticker-desc  { color: rgba(240, 225, 190, 0.46); }
+.parcours.is-islam .sticker-ico {
+  background: radial-gradient(circle at 50% 32%, rgba(212,162,69,0.16), rgba(191,138,48,0.06));
+  border-color: rgba(191, 138, 48, 0.26);
+}
+.parcours.is-islam .sticker-badge {
+  color: var(--gold);
+  background: rgba(191, 138, 48, 0.14);
+  border-color: rgba(191, 138, 48, 0.28);
+}
+
+/* ─── Cartes de tarifs ─── */
+.parcours.is-islam .tarif-meta     { color: rgba(240, 225, 190, 0.62); }
+.parcours.is-islam .tarif-adhesion { color: var(--gold); }
+.parcours.is-islam .tarif-card {
+  background: linear-gradient(160deg, rgba(18,28,52,0.82) 0%, rgba(10,18,36,0.88) 100%);
+  border-color: rgba(191, 138, 48, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 34px -18px rgba(0, 0, 0, 0.65),
+    0 3px 10px -6px rgba(0, 0, 0, 0.35);
+}
+.parcours.is-islam .tarif-card:hover {
+  border-color: rgba(191, 138, 48, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 30px 58px -22px rgba(191, 138, 48, 0.22),
+    0 8px 22px -10px rgba(0, 0, 0, 0.5);
+}
+.parcours.is-islam .tarif-titre  { color: #f0e4c8; }
+.parcours.is-islam .tarif-amount { color: #f5e9cc; }
+.parcours.is-islam .tarif-amount-sm,
+.parcours.is-islam .tarif-freq   { color: rgba(240, 225, 190, 0.55); }
+.parcours.is-islam .tarif-feats li { color: rgba(240, 225, 190, 0.62); }
+.parcours.is-islam .tarif-note     { color: rgba(240, 225, 190, 0.40); }
+.parcours.is-islam .tarif-check {
+  background: rgba(191, 138, 48, 0.14);
+  border-color: rgba(191, 138, 48, 0.40);
+}
+.parcours.is-islam .tarif-pick {
+  color: var(--gold);
+  border-color: rgba(191, 138, 48, 0.45);
+}
+.parcours.is-islam .tarif-card:hover .tarif-pick {
+  background: var(--gold);
+  color: #0a1326;
+  border-color: var(--gold);
+}
+
+/* ─── Récap / Devis (inscription & envoi) ─── */
+.parcours.is-islam .recap {
+  background: rgba(10, 18, 36, 0.72);
+  border-color: rgba(191, 138, 48, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 60px -28px rgba(0, 0, 0, 0.7),
+    0 6px 18px -10px rgba(0, 0, 0, 0.45);
+}
+.parcours.is-islam .recap-summary {
+  background: linear-gradient(180deg, rgba(191,138,48,0.10) 0%, rgba(14,22,42,0.85) 100%);
+  border-right-color: rgba(191, 138, 48, 0.18);
+}
+.parcours.is-islam .recap-path        { color: rgba(240, 225, 190, 0.50); }
+.parcours.is-islam .recap-crumb:last-child { color: #f0e4c8; }
+.parcours.is-islam .recap-formule-nom { color: #f0e4c8; }
+.parcours.is-islam .recap-rythme      { color: rgba(240, 225, 190, 0.55); }
+.parcours.is-islam .recap-feats li    { color: rgba(240, 225, 190, 0.62); }
+.parcours.is-islam .recap-total       { border-top-color: rgba(191, 138, 48, 0.20); }
+.parcours.is-islam .recap-total-label { color: rgba(240, 225, 190, 0.45); }
+.parcours.is-islam .recap-field label,
+.parcours.is-islam .recap-group-label { color: rgba(240, 225, 190, 0.55); }
+.parcours.is-islam .recap-field input,
+.parcours.is-islam .recap-field textarea {
+  background: rgba(8, 14, 28, 0.72);
+  border-color: rgba(191, 138, 48, 0.20);
+  color: #f0e4c8;
+}
+.parcours.is-islam .recap-field input::placeholder,
+.parcours.is-islam .recap-field textarea::placeholder { color: rgba(240, 225, 190, 0.32); }
+.parcours.is-islam .recap-field input:focus,
+.parcours.is-islam .recap-field textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(191, 138, 48, 0.18);
+}
+.parcours.is-islam .recap-reassure { color: rgba(240, 225, 190, 0.40); }
+.parcours.is-islam .recap-send { color: #0a1326; }
+
+/* ─── Confirmation d'envoi ─── */
+.parcours.is-islam .parcours-done {
+  background: linear-gradient(160deg, rgba(18,28,52,0.85) 0%, rgba(10,18,36,0.90) 100%);
+  border-color: rgba(191, 138, 48, 0.20);
+}
+.parcours.is-islam .parcours-done h3 { color: #f0e4c8; }
+.parcours.is-islam .parcours-done p  { color: rgba(240, 225, 190, 0.58); }
+.parcours.is-islam .parcours-done-ico { color: #0a1326; }
+
 @media (max-width: 480px) {
   .parcours-inner { padding: 1.6rem 1rem 2.4rem; }
   .parcours-head { margin-bottom: 1.6rem; }

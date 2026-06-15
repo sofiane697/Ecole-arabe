@@ -24,7 +24,10 @@ export default function ParcoursApp({ onAtHomeChange }) {
   const node = path.length ? path[path.length - 1] : PARCOURS;
   const atTarifs = !!node.tarifs && !tarif && !done;
   const atDevis = !!node.devis && !done; // feuille « devis sur mesure »
-  const atIslamUniverse = path.length === 1 && path[0].id === 'enseignement-religieux' && !tarif && !done;
+  // Branche « Enseignement religieux » → univers islamique appliqué partout (stickers, tarifs, envoi).
+  const inIslam = path[0]?.id === 'enseignement-religieux';
+  // Écran d'accueil de l'univers (header sacré « Les sources du savoir ») = 1er niveau seulement.
+  const atIslamUniverse = inIslam && path.length === 1 && !tarif && !done;
 
   // À l'accueil (racine) → on autorise les sections en dessous (Contact, footer).
   // Dès qu'on entre dans le parcours → écrans plein écran, rien en dessous.
@@ -88,8 +91,9 @@ export default function ParcoursApp({ onAtHomeChange }) {
   const showBar = !done && (path.length > 0 || !!tarif);
 
   return (
-    <section className={`parcours${atHome ? '' : ' is-deep'}${atIslamUniverse ? ' is-islam' : ''}`} id="accueil">
+    <section className={`parcours${atHome ? '' : ' is-deep'}${inIslam ? ' is-islam' : ''}`} id="accueil">
       <div className="parcours-glow" />
+      {inIslam && <div className="islam-geo" aria-hidden="true" />}
       <div className="parcours-inner" ref={stageRef}>
 
         {/* Barre retour + fil d'Ariane */}

@@ -3,8 +3,6 @@ import StickerGrid from './StickerGrid';
 export default function IslamUniverse({ node, onPick }) {
   return (
     <div className="islam-universe">
-      <div className="islam-geo" aria-hidden="true" />
-
       <header className="islam-header parcours-anim">
         <p className="islam-bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
 
