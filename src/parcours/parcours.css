@@ -688,10 +688,13 @@
 }
 
 /* Couche de fond de l'univers : parchemin + halos dorés + trame de points.
-   Toujours montée dans le DOM, révélée via .is-on → fondu enchaîné fluide. */
+   Toujours montée dans le DOM, révélée via .is-on → fondu enchaîné fluide.
+   position:fixed + débord (-4px) : le bord du calque (promu par opacity) sort
+   du viewport → pas de liseré d'échantillonnage sous le backdrop-filter de la nav. */
 .islam-bg {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  z-index: 0;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.65s var(--ease);
