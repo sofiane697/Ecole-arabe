@@ -101,7 +101,7 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
         {showBar && (
           <div className="parcours-bar">
             <button type="button" className="parcours-back" onClick={back}>
-              ← Retour
+              <span className="parcours-back-arrow" aria-hidden="true">←</span> Retour
             </button>
             {path.length > 0 && (
               <span className="parcours-crumbs">
