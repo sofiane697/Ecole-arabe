@@ -93,8 +93,8 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
 
   return (
     <section className={`parcours${atHome ? '' : ' is-deep'}${inIslam ? ' is-islam' : ''}`} id="accueil">
+      <div className={`islam-bg${inIslam ? ' is-on' : ''}`} aria-hidden="true" />
       <div className="parcours-glow" />
-      {inIslam && <div className="islam-geo" aria-hidden="true" />}
       <div className="parcours-inner" ref={stageRef}>
 
         {/* Barre retour + fil d'Ariane */}

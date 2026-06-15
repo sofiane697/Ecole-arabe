@@ -680,29 +680,37 @@
    UNIVERS ISLAMIQUE — "Les sources du savoir"
 ═══════════════════════════════════════════════════════════ */
 
-/* Fond clair « parchemin doré » — lumineux, ambiance manuscrit */
-.parcours.is-islam {
-  background: linear-gradient(165deg, #fdfaf3 0%, #f8f1e4 55%, #fcf8ef 100%);
-}
-.parcours.is-islam .parcours-glow {
-  background:
-    radial-gradient(ellipse 80% 55% at 50% 4%, rgba(191,138,48,0.10) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 45% at 84% 88%, rgba(191,138,48,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 42% 55% at 14% 78%, rgba(191,138,48,0.05) 0%, transparent 60%);
-}
+/* Fond clair « parchemin doré » — porté par une couche dédiée (.islam-bg)
+   qui apparaît/disparaît en fondu (opacity) → transition douce du thème.
+   La section elle-même reste blanche (var(--bg)) en base. */
 .parcours.is-islam.is-deep .parcours-inner {
   padding-top: 0.8rem;
 }
 
-/* Trame de points dorés discrète — texture parchemin */
-.islam-geo {
+/* Couche de fond de l'univers : parchemin + halos dorés + trame de points.
+   Toujours montée dans le DOM, révélée via .is-on → fondu enchaîné fluide. */
+.islam-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.65s var(--ease);
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 4%, rgba(191,138,48,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 45% at 84% 88%, rgba(191,138,48,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 42% 55% at 14% 78%, rgba(191,138,48,0.05) 0%, transparent 60%),
+    linear-gradient(165deg, #fdfaf3 0%, #f8f1e4 55%, #fcf8ef 100%);
+}
+/* Trame de points dorés discrète — texture parchemin */
+.islam-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image: radial-gradient(circle, rgba(191,138,48,0.12) 1px, transparent 1px);
   background-size: 52px 52px;
   opacity: 0.40;
 }
+.islam-bg.is-on { opacity: 1; }
 
 .islam-universe { position: relative; width: 100%; }
 
@@ -798,6 +806,14 @@
 .islam-stickers { margin: 0 auto; }
 
 /* ─── Navbar thématisée dans l'univers « sources du savoir » ─── */
+/* Transitions de base (s'appliquent dans les deux sens) pour un bascule fluide */
+.site-root .nav { transition: background 0.55s var(--ease), border-color 0.55s var(--ease); }
+.site-root .logo-fr,
+.site-root .nav-btn,
+.site-root .hamburger span,
+.site-root .login-trigger {
+  transition: color 0.55s var(--ease), background 0.55s var(--ease), border-color 0.55s var(--ease), box-shadow 0.55s var(--ease);
+}
 .site-root.is-islam-universe .nav {
   background: rgba(250, 244, 233, 0.82);
   border-bottom-color: rgba(191, 138, 48, 0.22);
