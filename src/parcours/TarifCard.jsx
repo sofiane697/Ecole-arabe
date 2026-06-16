@@ -1,11 +1,16 @@
 import { cardEnter, cardLeave } from './hoverLift';
 
 /**
- * Une carte de tarif (formule). Style « luxe éditorial épuré ».
- * @param {Object}   tarif   { titre, niveau?, ar?, prix|prixNote, rythme?, features?, note? }
- * @param {Function} onChoose Appelé au clic sur la carte
+ * Carte de formule — style « manuscrit doré » éditorial.
+ * Carte module (avec `niveau`) → grand chiffre filigrane + sous-titre niveau.
+ * Carte sans module (Coran/EDI) → titre serif + mention « Prérequis ».
  */
 export default function TarifCard({ tarif: t, onChoose }) {
+  const hasModule = !!t.niveau;
+  const num = hasModule ? (t.niveau.match(/\d+/)?.[0] || '') : '';
+  // Carte-groupe : mène à un sous-écran de tarifs (pas d'inscription directe).
+  const isGroupe = Array.isArray(t.tarifs);
+
   return (
     <button
       type="button"
@@ -14,38 +19,90 @@ export default function TarifCard({ tarif: t, onChoose }) {
       onMouseEnter={cardEnter}
       onMouseLeave={cardLeave}
     >
+      {num && <span className="tarif-numeral" aria-hidden="true">{num}</span>}
+
       <div className="tarif-top">
-        {t.niveau && (
-          <span className="tarif-niveau">
-            {t.niveau}{t.ar && <span className="tarif-ar"> · {t.ar}</span>}
-          </span>
+        {hasModule ? (
+          <>
+            <span className="tarif-niveau">{t.niveau}</span>
+            {t.titre ? (
+              <span className="tarif-titre-lvl">{t.titre}</span>
+            ) : (
+              /* Cartes « niveau » (arabe adulte) : zone prérequis toujours
+                 rendue (vide pour Expert) → prix et description alignés. */
+              <span className="tarif-prereq-line">
+                {t.prereq && (
+                  <>
+                    <span className="tarif-prereq">Prérequis :</span>
+                    {t.prereq}
+                  </>
+                )}
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="tarif-titre">{t.titre}</span>
         )}
-        <span className="tarif-titre">{t.titre}</span>
       </div>
 
-      <div className="tarif-price-block">
-        <span className="tarif-price">
-          {t.prix != null ? (
-            <>
-              <span className="tarif-amount">{t.prix}</span>
-              <span className="tarif-unit">€</span>
-            </>
+      {isGroupe ? (
+        /* Carte-groupe : pas de prix, invite à découvrir les formules */
+        <p className="tarif-groupe-hint">Plusieurs formules disponibles</p>
+      ) : (
+        <>
+          <div className="tarif-price-row">
+            <span className="tarif-price">
+              {t.prix != null ? (
+                <>
+                  <span className="tarif-amount">{t.prix}</span>
+                  <span className="tarif-unit">€</span>
+                </>
+              ) : (
+                <span className="tarif-amount tarif-amount-sm">{t.prixNote}</span>
+              )}
+            </span>
+            {t.rythme && (
+              <span className="tarif-rythme">
+                {t.rythme.split(' · ').map((r, i) => (
+                  <span key={i}>{r}</span>
+                ))}
+              </span>
+            )}
+          </div>
+
+          <span className="tarif-rule" aria-hidden="true" />
+
+          {Array.isArray(t.featureGroups) ? (
+            t.featureGroups.map((g, gi) => (
+              <div className="tarif-feat-group" key={gi}>
+                <span className="tarif-feat-group-label">{g.titre}</span>
+                <ul className="tarif-feats">
+                  {g.items.map((f, i) => (
+                    <li key={i}>
+                      <span className="tarif-gem" aria-hidden="true">✦</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
           ) : (
-            <span className="tarif-amount tarif-amount-sm">{t.prixNote}</span>
+            <ul className="tarif-feats">
+              {(t.features || []).map((f, i) => (
+                <li key={i}>
+                  <span className="tarif-gem" aria-hidden="true">✦</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
           )}
-        </span>
-        {t.rythme && <span className="tarif-freq">{t.rythme}</span>}
-      </div>
 
-      <span className="tarif-sep" />
-      <ul className="tarif-feats">
-        {(t.features || []).map((f, i) => (
-          <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
-        ))}
-      </ul>
-      {t.note && <span className="tarif-note">{t.note}</span>}
+          {t.note && <span className="tarif-note">{t.note}</span>}
+        </>
+      )}
+
       <span className="tarif-pick">
-        Choisir cette formule
+        {isGroupe ? 'Découvrir' : "S'inscrire"}
         <span className="tarif-pick-arrow" aria-hidden="true">→</span>
       </span>
     </button>

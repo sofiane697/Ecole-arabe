@@ -77,7 +77,7 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
   } else if (atDevis) {
     eyebrow = path.length > 1 ? path[path.length - 2].label : 'Devis';
     title = node.label;
-    sub = 'Dites-nous votre besoin, nous revenons vers vous sous 24h.';
+    sub = 'Décrivez-nous votre besoin.';
   } else if (atTarifs) {
     eyebrow = 'Tarifs'; title = node.label; titleAr = node.ar;
     sub = 'Choisissez la formule qui vous convient.';
@@ -150,10 +150,17 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
             {node.meta && <p className="tarif-meta parcours-anim">{node.meta}</p>}
             <div className="tarif-grid">
               {node.tarifs.map((t) => (
-                <TarifCard key={t.id} tarif={t} onChoose={() => { setTarif(t); toTop(); }} />
+                <TarifCard
+                  key={t.id}
+                  tarif={t}
+                  onChoose={() =>
+                    t.tarifs
+                      ? pick({ id: t.id, label: t.niveau || t.titre, ar: t.ar, tarifs: t.tarifs })
+                      : (setTarif(t), toTop())
+                  }
+                />
               ))}
             </div>
-            {node.adhesion && <p className="tarif-adhesion parcours-anim">+ {node.adhesion}</p>}
           </div>
         ) : (
           <StickerGrid nodes={node.children} onPick={pick} />

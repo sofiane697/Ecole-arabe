@@ -44,6 +44,7 @@ export async function submitPreinscription(pack) {
     p_formule_nom:          pack.formule?.nom ?? null,
     p_formule_prix:         pack.formule?.prix ?? null,
     p_formule_rythme:       pack.formule?.rythme ?? null,
+    p_disponibilites:       pack.disponibilites ?? null,
     p_devis_sujet:          pack.devis?.sujet ?? null,
     p_devis_besoin:         pack.devis?.besoin ?? null,
     p_eleve_prenom:         pack.eleve.prenom,

@@ -100,7 +100,6 @@ export default function DevisStep({ path, onSent }) {
           {sending ? 'Envoi…' : 'Envoyer ma demande de devis'}
           {!sending && <span className="recap-send-arrow" aria-hidden="true">→</span>}
         </button>
-        <p className="recap-reassure">Réponse sous 24h · sans engagement</p>
       </form>
     </div>
   );

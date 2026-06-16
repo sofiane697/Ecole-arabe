@@ -187,6 +187,11 @@
     0 7px 16px -8px rgba(191, 138, 48, 0.35);
   transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out);
 }
+.sticker-illu {
+  width: 50%;
+  height: 50%;
+  color: var(--gold);
+}
 .sticker:not(.is-disabled):hover .sticker-ico {
   transform: translateY(-3px) scale(1.05);
   box-shadow:
@@ -229,7 +234,14 @@
 }
 
 /* ─── Écran Tarifs — « luxe éditorial épuré » ───────────── */
-.tarif-wrap { width: 100%; }
+/* Élargi au-delà du conteneur parent (1080px) pour loger 4 grandes
+   cartes côte à côte, recentré sur le viewport (full-bleed maîtrisé). */
+.tarif-wrap {
+  width: min(1260px, 94vw);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
 .tarif-meta {
   text-align: center;
@@ -239,177 +251,276 @@
   color: var(--fg-mid);
   margin-bottom: 2rem;
 }
-.tarif-adhesion {
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-top: 2rem;
-}
-
 .tarif-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
-  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.8rem;
   align-items: stretch;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   CARTE FORMULE — « manuscrit doré » éditorial
+   Cartes claires uniformes : chiffre filigrane, filet doré,
+   gemmes ✦ pour les acquis, bouton S'inscrire.
+═══════════════════════════════════════════════════════════ */
 .tarif-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 2.6rem 1.9rem 2rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fdfbf6 100%);
+  padding: 3.2rem 2.4rem 2.4rem;
+  background: #fffdfa;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 18px;
   cursor: pointer;
   text-align: left;
+  overflow: hidden;
+  /* Profondeur douce : reflet interne haut + ombre courte + ombre longue diffuse */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 14px 34px -18px rgba(31, 29, 26, 0.18),
-    0 3px 10px -6px rgba(31, 29, 26, 0.10);
+    0 1px 2px rgba(31, 29, 26, 0.04),
+    0 8px 18px -10px rgba(31, 29, 26, 0.14),
+    0 22px 40px -24px rgba(31, 29, 26, 0.18);
   transition: border-color .4s var(--ease-out), box-shadow .4s var(--ease-out);
   will-change: transform;
 }
-/* Liseré doré en haut de carte */
-.tarif-card::before {
+/* Liseré doré révélé au survol (en haut de carte) */
+.tarif-card::after {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  background: linear-gradient(90deg, transparent, rgba(191, 138, 48, 0.55), transparent);
-  opacity: 0;
-  transition: opacity .4s var(--ease-out);
+  top: 0; left: 2.4rem; right: 2.4rem;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .5s var(--ease-out);
 }
-.tarif-card:hover::before { opacity: 1; }
+.tarif-card:hover::after { transform: scaleX(1); }
 .tarif-card:hover {
-  border-color: rgba(191, 138, 48, 0.30);
+  border-color: rgba(191, 138, 48, 0.40);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 30px 58px -22px rgba(191, 138, 48, 0.24),
-    0 8px 22px -10px rgba(31, 29, 26, 0.12);
+    0 4px 10px -4px rgba(31, 29, 26, 0.06),
+    0 16px 30px -14px rgba(191, 138, 48, 0.22),
+    0 34px 60px -28px rgba(31, 29, 26, 0.24);
 }
 
-/* En-tête de carte : niveau (doré) + titre (noir) empilés verticalement */
+/* Grand chiffre filigrane (signature éditoriale) */
+.tarif-numeral {
+  position: absolute;
+  top: -0.4rem; right: 0.9rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 7.2rem;
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(191, 138, 48, 0.09);
+  pointer-events: none;
+  user-select: none;
+  transition: transform .5s var(--ease-out), color .5s var(--ease-out);
+}
+.tarif-card:hover .tarif-numeral {
+  transform: translateY(-3px);
+  color: rgba(191, 138, 48, 0.16);
+}
+
+/* ─── En-tête de carte ──────────────────────────────── */
 .tarif-top {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-/* Niveau (eyebrow) */
+/* Nom du module — display serif élégant */
 .tarif-niveau {
   display: block;
-  font-size: 0.65rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 0.7rem;
-}
-.tarif-ar {
-  font-family: 'Scheherazade New', serif;
-  direction: rtl;
-  font-size: 0.92rem;
-  text-transform: none;
-  letter-spacing: 0;
-  opacity: 0.75;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+  color: var(--fg-title);
+  margin-bottom: 0.55rem;
 }
 
-/* Persona / module — serif italique élégant */
+/* Sous-titre niveau (Débutant, Intermédiaire…) — eyebrow doré */
+.tarif-titre-lvl {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+}
+
+/* Ligne de prérequis sous le niveau (cartes arabe adulte).
+   min-height réserve l'espace de ~2 lignes → prix et description alignés
+   entre les 4 cartes, quelle que soit la longueur du prérequis (vide = Expert). */
+.tarif-prereq-line {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--fg-mid);
+  min-height: 4.4rem;
+  margin: 0.2rem 0 1.6rem;
+}
+
+/* Titre long — cartes sans module (Coran, EDI) */
 .tarif-titre {
   display: block;
+  position: relative;
+  z-index: 1;
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.4rem;
   font-style: italic;
   font-weight: 500;
   line-height: 1.3;
   color: var(--fg-title);
-  min-height: 3.4em;
-  margin-bottom: 1.5rem;
+  min-height: 2.6em;
+  margin-bottom: 1.1rem;
+}
+.tarif-prereq {
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  font-style: normal;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
 }
 
-/* Prix */
-.tarif-price-block { margin-bottom: 0.2rem; }
-.tarif-price { display: flex; align-items: flex-start; gap: 0.18rem; }
+/* Carte-groupe : invite à découvrir les sous-formules (à la place du prix) */
+.tarif-groupe-hint {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--fg-mid);
+  margin: 0.2rem 0 1.6rem;
+}
+
+/* ─── Prix + rythme ─────────────────────────────────── */
+.tarif-price-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+.tarif-price { display: inline-flex; align-items: flex-start; gap: 0.14rem; }
 .tarif-amount {
   font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2.9rem, 7vw, 3.7rem);
-  font-weight: 500;
-  line-height: 0.9;
+  font-size: 3.3rem;
+  font-weight: 600;
+  line-height: 0.85;
   color: var(--fg-title);
   letter-spacing: -0.02em;
 }
 .tarif-amount-sm {
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   font-style: italic;
+  font-weight: 500;
   color: var(--fg-mid);
 }
+
 .tarif-unit {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--gold);
-  margin-top: 0.35rem;       /* € surélevé en exposant élégant */
+  margin-top: 0.35rem;
 }
-.tarif-freq {
-  display: block;
+
+.tarif-rythme {
+  display: flex;
+  flex-direction: column;
+  gap: 0.04rem;
+}
+.tarif-rythme span {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  font-size: 0.96rem;
-  letter-spacing: 0.01em;
+  font-size: 0.92rem;
+  line-height: 1.35;
   color: var(--fg-mid);
-  margin-top: 0.55rem;
 }
 
-/* Filet doré */
-.tarif-sep {
-  width: 34px; height: 2px;
+/* Filet doré séparateur */
+.tarif-rule {
+  position: relative;
+  z-index: 1;
+  width: 40px; height: 2px;
   background: var(--gold);
   border-radius: 2px;
-  opacity: 0.85;
-  margin: 1.6rem 0;
+  opacity: 0.8;
+  margin: 0.3rem 0 1.7rem;
 }
 
-/* Features */
+/* ─── Acquis (features) ─────────────────────────────── */
 .tarif-feats {
+  position: relative;
+  z-index: 1;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.8rem;
   flex: 1;
-  margin-bottom: 1.8rem;
+  margin-bottom: 2.2rem;
 }
 .tarif-feats li {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 0.7rem;
-  font-size: 0.83rem;
+  font-size: 0.88rem;
   line-height: 1.55;
   color: var(--fg-mid);
 }
-.tarif-check {
-  position: relative;
-  width: 15px; height: 15px;
+.tarif-gem {
   flex-shrink: 0;
-  margin-top: 0.12rem;
-  border-radius: 50%;
-  background: var(--gold-soft);
-  border: 1px solid rgba(191, 138, 48, 0.32);
+  font-size: 0.55rem;
+  color: var(--gold);
+  opacity: 0.85;
+  transform: translateY(-0.12em);
 }
-.tarif-check::after {
-  content: '';
-  position: absolute;
-  left: 5px; top: 2.5px;
-  width: 3px; height: 6.5px;
-  border: solid var(--gold);
-  border-width: 0 1.6px 1.6px 0;
-  transform: rotate(45deg);
+
+/* Sous-groupes de features (cartes combo « Partie Coran » / « Partie Éducation islamique ») */
+.tarif-feat-group {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
 }
+.tarif-feat-group:last-of-type {
+  flex: 1;
+  margin-bottom: 2.2rem;
+}
+.tarif-feat-group-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.tarif-feat-group .tarif-feats {
+  flex: none;
+  margin-bottom: 0;
+}
+
 .tarif-note {
+  position: relative;
+  z-index: 1;
   font-size: 0.73rem;
   font-style: italic;
   line-height: 1.5;
@@ -417,32 +528,55 @@
   margin: -0.9rem 0 1.5rem;
 }
 
-/* Bouton */
+/* ─── Bouton S'inscrire ─────────────────────────────── */
 .tarif-pick {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
   margin-top: auto;
   width: 100%;
-  padding: 0.85rem;
+  padding: 1.05rem 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  text-align: center;
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--gold);
   background: transparent;
-  border: 1px solid rgba(191, 138, 48, 0.4);
+  border: 1.5px solid rgba(191, 138, 48, 0.45);
   border-radius: 980px;
   cursor: pointer;
-  transition: background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
+  transition: color .35s var(--ease), border-color .35s var(--ease),
+              background .35s var(--ease), box-shadow .35s var(--ease);
 }
+/* Balayage lumineux qui traverse le bouton au survol */
+.tarif-pick::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -120%;
+  width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-18deg);
+  transition: left .6s var(--ease-out);
+  pointer-events: none;
+}
+.tarif-card:hover .tarif-pick::before { left: 140%; }
+
 .tarif-pick-arrow {
   display: inline-block;
-  transition: transform .3s var(--ease-out);
+  transition: transform .35s var(--ease-out);
 }
-.tarif-card:hover .tarif-pick { background: var(--gold); color: #fff; border-color: var(--gold); }
-.tarif-card:hover .tarif-pick-arrow { transform: translateX(4px); }
+/* Se remplit en doré au survol */
+.tarif-card:hover .tarif-pick {
+  color: #fff;
+  background: linear-gradient(180deg, var(--gold-light, #d4a245) 0%, var(--gold) 100%);
+  border-color: transparent;
+  box-shadow: 0 12px 26px -12px rgba(191, 138, 48, 0.6);
+}
+.tarif-card:hover .tarif-pick-arrow { transform: translateX(5px); }
 
 /* ─── Récapitulatif (compte rendu) — layout « checkout » ──── */
 .recap {
@@ -527,13 +661,43 @@
   line-height: 1.5;
   color: var(--fg-mid);
 }
+.recap-feat-group { margin: 1.3rem 0; }
+.recap-feat-group-label {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+.recap-feat-group .recap-feats { margin: 0; }
+/* Détail du coût : prix du pack + frais de dossier + total */
+.recap-cost {
+  margin-top: auto;
+  padding-top: 1.3rem;
+}
+.recap-cost-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--fg-mid);
+  padding: 0.35rem 0;
+}
+.recap-cost-row span:last-child {
+  font-weight: 600;
+  color: var(--fg-title);
+}
+
 .recap-total {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: auto;
-  padding-top: 1.3rem;
+  margin-top: 0.6rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
 .recap-total-label {
@@ -592,6 +756,73 @@
   color: var(--fg-light);
 }
 
+/* ─── Disponibilités (cases à cocher, parcours adulte) ─── */
+.recap-dispo {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.recap-dispo legend { padding: 0; margin: 0 0 0.35rem; }
+.recap-dispo-help {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--fg-light);
+  margin: 0;
+}
+.recap-dispo-group { display: flex; flex-direction: column; gap: 0.45rem; }
+.recap-dispo-titre {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--fg-mid);
+  margin: 0.2rem 0 0;
+}
+.recap-dispo-opts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Sous-bloc des créneaux d'un jour de semaine (révélé après sélection du jour) */
+.recap-dispo-jour {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0 0.6rem;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--gold-soft);
+}
+.recap-dispo-jour-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  margin: 0;
+}
+
+/* Pastille sélectionnable */
+.recap-dispo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--fg-mid);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 980px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color .2s var(--ease), background .2s var(--ease), color .2s var(--ease);
+}
+.recap-dispo-chip:hover { border-color: var(--gold); }
+.recap-dispo-chip input { accent-color: var(--gold); cursor: pointer; margin: 0; }
+.recap-dispo-chip.is-on {
+  color: var(--gold);
+  background: var(--gold-soft);
+  border-color: var(--gold);
+  font-weight: 600;
+}
+.recap-dispo-none { align-self: flex-start; margin-top: 0.2rem; }
+
 /* Message d'erreur d'envoi. */
 .recap-error {
   font-size: 0.82rem;
@@ -620,13 +851,6 @@
 .recap-send:disabled { opacity: 0.6; cursor: default; box-shadow: none; }
 .recap-send-arrow { display: inline-block; transition: transform .3s var(--ease-out); }
 .recap-send:hover .recap-send-arrow { transform: translateX(4px); }
-.recap-reassure {
-  text-align: center;
-  font-size: 0.74rem;
-  color: var(--fg-light);
-  margin-top: 0.1rem;
-}
-
 /* ─── Écran de confirmation (envoi factice) ─────────────── */
 .parcours-done {
   max-width: 520px; margin-inline: auto; text-align: center;
@@ -654,7 +878,7 @@
 @media (max-width: 1024px) {
   .parcours-inner { padding: 2.4rem 1.6rem 3.2rem; }
   .sticker-grid { gap: 1.1rem; }
-  .tarif-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .tarif-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
 
 @media (max-width: 768px) {
@@ -667,7 +891,8 @@
   .sticker-grid.count-2,
   .sticker-grid.count-1 { grid-template-columns: 1fr; max-width: 440px; }
   .tarif-grid { grid-template-columns: 1fr; max-width: 440px; margin-inline: auto; }
-  .tarif-titre { min-height: 0; }      /* plus besoin d'aligner quand empilé */
+  .tarif-titre { min-height: 0; }
+  .tarif-titre-lvl { margin-bottom: 1rem; }
 
   /* Récap : empilé en une colonne */
   .recap { grid-template-columns: 1fr; max-width: 460px; }
@@ -687,33 +912,10 @@
   padding-top: 0.8rem;
 }
 
-/* Couche de fond de l'univers : parchemin + halos dorés + trame de points.
-   Toujours montée dans le DOM, révélée via .is-on → fondu enchaîné fluide.
-   position:fixed + débord (-4px) : le bord du calque (promu par opacity) sort
-   du viewport → pas de liseré d'échantillonnage sous le backdrop-filter de la nav. */
-.islam-bg {
-  position: fixed;
-  top: -4px; left: -4px; right: -4px; bottom: -4px;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.65s var(--ease);
-  background:
-    radial-gradient(ellipse 80% 55% at 50% 4%, rgba(191,138,48,0.10) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 45% at 84% 88%, rgba(191,138,48,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 42% 55% at 14% 78%, rgba(191,138,48,0.05) 0%, transparent 60%),
-    linear-gradient(165deg, #fdfaf3 0%, #f8f1e4 55%, #fcf8ef 100%);
-}
-/* Trame de points dorés discrète — texture parchemin */
-.islam-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(191,138,48,0.12) 1px, transparent 1px);
-  background-size: 52px 52px;
-  opacity: 0.40;
-}
-.islam-bg.is-on { opacity: 1; }
+/* Fond parchemin doré désactivé : tous les écrans du parcours gardent le fond
+   clair de l'accueil (var(--bg) porté par .parcours). La couche reste dans le
+   DOM mais n'est plus peinte. */
+.islam-bg { display: none; }
 
 .islam-universe { position: relative; width: 100%; }
 
@@ -771,6 +973,18 @@
   color: var(--gold);
   opacity: 0.85;
   margin-bottom: 1.7rem;
+}
+
+/* Phrase d'accroche sous le titre (une seule ligne sur desktop,
+   retour à la ligne naturel sur mobile étroit). */
+.islam-tagline {
+  max-width: none;
+  margin: 0 auto 1.7rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  line-height: 1.5;
+  color: var(--fg-mid);
 }
 
 /* Verset coranique */
@@ -887,7 +1101,7 @@
   .sticker { padding: 2rem 1.4rem; }
   .sticker-ico { width: 3.8rem; height: 3.8rem; font-size: 2rem; }
 
-  .tarif-card { padding: 2.1rem 1.5rem 1.7rem; }
+  .tarif-card { padding: 1.8rem 1.4rem 1.5rem; border-radius: 14px; }
 
   .parcours-bar { margin-bottom: 1.1rem; margin-left: 0; }
   .parcours-back { padding: 0.4rem 0.85rem; font-size: 0.76rem; }

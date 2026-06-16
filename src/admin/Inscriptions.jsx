@@ -308,6 +308,12 @@ export default function Inscriptions() {
                             <span className="insc-detail-field-value">{i.formule_rythme}</span>
                           </div>
                         )}
+                        {Array.isArray(i.disponibilites) && i.disponibilites.length > 0 && (
+                          <div className="insc-detail-field">
+                            <span className="insc-detail-field-label">Disponibilités</span>
+                            <span className="insc-detail-field-value">{i.disponibilites.join(' · ')}</span>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <>

@@ -1,4 +1,5 @@
 import { cardEnter, cardLeave } from './hoverLift';
+import ILLUS from './StickerIllus';
 
 /**
  * Grille de stickers d'un niveau.
@@ -22,7 +23,7 @@ export default function StickerGrid({ nodes, onPick }) {
           aria-label={node.label}
         >
           {node.disabled && <span className="sticker-badge">Bientôt</span>}
-          <span className="sticker-ico">{node.ico}</span>
+          <span className="sticker-ico">{(node.illu && ILLUS[node.illu]) || node.ico}</span>
           <span className="sticker-label">{node.label}</span>
           {node.ar && <span className="sticker-ar">{node.ar}</span>}
           {node.desc && <span className="sticker-desc">{node.desc}</span>}

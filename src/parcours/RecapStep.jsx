@@ -2,6 +2,11 @@ import { useState } from 'react';
 import gsap from 'gsap';
 import CoordonneesFields, { emptyCoordForm, splitIdentity } from './CoordonneesFields';
 import { submitPreinscription, derivePathMeta } from './supabasePreinscription';
+import {
+  DISPO_JOURS_SEMAINE, DISPO_CRENEAUX_SEMAINE, DISPO_CRENEAUX_SEMAINE_ENFANT,
+  DISPO_WEEKEND_JOURS, DISPO_AUCUNE,
+  toggleDispo, weekLabel, weekendLabel, removeJour,
+} from './disponibilites';
 
 const btnEnter = (e) => gsap.to(e.currentTarget, { y: -2, duration: 0.25, ease: 'power3.out' });
 const btnLeave = (e) => gsap.to(e.currentTarget, { y: 0, duration: 0.25, ease: 'power3.out' });
@@ -16,17 +21,52 @@ const btnLeave = (e) => gsap.to(e.currentTarget, { y: 0, duration: 0.25, ease: '
  * @param {Function} onSent Appelé après envoi réussi
  */
 export default function RecapStep({ path, tarif, onSent }) {
-  const [form, setForm]       = useState(emptyCoordForm);
-  const [sending, setSending] = useState(false);
-  const [error, setError]     = useState('');
+  const [form, setForm]               = useState(emptyCoordForm);
+  const [dispos, setDispos]           = useState([]);
+  const [joursOuverts, setJoursOuverts] = useState([]);
+  const [sending, setSending]         = useState(false);
+  const [error, setError]             = useState('');
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const { est_enfant: estEnfant } = derivePathMeta(path);
+  const { est_enfant: estEnfant, format } = derivePathMeta(path);
+  // Disponibilités : adulte toujours ; enfant uniquement en visioconférence
+  // (pas en autonomie ni en cours particulier).
+  const showDispo = !estEnfant || format === 'visioconference';
+  // En semaine : enfant = soirée uniquement.
+  const creneauxSemaine = estEnfant ? DISPO_CRENEAUX_SEMAINE_ENFANT : DISPO_CRENEAUX_SEMAINE;
+  // Semaine : on ouvre un jour, puis on coche ses créneaux (libellé « Jour · Créneau »).
+  const toggleJour = (jour) => {
+    if (joursOuverts.includes(jour)) {
+      setJoursOuverts((o) => o.filter((j) => j !== jour));
+      setDispos((cur) => removeJour(cur, jour)); // referme → retire ses créneaux
+    } else {
+      setJoursOuverts((o) => [...o, jour]);
+      setDispos((cur) => cur.filter((v) => v !== DISPO_AUCUNE)); // un jour exclut « aucune »
+    }
+  };
+  const toggleCreneau = (jour, creneau) =>
+    setDispos((cur) => toggleDispo(cur, weekLabel(jour, creneau)));
+  const toggleCreneauWeekend = (jour, creneau) =>
+    setDispos((cur) => toggleDispo(cur, weekendLabel(jour, creneau)));
+  const toggleAucune = () =>
+    setDispos((cur) => {
+      const next = toggleDispo(cur, DISPO_AUCUNE);
+      if (next.includes(DISPO_AUCUNE)) setJoursOuverts([]); // exclusive : referme tout
+      return next;
+    });
+  const dispoManquante = showDispo && dispos.length === 0;
   const formuleNom = tarif.niveau || tarif.titre;
-  const prix = tarif.prix != null ? `${tarif.prix} €` : tarif.prixNote;
+  // Frais de dossier fixes, identiques pour tous les packs.
+  const FRAIS_DOSSIER = 25;
+  const prixNum = typeof tarif.prix === 'number' ? tarif.prix : null;
+  const total = prixNum != null ? prixNum + FRAIS_DOSSIER : null;
 
   const submit = async (e) => {
     e.preventDefault();
+    if (dispoManquante) {
+      setError('Sélectionnez au moins une disponibilité.');
+      return;
+    }
     setSending(true); setError('');
     try {
       const { eleve, contact } = splitIdentity(form, estEnfant);
@@ -38,6 +78,7 @@ export default function RecapStep({ path, tarif, onSent }) {
           prix: typeof tarif.prix === 'number' ? tarif.prix : null,
           rythme: tarif.rythme || null,
         },
+        disponibilites: dispos.length ? dispos : null,
         eleve, contact, estEnfant,
       });
       onSent({ choix: path.map((n) => n.label), coord: { prenom: contact.prenom } });
@@ -69,17 +110,59 @@ export default function RecapStep({ path, tarif, onSent }) {
         </div>
         {tarif.rythme && <p className="recap-rythme">{tarif.rythme}</p>}
 
-        {tarif.features?.length > 0 && (
-          <ul className="recap-feats">
-            {tarif.features.map((f, i) => (
-              <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
-            ))}
-          </ul>
+        {Array.isArray(tarif.featureGroups) ? (
+          tarif.featureGroups.map((g, gi) => (
+            <div className="recap-feat-group" key={gi}>
+              <span className="recap-feat-group-label">{g.titre}</span>
+              <ul className="recap-feats">
+                {g.items.map((f, i) => (
+                  <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        ) : (
+          tarif.features?.length > 0 && (
+            <ul className="recap-feats">
+              {tarif.features.map((f, i) => (
+                <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
+              ))}
+            </ul>
+          )
         )}
 
-        <div className="recap-total">
-          <span className="recap-total-label">Tarif</span>
-          <span className="recap-total-val">{prix}</span>
+        <div className="recap-cost">
+          {prixNum != null ? (
+            <>
+              <div className="recap-cost-row">
+                <span>Prix du pack</span>
+                <span>{prixNum} €</span>
+              </div>
+              <div className="recap-cost-row">
+                <span>Frais de dossier</span>
+                <span>{FRAIS_DOSSIER} €</span>
+              </div>
+              <div className="recap-total">
+                <span className="recap-total-label">Total</span>
+                <span className="recap-total-val">{total} €</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="recap-cost-row">
+                <span>Prix du pack</span>
+                <span>{tarif.prixNote}</span>
+              </div>
+              <div className="recap-cost-row">
+                <span>Frais de dossier</span>
+                <span>{FRAIS_DOSSIER} €</span>
+              </div>
+              <div className="recap-total">
+                <span className="recap-total-label">Tarif</span>
+                <span className="recap-total-val">Sur devis</span>
+              </div>
+            </>
+          )}
         </div>
       </aside>
 
@@ -91,14 +174,123 @@ export default function RecapStep({ path, tarif, onSent }) {
 
         <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
 
+        {showDispo && (
+          <fieldset className="recap-dispo">
+            <legend className="recap-group-label">Vos disponibilités</legend>
+            <p className="recap-dispo-help">
+              Choisir un ou plusieurs créneaux ou aucune préférence.
+            </p>
+
+            <label
+              className={`recap-dispo-chip recap-dispo-none${dispos.includes(DISPO_AUCUNE) ? ' is-on' : ''}`}
+            >
+              <input
+                type="checkbox"
+                checked={dispos.includes(DISPO_AUCUNE)}
+                onChange={toggleAucune}
+              />
+              {DISPO_AUCUNE}
+            </label>
+
+            {/* En semaine : jour → créneaux révélés */}
+            <div className="recap-dispo-group">
+              <p className="recap-dispo-titre">En semaine</p>
+              <div className="recap-dispo-opts">
+                {DISPO_JOURS_SEMAINE.map((jour) => (
+                  <label
+                    key={jour}
+                    className={`recap-dispo-chip${joursOuverts.includes(jour) ? ' is-on' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={joursOuverts.includes(jour)}
+                      onChange={() => toggleJour(jour)}
+                    />
+                    {jour}
+                  </label>
+                ))}
+              </div>
+
+              {DISPO_JOURS_SEMAINE.filter((j) => joursOuverts.includes(j)).map((jour) => (
+                <div className="recap-dispo-jour" key={jour}>
+                  <p className="recap-dispo-jour-label">{jour}</p>
+                  <div className="recap-dispo-opts">
+                    {creneauxSemaine.map((creneau) => {
+                      const label = weekLabel(jour, creneau);
+                      return (
+                        <label
+                          key={creneau}
+                          className={`recap-dispo-chip${dispos.includes(label) ? ' is-on' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={dispos.includes(label)}
+                            onChange={() => toggleCreneau(jour, creneau)}
+                          />
+                          {creneau}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Le week-end : jour → créneaux révélés */}
+            <div className="recap-dispo-group">
+              <p className="recap-dispo-titre">Le week-end</p>
+              <div className="recap-dispo-opts">
+                {DISPO_WEEKEND_JOURS.map(({ jour }) => (
+                  <label
+                    key={jour}
+                    className={`recap-dispo-chip${joursOuverts.includes(jour) ? ' is-on' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={joursOuverts.includes(jour)}
+                      onChange={() => toggleJour(jour)}
+                    />
+                    {jour}
+                  </label>
+                ))}
+              </div>
+
+              {DISPO_WEEKEND_JOURS.filter(({ jour }) => joursOuverts.includes(jour)).map(
+                ({ jour, creneaux }) => (
+                  <div className="recap-dispo-jour" key={jour}>
+                    <p className="recap-dispo-jour-label">{jour}</p>
+                    <div className="recap-dispo-opts">
+                      {creneaux.map((creneau) => {
+                        const label = weekendLabel(jour, creneau);
+                        return (
+                          <label
+                            key={creneau}
+                            className={`recap-dispo-chip${dispos.includes(label) ? ' is-on' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={dispos.includes(label)}
+                              onChange={() => toggleCreneauWeekend(jour, creneau)}
+                            />
+                            {creneau}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </fieldset>
+        )}
+
         {error && <p className="recap-error">{error}</p>}
 
-        <button type="submit" className="recap-send" disabled={sending}
+        <button type="submit" className="recap-send" disabled={sending || dispoManquante}
           onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
           {sending ? 'Envoi…' : 'Envoyer ma demande'}
           {!sending && <span className="recap-send-arrow" aria-hidden="true">→</span>}
         </button>
-        <p className="recap-reassure">Réponse sous 24h · sans engagement</p>
       </form>
     </div>
   );
