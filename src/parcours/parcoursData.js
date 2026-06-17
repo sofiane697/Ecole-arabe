@@ -131,7 +131,7 @@ const TARIFS_CORAN = [
     prereq: "Je pars de zéro 😄",
     prereqNone: true,
     prix: 149,
-    rythme: '15 séances · 2 × 40 min / semaine',
+    rythme: '16 séances · 2 × 40 min / semaine',
     features: [
       'Apprentissage des lettres arabes',
       'Maîtrise des voyelles',
