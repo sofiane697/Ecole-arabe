@@ -1796,7 +1796,8 @@
      d'adresse mobile. Le scroll se fait à l'intérieur. */
   max-height: calc(100vh - 40px);
   max-height: calc(100dvh - 40px);
-  background: var(--a-bg);
+  /* Fond blanc cassé (plus clair que le beige --a-bg) pour aérer la fiche. */
+  background: #faf8f3;
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -24px 70px rgba(0,0,0,0.38);
   overflow-y: auto;
