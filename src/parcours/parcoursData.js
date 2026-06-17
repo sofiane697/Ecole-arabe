@@ -144,7 +144,7 @@ const TARIFS_CORAN = [
     niveau: "J'apprends les règles de Tajwid",
     prereq: "Je sais lire",
     prix: 149,
-    rythme: '15 séances · 40 min / séance',
+    rythme: '15 séances · 40 min / semaine',
     features: [
       'Apprentissage des règles de tajwid',
       'Ghunna, Idgham, Iqlab, Idhar',
@@ -178,7 +178,7 @@ const TARIFS_EDI = [
     id: 'edi-sira',
     titre: 'Sira',
     prix: 99,
-    rythme: '15 séances · 40 min / séance',
+    rythme: '15 séances · 40 min / semaine',
     features: [
       'Découverte de la vie du Prophète',
       "Compréhension d’événements marquants",
@@ -190,7 +190,7 @@ const TARIFS_EDI = [
     id: 'edi-fiqh',
     titre: 'Fiqh Salat',
     prix: 99,
-    rythme: '15 séances · 40 min / séance',
+    rythme: '15 séances · 40 min / semaine',
     features: [
       'Conditions de la prière',
       'Piliers de la prière',
@@ -202,14 +202,14 @@ const TARIFS_EDI = [
     id: 'edi-hajj',
     titre: 'Fiqh du Pèlerinage',
     prix: 99,
-    rythme: '15 séances · 40 min / séance',
+    rythme: '15 séances · 40 min / semaine',
     features: ['Conditions du pèlerinage', 'Les étapes des rites'],
   },
   {
     id: 'edi-lavage',
     titre: 'Lavage mortuaire',
     prix: 49,
-    rythme: '5 séances · 40 min / séance',
+    rythme: '5 séances · 40 min / semaine',
     features: [
       'Fondement religieux',
       'Rite funéraire',
@@ -221,7 +221,7 @@ const TARIFS_EDI = [
     id: 'edi-zakat',
     titre: 'Fiqh de la Zakat',
     prix: 99,
-    rythme: '15 séances · 40 min / séance',
+    rythme: '15 séances · 40 min / semaine',
     features: [
       'Conditions et obligation de la Zakat',
       'Biens soumis à la Zakat et calcul',
