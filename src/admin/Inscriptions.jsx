@@ -344,6 +344,7 @@ export default function Inscriptions() {
   const [filtrePublic, setFiltrePublic] = useState('tous');
   const [selected,   setSelected]   = useState(null); // préinscription ouverte dans le sheet
   const [classes,    setClasses]    = useState([]);   // classes pour l'affectation (conversion adulte)
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const pageRef    = useRef(null);
   const overlayRef = useRef(null);
@@ -467,6 +468,103 @@ export default function Inscriptions() {
     new Date(d).toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
+
+  // Export PDF de la fiche de pré-inscription (toutes les infos + observations).
+  const exportInscriptionPDF = async (i) => {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 14;
+      const contentW = pageW - margin * 2;
+      const GOLD = [191, 138, 48], DARK = [50, 40, 30], MID = [110, 95, 75], WHITE = [255, 255, 255];
+
+      // En-tête
+      doc.setFillColor(...GOLD); doc.rect(0, 0, pageW, 24, 'F');
+      doc.setTextColor(...WHITE); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+      doc.text('FICHE PRÉINSCRIPTION', margin, 11);
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+      doc.text('Educamoov — ENT', margin, 18);
+      const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      doc.setFontSize(8); doc.text(`Généré le ${dateGen}`, pageW - margin, 18, { align: 'right' });
+
+      let y = 33;
+      const ensure = (h) => { if (y + h > pageH - 14) { doc.addPage(); y = 18; } };
+      const section = (title) => {
+        ensure(12);
+        doc.setFillColor(...GOLD); doc.rect(margin, y - 3.5, 2.4, 5, 'F');
+        doc.setTextColor(...DARK); doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+        doc.text(title, margin + 5, y);
+        y += 7;
+      };
+      const row = (label, value) => {
+        const v = (value == null || value === '') ? '—' : String(value);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...MID);
+        const lines = doc.splitTextToSize(v, contentW - 44);
+        ensure(Math.max(6, lines.length * 4.6));
+        doc.text(label, margin + 2, y);
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+        doc.text(lines, margin + 44, y);
+        y += Math.max(6, lines.length * 4.6);
+      };
+
+      // Apprenant
+      section('Apprenant');
+      row('Nom', fmtNom(i.eleve_nom || ''));
+      row('Prénom', fmtPrenom(i.eleve_prenom || ''));
+      row('Public', i.est_enfant ? 'Enfant' : 'Adulte');
+      const age = calcAge(i.eleve_date_naissance);
+      row('Date de naissance', i.eleve_date_naissance
+        ? `${formatDateNaissance(i.eleve_date_naissance)}${age != null ? ` (${age} ans)` : ''}` : '—');
+      y += 2;
+
+      // Demande
+      section('Demande');
+      const crumbs = (Array.isArray(i.parcours) ? i.parcours : []).filter((c, idx) => idx !== 0 && c !== 'Enfant' && c !== 'Adulte');
+      if (crumbs.length) row('Parcours', crumbs.join(' › '));
+      if (i.type === 'tarif') {
+        row('Formule', i.formule_nom || i.matiere || '—');
+        row('Tarif', i.formule_prix != null ? `${i.formule_prix} €` : '—');
+        if (i.formule_rythme) row('Rythme', i.formule_rythme);
+        if (Array.isArray(i.disponibilites) && i.disponibilites.length) row('Disponibilités', i.disponibilites.join(' · '));
+      } else {
+        row('Type', 'Devis sur mesure');
+        if (i.devis_sujet)  row('Sujet', i.devis_sujet);
+        if (i.devis_besoin) row('Besoin', i.devis_besoin);
+      }
+      y += 2;
+
+      // Contact / Responsable
+      section(i.est_enfant ? 'Responsable' : 'Contact');
+      if (i.contact_prenom || i.contact_nom) row('Nom', `${fmtPrenom(i.contact_prenom)} ${fmtNom(i.contact_nom)}`);
+      row('Téléphone', i.contact_telephone);
+      row('Email', i.contact_email);
+      y += 2;
+
+      // Suivi
+      section('Suivi');
+      row('Statut', (STATUT_CFG[i.statut] || {}).label || i.statut);
+      row('Reçue le', formatFullDate(i.created_at));
+      y += 2;
+
+      // Observations
+      section('Observations');
+      const note = (i.admin_note || '').trim();
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DARK);
+      const noteLines = doc.splitTextToSize(note || 'Aucune observation.', contentW - 4);
+      ensure(noteLines.length * 4.8);
+      doc.text(noteLines, margin + 2, y);
+
+      // Pied de page
+      doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
+      doc.text('Educamoov — Document confidentiel', margin, pageH - 6);
+
+      doc.save(`preinscription-${(fmtNom(i.eleve_nom) || 'fiche').toLowerCase().replace(/\s+/g, '-')}.pdf`);
+    } catch { /* génération best-effort */ }
+    finally { setPdfLoading(false); }
+  };
 
   if (loading) {
     return <div className="text-center p-16 text-a-fg-light">Chargement des préinscriptions...</div>;
@@ -676,6 +774,10 @@ export default function Inscriptions() {
                   </div>
 
                   <ObservationSection inscription={i} onSaved={(note) => markNote(i.id, note)} />
+
+                  <button className="insc-pdf-btn" onClick={() => exportInscriptionPDF(i)} disabled={pdfLoading}>
+                    ⤓ {pdfLoading ? 'Génération…' : 'Télécharger la fiche PDF'}
+                  </button>
                 </div>
 
                 {/* Colonne droite : avancement + actions + conversion (à venir) */}
