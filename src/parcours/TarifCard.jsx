@@ -10,11 +10,15 @@ export default function TarifCard({ tarif: t, onChoose }) {
   const num = hasModule ? (t.niveau.match(/\d+/)?.[0] || '') : '';
   // Carte-groupe : mène à un sous-écran de tarifs (pas d'inscription directe).
   const isGroupe = Array.isArray(t.tarifs);
+  // Carte « minimale » (ex. sourates) : un nom + un prix, sans prérequis ni contenu.
+  // → carte compacte, on ne réserve pas la zone prérequis.
+  const isMini =
+    hasModule && !t.titre && !t.prereq && !t.featureGroups && !(t.features && t.features.length);
 
   return (
     <button
       type="button"
-      className="tarif-card parcours-anim"
+      className={`tarif-card parcours-anim ${isMini ? 'tarif-card--mini' : ''}`}
       onClick={onChoose}
       onMouseEnter={cardEnter}
       onMouseLeave={cardLeave}
@@ -27,7 +31,7 @@ export default function TarifCard({ tarif: t, onChoose }) {
             <span className="tarif-niveau">{t.niveau}</span>
             {t.titre ? (
               <span className="tarif-titre-lvl">{t.titre}</span>
-            ) : (
+            ) : isMini ? null : (
               /* Cartes « niveau » (arabe adulte) : zone prérequis toujours
                  rendue (vide pour Expert) → prix et description alignés. */
               <span className="tarif-prereq-line">

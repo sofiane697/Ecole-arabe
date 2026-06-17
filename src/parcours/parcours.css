@@ -311,6 +311,22 @@
     0 34px 60px -28px rgba(31, 29, 26, 0.24);
 }
 
+/* Cartes « mini » (sourates) : compactes, nom proche du prix, sans zone prérequis */
+.tarif-card--mini {
+  padding: 2.2rem 1.9rem 1.9rem;
+}
+/* Réserve 2 lignes de titre pour aligner le prix quand un nom passe à la ligne */
+.tarif-card--mini .tarif-niveau {
+  min-height: 2.2em;
+  margin-bottom: 0.3rem;
+}
+.tarif-card--mini .tarif-price-row {
+  margin-bottom: 1.1rem;
+}
+.tarif-card--mini .tarif-feats {
+  display: none;
+}
+
 /* Grand chiffre filigrane (signature éditoriale) */
 .tarif-numeral {
   position: absolute;
@@ -347,8 +363,6 @@
   line-height: 1.1;
   letter-spacing: -0.005em;
   color: var(--fg-title);
-  /* Réserve 2 lignes : aligne prix/contenu même quand un titre passe à la ligne */
-  min-height: 2.2em;
   margin-bottom: 0.55rem;
 }
 
