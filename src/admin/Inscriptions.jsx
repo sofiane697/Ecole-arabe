@@ -4,11 +4,10 @@ import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchPreinscriptions, updatePreinscriptionStatut, markPreinscriptionViewed,
   createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses,
-  fetchEleveIdParIdentifiant, sendWelcomeEmail,
+  fetchEleveIdParIdentifiant, adminLinkPreinscriptionEleve,
 } from './supabaseAdmin';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parentsLogic';
-import { dispatchPostCreationEmails } from './parentsMail';
 import { emitInscriptionsChanged } from './adminEvents';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
@@ -46,37 +45,35 @@ const IconArrow = () => (
  * affecte la classe (et le niveau scolaire dérivé), passe la demande à « Inscrit »
  * et envoie l'e-mail de bienvenue. Pas de parent (adulte majeur).
  */
-function ConvertAdulte({ inscription: i, classes, onInscrit }) {
+function ConvertAdulte({ inscription: i, classes, onConverted }) {
   const [open,     setOpen]     = useState(false);
   const [classeId, setClasseId] = useState('');
   const [busy,     setBusy]     = useState(false);
   const [error,    setError]    = useState('');
   const [result,   setResult]   = useState(null);
 
-  // Compte créé → récapitulatif identifiants.
+  // Compte créé → récapitulatif identifiants (compte inactif, demande « Traité »).
   if (result) {
     return (
       <div className="insc-convert insc-convert-done">
-        <span className="insc-sheet-soon-title">✓ Étudiant créé{result.classeNom ? ` — ${result.classeNom}` : ''}</span>
+        <span className="insc-sheet-soon-title">✓ Étudiant créé (inactif){result.classeNom ? ` — ${result.classeNom}` : ''}</span>
         <div className="insc-convert-creds">
           <div><span>Identifiant</span><strong>{result.identifiant}</strong></div>
           <div><span>Mot de passe</span><strong>{result.tempPassword}</strong></div>
         </div>
-        <span className="insc-convert-mail">
-          {result.emailSent
-            ? `✉ E-mail de bienvenue envoyé à ${result.email}`
-            : '⚠ E-mail non envoyé — transmets les identifiants manuellement.'}
-        </span>
+        <span className="insc-convert-mail">Active le compte dans « Gestion des étudiants » pour passer la demande en « Inscrit ».</span>
       </div>
     );
   }
 
-  // Déjà au statut « Inscrit » (compte créé précédemment ou statut forcé).
-  if (i.statut === 'inscrit') {
+  // Déjà converti (compte rattaché) : statut selon l'avancement.
+  if (i.eleve_id) {
     return (
       <div className="insc-convert insc-sheet-soon">
-        <span className="insc-sheet-soon-title">✓ Étudiant inscrit</span>
-        <span>Cette demande est déjà au statut « Inscrit ».</span>
+        <span className="insc-sheet-soon-title">✓ Étudiant {i.statut === 'inscrit' ? 'activé (inscrit)' : 'créé — à activer'}</span>
+        <span>{i.statut === 'inscrit'
+          ? 'Le compte est actif et la demande est inscrite.'
+          : 'Compte créé (inactif). Active-le dans « Gestion des étudiants » pour l’inscrire.'}</span>
       </div>
     );
   }
@@ -94,7 +91,8 @@ function ConvertAdulte({ inscription: i, classes, onInscrit }) {
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      const patch = { classe_id: classeId, est_adulte: true };
+      // Compte créé INACTIF : l'activation le fera passer en « inscrit ».
+      const patch = { classe_id: classeId, est_adulte: true, actif: false };
       if (i.contact_email)      patch.email_contact  = i.contact_email;
       if (i.contact_telephone)  patch.telephone      = i.contact_telephone;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
@@ -103,20 +101,11 @@ function ConvertAdulte({ inscription: i, classes, onInscrit }) {
       const classe = classes.find(c => c.id === classeId);
       await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
 
-      await updatePreinscriptionStatut(i.id, 'inscrit');
-      onInscrit();
+      // Rattache la préinscription + passe à « Traité » (contacté).
+      await adminLinkPreinscriptionEleve(i.id, eleveId);
+      onConverted(eleveId);
 
-      let emailSent = false;
-      if (i.contact_email) {
-        try {
-          await sendWelcomeEmail({
-            email: i.contact_email, prenom, nom,
-            identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom,
-          });
-          emailSent = true;
-        } catch { /* e-mail non bloquant */ }
-      }
-      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, emailSent, email: i.contact_email });
+      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom });
     } catch (e) {
       setError(e.message || "Erreur lors de la création de l'étudiant.");
     } finally {
@@ -165,7 +154,7 @@ function ConvertAdulte({ inscription: i, classes, onInscrit }) {
  * par email/téléphone), passe la demande à « Inscrit » et envoie l'e-mail de bienvenue
  * (identifiants élève + parent).
  */
-function ConvertEnfant({ inscription: i, classes, onInscrit }) {
+function ConvertEnfant({ inscription: i, classes, onConverted }) {
   const [open,     setOpen]     = useState(false);
   const [classeId, setClasseId] = useState('');
   const [lien,     setLien]     = useState('pere'); // le responsable est père ou mère
@@ -181,7 +170,7 @@ function ConvertEnfant({ inscription: i, classes, onInscrit }) {
     const p = result.parent;
     return (
       <div className="insc-convert insc-convert-done">
-        <span className="insc-sheet-soon-title">✓ Élève créé{result.classeNom ? ` — ${result.classeNom}` : ''}</span>
+        <span className="insc-sheet-soon-title">✓ Élève créé (inactif){result.classeNom ? ` — ${result.classeNom}` : ''}</span>
         <div className="insc-convert-creds">
           <div><span>Élève · identifiant</span><strong>{result.identifiant}</strong></div>
           <div><span>Élève · mot de passe</span><strong>{result.tempPassword}</strong></div>
@@ -194,20 +183,18 @@ function ConvertEnfant({ inscription: i, classes, onInscrit }) {
         )}
         {p && p.kind === 'linked'  && <span className="insc-convert-mail">↪ Rattaché au compte parent existant ({p.identifiant}).</span>}
         {p && p.kind === 'failed'  && <span className="insc-convert-error">⚠ Élève créé, mais parent non enregistré : {p.error}</span>}
-        <span className="insc-convert-mail">
-          {result.email
-            ? `✉ E-mail de bienvenue envoyé à ${result.email}`
-            : '⚠ Pas d’e-mail de contact — transmets les identifiants manuellement.'}
-        </span>
+        <span className="insc-convert-mail">Active le compte dans « Gestion des élèves » pour passer la demande en « Inscrit ».</span>
       </div>
     );
   }
 
-  if (i.statut === 'inscrit') {
+  if (i.eleve_id) {
     return (
       <div className="insc-convert insc-sheet-soon">
-        <span className="insc-sheet-soon-title">✓ Élève inscrit</span>
-        <span>Cette demande est déjà au statut « Inscrit ».</span>
+        <span className="insc-sheet-soon-title">✓ Élève {i.statut === 'inscrit' ? 'activé (inscrit)' : 'créé — à activer'}</span>
+        <span>{i.statut === 'inscrit'
+          ? 'Le compte est actif et la demande est inscrite.'
+          : 'Compte créé (inactif). Active-le dans « Gestion des élèves » pour l’inscrire.'}</span>
       </div>
     );
   }
@@ -227,7 +214,8 @@ function ConvertEnfant({ inscription: i, classes, onInscrit }) {
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      const patch = { classe_id: classeId };
+      // Compte créé INACTIF : l'activation le fera passer en « inscrit ».
+      const patch = { classe_id: classeId, actif: false };
       if (i.contact_email)        patch.email_contact  = i.contact_email;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
       await updateEleve(eleveId, patch);
@@ -250,19 +238,9 @@ function ConvertEnfant({ inscription: i, classes, onInscrit }) {
 
       const pResults = await processParentBlocs(eleveId, [bloc]);
 
-      await updatePreinscriptionStatut(i.id, 'inscrit');
-      onInscrit();
-
-      dispatchPostCreationEmails({
-        contactEmail:      i.contact_email,
-        elevePrenom:       prenom,
-        eleveNom:          nom,
-        eleveIdentifiant:  idLogin,
-        eleveTempPassword: tempPwd,
-        classeNom:         classe?.nom,
-        parentResults:     pResults,
-        sendWelcome:       true,
-      });
+      // Rattache la préinscription + passe à « Traité » (contacté).
+      await adminLinkPreinscriptionEleve(i.id, eleveId);
+      onConverted(eleveId);
 
       setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, email: i.contact_email, parent: pResults[0] || null });
     } catch (e) {
@@ -341,11 +319,12 @@ export default function Inscriptions() {
     fetchAllClasses().then(setClasses).catch(() => {});
   }, []);
 
-  // Passe une demande au statut « Inscrit » localement (la RPC est déjà faite par
-  // ConvertAdulte) + notifie le sidebar.
-  const markInscrit = useCallback((id) => {
-    setData(prev => prev.map(x => x.id === id ? { ...x, statut: 'inscrit' } : x));
-    setSelected(prev => (prev && prev.id === id ? { ...prev, statut: 'inscrit' } : prev));
+  // Conversion : la demande passe à « Traité » (contacté) et est liée au compte
+  // créé (eleve_id) — la RPC est déjà faite par les composants Convert*. Maj locale
+  // + notif sidebar. (L'inscription définitive se fera à l'activation du compte.)
+  const markConverted = useCallback((id, eleveId) => {
+    setData(prev => prev.map(x => x.id === id ? { ...x, statut: 'contacté', eleve_id: eleveId } : x));
+    setSelected(prev => (prev && prev.id === id ? { ...prev, statut: 'contacté', eleve_id: eleveId } : prev));
     emitInscriptionsChanged();
   }, []);
 
@@ -709,9 +688,9 @@ export default function Inscriptions() {
                   {/* Conversion en compte : adulte = créer l'étudiant ;
                       enfant = créer l'élève + le parent. Masqué si refusé. */}
                   {i.statut === 'refusé' ? null : i.est_enfant ? (
-                    <ConvertEnfant inscription={i} classes={classes} onInscrit={() => markInscrit(i.id)} />
+                    <ConvertEnfant inscription={i} classes={classes} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   ) : (
-                    <ConvertAdulte inscription={i} classes={classes} onInscrit={() => markInscrit(i.id)} />
+                    <ConvertAdulte inscription={i} classes={classes} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   )}
                 </div>
               </div>

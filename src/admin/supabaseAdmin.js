@@ -40,6 +40,22 @@ export async function updatePreinscriptionStatut(id, statut) {
     'Erreur modification préinscription');
 }
 
+/** Conversion : rattache l'élève/étudiant créé à sa préinscription et la passe à
+ *  « contacté » (Traité). Le compte est créé inactif ; l'activation fera « inscrit ». */
+export async function adminLinkPreinscriptionEleve(preinscriptionId, eleveId) {
+  await rpcAdminWrite('admin_link_preinscription_eleve',
+    { p_admin_token: requireAdminToken(), p_id: preinscriptionId, p_eleve_id: eleveId },
+    'Erreur liaison préinscription');
+}
+
+/** À l'activation d'un compte : passe la préinscription liée à « inscrit » (no-op
+ *  si le compte ne vient pas d'une préinscription). Best-effort. */
+export async function adminInscrirePreinscriptionByEleve(eleveId) {
+  await rpcAdminWrite('admin_inscrire_preinscription_by_eleve',
+    { p_admin_token: requireAdminToken(), p_eleve_id: eleveId },
+    'Erreur inscription préinscription');
+}
+
 /** Marquer un message comme lu / non lu */
 export async function updateMessageLu(id, lu) {
   await rpcAdminWrite('admin_update_message_lu',
@@ -851,6 +867,10 @@ export async function updateEleveActif(id, actif) {
   await rpcAdminWrite('admin_update_eleve',
     { p_admin_token: requireAdminToken(), p_id: id, p_data: { actif } },
     'Erreur modification statut élève');
+  // L'activation d'un compte issu d'une préinscription la fait passer à « inscrit ».
+  if (actif) {
+    try { await adminInscrirePreinscriptionByEleve(id); } catch { /* best-effort */ }
+  }
 }
 
 // ─── EMAIL ───────────────────────────────────────────────────────────────────
