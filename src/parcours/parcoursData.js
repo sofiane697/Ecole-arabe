@@ -62,6 +62,7 @@ const TARIFS_ARABE = [
   {
     id: "ar-mod4",
     niveau: "Expert",
+    prereq: "J’ai une lecture fluide et je comprends globalement ce que je lis",
     prix: 149,
     rythme: "20 séances · 40 min / semaine",
     features: [
