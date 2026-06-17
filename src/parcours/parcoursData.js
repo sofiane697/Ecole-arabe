@@ -688,7 +688,7 @@ export const PARCOURS = {
         {
           id: 'enfant',
           label: 'Enfant',
-          ar: 'الأطفال',
+          ar: 'الصغار',
           ico: 'ط',
           desc: 'Formations destinées aux enfants.',
           children: [
