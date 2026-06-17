@@ -602,13 +602,17 @@ export default function Inscriptions() {
         ))}
       </div>
 
-      {/* Filtre type */}
+      {/* Filtre public (Enfant / Adulte) */}
       <div className="insc-filters">
-        <select className="admin-filter-select" value={filtrePublic} onChange={e => setFiltrePublic(e.target.value)}>
-          <option value="tous">Tous les publics</option>
-          <option value="enfant">Enfant</option>
-          <option value="adulte">Adulte</option>
-        </select>
+        <div className="cls-seg" role="tablist">
+          {[['tous', 'Tous'], ['enfant', 'Enfant'], ['adulte', 'Adulte']].map(([v, l]) => (
+            <button key={v} type="button" role="tab"
+              className={filtrePublic === v ? 'is-active' : ''}
+              onClick={() => setFiltrePublic(v)}>
+              {l}
+            </button>
+          ))}
+        </div>
         <span className="insc-filter-count">{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}</span>
       </div>
 
