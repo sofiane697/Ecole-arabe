@@ -203,6 +203,11 @@ export default function Inscriptions() {
           <div className="insc-block-list insc-block-list--single">
             {sorted.map((i) => {
               const s = STATUT_CFG[i.statut] || { label: i.statut, cls: '', color: 'var(--a-fg-mid)' };
+              // Chemin du pack : format › matière › module (sans le pôle ni le public).
+              const crumbs = (Array.isArray(i.parcours) ? i.parcours : [])
+                .filter((c, idx) => idx !== 0 && c !== 'Enfant' && c !== 'Adulte');
+              if (i.formule_nom && crumbs[crumbs.length - 1] !== i.formule_nom) crumbs.push(i.formule_nom);
+              const packPath = crumbs.length ? crumbs.join(' › ') : i.matiere;
               return (
                 <div key={i.id} className="insc-item" onClick={() => openInscription(i)}>
                   <div className="insc-item-avatar">{getInitials(i.eleve_prenom, i.eleve_nom)}</div>
@@ -212,10 +217,7 @@ export default function Inscriptions() {
                       <span className={`badge ${s.cls}`}>{s.label}</span>
                     </div>
                     <div className="insc-item-desc">
-                      <span className="insc-desc-matiere">{i.matiere}</span>
-                      <span className={`insc-desc-public ${i.est_enfant ? 'is-enfant' : 'is-adulte'}`}>
-                        {i.est_enfant ? 'Enfant' : 'Adulte'}
-                      </span>
+                      <span className="insc-desc-matiere">{packPath}</span>
                     </div>
                     <div className="insc-item-meta">
                       <span className="insc-item-price">
