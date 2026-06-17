@@ -38,7 +38,7 @@ export default function TarifCard({ tarif: t, onChoose }) {
               <span className="tarif-prereq-line">
                 {t.prereq && (
                   <>
-                    <span className="tarif-prereq">Prérequis :</span>
+                    <span className="tarif-prereq">{t.prereqNone ? 'Aucun prérequis :' : 'Prérequis :'}</span>
                     {t.prereq}
                   </>
                 )}
