@@ -629,7 +629,7 @@ export default function Inscriptions() {
       {/* Filtre public (Enfant / Adulte) */}
       <div className="insc-filters">
         <div className="cls-seg" role="tablist">
-          {[['tous', 'Tous'], ['enfant', 'Enfant'], ['adulte', 'Adulte']].map(([v, l]) => (
+          {[['enfant', 'Enfant'], ['adulte', 'Adulte'], ['tous', 'Tous']].map(([v, l]) => (
             <button key={v} type="button" role="tab"
               className={filtrePublic === v ? 'is-active' : ''}
               onClick={() => setFiltrePublic(v)}>
