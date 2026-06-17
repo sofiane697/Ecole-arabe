@@ -1267,6 +1267,37 @@
   letter-spacing: 0.02em;
 }
 .insc-convert-mail { font-size: 0.8rem; color: var(--a-fg-mid); }
+/* Conversion enfant : mini-formulaire responsable (parent) */
+.insc-convert-row { display: flex; gap: 0.6rem; }
+.insc-convert-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--a-border);
+  border-radius: 8px;
+  background: var(--a-bg);
+  color: var(--a-fg);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+.insc-convert-input:focus { outline: none; border-color: var(--a-gold); }
+.insc-convert-seg { display: inline-flex; gap: 0.3rem; }
+.insc-convert-seg button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--a-border);
+  border-radius: 999px;
+  background: var(--a-bg);
+  color: var(--a-fg-mid);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.insc-convert-seg button.is-active {
+  border-color: var(--a-gold);
+  color: var(--a-gold);
+  background: rgba(191, 138, 48, 0.08);
+}
 
 .insc-empty {
   text-align: center;

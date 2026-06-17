@@ -7,6 +7,8 @@ import {
   fetchEleveIdParIdentifiant, sendWelcomeEmail,
 } from './supabaseAdmin';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
+import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parentsLogic';
+import { dispatchPostCreationEmails } from './parentsMail';
 import { emitInscriptionsChanged } from './adminEvents';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
@@ -144,6 +146,169 @@ function ConvertAdulte({ inscription: i, classes, onInscrit }) {
         <option value="">— Choisir une classe —</option>
         {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
       </select>
+      {error && <p className="insc-convert-error">{error}</p>}
+      <div className="insc-detail-actions">
+        <button className="msg-action-primary" onClick={handleCreate} disabled={busy || !classeId}>
+          {busy ? 'Création…' : 'Créer et affecter'} <IconArrow />
+        </button>
+        <button className="insc-convert-cancel" onClick={() => { setOpen(false); setError(''); }} disabled={busy}>
+          Annuler
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Conversion d'une préinscription ENFANT en compte élève + un responsable (parent),
+ * avec affectation à une classe. Crée l'élève, crée/rattache le parent (anti-doublon
+ * par email/téléphone), passe la demande à « Inscrit » et envoie l'e-mail de bienvenue
+ * (identifiants élève + parent).
+ */
+function ConvertEnfant({ inscription: i, classes, onInscrit }) {
+  const [open,     setOpen]     = useState(false);
+  const [classeId, setClasseId] = useState('');
+  const [lien,     setLien]     = useState('pere'); // le responsable est père ou mère
+  const [pPrenom,  setPPrenom]  = useState(fmtPrenom(i.contact_prenom || ''));
+  const [pNom,     setPNom]     = useState(fmtNom(i.contact_nom || ''));
+  const [pEmail,   setPEmail]   = useState(i.contact_email || '');
+  const [pTel,     setPTel]     = useState(i.contact_telephone || '');
+  const [busy,     setBusy]     = useState(false);
+  const [error,    setError]    = useState('');
+  const [result,   setResult]   = useState(null);
+
+  if (result) {
+    const p = result.parent;
+    return (
+      <div className="insc-convert insc-convert-done">
+        <span className="insc-sheet-soon-title">✓ Élève créé{result.classeNom ? ` — ${result.classeNom}` : ''}</span>
+        <div className="insc-convert-creds">
+          <div><span>Élève · identifiant</span><strong>{result.identifiant}</strong></div>
+          <div><span>Élève · mot de passe</span><strong>{result.tempPassword}</strong></div>
+        </div>
+        {p && p.kind === 'created' && (
+          <div className="insc-convert-creds">
+            <div><span>Parent · identifiant</span><strong>{p.identifiant}</strong></div>
+            <div><span>Parent · mot de passe</span><strong>{p.password}</strong></div>
+          </div>
+        )}
+        {p && p.kind === 'linked'  && <span className="insc-convert-mail">↪ Rattaché au compte parent existant ({p.identifiant}).</span>}
+        {p && p.kind === 'failed'  && <span className="insc-convert-error">⚠ Élève créé, mais parent non enregistré : {p.error}</span>}
+        <span className="insc-convert-mail">
+          {result.email
+            ? `✉ E-mail de bienvenue envoyé à ${result.email}`
+            : '⚠ Pas d’e-mail de contact — transmets les identifiants manuellement.'}
+        </span>
+      </div>
+    );
+  }
+
+  if (i.statut === 'inscrit') {
+    return (
+      <div className="insc-convert insc-sheet-soon">
+        <span className="insc-sheet-soon-title">✓ Élève inscrit</span>
+        <span>Cette demande est déjà au statut « Inscrit ».</span>
+      </div>
+    );
+  }
+
+  const handleCreate = async () => {
+    if (!classeId) { setError('Choisis une classe.'); return; }
+    if (!pPrenom.trim() || !pNom.trim()) { setError('Renseigne le nom et le prénom du responsable.'); return; }
+    if (!pEmail.trim() && !pTel.trim()) { setError('Renseigne un e-mail ou un téléphone pour le responsable.'); return; }
+    setBusy(true); setError('');
+    try {
+      const prenom = fmtPrenom(i.eleve_prenom);
+      const nom    = fmtNom(i.eleve_nom);
+      const idLogin = generateIdentifiant(prenom, nom).toLowerCase();
+      const tempPwd = generateTempPassword();
+
+      const created = await createEleve(nom, prenom, idLogin, tempPwd);
+      const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
+      if (!eleveId) throw new Error('Compte créé mais introuvable.');
+
+      const patch = { classe_id: classeId };
+      if (i.contact_email)        patch.email_contact  = i.contact_email;
+      if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
+      await updateEleve(eleveId, patch);
+
+      const classe = classes.find(c => c.id === classeId);
+      await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
+
+      // Responsable → bloc parent. Anti-doublon : si un parent existe déjà
+      // (même e-mail/téléphone), on le rattache au lieu d'en créer un second.
+      const isPere = lien === 'pere';
+      let bloc = {
+        ...emptyBloc(),
+        has_pere: isPere,  pere_nom: isPere ? fmtNom(pNom) : '',  pere_prenom: isPere ? fmtPrenom(pPrenom) : '',
+        has_mere: !isPere, mere_nom: !isPere ? fmtNom(pNom) : '', mere_prenom: !isPere ? fmtPrenom(pPrenom) : '',
+        email: pEmail.trim(), telephone: pTel.trim(), lien: 'parents',
+      };
+      const { refreshedBlocs } = await checkDuplicatesOnSubmit([bloc]);
+      bloc = refreshedBlocs[0];
+      if (bloc.matchedParent) bloc.useExisting = true;
+
+      const pResults = await processParentBlocs(eleveId, [bloc]);
+
+      await updatePreinscriptionStatut(i.id, 'inscrit');
+      onInscrit();
+
+      dispatchPostCreationEmails({
+        contactEmail:      i.contact_email,
+        elevePrenom:       prenom,
+        eleveNom:          nom,
+        eleveIdentifiant:  idLogin,
+        eleveTempPassword: tempPwd,
+        classeNom:         classe?.nom,
+        parentResults:     pResults,
+        sendWelcome:       true,
+      });
+
+      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, email: i.contact_email, parent: pResults[0] || null });
+    } catch (e) {
+      setError(e.message || "Erreur lors de la création de l'élève.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <div className="insc-convert">
+        <button className="msg-action-primary" onClick={() => setOpen(true)}>
+          ↪ Créer l'élève + le parent <IconArrow />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="insc-convert">
+      <p className="insc-detail-section-title">Affecter à une classe</p>
+      <select
+        className="admin-filter-select insc-convert-select"
+        value={classeId}
+        onChange={e => { setClasseId(e.target.value); setError(''); }}
+        disabled={busy}
+      >
+        <option value="">— Choisir une classe —</option>
+        {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+      </select>
+
+      <p className="insc-detail-section-title">Responsable légal</p>
+      <div className="insc-convert-seg">
+        <button type="button" className={lien === 'pere' ? 'is-active' : ''} onClick={() => setLien('pere')} disabled={busy}>Père</button>
+        <button type="button" className={lien === 'mere' ? 'is-active' : ''} onClick={() => setLien('mere')} disabled={busy}>Mère</button>
+      </div>
+      <div className="insc-convert-row">
+        <input className="insc-convert-input" placeholder="Prénom" value={pPrenom} onChange={e => setPPrenom(e.target.value)} disabled={busy} />
+        <input className="insc-convert-input" placeholder="Nom" value={pNom} onChange={e => setPNom(e.target.value)} disabled={busy} />
+      </div>
+      <div className="insc-convert-row">
+        <input className="insc-convert-input" type="email" placeholder="E-mail" value={pEmail} onChange={e => setPEmail(e.target.value)} disabled={busy} />
+        <input className="insc-convert-input" placeholder="Téléphone" value={pTel} onChange={e => setPTel(e.target.value)} disabled={busy} />
+      </div>
+
       {error && <p className="insc-convert-error">{error}</p>}
       <div className="insc-detail-actions">
         <button className="msg-action-primary" onClick={handleCreate} disabled={busy || !classeId}>
@@ -541,16 +706,13 @@ export default function Inscriptions() {
                     )}
                   </div>
 
-                  {/* Conversion en compte : adulte = créer l'étudiant + affecter
-                      une classe ; enfant (avec parent) = à venir. */}
-                  {i.est_enfant ? (
-                    <div className="insc-sheet-soon">
-                      <span className="insc-sheet-soon-title">↪ Créer l'élève + le parent</span>
-                      <span>Disponible prochainement.</span>
-                    </div>
-                  ) : i.statut !== 'refusé' ? (
+                  {/* Conversion en compte : adulte = créer l'étudiant ;
+                      enfant = créer l'élève + le parent. Masqué si refusé. */}
+                  {i.statut === 'refusé' ? null : i.est_enfant ? (
+                    <ConvertEnfant inscription={i} classes={classes} onInscrit={() => markInscrit(i.id)} />
+                  ) : (
                     <ConvertAdulte inscription={i} classes={classes} onInscrit={() => markInscrit(i.id)} />
-                  ) : null}
+                  )}
                 </div>
               </div>
             </div>
