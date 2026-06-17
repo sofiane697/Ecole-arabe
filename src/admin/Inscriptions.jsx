@@ -44,7 +44,7 @@ const IconArrow = () => (
  * affecte la classe (et le niveau scolaire dérivé), passe la demande à « Inscrit »
  * et envoie l'e-mail de bienvenue. Pas de parent (adulte majeur).
  */
-function ConvertAdulte({ inscription: i, classes, onConverted }) {
+function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
   const [open,     setOpen]     = useState(false);
   const [classeId, setClasseId] = useState('');
   const [busy,     setBusy]     = useState(false);
@@ -132,7 +132,15 @@ function ConvertAdulte({ inscription: i, classes, onConverted }) {
         disabled={busy}
       >
         <option value="">— Choisir une classe —</option>
-        {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+        {niveaux.map(n => {
+          const cs = classes.filter(c => c.niveau_id === n.id);
+          if (!cs.length) return null;
+          return (
+            <optgroup key={n.id} label={n.nom}>
+              {cs.map(c => <option key={c.id} value={c.id}>{n.nom} — {c.nom}</option>)}
+            </optgroup>
+          );
+        })}
       </select>
       {error && <p className="insc-convert-error">{error}</p>}
       <div className="insc-detail-actions">
@@ -153,7 +161,7 @@ function ConvertAdulte({ inscription: i, classes, onConverted }) {
  * par email/téléphone), passe la demande à « Inscrit » et envoie l'e-mail de bienvenue
  * (identifiants élève + parent).
  */
-function ConvertEnfant({ inscription: i, classes, onConverted }) {
+function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
   const [open,     setOpen]     = useState(false);
   const [classeId, setClasseId] = useState('');
   const [lien,     setLien]     = useState('pere'); // le responsable est père ou mère
@@ -269,7 +277,15 @@ function ConvertEnfant({ inscription: i, classes, onConverted }) {
         disabled={busy}
       >
         <option value="">— Choisir une classe —</option>
-        {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+        {niveaux.map(n => {
+          const cs = classes.filter(c => c.niveau_id === n.id);
+          if (!cs.length) return null;
+          return (
+            <optgroup key={n.id} label={n.nom}>
+              {cs.map(c => <option key={c.id} value={c.id}>{n.nom} — {c.nom}</option>)}
+            </optgroup>
+          );
+        })}
       </select>
 
       <p className="insc-detail-section-title">Responsable légal</p>
@@ -827,9 +843,9 @@ export default function Inscriptions() {
                   {/* Conversion en compte d'abord : adulte = créer l'étudiant ;
                       enfant = créer l'élève + le parent. Masqué si refusé. */}
                   {i.statut === 'refusé' ? null : i.est_enfant ? (
-                    <ConvertEnfant inscription={i} classes={classesEnfant} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
+                    <ConvertEnfant inscription={i} classes={classesEnfant} niveaux={niveaux} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   ) : (
-                    <ConvertAdulte inscription={i} classes={classesAdulte} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
+                    <ConvertAdulte inscription={i} classes={classesAdulte} niveaux={niveaux} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   )}
 
                   {/* Refuser (ou remettre en traitement si déjà refusé) — en dessous. */}
