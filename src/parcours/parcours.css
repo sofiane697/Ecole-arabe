@@ -347,6 +347,8 @@
   line-height: 1.1;
   letter-spacing: -0.005em;
   color: var(--fg-title);
+  /* Réserve 2 lignes : aligne prix/contenu même quand un titre passe à la ligne */
+  min-height: 2.2em;
   margin-bottom: 0.55rem;
 }
 
