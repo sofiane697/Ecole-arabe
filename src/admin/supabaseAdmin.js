@@ -56,6 +56,13 @@ export async function adminInscrirePreinscriptionByEleve(eleveId) {
     'Erreur inscription préinscription');
 }
 
+/** Enregistre/efface l'observation administrative (note interne) d'une préinscription. */
+export async function adminUpdatePreinscriptionNote(id, note) {
+  await rpcAdminWrite('admin_update_preinscription_note',
+    { p_admin_token: requireAdminToken(), p_id: id, p_note: note },
+    'Erreur enregistrement observation');
+}
+
 /** Marquer un message comme lu / non lu */
 export async function updateMessageLu(id, lu) {
   await rpcAdminWrite('admin_update_message_lu',

@@ -1227,6 +1227,26 @@
 }
 .insc-sheet-soon-title { font-weight: 600; color: var(--a-fg-mid); }
 
+/* Observations administratives (notes internes) */
+.insc-note-textarea {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--a-border);
+  border-radius: 10px;
+  background: var(--a-bg);
+  color: var(--a-fg);
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+.insc-note-textarea:focus { outline: none; border-color: var(--a-gold); }
+.insc-note-textarea::placeholder { color: var(--a-fg-light); }
+.insc-note-actions { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.6rem; }
+.insc-note-saved { font-size: 0.8rem; font-weight: 600; color: var(--a-green); }
+
 /* Conversion adulte → compte étudiant (créer + affecter une classe) */
 .insc-convert { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
 .insc-convert-select { width: 100%; }

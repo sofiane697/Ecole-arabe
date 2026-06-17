@@ -4,7 +4,7 @@ import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchPreinscriptions, updatePreinscriptionStatut, markPreinscriptionViewed,
   createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses,
-  fetchEleveIdParIdentifiant, adminLinkPreinscriptionEleve,
+  fetchEleveIdParIdentifiant, adminLinkPreinscriptionEleve, adminUpdatePreinscriptionNote,
 } from './supabaseAdmin';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parentsLogic';
@@ -300,6 +300,44 @@ function ConvertEnfant({ inscription: i, classes, onConverted }) {
   );
 }
 
+/** Observations administratives (notes internes) sur une préinscription. */
+function ObservationSection({ inscription: i, onSaved }) {
+  const [note,  setNote]  = useState(i.admin_note || '');
+  const [busy,  setBusy]  = useState(false);
+  const [saved, setSaved] = useState(false);
+  const dirty = note.trim() !== (i.admin_note || '');
+
+  const handleSave = async () => {
+    setBusy(true); setSaved(false);
+    try {
+      const v = note.trim();
+      await adminUpdatePreinscriptionNote(i.id, v);
+      onSaved(v);
+      setSaved(true);
+    } catch { /* non bloquant */ }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <>
+      <p className="insc-detail-section-title">Observations</p>
+      <textarea
+        className="insc-note-textarea"
+        placeholder="Notes internes : rappels, échanges téléphoniques, particularités…"
+        value={note}
+        onChange={e => { setNote(e.target.value); setSaved(false); }}
+        rows={4}
+      />
+      <div className="insc-note-actions">
+        <button className="msg-action-primary" onClick={handleSave} disabled={busy || !dirty}>
+          {busy ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+        {saved && !dirty && <span className="insc-note-saved">✓ Enregistré</span>}
+      </div>
+    </>
+  );
+}
+
 export default function Inscriptions() {
   const [data,       setData]       = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -326,6 +364,12 @@ export default function Inscriptions() {
     setData(prev => prev.map(x => x.id === id ? { ...x, statut: 'contacté', eleve_id: eleveId } : x));
     setSelected(prev => (prev && prev.id === id ? { ...prev, statut: 'contacté', eleve_id: eleveId } : prev));
     emitInscriptionsChanged();
+  }, []);
+
+  // Maj locale de l'observation après enregistrement (pas d'impact sur les badges).
+  const markNote = useCallback((id, note) => {
+    setData(prev => prev.map(x => x.id === id ? { ...x, admin_note: note } : x));
+    setSelected(prev => (prev && prev.id === id ? { ...prev, admin_note: note } : prev));
   }, []);
 
   // Ouverture animée du sheet (overlay fade + panneau qui monte du bas). Verrouille
@@ -501,6 +545,7 @@ export default function Inscriptions() {
                       </span>
                       <span className="insc-item-dot" aria-hidden="true">·</span>
                       <span>{formatDate(i.created_at)}</span>
+                      {i.admin_note && <span className="insc-item-note" title="Observation présente" aria-label="Observation présente">📝</span>}
                     </div>
                   </div>
                 </div>
@@ -632,6 +677,8 @@ export default function Inscriptions() {
                       </span>
                     </div>
                   </div>
+
+                  <ObservationSection inscription={i} onSaved={(note) => markNote(i.id, note)} />
                 </div>
 
                 {/* Colonne droite : avancement + actions + conversion (à venir) */}
