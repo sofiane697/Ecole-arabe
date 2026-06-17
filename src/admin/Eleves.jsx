@@ -463,11 +463,13 @@ export default function Eleves({ variant = 'eleves' }) {
           </div>
         </div>
 
-        {/* ─── Parents rattachés à cet élève ─── */}
-        <EleveParentsSection
-          eleveId={selectedEleve.id}
-          onChanged={loadEleves}
-        />
+        {/* ─── Parents rattachés à cet élève (masqué pour un étudiant adulte) ─── */}
+        {!isAdulte && (
+          <EleveParentsSection
+            eleveId={selectedEleve.id}
+            onChanged={loadEleves}
+          />
+        )}
 
         {/* ─── Modal modifier nom/prénom ─── */}
         {editEleve && (
