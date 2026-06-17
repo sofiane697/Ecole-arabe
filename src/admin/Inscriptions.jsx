@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchPreinscriptions, updatePreinscriptionStatut, markPreinscriptionViewed,
-  createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses,
+  createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses, fetchNiveauxScolaires,
   fetchEleveIdParIdentifiant, adminLinkPreinscriptionEleve, adminUpdatePreinscriptionNote,
 } from './supabaseAdmin';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
@@ -343,7 +343,8 @@ export default function Inscriptions() {
   const [filtreStat, setFiltreStat] = useState('nouveau');
   const [filtrePublic, setFiltrePublic] = useState('tous');
   const [selected,   setSelected]   = useState(null); // préinscription ouverte dans le sheet
-  const [classes,    setClasses]    = useState([]);   // classes pour l'affectation (conversion adulte)
+  const [classes,    setClasses]    = useState([]);   // classes pour l'affectation (conversion)
+  const [niveaux,    setNiveaux]    = useState([]);   // niveaux scolaires (pour filtrer enfant/adulte)
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const pageRef    = useRef(null);
@@ -355,7 +356,14 @@ export default function Inscriptions() {
   useEffect(() => {
     fetchPreinscriptions().then(setData).catch(() => {}).finally(() => setLoading(false));
     fetchAllClasses().then(setClasses).catch(() => {});
+    fetchNiveauxScolaires().then(setNiveaux).catch(() => {});
   }, []);
+
+  // Une classe est « adulte » si son niveau scolaire l'est. On filtre les classes
+  // proposées : un élève (enfant) → classes enfant ; un étudiant (adulte) → adulte.
+  const adultNiveauIds = new Set(niveaux.filter(n => n.est_adulte).map(n => n.id));
+  const classesEnfant  = classes.filter(c => !adultNiveauIds.has(c.niveau_id));
+  const classesAdulte  = classes.filter(c => adultNiveauIds.has(c.niveau_id));
 
   // Conversion : la demande passe à « Traité » (contacté) et est liée au compte
   // créé (eleve_id) — la RPC est déjà faite par les composants Convert*. Maj locale
@@ -819,9 +827,9 @@ export default function Inscriptions() {
                   {/* Conversion en compte d'abord : adulte = créer l'étudiant ;
                       enfant = créer l'élève + le parent. Masqué si refusé. */}
                   {i.statut === 'refusé' ? null : i.est_enfant ? (
-                    <ConvertEnfant inscription={i} classes={classes} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
+                    <ConvertEnfant inscription={i} classes={classesEnfant} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   ) : (
-                    <ConvertAdulte inscription={i} classes={classes} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
+                    <ConvertAdulte inscription={i} classes={classesAdulte} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   )}
 
                   {/* Refuser (ou remettre en traitement si déjà refusé) — en dessous. */}

@@ -599,7 +599,8 @@ export default function Eleves({ variant = 'eleves' }) {
                 <label className={CLS.label}>Classe</label>
                 <select className={`${CLS.input} cursor-pointer`} value={editForm.classe_id} onChange={e => setEditForm(f => ({ ...f, classe_id: e.target.value }))}>
                   <option value="">— Aucune classe —</option>
-                  {niveauxScolaires.map(n => {
+                  {/* Élève → niveaux enfant ; étudiant → niveaux adulte. */}
+                  {niveauxScolaires.filter(n => !!n.est_adulte === isAdulte).map(n => {
                     const cs = allClasses.filter(c => c.niveau_id === n.id);
                     if (!cs.length) return null;
                     return (
@@ -2079,7 +2080,8 @@ function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
             <label htmlFor="eleve_classe" className={CLS.label}>Classe (optionnel)</label>
             <select id="eleve_classe" className={`${CLS.input} cursor-pointer`} value={classeId} onChange={e => setClasseId(e.target.value)}>
               <option value="">— Aucune classe —</option>
-              {niveauxScolaires.map(n => {
+              {/* Élève → niveaux enfant ; étudiant → niveaux adulte. */}
+              {niveauxScolaires.filter(n => !!n.est_adulte === isAdulte).map(n => {
                 const cs = allClasses.filter(c => c.niveau_id === n.id);
                 if (!cs.length) return null;
                 return (
