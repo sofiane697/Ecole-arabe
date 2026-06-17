@@ -689,7 +689,7 @@ export const PARCOURS = {
           id: 'enfant',
           label: 'Enfant',
           ar: 'الصغار',
-          ico: 'ث',
+          ico: 'ص',
           desc: 'Formations destinées aux enfants.',
           children: [
             {
