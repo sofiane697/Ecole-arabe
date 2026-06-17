@@ -113,7 +113,7 @@ const TARIFS_CORAN = [
     niveau: "J'apprends à lire le Coran",
     prereq: "Je pars de zéro 😄",
     prix: 149,
-    rythme: '20 séances · 40 min / séance',
+    rythme: '15 séances · 2 × 40 min / semaine',
     features: [
       'Apprentissage des lettres arabes',
       'Maîtrise des voyelles',
