@@ -315,9 +315,12 @@
 .tarif-card--mini {
   padding: 2.2rem 1.9rem 1.9rem;
 }
-/* Réserve 2 lignes de titre pour aligner le prix quand un nom passe à la ligne */
+/* En-tête à hauteur réservée (≈ 2 lignes) : aligne les prix, que le nom passe
+   à la ligne ou qu'une cadence soit affichée sous le titre. */
+.tarif-card--mini .tarif-top {
+  min-height: 4.6rem;
+}
 .tarif-card--mini .tarif-niveau {
-  min-height: 2.2em;
   margin-bottom: 0.3rem;
 }
 .tarif-card--mini .tarif-price-row {
@@ -325,6 +328,21 @@
 }
 .tarif-card--mini .tarif-feats {
   display: none;
+}
+
+/* Cadence de mémorisation, juste sous le titre — pastille sans-serif dorée */
+.tarif-cadence {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--gold);
+  background: rgba(191, 138, 48, 0.10);
+  border: 1px solid rgba(191, 138, 48, 0.22);
+  border-radius: 999px;
+  padding: 0.2rem 0.62rem;
+  margin-bottom: 0.2rem;
 }
 
 /* Grand chiffre filigrane (signature éditoriale) */

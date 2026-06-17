@@ -29,6 +29,7 @@ export default function TarifCard({ tarif: t, onChoose }) {
         {hasModule ? (
           <>
             <span className="tarif-niveau">{t.niveau}</span>
+            {t.cadence && <span className="tarif-cadence">{t.cadence}</span>}
             {t.titre ? (
               <span className="tarif-titre-lvl">{t.titre}</span>
             ) : isMini ? null : (

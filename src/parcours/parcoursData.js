@@ -107,15 +107,17 @@ const TARIFS_CORAN_SOURATES = [
   {
     id: 'co-sourate-baqara',
     niveau: 'Hizb Al-Baqara',
+    cadence: '½ page / séance',
     prix: 90,
-    rythme: '24 séances · 2 × 40 min / semaine · ½ page / séance',
+    rythme: '24 séances · 2 × 40 min / semaine',
     features: [],
   },
   {
     id: 'co-sourate-baqara-2',
     niveau: 'Hizb Al-Baqara',
+    cadence: '1 page / séance',
     prix: 90,
-    rythme: '14 séances · 40 min / semaine · 1 page / séance',
+    rythme: '14 séances · 40 min / semaine',
     features: [],
   },
 ];
