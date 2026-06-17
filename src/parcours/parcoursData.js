@@ -182,7 +182,7 @@ const TARIFS_EDI = [
   },
   {
     id: 'edi-hajj',
-    titre: 'Les rites du pèlerinage',
+    titre: 'Fiqh du Pèlerinage',
     prix: 99,
     rythme: '15 séances · 40 min / séance',
     features: ['Conditions du pèlerinage', 'Les étapes des rites'],
@@ -201,7 +201,7 @@ const TARIFS_EDI = [
   },
   {
     id: 'edi-zakat',
-    titre: 'Zakat',
+    titre: 'Fiqh de la Zakat',
     prix: 99,
     rythme: '15 séances · 40 min / séance',
     features: [
