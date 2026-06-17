@@ -11,7 +11,6 @@ import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parent
 import { emitInscriptionsChanged } from './adminEvents';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
-const STATUT_NEXT = { nouveau: 'contacté', contacté: 'inscrit' }; // 'inscrit' = dernier palier
 const STATUT_CFG  = {
   nouveau:  { label: 'Non traité', cls: 'badge-nouveau',  icon: '●', color: 'var(--a-yellow)' },
   contacté: { label: 'Traité',     cls: 'badge-contacte', icon: '◐', color: 'var(--a-blue)' },
@@ -559,8 +558,6 @@ export default function Inscriptions() {
       {selected && (() => {
         const i = selected;
         const s = STATUT_CFG[i.statut] || { label: i.statut, cls: '', color: 'var(--a-fg-mid)' };
-        const next = STATUT_NEXT[i.statut];
-        const nextCfg = next ? STATUT_CFG[next] : null;
         const age = calcAge(i.eleve_date_naissance);
         const crumbs = Array.isArray(i.parcours) ? i.parcours : [];
         return (
@@ -713,32 +710,26 @@ export default function Inscriptions() {
                     </div>
                   )}
 
-                  <div className="insc-detail-actions">
-                    {i.statut === 'refusé' ? (
-                      <button className="msg-action-primary" onClick={() => setStatut(i.id, i.statut, 'nouveau')}>
-                        Remettre en traitement <IconArrow />
-                      </button>
-                    ) : (
-                      <>
-                        {nextCfg && (
-                          <button className="msg-action-primary" onClick={() => setStatut(i.id, i.statut, next)}>
-                            Passer à : {nextCfg.label} <IconArrow />
-                          </button>
-                        )}
-                        <button className="msg-action-danger" onClick={() => setStatut(i.id, i.statut, 'refusé')}>
-                          ✕ Refuser
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Conversion en compte : adulte = créer l'étudiant ;
+                  {/* Conversion en compte d'abord : adulte = créer l'étudiant ;
                       enfant = créer l'élève + le parent. Masqué si refusé. */}
                   {i.statut === 'refusé' ? null : i.est_enfant ? (
                     <ConvertEnfant inscription={i} classes={classes} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   ) : (
                     <ConvertAdulte inscription={i} classes={classes} onConverted={(eleveId) => markConverted(i.id, eleveId)} />
                   )}
+
+                  {/* Refuser (ou remettre en traitement si déjà refusé) — en dessous. */}
+                  <div className="insc-detail-actions">
+                    {i.statut === 'refusé' ? (
+                      <button className="msg-action-primary" onClick={() => setStatut(i.id, i.statut, 'nouveau')}>
+                        Remettre en traitement <IconArrow />
+                      </button>
+                    ) : (
+                      <button className="msg-action-danger" onClick={() => setStatut(i.id, i.statut, 'refusé')}>
+                        ✕ Refuser
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
