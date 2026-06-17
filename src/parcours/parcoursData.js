@@ -55,7 +55,7 @@ const TARIFS_ARABE = [
       "Fluidification de la lecture",
       "Texte et dialogue",
       "Initiation à la compréhension",
-      "Grammaire Arabe",
+      "Grammaire arabe",
       "Expression orale",
     ],
   },
