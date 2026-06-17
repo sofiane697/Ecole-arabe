@@ -726,7 +726,7 @@ export const PARCOURS = {
                 {
                   id: 'enfant-auto-combo',
                   label: 'Coran & Éducation islamique',
-                  ico: 'ق إ',
+                  ico: 'ق + إ',
                   desc: 'Formule combinée Coran et éducation islamique.',
                   tarifs: TARIFS_COMBO_ENFANT,
                 },
@@ -766,7 +766,7 @@ export const PARCOURS = {
                 {
                   id: 'enfant-visio-combo',
                   label: 'Coran & Éducation islamique',
-                  ico: 'ق إ',
+                  ico: 'ق + إ',
                   desc: 'Formule combinée Coran et éducation islamique.',
                   tarifs: TARIFS_COMBO_ENFANT_VISIO,
                 },
