@@ -179,8 +179,8 @@ export default function Inscriptions() {
       <div className="insc-stats">
         {[
           { key: 'tous',     label: 'Toutes',     count: data.length,              color: 'var(--a-fg-mid)' },
-          { key: 'nouveau',  label: 'Non traité', count: countByStatut('nouveau'), color: 'var(--a-yellow)' },
-          { key: 'contacté', label: 'Traité',     count: countByStatut('contacté'),color: 'var(--a-blue)' },
+          { key: 'nouveau',  label: 'Non traitées', count: countByStatut('nouveau'), color: 'var(--a-yellow)' },
+          { key: 'contacté', label: 'Traitées',     count: countByStatut('contacté'),color: 'var(--a-blue)' },
           { key: 'inscrit',  label: 'Inscrites',  count: countByStatut('inscrit'), color: 'var(--a-green)' },
           { key: 'refusé',   label: 'Refusées',   count: countByStatut('refusé'),  color: 'var(--a-red)' },
         ].map(s => (
