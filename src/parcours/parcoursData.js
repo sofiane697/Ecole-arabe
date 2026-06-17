@@ -734,7 +734,7 @@ export const PARCOURS = {
                 },
                 {
                   id: 'enfant-auto-arabe',
-                  label: 'Arabe',
+                  label: 'Langue arabe',
                   ar: 'اللغة العربية',
                   ico: 'ع',
                   desc: 'Apprentissage de la langue arabe.',
@@ -776,7 +776,7 @@ export const PARCOURS = {
                 },
                 {
                   id: 'enfant-visio-arabe',
-                  label: 'Arabe',
+                  label: 'Langue arabe',
                   ar: 'اللغة العربية',
                   ico: 'ع',
                   desc: 'Apprentissage de la langue arabe.',
