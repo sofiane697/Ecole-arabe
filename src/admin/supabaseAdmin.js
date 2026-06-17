@@ -730,11 +730,11 @@ export async function fetchNiveauxScolaires() {
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
-export async function createNiveauScolaire(nom, ordre) {
+export async function createNiveauScolaire(nom, ordre, estAdulte = false) {
   const id = await rpcAdminWrite('admin_create_niveau_scolaire',
-    { p_admin_token: requireAdminToken(), p_nom: nom, p_ordre: ordre ?? 0 },
+    { p_admin_token: requireAdminToken(), p_nom: nom, p_ordre: ordre ?? 0, p_est_adulte: !!estAdulte },
     'Erreur création niveau scolaire');
-  return { id, nom, ordre: ordre ?? 0 };
+  return { id, nom, ordre: ordre ?? 0, est_adulte: !!estAdulte };
 }
 export async function updateNiveauScolaire(id, data) {
   await rpcAdminWrite('admin_update_niveau_scolaire',

@@ -85,6 +85,7 @@ export default function Classes() {
   const [selEleve, setSelEleve]   = useState(null);
   const [modal, setModal]         = useState(null);
   const [loading, setLoading]     = useState(false);
+  const [vuePublic, setVuePublic] = useState('enfant'); // 'enfant' | 'adulte'
   const pageRef = useRef(null);
   usePageAnimation(pageRef, [selNiveau?.id, selClasse?.id]);
 
@@ -111,23 +112,28 @@ export default function Classes() {
 
   // ─── VUE 1 : Liste des niveaux scolaires ──────────────────────────────────────
   if (!selNiveau) {
+    const niveauxVisibles = niveaux.filter(n => (vuePublic === 'adulte' ? n.est_adulte : !n.est_adulte));
     return (
       <div ref={pageRef} className={S.page}>
         <div className={S.header}>
-          <div className={S.headerLeft}>
-            <span className="a-section-count">{niveaux.length} niveau{niveaux.length > 1 ? 'x' : ''} scolaire{niveaux.length > 1 ? 's' : ''}</span>
+          <div className={S.headerLeft} style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <span className="a-section-count">{niveauxVisibles.length} niveau{niveauxVisibles.length > 1 ? 'x' : ''} scolaire{niveauxVisibles.length > 1 ? 's' : ''}</span>
+            <div className="cls-seg" role="tablist">
+              <button type="button" role="tab" className={vuePublic === 'enfant' ? 'is-active' : ''} onClick={() => setVuePublic('enfant')}>Enfant</button>
+              <button type="button" role="tab" className={vuePublic === 'adulte' ? 'is-active' : ''} onClick={() => setVuePublic('adulte')}>Adulte</button>
+            </div>
           </div>
           <button className={S.addBtn} onClick={() => setModal({ type:'niveau' })}>
             <IconPlus /> Ajouter un niveau
           </button>
         </div>
 
-        {niveaux.length === 0 && (
-          <div className={S.empty}>Aucun niveau créé.<br />Commencez par ajouter <strong>N1</strong>, <strong>N2</strong>…</div>
+        {niveauxVisibles.length === 0 && (
+          <div className={S.empty}>Aucun niveau {vuePublic === 'adulte' ? 'adulte' : 'enfant'} pour le moment.<br />Cliquez sur <strong>Ajouter un niveau</strong> pour en créer un.</div>
         )}
 
         <div className={S.niveauGrid} ref={animateGridChildren}>
-          {niveaux.map(n => (
+          {niveauxVisibles.map(n => (
             <div key={n.id} className={S.niveauCard}
               style={{ transition: 'transform .25s ease, box-shadow .2s ease, border-color .2s ease', cursor: 'pointer' }}
               onClick={() => openNiveau(n)}
@@ -156,12 +162,12 @@ export default function Classes() {
         </div>
 
         {modal?.type === 'niveau' && (
-          <NiveauModal data={modal.data} loading={loading} onClose={() => setModal(null)}
-            onSave={async (nom, ordre) => {
+          <NiveauModal data={modal.data} loading={loading} defaultAdulte={vuePublic === 'adulte'} onClose={() => setModal(null)}
+            onSave={async (nom, ordre, estAdulte) => {
               setLoading(true);
               try {
-                if (modal.data) await updateNiveauScolaire(modal.data.id, { nom, ordre });
-                else await createNiveauScolaire(nom, ordre);
+                if (modal.data) await updateNiveauScolaire(modal.data.id, { nom, ordre, est_adulte: estAdulte });
+                else await createNiveauScolaire(nom, ordre, estAdulte);
                 await loadAll(); setModal(null);
               } catch(e) { alert(e.message); }
               setLoading(false);
@@ -403,9 +409,10 @@ function EleveInfoModal({ eleve, onClose }) {
 }
 
 // ─── Modal Niveau ─────────────────────────────────────────────────────────────
-function NiveauModal({ data, onSave, onClose, loading }) {
+function NiveauModal({ data, onSave, onClose, loading, defaultAdulte = false }) {
   const [nom, setNom]     = useState(data?.nom || '');
   const [ordre, setOrdre] = useState(data?.ordre || 1);
+  const [estAdulte, setEstAdulte] = useState(data ? !!data.est_adulte : !!defaultAdulte);
   return (
     <div className={S.overlay} onClick={onClose}>
       <div className={S.modal} style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
@@ -415,12 +422,19 @@ function NiveauModal({ data, onSave, onClose, loading }) {
           <input className={S.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="ex : N1, N2, Débutants…" autoFocus />
         </div>
         <div className={S.field}>
+          <label className={S.label}>Public</label>
+          <div className="cls-seg">
+            <button type="button" className={!estAdulte ? 'is-active' : ''} onClick={() => setEstAdulte(false)}>Enfant</button>
+            <button type="button" className={estAdulte ? 'is-active' : ''} onClick={() => setEstAdulte(true)}>Adulte</button>
+          </div>
+        </div>
+        <div className={S.field}>
           <label className={S.label}>Ordre d'affichage</label>
           <input className={S.input} type="number" value={ordre} onChange={e => setOrdre(+e.target.value)} min={1} />
         </div>
         <div className={S.btnRow}>
           <button className={S.btnCancel} onClick={onClose}>Annuler</button>
-          <button className={S.btnSave} style={{ opacity: (!nom.trim() || loading) ? .5 : 1 }} disabled={!nom.trim() || loading} onClick={() => onSave(nom.trim(), ordre)}>
+          <button className={S.btnSave} style={{ opacity: (!nom.trim() || loading) ? .5 : 1 }} disabled={!nom.trim() || loading} onClick={() => onSave(nom.trim(), ordre, estAdulte)}>
             {loading ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>
