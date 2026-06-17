@@ -22,7 +22,7 @@ const TARIFS_ARABE = [
   {
     id: "ar-mod1",
     niveau: "Débutant",
-    prereq: "Je pars de zéro 😄",
+    prereq: "Aucun prérequis",
     prix: 149,
     rythme: "20 séances · 40 min / semaine",
     features: [
@@ -127,7 +127,7 @@ const TARIFS_CORAN = [
   {
     id: 'co-debutant',
     niveau: "J'apprends à lire le Coran",
-    prereq: "Je pars de zéro 😄",
+    prereq: "Aucun prérequis",
     prix: 149,
     rythme: '15 séances · 2 × 40 min / semaine',
     features: [
@@ -233,7 +233,7 @@ const TARIFS_ARABE_ENFANT = [
   {
     id: 'enf-ar-mod1',
     niveau: 'Débutant',
-    prereq: 'Je pars de zéro 😄',
+    prereq: 'Aucun prérequis',
     prix: 99,
     rythme: 'Accès jusqu’à fin du module',
     features: [
@@ -439,7 +439,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
   {
     id: 'enf-ar-visio-mod1',
     niveau: 'Débutant',
-    prereq: 'Je pars de zéro 😄',
+    prereq: 'Aucun prérequis',
     prix: 190,
     rythme: '25 séances · 2 × 40 min / semaine',
     features: [
