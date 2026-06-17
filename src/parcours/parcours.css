@@ -97,9 +97,11 @@
   letter-spacing: -0.01em;
 }
 .parcours-title-ar {
-  font-family: 'Scheherazade New', serif;
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  /* Force les ligatures arabes (lam-alif bien imbriqué) */
+  font-feature-settings: "calt" 1, "liga" 1, "rlig" 1;
   direction: rtl;
-  font-size: clamp(1.1rem, 2.4vw, 1.7rem);
+  font-size: clamp(1.2rem, 2.6vw, 1.85rem);
   color: var(--gold);
   opacity: 0.75;
   margin-top: 0.4rem;
