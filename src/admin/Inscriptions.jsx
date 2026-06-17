@@ -51,7 +51,7 @@ function FormatBlock({ label, count, children }) {
 export default function Inscriptions() {
   const [data,       setData]       = useState([]);
   const [loading,    setLoading]    = useState(true);
-  const [filtreStat, setFiltreStat] = useState('tous');
+  const [filtreStat, setFiltreStat] = useState('nouveau');
   const [filtreType, setFiltreType] = useState('tous');
   const [selected,   setSelected]   = useState(null); // préinscription ouverte dans le sheet
 
@@ -178,11 +178,11 @@ export default function Inscriptions() {
       {/* Stats mini (filtre statut) */}
       <div className="insc-stats">
         {[
-          { key: 'tous',     label: 'Toutes',     count: data.length,              color: 'var(--a-fg-mid)' },
           { key: 'nouveau',  label: 'Non traitées', count: countByStatut('nouveau'), color: 'var(--a-yellow)' },
           { key: 'contacté', label: 'Traitées',     count: countByStatut('contacté'),color: 'var(--a-blue)' },
-          { key: 'inscrit',  label: 'Inscrites',  count: countByStatut('inscrit'), color: 'var(--a-green)' },
-          { key: 'refusé',   label: 'Refusées',   count: countByStatut('refusé'),  color: 'var(--a-red)' },
+          { key: 'inscrit',  label: 'Inscrites',    count: countByStatut('inscrit'), color: 'var(--a-green)' },
+          { key: 'refusé',   label: 'Refusées',     count: countByStatut('refusé'),  color: 'var(--a-red)' },
+          { key: 'tous',     label: 'Toutes',       count: data.length,              color: 'var(--a-fg-mid)' },
         ].map(s => (
           <button key={s.key}
             className={`insc-stat ${filtreStat === s.key ? 'active' : ''}`}
