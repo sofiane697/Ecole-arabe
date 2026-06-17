@@ -68,7 +68,7 @@ const TARIFS_ARABE = [
     features: [
       "Lecture sans vocalisation",
       "Perfectionnement de l’expression orale",
-      "Approfondissement grammaire",
+      "Approfondissement de la grammaire",
     ],
   },
 ];
