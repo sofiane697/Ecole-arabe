@@ -104,6 +104,20 @@ const TARIFS_CORAN_SOURATES = [
     rythme: '24 séances · 2 × 40 min / semaine',
     features: [],
   },
+  {
+    id: 'co-sourate-baqara-2',
+    niveau: 'Hizb Al-Baqara',
+    prix: 90,
+    rythme: '14 séances · 40 min / semaine',
+    features: [],
+  },
+  {
+    id: 'co-sourate-tariq-naba',
+    niveau: 'Hizb de At-Tariq à An-Naba',
+    prix: 90,
+    rythme: '20 séances · 2 × 40 min / semaine',
+    features: [],
+  },
 ];
 
 // ─── Coran — Adulte ───
