@@ -331,6 +331,7 @@ const TARIFS_CORAN_ENFANT = [
     features: [
       'Perfectionnement des premières règles de Tajwid',
       'Apprendre à lire de façon fluide et progressive',
+      'Apprentissage de sourate Al Fil à sourate Al Qadr et leurs enseignements',
     ],
   },
 ];
@@ -536,6 +537,7 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     features: [
       'Perfectionnement des premières règles de Tajwid',
       'Apprendre à lire de façon fluide et progressive',
+      'Apprentissage de sourate Al Fil à sourate Al Qadr et leurs enseignements',
     ],
   },
 ];
