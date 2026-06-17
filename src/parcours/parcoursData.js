@@ -84,6 +84,13 @@ const TARIFS_CORAN_SOURATES = [
     features: [],
   },
   {
+    id: 'co-sourate-tariq-naba',
+    niveau: 'Hizb de At-Tariq à An-Naba',
+    prix: 90,
+    rythme: '20 séances · 2 × 40 min / semaine',
+    features: [],
+  },
+  {
     id: 'co-sourate-al-mulk',
     niveau: 'Sourate Al-Mulk',
     prix: 90,
@@ -109,13 +116,6 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Hizb Al-Baqara',
     prix: 90,
     rythme: '14 séances · 40 min / semaine · 1 page / séance',
-    features: [],
-  },
-  {
-    id: 'co-sourate-tariq-naba',
-    niveau: 'Hizb de At-Tariq à An-Naba',
-    prix: 90,
-    rythme: '20 séances · 2 × 40 min / semaine',
     features: [],
   },
 ];
