@@ -81,14 +81,14 @@ const TARIFS_CORAN_SOURATES = [
     id: 'co-sourate-hizb-sabih',
     niveau: 'Hizb Sabih',
     prix: 90,
-    rythme: '20 séances · 2 × 40 min / semaine',
+    rythme: '20 séances au total · 2 × 40 min / semaine',
     features: [],
   },
   {
     id: 'co-sourate-tariq-naba',
     niveau: 'Hizb de At-Tariq à An-Naba',
     prix: 90,
-    rythme: '20 séances · 2 × 40 min / semaine',
+    rythme: '20 séances au total · 2 × 40 min / semaine',
     features: [],
   },
   {
@@ -110,7 +110,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Hizb Al-Baqara',
     cadence: '½ page / séance',
     prix: 90,
-    rythme: '24 séances · 2 × 40 min / semaine',
+    rythme: '24 séances au total · 2 × 40 min / semaine',
     features: [],
   },
   {
@@ -131,7 +131,7 @@ const TARIFS_CORAN = [
     prereq: "Je pars de zéro 😄",
     prereqNone: true,
     prix: 149,
-    rythme: '16 séances · 2 × 40 min / semaine',
+    rythme: '16 séances au total · 2 × 40 min / semaine',
     features: [
       'Apprentissage des lettres arabes',
       'Maîtrise des voyelles',
@@ -445,7 +445,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     prereq: 'Je pars de zéro 😄',
     prereqNone: true,
     prix: 190,
-    rythme: '25 séances · 2 × 40 min / semaine',
+    rythme: '25 séances au total · 2 × 40 min / semaine',
     features: [
       'Lecture de la lettre au mot',
       'Découverte de l’écriture',
@@ -458,7 +458,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     niveau: 'Intermédiaire',
     prereq: "Je connais l'alphabet par cœur et je déchiffre des mots",
     prix: 190,
-    rythme: '25 séances · 2 × 40 min / semaine',
+    rythme: '25 séances au total · 2 × 40 min / semaine',
     features: [
       'Lecture du mot à la phrase',
       'Attachement des lettres',
@@ -471,7 +471,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     niveau: 'Avancé',
     prereq: 'Je sais lire sans bégayer 😉',
     prix: 190,
-    rythme: '25 séances · 2 × 40 min / semaine',
+    rythme: '25 séances au total · 2 × 40 min / semaine',
     features: [
       'Fluidification de la lecture',
       'Initiation à la compréhension',
@@ -530,7 +530,7 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     id: 'enf-co-visio-lire',
     titre: 'Les clés de la lecture',
     prix: 190,
-    rythme: '25 séances · 2 × 40 min / semaine',
+    rythme: '25 séances au total · 2 × 40 min / semaine',
     features: [
       'Prononciation correcte des lettres',
       'Découverte des outils de lecture',
@@ -542,7 +542,7 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     id: 'enf-co-visio-regles',
     titre: 'Les secrets du Tajwid',
     prix: 190,
-    rythme: '20 séances · 2 × 40 min / semaine',
+    rythme: '20 séances au total · 2 × 40 min / semaine',
     features: [
       'Découverte et application de mes premières règles de Tajwid',
       'Lecture du Coran',
@@ -553,7 +553,7 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     id: 'enf-co-visio-correction',
     titre: 'Perfectionnement de la lecture',
     prix: 190,
-    rythme: '20 séances · 2 × 40 min / semaine',
+    rythme: '20 séances au total · 2 × 40 min / semaine',
     features: [
       'Perfectionnement des premières règles de Tajwid',
       'Apprendre à lire de façon fluide et progressive',
@@ -568,7 +568,7 @@ const TARIFS_COMBO_ENFANT_VISIO = [
     id: 'enf-combo-visio-mod1',
     titre: 'Module 1',
     prix: 290,
-    rythme: '50 séances · 2 × 40 min / semaine',
+    rythme: '50 séances au total · 2 × 40 min / semaine',
     featureGroups: [
       {
         titre: 'Partie Coran',
@@ -595,7 +595,7 @@ const TARIFS_COMBO_ENFANT_VISIO = [
     id: 'enf-combo-visio-mod2',
     titre: 'Module 2',
     prix: 290,
-    rythme: '40 séances · 2 × 40 min / semaine',
+    rythme: '40 séances au total · 2 × 40 min / semaine',
     featureGroups: [
       {
         titre: 'Partie Coran',
@@ -621,7 +621,7 @@ const TARIFS_COMBO_ENFANT_VISIO = [
     id: 'enf-combo-visio-mod3',
     titre: 'Module 3',
     prix: 290,
-    rythme: '40 séances · 2 × 40 min / semaine',
+    rythme: '40 séances au total · 2 × 40 min / semaine',
     featureGroups: [
       {
         titre: 'Partie Coran',
