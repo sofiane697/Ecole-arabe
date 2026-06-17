@@ -252,6 +252,7 @@ export default function Eleves({ variant = 'eleves' }) {
             nom:         eleve.nom,
             identifiant: eleve.identifiant,
             tempPassword: tempPwd,
+            classeNom:   allClasses.find(c => c.id === eleve.classe_id)?.nom || null,
           }).catch(() => {});
         }
       }
