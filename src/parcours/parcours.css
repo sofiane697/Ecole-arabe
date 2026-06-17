@@ -189,6 +189,11 @@
     0 7px 16px -8px rgba(191, 138, 48, 0.35);
   transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out);
 }
+/* Icône à plusieurs caractères (ex. « ق + إ ») : réduite pour tenir dans la bulle */
+.sticker-ico--multi {
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
 .sticker-illu {
   width: 50%;
   height: 50%;

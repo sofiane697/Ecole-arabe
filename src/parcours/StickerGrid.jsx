@@ -23,7 +23,15 @@ export default function StickerGrid({ nodes, onPick }) {
           aria-label={node.label}
         >
           {node.disabled && <span className="sticker-badge">Bientôt</span>}
-          <span className="sticker-ico">{(node.illu && ILLUS[node.illu]) || node.ico}</span>
+          <span
+            className={`sticker-ico ${
+              !node.illu && node.ico && [...node.ico].filter((c) => c.trim()).length > 1
+                ? 'sticker-ico--multi'
+                : ''
+            }`}
+          >
+            {(node.illu && ILLUS[node.illu]) || node.ico}
+          </span>
           <span className="sticker-label">{node.label}</span>
           {node.ar && <span className="sticker-ar">{node.ar}</span>}
           {node.desc && <span className="sticker-desc">{node.desc}</span>}
