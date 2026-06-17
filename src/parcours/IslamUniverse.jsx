@@ -14,7 +14,7 @@ export default function IslamUniverse({ node, onPick }) {
         <p className="islam-main-ar">مَصَادِرُ الْعِلْمِ</p>
 
         <p className="islam-tagline">
-          Un format 100% distanciel qui s'adapte à votre rythme et à vos contraintes.
+          Un format 100% distanciel qui s'adapte à votre rythme et à vos envies.
         </p>
 
         <div className="islam-deco" aria-hidden="true">
