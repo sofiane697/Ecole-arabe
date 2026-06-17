@@ -1227,6 +1227,47 @@
 }
 .insc-sheet-soon-title { font-weight: 600; color: var(--a-fg-mid); }
 
+/* Conversion adulte → compte étudiant (créer + affecter une classe) */
+.insc-convert { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.insc-convert-select { width: 100%; }
+.insc-convert-error { color: var(--a-red); font-size: 0.8rem; margin: 0; }
+.insc-convert-cancel {
+  background: none;
+  border: none;
+  color: var(--a-fg-light);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+}
+.insc-convert-cancel:disabled { opacity: 0.5; cursor: default; }
+.insc-convert-done {
+  border: 1px solid rgba(var(--a-green-rgb, 52, 199, 89), 0.3);
+  background: rgba(var(--a-green-rgb, 52, 199, 89), 0.06);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  gap: 0.5rem;
+}
+.insc-convert-creds {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.insc-convert-creds > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.insc-convert-creds span { font-size: 0.78rem; color: var(--a-fg-light); }
+.insc-convert-creds strong {
+  font-family: var(--a-font-mono, monospace);
+  font-size: 0.92rem;
+  color: var(--a-fg);
+  letter-spacing: 0.02em;
+}
+.insc-convert-mail { font-size: 0.8rem; color: var(--a-fg-mid); }
+
 .insc-empty {
   text-align: center;
   padding: 4rem 2rem;

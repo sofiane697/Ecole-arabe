@@ -3,7 +3,10 @@ import gsap from 'gsap';
 import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchPreinscriptions, updatePreinscriptionStatut, markPreinscriptionViewed,
+  createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses,
+  fetchEleveIdParIdentifiant, sendWelcomeEmail,
 } from './supabaseAdmin';
+import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emitInscriptionsChanged } from './adminEvents';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
@@ -35,12 +38,132 @@ const IconArrow = () => (
   </svg>
 );
 
+/**
+ * Conversion d'une préinscription ADULTE en compte étudiant + affectation à une
+ * classe. Génère identifiant + mot de passe, crée le compte (profils_eleves),
+ * affecte la classe (et le niveau scolaire dérivé), passe la demande à « Inscrit »
+ * et envoie l'e-mail de bienvenue. Pas de parent (adulte majeur).
+ */
+function ConvertAdulte({ inscription: i, classes, onInscrit }) {
+  const [open,     setOpen]     = useState(false);
+  const [classeId, setClasseId] = useState('');
+  const [busy,     setBusy]     = useState(false);
+  const [error,    setError]    = useState('');
+  const [result,   setResult]   = useState(null);
+
+  // Compte créé → récapitulatif identifiants.
+  if (result) {
+    return (
+      <div className="insc-convert insc-convert-done">
+        <span className="insc-sheet-soon-title">✓ Étudiant créé{result.classeNom ? ` — ${result.classeNom}` : ''}</span>
+        <div className="insc-convert-creds">
+          <div><span>Identifiant</span><strong>{result.identifiant}</strong></div>
+          <div><span>Mot de passe</span><strong>{result.tempPassword}</strong></div>
+        </div>
+        <span className="insc-convert-mail">
+          {result.emailSent
+            ? `✉ E-mail de bienvenue envoyé à ${result.email}`
+            : '⚠ E-mail non envoyé — transmets les identifiants manuellement.'}
+        </span>
+      </div>
+    );
+  }
+
+  // Déjà au statut « Inscrit » (compte créé précédemment ou statut forcé).
+  if (i.statut === 'inscrit') {
+    return (
+      <div className="insc-convert insc-sheet-soon">
+        <span className="insc-sheet-soon-title">✓ Étudiant inscrit</span>
+        <span>Cette demande est déjà au statut « Inscrit ».</span>
+      </div>
+    );
+  }
+
+  const handleCreate = async () => {
+    if (!classeId) { setError('Choisis une classe.'); return; }
+    setBusy(true); setError('');
+    try {
+      const prenom = fmtPrenom(i.eleve_prenom);
+      const nom    = fmtNom(i.eleve_nom);
+      const idLogin = generateIdentifiant(prenom, nom).toLowerCase();
+      const tempPwd = generateTempPassword();
+
+      const created = await createEleve(nom, prenom, idLogin, tempPwd);
+      const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
+      if (!eleveId) throw new Error('Compte créé mais introuvable.');
+
+      const patch = { classe_id: classeId };
+      if (i.contact_email)      patch.email_contact  = i.contact_email;
+      if (i.contact_telephone)  patch.telephone      = i.contact_telephone;
+      if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
+      await updateEleve(eleveId, patch);
+
+      const classe = classes.find(c => c.id === classeId);
+      await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
+
+      await updatePreinscriptionStatut(i.id, 'inscrit');
+      onInscrit();
+
+      let emailSent = false;
+      if (i.contact_email) {
+        try {
+          await sendWelcomeEmail({
+            email: i.contact_email, prenom, nom,
+            identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom,
+          });
+          emailSent = true;
+        } catch { /* e-mail non bloquant */ }
+      }
+      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, emailSent, email: i.contact_email });
+    } catch (e) {
+      setError(e.message || "Erreur lors de la création de l'étudiant.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <div className="insc-convert">
+        <button className="msg-action-primary" onClick={() => setOpen(true)}>
+          ↪ Créer l'étudiant <IconArrow />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="insc-convert">
+      <p className="insc-detail-section-title">Affecter à une classe</p>
+      <select
+        className="admin-filter-select insc-convert-select"
+        value={classeId}
+        onChange={e => { setClasseId(e.target.value); setError(''); }}
+        disabled={busy}
+      >
+        <option value="">— Choisir une classe —</option>
+        {classes.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+      </select>
+      {error && <p className="insc-convert-error">{error}</p>}
+      <div className="insc-detail-actions">
+        <button className="msg-action-primary" onClick={handleCreate} disabled={busy || !classeId}>
+          {busy ? 'Création…' : 'Créer et affecter'} <IconArrow />
+        </button>
+        <button className="insc-convert-cancel" onClick={() => { setOpen(false); setError(''); }} disabled={busy}>
+          Annuler
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Inscriptions() {
   const [data,       setData]       = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [filtreStat, setFiltreStat] = useState('nouveau');
   const [filtrePublic, setFiltrePublic] = useState('tous');
   const [selected,   setSelected]   = useState(null); // préinscription ouverte dans le sheet
+  const [classes,    setClasses]    = useState([]);   // classes pour l'affectation (conversion adulte)
 
   const pageRef    = useRef(null);
   const overlayRef = useRef(null);
@@ -50,6 +173,15 @@ export default function Inscriptions() {
 
   useEffect(() => {
     fetchPreinscriptions().then(setData).catch(() => {}).finally(() => setLoading(false));
+    fetchAllClasses().then(setClasses).catch(() => {});
+  }, []);
+
+  // Passe une demande au statut « Inscrit » localement (la RPC est déjà faite par
+  // ConvertAdulte) + notifie le sidebar.
+  const markInscrit = useCallback((id) => {
+    setData(prev => prev.map(x => x.id === id ? { ...x, statut: 'inscrit' } : x));
+    setSelected(prev => (prev && prev.id === id ? { ...prev, statut: 'inscrit' } : prev));
+    emitInscriptionsChanged();
   }, []);
 
   // Ouverture animée du sheet (overlay fade + panneau qui monte du bas). Verrouille
@@ -409,11 +541,16 @@ export default function Inscriptions() {
                     )}
                   </div>
 
-                  {/* Conversion élève/parent : prévue, branchée plus tard */}
-                  <div className="insc-sheet-soon">
-                    <span className="insc-sheet-soon-title">↪ Créer l'élève + le parent</span>
-                    <span>Disponible prochainement.</span>
-                  </div>
+                  {/* Conversion en compte : adulte = créer l'étudiant + affecter
+                      une classe ; enfant (avec parent) = à venir. */}
+                  {i.est_enfant ? (
+                    <div className="insc-sheet-soon">
+                      <span className="insc-sheet-soon-title">↪ Créer l'élève + le parent</span>
+                      <span>Disponible prochainement.</span>
+                    </div>
+                  ) : i.statut !== 'refusé' ? (
+                    <ConvertAdulte inscription={i} classes={classes} onInscrit={() => markInscrit(i.id)} />
+                  ) : null}
                 </div>
               </div>
             </div>
