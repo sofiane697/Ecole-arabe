@@ -235,7 +235,7 @@ const TARIFS_ARABE_ENFANT = [
     rythme: 'Accès jusqu’à fin du module',
     features: [
       'Lecture du mot à la phrase',
-      'Attachement',
+      'Attachement des lettres',
       'Vocabulaire du quotidien',
       'Expression orale',
     ],
@@ -440,7 +440,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     rythme: '25 séances · 2 × 40 min / semaine',
     features: [
       'Lecture du mot à la phrase',
-      'Attachement',
+      'Attachement des lettres',
       'Vocabulaire du quotidien',
       'Expression orale',
     ],
