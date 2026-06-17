@@ -467,7 +467,7 @@ const TARIFS_EDI_ENFANT_VISIO = [
     id: 'enf-edi-visio-mod1',
     titre: 'Module 1',
     prix: 190,
-    rythme: '25 séances · 2 × 40 min / semaine',
+    rythme: '25 séances · 40 min / semaine',
     features: [
       'Connaître Allah ﷻ et l’attestation de Foi',
       'Découvrir le Prophète Mohammed ﷺ et les premiers chapitres de son histoire',
@@ -480,7 +480,7 @@ const TARIFS_EDI_ENFANT_VISIO = [
     id: 'enf-edi-visio-mod2',
     titre: 'Module 2',
     prix: 190,
-    rythme: '20 séances · 2 × 40 min / semaine',
+    rythme: '20 séances · 40 min / semaine',
     features: [
       'Comprendre l’unicité d’Allah ﷻ et son adoration',
       'La vie du Prophète ﷺ, son enfance et son entourage',
@@ -493,7 +493,7 @@ const TARIFS_EDI_ENFANT_VISIO = [
     id: 'enf-edi-visio-mod3',
     titre: 'Module 3',
     prix: 190,
-    rythme: '20 séances · 2 × 40 min / semaine',
+    rythme: '20 séances · 40 min / semaine',
     features: [
       'La Foi en Allah ﷻ : les piliers de la Foi',
       'L’importance de l’invocation',
