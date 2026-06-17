@@ -811,7 +811,7 @@ export const PARCOURS = {
                 {
                   id: 'enfant-visio-halaqa',
                   label: 'Halaqa encadrée pour ado',
-                  ar: 'حلقة مُسَيَّرة للمراهقين',
+                  ar: 'حلقة مسيرة للمراهقين',
                   ico: 'ح',
                   desc: 'Assises religieuses encadrées pour adolescents.',
                   tarifs: TARIFS_HALAQA_ADO,
