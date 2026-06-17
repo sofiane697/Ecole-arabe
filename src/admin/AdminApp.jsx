@@ -56,7 +56,6 @@ const IconStudent = () => (
 
 const PAGE_TITLES = {
   '/admin':                 'Tableau de bord',
-  '/admin/inscriptions':    'Pré-inscriptions',
   '/admin/messages':        'Messages',
   '/admin/cours':           'Gestion des cours',
   '/admin/classes':         'Gestion des classes',
@@ -173,19 +172,10 @@ export default function AdminApp() {
             to="/admin" end
             className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
             onClick={() => setSidebarOpen(false)}
-            onMouseEnter={() => preloadRoute('admin-dashboard')}
-          >
-            <IconDashboard /> Tableau de bord
-          </NavLink>
-
-          <NavLink
-            to="/admin/inscriptions"
-            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
-            onClick={() => setSidebarOpen(false)}
             onMouseEnter={() => preloadRoute('admin-inscriptions')}
           >
-            <IconUsers /> Pré-inscriptions
-            {newInscriptions > 0 && (
+            <IconDashboard /> Tableau de bord
+            {newInscriptions > 0 && location.pathname !== '/admin' && (
               <span className="admin-nav-badge">{newInscriptions}</span>
             )}
           </NavLink>

@@ -7,7 +7,6 @@ const App = lazy(() => import('./App'));
 
 const AdminLogin         = lazy(() => import('./admin/AdminLogin'));
 const AdminApp           = lazy(() => import('./admin/AdminApp'));
-const Dashboard          = lazy(() => import('./admin/Dashboard'));
 const Inscriptions       = lazy(() => import('./admin/Inscriptions'));
 const Messages           = lazy(() => import('./admin/Messages'));
 const Cours              = lazy(() => import('./admin/Cours'));
@@ -84,8 +83,7 @@ function AnimatedRoutes() {
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminApp />}>
-            <Route index element={<Dashboard />} />
-            <Route path="inscriptions" element={<Inscriptions />} />
+            <Route index element={<Inscriptions />} />
             <Route path="messages" element={<Messages />} />
             <Route path="cours" element={<Cours />} />
             <Route path="classes" element={<Classes />} />

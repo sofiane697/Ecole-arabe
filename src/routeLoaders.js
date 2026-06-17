@@ -10,7 +10,6 @@
 
 const LOADERS = {
   // ─── Admin ──────────────────────────────────────────────────────────────
-  'admin-dashboard':       () => import('./admin/Dashboard'),
   'admin-inscriptions':    () => import('./admin/Inscriptions'),
   'admin-messages':        () => import('./admin/Messages'),
   'admin-cours':           () => import('./admin/Cours'),
