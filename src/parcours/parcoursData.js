@@ -776,9 +776,9 @@ export const PARCOURS = {
                 },
                 {
                   id: 'enfant-visio-accompagnement',
-                  label: 'Accompagnement spécifique',
-                  ar: 'المرافقة الخاصة',
-                  ico: 'ص',
+                  label: 'Enseignement spécifique',
+                  ar: 'التعليم الخاص',
+                  ico: 'خ',
                   desc: 'Cours adaptés aux enfants neuroatypiques (TDAH, TDA, autisme, dysorthographie…). Classes de 3 à 5 élèves.',
                   // Stickers désactivés pour l'instant (pas de suite / tarifs à venir).
                   // Rythmes prévus (maquette) : à brancher plus tard.
