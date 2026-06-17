@@ -5,7 +5,7 @@ import {
   fetchPreinscriptions, updatePreinscriptionStatut, markPreinscriptionViewed,
 } from './supabaseAdmin';
 import { emitInscriptionsChanged } from './adminEvents';
-import { groupByFormat } from './preinscriptionGroups';
+import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 
 const STATUT_NEXT = { nouveau: 'contacté', contacté: 'inscrit' }; // 'inscrit' = dernier palier
 const STATUT_CFG  = {
@@ -34,19 +34,6 @@ const IconArrow = () => (
     <polyline points="9 18 15 12 9 6"/>
   </svg>
 );
-
-// Carte d'un format : en-tête (libellé + compteur) + liste scrollable des élèves.
-function FormatBlock({ label, count, children }) {
-  return (
-    <div className="insc-block">
-      <div className="insc-block-header">
-        <span className="insc-block-label">{label}</span>
-        <span className="insc-block-count">{count}</span>
-      </div>
-      <div className="insc-block-list">{children}</div>
-    </div>
-  );
-}
 
 export default function Inscriptions() {
   const [data,       setData]       = useState([]);
@@ -166,7 +153,11 @@ export default function Inscriptions() {
     return <div className="text-center p-16 text-a-fg-light">Chargement des préinscriptions...</div>;
   }
 
-  const groups = groupByFormat(filtered);
+  // Toutes les demandes dans une seule liste, triées par nom (puis prénom).
+  const sorted = [...filtered].sort((a, b) =>
+    (a.eleve_nom || '').localeCompare(b.eleve_nom || '', 'fr', { sensitivity: 'base' })
+    || (a.eleve_prenom || '').localeCompare(b.eleve_prenom || '', 'fr', { sensitivity: 'base' })
+  );
 
   return (
     <div ref={pageRef}>
@@ -204,42 +195,40 @@ export default function Inscriptions() {
         <span className="insc-filter-count">{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}</span>
       </div>
 
-      {/* Grille de blocs pleine largeur */}
-      {groups.length === 0 ? (
+      {/* Liste unique, triée par nom */}
+      {sorted.length === 0 ? (
         <div className="insc-empty"><IconUsers /><p>Aucune préinscription trouvée</p></div>
       ) : (
-        <div className="insc-blocks">
-          {groups.map((g) => (
-            <FormatBlock key={g.key} label={g.label} count={g.items.length}>
-              {g.items.map((i) => {
-                const s = STATUT_CFG[i.statut] || { label: i.statut, cls: '', color: 'var(--a-fg-mid)' };
-                return (
-                  <div key={i.id} className="insc-item" onClick={() => openInscription(i)}>
-                    <div className="insc-item-avatar">{getInitials(i.eleve_prenom, i.eleve_nom)}</div>
-                    <div className="insc-item-main">
-                      <div className="insc-item-row1">
-                        <span className="insc-item-name">{i.eleve_prenom} {i.eleve_nom}</span>
-                        <span className={`badge ${s.cls}`}>{s.label}</span>
-                      </div>
-                      <div className="insc-item-desc">
-                        <span className="insc-desc-matiere">{i.matiere}</span>
-                        <span className={`insc-desc-public ${i.est_enfant ? 'is-enfant' : 'is-adulte'}`}>
-                          {i.est_enfant ? 'Enfant' : 'Adulte'}
-                        </span>
-                      </div>
-                      <div className="insc-item-meta">
-                        <span className="insc-item-price">
-                          {i.type === 'devis' ? 'Devis sur mesure' : (i.formule_prix != null ? `${i.formule_prix} €` : 'Formule')}
-                        </span>
-                        <span className="insc-item-dot" aria-hidden="true">·</span>
-                        <span>{formatDate(i.created_at)}</span>
-                      </div>
+        <div className="insc-block">
+          <div className="insc-block-list insc-block-list--single">
+            {sorted.map((i) => {
+              const s = STATUT_CFG[i.statut] || { label: i.statut, cls: '', color: 'var(--a-fg-mid)' };
+              return (
+                <div key={i.id} className="insc-item" onClick={() => openInscription(i)}>
+                  <div className="insc-item-avatar">{getInitials(i.eleve_prenom, i.eleve_nom)}</div>
+                  <div className="insc-item-main">
+                    <div className="insc-item-row1">
+                      <span className="insc-item-name">{fmtPrenom(i.eleve_prenom)} {fmtNom(i.eleve_nom)}</span>
+                      <span className={`badge ${s.cls}`}>{s.label}</span>
+                    </div>
+                    <div className="insc-item-desc">
+                      <span className="insc-desc-matiere">{i.matiere}</span>
+                      <span className={`insc-desc-public ${i.est_enfant ? 'is-enfant' : 'is-adulte'}`}>
+                        {i.est_enfant ? 'Enfant' : 'Adulte'}
+                      </span>
+                    </div>
+                    <div className="insc-item-meta">
+                      <span className="insc-item-price">
+                        {i.type === 'devis' ? 'Devis sur mesure' : (i.formule_prix != null ? `${i.formule_prix} €` : 'Formule')}
+                      </span>
+                      <span className="insc-item-dot" aria-hidden="true">·</span>
+                      <span>{formatDate(i.created_at)}</span>
                     </div>
                   </div>
-                );
-              })}
-            </FormatBlock>
-          ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -264,7 +253,7 @@ export default function Inscriptions() {
               <div className="insc-sheet-header">
                 <div className="insc-detail-avatar">{getInitials(i.eleve_prenom, i.eleve_nom)}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="insc-sheet-title">{i.eleve_prenom} {i.eleve_nom}</div>
+                  <div className="insc-sheet-title">{fmtPrenom(i.eleve_prenom)} {fmtNom(i.eleve_nom)}</div>
                   <div className="insc-sheet-sub">
                     {i.est_enfant ? 'Enfant' : 'Adulte'}
                     {age != null && ` — ${age} ans`}
@@ -343,7 +332,7 @@ export default function Inscriptions() {
                     {(i.contact_prenom || i.contact_nom) && (
                       <div className="insc-detail-field">
                         <span className="insc-detail-field-label">Nom</span>
-                        <span className="insc-detail-field-value">{i.contact_prenom} {i.contact_nom}</span>
+                        <span className="insc-detail-field-value">{fmtPrenom(i.contact_prenom)} {fmtNom(i.contact_nom)}</span>
                       </div>
                     )}
                     <div className="insc-detail-field">

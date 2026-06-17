@@ -1210,6 +1210,8 @@
   font-weight: 600;
 }
 .insc-block-list { max-height: 460px; overflow-y: auto; padding: 0.6rem; }
+/* Liste unique (toutes les demandes triées par nom) : pas de cap, la page défile */
+.insc-block-list--single { max-height: none; overflow-y: visible; }
 
 /* Emplacement « créer l'élève + parent » (désactivé, branché plus tard) */
 .insc-sheet-soon {
