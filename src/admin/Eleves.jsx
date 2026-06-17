@@ -107,7 +107,10 @@ const EleveStatCard = ({ value, color, children }) => (
   </div>
 );
 
-export default function Eleves() {
+export default function Eleves({ variant = 'eleves' }) {
+  const isAdulte = variant === 'etudiants';
+  const nounS = isAdulte ? 'étudiant'  : 'élève';
+  const nounP = isAdulte ? 'étudiants' : 'élèves';
   const [eleves, setEleves] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedEleve, setSelectedEleve] = useState(null);
@@ -149,8 +152,9 @@ export default function Eleves() {
   const [absSub, setAbsSub]         = useState(false);
 
   const loadEleves = useCallback(async () => {
-    try { setEleves(await fetchEleves()); } catch(e) {}
-  }, []);
+    // Séparation étudiants (adultes) / élèves (enfants) via le marqueur est_adulte.
+    try { setEleves((await fetchEleves()).filter(e => (isAdulte ? e.est_adulte : !e.est_adulte))); } catch(e) {}
+  }, [isAdulte]);
 
   useEffect(() => { loadEleves(); }, [loadEleves]);
 
@@ -1667,13 +1671,13 @@ export default function Eleves() {
     <div ref={pageRef} className={CLS.page}>
       <div className={CLS.header}>
         <div className={CLS.headerLeft}>
-          <span className="a-section-count">{eleves.length} élève{eleves.length !== 1 ? 's' : ''} inscrit{eleves.length !== 1 ? 's' : ''}</span>
+          <span className="a-section-count">{eleves.length} {eleves.length !== 1 ? nounP : nounS} inscrit{eleves.length !== 1 ? 's' : ''}</span>
         </div>
         <div className={CLS.headerActions}>
           {elevesFiltered.length > 0 && (
             <button className={CLS.exportBtn} onClick={exportCSV}>⬇ Exporter CSV{elevesFiltered.length !== eleves.length ? ` (${elevesFiltered.length})` : ''}</button>
           )}
-          <button className={CLS.addBtn} onClick={() => setShowModal(true)}><IconPlus /> Ajouter un élève</button>
+          <button className={CLS.addBtn} onClick={() => setShowModal(true)}><IconPlus /> Ajouter un {nounS}</button>
         </div>
       </div>
 
@@ -1701,9 +1705,9 @@ export default function Eleves() {
         </div>
       )}
 
-      {eleves.length === 0 && <div className={CLS.empty}>Aucun élève pour le moment. Créez le premier compte.</div>}
+      {eleves.length === 0 && <div className={CLS.empty}>Aucun {nounS} pour le moment. Créez le premier compte.</div>}
       {eleves.length > 0 && elevesFiltered.length === 0 && (
-        <div className={CLS.empty}>Aucun élève ne correspond à votre recherche.</div>
+        <div className={CLS.empty}>Aucun {nounS} ne correspond à votre recherche.</div>
       )}
 
       {(() => {
@@ -1740,7 +1744,7 @@ export default function Eleves() {
         );
       })()}
 
-      {showModal && <CreateEleveModal onClose={() => setShowModal(false)} onCreated={() => { setShowModal(false); loadEleves(); }} />}
+      {showModal && <CreateEleveModal isAdulte={isAdulte} onClose={() => setShowModal(false)} onCreated={() => { setShowModal(false); loadEleves(); }} />}
     </div>
   );
 }
@@ -1752,7 +1756,8 @@ function escapeHtml(text) {
 }
 
 // ─── Modal création élève ────────────────────────────────────────────────────
-function CreateEleveModal({ onClose, onCreated }) {
+function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
+  const nounS = isAdulte ? 'étudiant' : 'élève';
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [dateNaissance, setDateNaissance] = useState('');
@@ -1820,7 +1825,7 @@ function CreateEleveModal({ onClose, onCreated }) {
     }
     // Parents : obligatoires uniquement si élève mineur ET addParentsNow coché.
     // Si `addParentsNow === false`, l'admin rattachera les parents plus tard.
-    const skipParents  = isMajor || !addParentsNow;
+    const skipParents  = isAdulte || isMajor || !addParentsNow;
     const blocsValides = skipParents ? [] : parentsBlocs.filter(isBlocUtilisable);
     if (!skipParents && blocsValides.length === 0) {
       setError("Renseigne au moins un parent (père ou mère) avec email et téléphone, ou décoche « Ajouter les parents maintenant ».");
@@ -1852,6 +1857,7 @@ function CreateEleveModal({ onClose, onCreated }) {
       if (!eleveId) throw new Error('Compte élève créé mais ID introuvable — réessayez.');
 
       const patch = {};
+      if (isAdulte)              patch.est_adulte   = true;
       if (classeId)              patch.classe_id    = classeId;
       if (inactif)               patch.actif        = false;
       if (emailContact.trim())   patch.email_contact = emailContact.trim();
@@ -1899,7 +1905,7 @@ function CreateEleveModal({ onClose, onCreated }) {
   if (prenom.trim().length < 2)   missingFields.push('prénom');
   if (nom.trim().length < 2)      missingFields.push('nom');
   if (!dateNaissance)             missingFields.push('date de naissance');
-  if (!isMajor && addParentsNow && !hasValidParent) {
+  if (!isAdulte && !isMajor && addParentsNow && !hasValidParent) {
     missingFields.push('un parent complet (nom, prénom, email, téléphone)');
   }
   const valid = missingFields.length === 0;
@@ -2033,7 +2039,7 @@ function CreateEleveModal({ onClose, onCreated }) {
   return (
     <div className={CLS.overlay} onClick={onClose}>
       <div className={`${CLS.modal} max-h-[85vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
-        <div className={CLS.modalTitle}>Ajouter un élève</div>
+        <div className={CLS.modalTitle}>Ajouter un {nounS}</div>
         <div className="flex gap-3">
           <div className={`${CLS.field} flex-1`}><label htmlFor="eleve_prenom" className={CLS.label}>Prénom *</label><input id="eleve_prenom" className={CLS.input} value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Prénom" /></div>
           <div className={`${CLS.field} flex-1`}><label htmlFor="eleve_nom" className={CLS.label}>Nom *</label><input id="eleve_nom" className={CLS.input} value={nom} onChange={e => setNom(e.target.value)} placeholder="Nom" /></div>
@@ -2096,7 +2102,8 @@ function CreateEleveModal({ onClose, onCreated }) {
           Un mot de passe provisoire sera généré automatiquement. L'élève devra le modifier à sa première connexion.
         </div>
 
-        {/* Section Parents — masquée si l'élève est majeur (il gère son compte seul). */}
+        {/* Section Parents — masquée pour un étudiant (adulte) ou un élève majeur. */}
+        {!isAdulte && (
         <div className={CLS.field}>
           {isMajor ? (
             <>
@@ -2172,6 +2179,7 @@ function CreateEleveModal({ onClose, onCreated }) {
             </>
           )}
         </div>
+        )}
         <label className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-[13px] mb-3 transition-all duration-150"
           style={{
             background: inactif ? 'rgba(255,159,10,0.08)' : 'transparent',

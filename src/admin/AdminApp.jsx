@@ -59,6 +59,7 @@ const PAGE_TITLES = {
   '/admin/messages':        'Messages',
   '/admin/cours':           'Gestion des cours',
   '/admin/classes':         'Gestion des classes',
+  '/admin/etudiants':       'Gestion des étudiants',
   '/admin/eleves':          'Gestion des élèves',
   '/admin/parents':         'Gestion des parents',
   '/admin/enseignants':     'Gestion des enseignants',
@@ -214,6 +215,15 @@ export default function AdminApp() {
               <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
             </svg>
             Gestion des classes
+          </NavLink>
+
+          <NavLink
+            to="/admin/etudiants"
+            className={({ isActive }) => 'admin-nav-link' + (isActive ? ' active' : '')}
+            onClick={() => setSidebarOpen(false)}
+            onMouseEnter={() => preloadRoute('admin-eleves')}
+          >
+            <IconStudent /> Gestion des étudiants
           </NavLink>
 
           <NavLink

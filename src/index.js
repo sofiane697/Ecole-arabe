@@ -87,7 +87,8 @@ function AnimatedRoutes() {
             <Route path="messages" element={<Messages />} />
             <Route path="cours" element={<Cours />} />
             <Route path="classes" element={<Classes />} />
-            <Route path="eleves" element={<Eleves />} />
+            <Route path="eleves" element={<Eleves variant="eleves" />} />
+            <Route path="etudiants" element={<Eleves variant="etudiants" />} />
             <Route path="parents" element={<Parents />} />
             <Route path="enseignants" element={<Enseignants />} />
             <Route path="surveillance"  element={<AdminSurveillance />} />

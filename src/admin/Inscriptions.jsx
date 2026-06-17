@@ -92,7 +92,7 @@ function ConvertAdulte({ inscription: i, classes, onInscrit }) {
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      const patch = { classe_id: classeId };
+      const patch = { classe_id: classeId, est_adulte: true };
       if (i.contact_email)      patch.email_contact  = i.contact_email;
       if (i.contact_telephone)  patch.telephone      = i.contact_telephone;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
