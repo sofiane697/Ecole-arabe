@@ -341,7 +341,7 @@ const TARIFS_COMBO_ENFANT = [
   {
     id: 'enf-combo-mod1',
     titre: 'Module 1',
-    prix: 99,
+    prix: 149,
     rythme: 'Accès jusqu’à fin du module',
     featureGroups: [
       {
@@ -368,7 +368,7 @@ const TARIFS_COMBO_ENFANT = [
   {
     id: 'enf-combo-mod2',
     titre: 'Module 2',
-    prix: 99,
+    prix: 149,
     rythme: 'Accès jusqu’à fin du module',
     featureGroups: [
       {
@@ -394,7 +394,7 @@ const TARIFS_COMBO_ENFANT = [
   {
     id: 'enf-combo-mod3',
     titre: 'Module 3',
-    prix: 99,
+    prix: 149,
     rythme: 'Accès jusqu’à fin du module',
     featureGroups: [
       {
