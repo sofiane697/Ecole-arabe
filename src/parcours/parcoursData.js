@@ -695,6 +695,7 @@ export const PARCOURS = {
             {
               id: 'enfant-autonomie',
               label: 'Autonomie',
+              ar: 'التعلّم الذاتي',
               ico: 'س',
               illu: 'autonomie',
               desc: "L’enfant apprend seul ou avec un parent sur notre plateforme. Bilan de compétences une fois par mois avec un enseignant.",
@@ -726,6 +727,7 @@ export const PARCOURS = {
                 {
                   id: 'enfant-auto-combo',
                   label: 'Coran & Éducation islamique',
+                  ar: 'القرآن والتربية الإسلامية',
                   ico: 'ق + إ',
                   desc: 'Formule combinée Coran et éducation islamique.',
                   tarifs: TARIFS_COMBO_ENFANT,
@@ -735,6 +737,7 @@ export const PARCOURS = {
             {
               id: 'enfant-visio',
               label: 'Visioconférence',
+              ar: 'الحصص المرئية',
               ico: 'ر',
               illu: 'visio',
               desc: 'Cours en visioconférence, en classes de 5 à 10 enfants.',
@@ -766,6 +769,7 @@ export const PARCOURS = {
                 {
                   id: 'enfant-visio-combo',
                   label: 'Coran & Éducation islamique',
+                  ar: 'القرآن والتربية الإسلامية',
                   ico: 'ق + إ',
                   desc: 'Formule combinée Coran et éducation islamique.',
                   tarifs: TARIFS_COMBO_ENFANT_VISIO,
@@ -773,23 +777,25 @@ export const PARCOURS = {
                 {
                   id: 'enfant-visio-accompagnement',
                   label: 'Accompagnement spécifique',
+                  ar: 'المرافقة الخاصة',
                   ico: 'ص',
                   desc: 'Cours adaptés aux enfants neuroatypiques (TDAH, TDA, autisme, dysorthographie…). Classes de 3 à 5 élèves.',
                   // Stickers désactivés pour l'instant (pas de suite / tarifs à venir).
                   // Rythmes prévus (maquette) : à brancher plus tard.
                   children: [
-                    { id: 'enfant-visio-acc-priere', label: 'Prière et ablution', ico: 'ص', disabled: true }, // 30 min/sem · 5 séances
-                    { id: 'enfant-visio-acc-sira', label: 'Sira', ico: 'س', disabled: true }, // 30 min/sem · 10 séances
-                    { id: 'enfant-visio-acc-seigneur', label: 'Mon Seigneur', ico: 'ر', disabled: true }, // 30 min/sem · 5 séances
-                    { id: 'enfant-visio-acc-adam', label: 'Adam', ico: 'أ', disabled: true }, // 20 min/sem · 5 séances
-                    { id: 'enfant-visio-acc-nouh', label: 'Nouh', ico: 'ن', disabled: true }, // 20 min/sem · 5 séances
-                    { id: 'enfant-visio-acc-souleyman', label: 'Souleyman', ico: 'ل', disabled: true }, // 20 min/sem · 5 séances
-                    { id: 'enfant-visio-acc-ibrahim', label: 'Ibrahim', ico: 'ب', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-priere', label: 'Prière et ablution', ar: 'الصلاة والوضوء', ico: 'ص', disabled: true }, // 30 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-sira', label: 'Sira', ar: 'السيرة', ico: 'س', disabled: true }, // 30 min/sem · 10 séances
+                    { id: 'enfant-visio-acc-seigneur', label: 'Mon Seigneur', ar: 'ربّي', ico: 'ر', disabled: true }, // 30 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-adam', label: 'Adam', ar: 'آدم', ico: 'أ', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-nouh', label: 'Nouh', ar: 'نوح', ico: 'ن', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-souleyman', label: 'Souleyman', ar: 'سليمان', ico: 'ل', disabled: true }, // 20 min/sem · 5 séances
+                    { id: 'enfant-visio-acc-ibrahim', label: 'Ibrahim', ar: 'إبراهيم', ico: 'ب', disabled: true }, // 20 min/sem · 5 séances
                   ],
                 },
                 {
                   id: 'enfant-visio-halaqa',
                   label: 'Halaqa encadrée pour ado',
+                  ar: 'حلقة مؤطّرة للمراهقين',
                   ico: 'ح',
                   desc: 'Assises religieuses encadrées pour adolescents.',
                   tarifs: TARIFS_HALAQA_ADO,
@@ -799,6 +805,7 @@ export const PARCOURS = {
             {
               id: 'enfant-particulier',
               label: 'Cours particulier',
+              ar: 'دروس خصوصية',
               ico: 'خ',
               illu: 'particulier',
               desc: 'Cours individuel avec un enseignant en visioconférence.',
