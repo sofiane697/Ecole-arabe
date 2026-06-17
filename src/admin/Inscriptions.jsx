@@ -9,8 +9,8 @@ import { groupByFormat } from './preinscriptionGroups';
 
 const STATUT_NEXT = { nouveau: 'contacté', contacté: 'inscrit' }; // 'inscrit' = dernier palier
 const STATUT_CFG  = {
-  nouveau:  { label: 'Nouveau',  cls: 'badge-nouveau',  icon: '●', color: 'var(--a-yellow)' },
-  contacté: { label: 'Contacté', cls: 'badge-contacte', icon: '◐', color: 'var(--a-blue)' },
+  nouveau:  { label: 'Non traité', cls: 'badge-nouveau',  icon: '●', color: 'var(--a-yellow)' },
+  contacté: { label: 'Traité',     cls: 'badge-contacte', icon: '◐', color: 'var(--a-blue)' },
   inscrit:  { label: 'Inscrit',  cls: 'badge-inscrit',  icon: '✓', color: 'var(--a-green)' },
   refusé:   { label: 'Refusé',   cls: 'badge-refuse',   icon: '✕', color: 'var(--a-red)' },
 };
@@ -178,11 +178,11 @@ export default function Inscriptions() {
       {/* Stats mini (filtre statut) */}
       <div className="insc-stats">
         {[
-          { key: 'tous',     label: 'Toutes',    count: data.length,              color: 'var(--a-fg-mid)' },
-          { key: 'nouveau',  label: 'Nouvelles', count: countByStatut('nouveau'), color: 'var(--a-yellow)' },
-          { key: 'contacté', label: 'Contactées',count: countByStatut('contacté'),color: 'var(--a-blue)' },
+          { key: 'tous',     label: 'Toutes',     count: data.length,              color: 'var(--a-fg-mid)' },
+          { key: 'nouveau',  label: 'Non traité', count: countByStatut('nouveau'), color: 'var(--a-yellow)' },
+          { key: 'contacté', label: 'Traité',     count: countByStatut('contacté'),color: 'var(--a-blue)' },
           { key: 'inscrit',  label: 'Inscrites',  count: countByStatut('inscrit'), color: 'var(--a-green)' },
-          { key: 'refusé',   label: 'Refusées',  count: countByStatut('refusé'),  color: 'var(--a-red)' },
+          { key: 'refusé',   label: 'Refusées',   count: countByStatut('refusé'),  color: 'var(--a-red)' },
         ].map(s => (
           <button key={s.key}
             className={`insc-stat ${filtreStat === s.key ? 'active' : ''}`}
