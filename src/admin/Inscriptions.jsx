@@ -52,7 +52,7 @@ export default function Inscriptions() {
   const [data,       setData]       = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [filtreStat, setFiltreStat] = useState('nouveau');
-  const [filtreType, setFiltreType] = useState('tous');
+  const [filtrePublic, setFiltrePublic] = useState('tous');
   const [selected,   setSelected]   = useState(null); // préinscription ouverte dans le sheet
 
   const pageRef    = useRef(null);
@@ -131,8 +131,9 @@ export default function Inscriptions() {
 
   const filtered = data.filter(i => {
     const okStat = filtreStat === 'tous' || i.statut === filtreStat;
-    const okType = filtreType === 'tous' || i.type === filtreType;
-    return okStat && okType;
+    const okPublic = filtrePublic === 'tous'
+      || (filtrePublic === 'enfant' ? i.est_enfant : !i.est_enfant);
+    return okStat && okPublic;
   });
 
   const countByStatut = (s) => data.filter(i => i.statut === s).length;
@@ -195,10 +196,10 @@ export default function Inscriptions() {
 
       {/* Filtre type */}
       <div className="insc-filters">
-        <select className="admin-filter-select" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
-          <option value="tous">Tous les types</option>
-          <option value="tarif">Formule tarifaire</option>
-          <option value="devis">Devis sur mesure</option>
+        <select className="admin-filter-select" value={filtrePublic} onChange={e => setFiltrePublic(e.target.value)}>
+          <option value="tous">Tous les publics</option>
+          <option value="enfant">Enfant</option>
+          <option value="adulte">Adulte</option>
         </select>
         <span className="insc-filter-count">{filtered.length} résultat{filtered.length !== 1 ? 's' : ''}</span>
       </div>
