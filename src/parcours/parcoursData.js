@@ -81,6 +81,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Hizb Sabih',
     prix: null,
     prixNote: 'Sur demande',
+    rythme: '20 séances · 2 × 40 min / semaine',
     features: [],
   },
   {
@@ -88,6 +89,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Sourate Al-Mulk',
     prix: null,
     prixNote: 'Sur demande',
+    rythme: '7 séances · 40 min / semaine',
     features: [],
   },
   {
@@ -95,6 +97,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Sourate Yâsîn',
     prix: null,
     prixNote: 'Sur demande',
+    rythme: '16 séances · 40 min / semaine',
     features: [],
   },
   {
@@ -102,6 +105,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Premier Hizb d’Al-Baqara',
     prix: null,
     prixNote: 'Sur demande',
+    rythme: '24 séances · 2 × 40 min / semaine',
     features: [],
   },
 ];
