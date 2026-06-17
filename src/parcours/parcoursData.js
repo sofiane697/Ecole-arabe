@@ -548,7 +548,7 @@ const TARIFS_COMBO_ENFANT_VISIO = [
     id: 'enf-combo-visio-mod1',
     titre: 'Module 1',
     prix: 290,
-    rythme: '55 séances · 2 × 40 min / semaine',
+    rythme: '50 séances · 2 × 40 min / semaine',
     featureGroups: [
       {
         titre: 'Partie Coran',
