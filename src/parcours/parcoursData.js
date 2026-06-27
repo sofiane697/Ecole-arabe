@@ -162,7 +162,7 @@ const TARIFS_CORAN = [
     niveau: "Je me fais corriger",
     prereq: "Je sais lire, je connais les règles et j'apprends seul mon Coran",
     prix: 69,
-    rythme: 'Cours particuliers · 5 séances',
+    rythme: 'Cours individuels · 5 séances',
     features: [
       "Récitation devant l’enseignant",
       'Correction de la prononciation',
