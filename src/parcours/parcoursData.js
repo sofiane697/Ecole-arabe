@@ -203,7 +203,7 @@ const TARIFS_EDI = [
     titre: 'Fiqh du Pèlerinage',
     prix: 99,
     rythme: '15 séances · 40 min / semaine',
-    features: ['Conditions du pèlerinage', 'Les étapes des rites'],
+    features: ['Histoire du pélerinage', 'Conditions du pèlerinage', 'Les étapes des rites'],
   },
   {
     id: 'edi-lavage',
