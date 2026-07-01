@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePageAnimation } from '../shared/usePageAnimation';
-import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, adminCreateObservation, adminCreateRetardAbsence, adminFetchNoteAcks } from './supabaseAdmin';
+import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, sendPendingEmail, adminCreateObservation, adminCreateRetardAbsence, adminFetchNoteAcks } from './supabaseAdmin';
 import { dispatchPostCreationEmails } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
@@ -1887,6 +1887,13 @@ function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
         parentResults:     pResults,
         sendWelcome:       !inactif,  // pas de welcome si l'élève reste inactif
       });
+      if (inactif && emailContact.trim()) {
+        sendPendingEmail({
+          email:  emailContact.trim(),
+          prenom: fmtPrenom(prenom),
+          nom:    fmtNom(nom),
+        }).catch(() => {});
+      }
 
       const emailTrimmed = emailContact.trim();
       setResult({

@@ -99,6 +99,9 @@ serve(async (req) => {
     if (kind === 'attach') {
       return await handleAttach(body, cors);
     }
+    if (kind === 'pending') {
+      return await handlePending(body, cors);
+    }
     return await handleWelcome(body, cors);
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
@@ -217,6 +220,60 @@ async function handleWelcome(body: any, cors: Record<string, string>): Promise<R
     ? `Bienvenue à l'Institut As-Safaa — identifiants élève et parent`
     : `Bienvenue à l'Institut As-Safaa — vos identifiants de connexion`;
 
+  return await sendResendEmail(email, subject, html, cors);
+}
+
+// ─── Mail "demande en cours de traitement" (élève créé inactif) ─────────────
+async function handlePending(body: any, cors: Record<string, string>): Promise<Response> {
+  const { email, prenom, nom } = body;
+
+  if (!isValidEmail(email) || !prenom || !nom) {
+    return jsonError('Paramètres manquants ou invalides', 400, cors);
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+
+        <tr><td style="background:#BF8A30;padding:32px 40px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">🕌</div>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Institut As-Safaa</h1>
+        </td></tr>
+
+        <tr><td style="padding:36px 40px;">
+          <p style="margin:0 0 16px;color:#1a1a1a;font-size:16px;">
+            Bonjour <strong>${escapeHtml(prenom)} ${escapeHtml(nom)}</strong>,
+          </p>
+          <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
+            Nous avons bien reçu votre demande d'inscription à l'Institut As-Safaa.
+            Votre dossier est actuellement <strong>en cours de traitement</strong> par notre équipe.
+          </p>
+          <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
+            Vous recevrez très prochainement un email contenant vos identifiants de connexion
+            dès que votre compte sera activé.
+          </p>
+          <p style="margin:0 0 0;color:#666;font-size:14px;line-height:1.6;">
+            À bientôt,<br/>
+            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
+          </p>
+        </td></tr>
+
+        <tr><td style="background:#f8f8f8;padding:16px 40px;text-align:center;border-top:1px solid #eee;">
+          <p style="margin:0;font-size:11px;color:#aaa;">Cet email a été envoyé automatiquement. Ne pas répondre.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const subject = `Institut As-Safaa — votre demande d'inscription est en cours de traitement`;
   return await sendResendEmail(email, subject, html, cors);
 }
 

@@ -967,6 +967,11 @@ export function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword
   }, 'Erreur envoi email');
 }
 
+/** Mail envoyé à l'élève créé inactif : confirme que la demande est en cours de traitement. */
+export function sendPendingEmail({ email, prenom, nom }) {
+  return postEdgeMail({ kind: 'pending', email, prenom, nom }, 'Erreur envoi email (pending)');
+}
+
 /** Mail de notification envoyé à un parent **existant** rattaché à un nouvel
  *  enfant. Pas d'identifiant/mdp provisoire : le parent utilise le compte qu'il a déjà. */
 export function sendParentAttachEmail({ email, foyerLabel, identifiant, elevePrenom, eleveNom, classeNom }) {
