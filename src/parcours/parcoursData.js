@@ -297,8 +297,8 @@ const TARIFS_EDI_ENFANT = [
     features: [
       'Comprendre l’unicité d’Allah ﷻ et son adoration',
       'La vie du Prophète ﷺ, son enfance et son entourage',
-      'Apprentissage étapes des ablutions',
-      'Première partie sur la prière',
+      'Apprentissage des étapes des ablutions',
+      'Initiation à la prière',
       'Développement des qualités du musulman : les bonnes manières, le partage, la vérité…',
     ],
   },
@@ -403,8 +403,8 @@ const TARIFS_COMBO_ENFANT = [
         items: [
           'Comprendre l’unicité d’Allah ﷻ et son adoration',
           'La vie du Prophète ﷺ, son enfance et son entourage',
-          'Apprentissage étapes des ablutions',
-          'Première partie sur la prière',
+          'Apprentissage des étapes des ablutions',
+          'Initiation à la prière',
           'Développement des qualités du musulman : les bonnes manières, le partage, la vérité…',
         ],
       },
@@ -504,8 +504,8 @@ const TARIFS_EDI_ENFANT_VISIO = [
     features: [
       'Comprendre l’unicité d’Allah ﷻ et son adoration',
       'La vie du Prophète ﷺ, son enfance et son entourage',
-      'Apprentissage étapes des ablutions',
-      'Première partie sur la prière',
+      'Apprentissage des étapes des ablutions',
+      'Initiation à la prière',
       'Développement des qualités du musulman : les bonnes manières, le partage, la vérité…',
     ],
   },
@@ -610,8 +610,8 @@ const TARIFS_COMBO_ENFANT_VISIO = [
         items: [
           'Comprendre l’unicité d’Allah ﷻ et son adoration',
           'La vie du Prophète ﷺ, son enfance et son entourage',
-          'Apprentissage étapes des ablutions',
-          'Première partie sur la prière',
+          'Apprentissage des étapes des ablutions',
+          'Initiation à la prière',
           'Développement des qualités du musulman : les bonnes manières, le partage, la vérité…',
         ],
       },
