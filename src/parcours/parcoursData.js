@@ -760,7 +760,7 @@ export const PARCOURS = {
               ar: 'الحصص المرئية',
               ico: 'ر',
               illu: 'visio',
-              desc: 'Cours en visioconférence, en classes de 5 à 10 enfants.',
+              desc: 'Cours en visioconférence, en classes de 5 à 10 enfants maximum.',
               children: [
                 {
                   id: 'enfant-visio-coran',
