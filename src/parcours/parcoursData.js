@@ -209,7 +209,7 @@ const TARIFS_EDI = [
     id: 'edi-lavage',
     titre: 'Lavage mortuaire',
     prix: 49,
-    rythme: '5 séances · 40 min / semaine',
+    rythme: '5 séances · 30 min / semaine',
     features: [
       'Fondement religieux',
       'Rite funéraire',
