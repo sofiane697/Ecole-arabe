@@ -328,7 +328,7 @@ const TARIFS_CORAN_ENFANT = [
       'Prononciation correcte des lettres',
       'Découverte des outils de lecture',
       'Lecture des mots du Coran',
-      'Découverte des sourates : Fatiha, Nass, Falaq, Ikhlass',
+      'Découverte des sourates : Al Fatiha, An Nas, Al Falaq, Al Ikhlass',
     ],
   },
   {
@@ -369,7 +369,7 @@ const TARIFS_COMBO_ENFANT = [
           'Prononciation correcte des lettres',
           'Découverte des outils de lecture',
           'Lecture des mots du Coran',
-          'Découverte des sourates : Fatiha, Nass, Falaq, Ikhlass',
+          'Découverte des sourates : Al Fatiha, An Nas, Al Falaq, Al Ikhlass',
         ],
       },
       {
@@ -535,7 +535,7 @@ const TARIFS_CORAN_ENFANT_VISIO = [
       'Prononciation correcte des lettres',
       'Découverte des outils de lecture',
       'Lecture des mots du Coran',
-      'Découverte des sourates : Fatiha, Nass, Falaq, Ikhlass',
+      'Découverte des sourates : Al Fatiha, An Nas, Al Falaq, Al Ikhlass',
     ],
   },
   {
@@ -576,7 +576,7 @@ const TARIFS_COMBO_ENFANT_VISIO = [
           'Prononciation correcte des lettres',
           'Découverte des outils de lecture',
           'Lecture des mots du Coran',
-          'Découverte des sourates : Fatiha, Nass, Falaq, Ikhlass',
+          'Découverte des sourates : Al Fatiha, An Nas, Al Falaq, Al Ikhlass',
         ],
       },
       {
