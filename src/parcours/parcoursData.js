@@ -109,7 +109,7 @@ const TARIFS_CORAN_SOURATES = [
     id: 'co-sourate-baqara',
     niveau: 'Hizb Al-Baqara',
     cadence: '½ page / séance',
-    prix: 90,
+    prix: 190,
     rythme: '24 séances au total · 2 × 40 min / semaine',
     features: [],
   },
