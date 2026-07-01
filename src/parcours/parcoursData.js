@@ -182,7 +182,7 @@ const TARIFS_EDI = [
     features: [
       'Découverte de la vie du Prophète',
       "Compréhension d’événements marquants",
-      'Étude de son comportement',
+      'Sa vie et notre quotidien',
       'Mise en pratique des enseignements',
     ],
   },
