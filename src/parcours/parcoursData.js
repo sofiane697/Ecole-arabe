@@ -650,8 +650,8 @@ const TARIFS_HALAQA_ADO = [
   {
     id: 'enf-halaqa-ado',
     titre: 'Halaqa encadrée pour ado',
-    prix: null,
-    prixNote: '… €',
+    prix: 90,
+    rythme: '15 séances · 40 min / semaine',
     features: [
       "Cercle d’étude (halaqa) encadré(e) par un(e) enseignant(e)",
       'Assises religieuses adaptées aux adolescent(e)s',
