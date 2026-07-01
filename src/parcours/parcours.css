@@ -448,6 +448,10 @@
   color: var(--fg-mid);
   margin: 0.2rem 0 1.6rem;
 }
+/* Carte-groupe (ex. « J'apprends des sourates ») : pas de features à remplir,
+   le bouton Découvrir remonte juste sous le texte au lieu d'être plaqué en bas. */
+.tarif-card--groupe .tarif-groupe-hint { flex: none; }
+.tarif-card--groupe .tarif-pick { margin-top: 0; }
 
 /* ─── Prix + rythme ─────────────────────────────────── */
 .tarif-price-row {
