@@ -445,7 +445,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     prereq: 'Je pars de zéro 😄',
     prereqNone: true,
     prix: 190,
-    rythme: '25 séances au total · 2 × 40 min / semaine',
+    rythme: '26 séances au total · 2 × 40 min / semaine',
     features: [
       'Lecture de la lettre au mot',
       'Découverte de l’écriture',
@@ -458,7 +458,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     niveau: 'Intermédiaire',
     prereq: "Je connais l'alphabet par cœur et je déchiffre des mots",
     prix: 190,
-    rythme: '25 séances au total · 2 × 40 min / semaine',
+    rythme: '26 séances au total · 2 × 40 min / semaine',
     features: [
       'Lecture du mot à la phrase',
       'Attachement des lettres',
@@ -471,7 +471,7 @@ const TARIFS_ARABE_ENFANT_VISIO = [
     niveau: 'Avancé',
     prereq: 'Je sais lire sans bégayer 😉',
     prix: 190,
-    rythme: '25 séances au total · 2 × 40 min / semaine',
+    rythme: '26 séances au total · 2 × 40 min / semaine',
     features: [
       'Fluidification de la lecture',
       'Initiation à la compréhension',
