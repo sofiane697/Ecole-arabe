@@ -743,6 +743,7 @@ export const PARCOURS = {
                   ico: 'ع',
                   desc: 'Apprentissage de la langue arabe.',
                   tarifs: TARIFS_ARABE_ENFANT,
+                  disabled: true,
                 },
                 {
                   id: 'enfant-auto-combo',
