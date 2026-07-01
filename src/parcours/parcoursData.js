@@ -794,7 +794,7 @@ export const PARCOURS = {
                   label: 'Enseignement spécifique',
                   ar: 'التعليم الخاص',
                   ico: 'خ',
-                  desc: 'Cours adaptés aux enfants neuroatypiques (TDAH, TDA, autisme, dysorthographie…). Classes de 3 à 5 élèves.',
+                  desc: 'Cours adaptés aux enfants neuroatypiques (TDAH, TDA, autisme, dysorthographie…). Classes de 3 à 5 élèves maximum.',
                   // Stickers désactivés pour l'instant (pas de suite / tarifs à venir).
                   // Rythmes prévus (maquette) : à brancher plus tard.
                   children: [
