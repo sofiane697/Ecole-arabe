@@ -81,28 +81,28 @@ const TARIFS_CORAN_SOURATES = [
     id: 'co-sourate-hizb-sabih',
     niveau: 'Hizb Sabih',
     prix: 149,
-    rythme: '20 séances au total · 2 × 40 min / semaine',
+    rythme: '20 séances au total · 2 × 40 min / semaine · Petit groupe',
     features: [],
   },
   {
     id: 'co-sourate-tariq-naba',
     niveau: 'Hizb de At-Tariq à An-Naba',
     prix: 149,
-    rythme: '20 séances au total · 2 × 40 min / semaine',
+    rythme: '20 séances au total · 2 × 40 min / semaine · Petit groupe',
     features: [],
   },
   {
     id: 'co-sourate-al-mulk',
     niveau: 'Sourate Al-Mulk',
     prix: 90,
-    rythme: '7 séances · 40 min / semaine',
+    rythme: '7 séances · 40 min / semaine · Petit groupe',
     features: [],
   },
   {
     id: 'co-sourate-yasin',
     niveau: 'Sourate Yâsîn',
     prix: 149,
-    rythme: '16 séances · 40 min / semaine',
+    rythme: '16 séances · 40 min / semaine · Petit groupe',
     features: [],
   },
   {
@@ -110,7 +110,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Hizb Al-Baqara',
     cadence: '½ page / séance',
     prix: 190,
-    rythme: '24 séances au total · 2 × 40 min / semaine',
+    rythme: '24 séances au total · 2 × 40 min / semaine · Petit groupe',
     features: [],
   },
   {
@@ -118,7 +118,7 @@ const TARIFS_CORAN_SOURATES = [
     niveau: 'Hizb Al-Baqara',
     cadence: '1 page / séance',
     prix: 149,
-    rythme: '14 séances · 40 min / semaine',
+    rythme: '14 séances · 40 min / semaine · Petit groupe',
     features: [],
   },
 ];
@@ -131,7 +131,7 @@ const TARIFS_CORAN = [
     prereq: "Je pars de zéro 😄",
     prereqNone: true,
     prix: 149,
-    rythme: '16 séances au total · 2 × 40 min / semaine',
+    rythme: '16 séances au total · 2 × 40 min / semaine · Petit groupe',
     features: [
       'Apprentissage des lettres arabes',
       'Maîtrise des voyelles',
@@ -144,7 +144,7 @@ const TARIFS_CORAN = [
     niveau: "J'apprends les règles de Tajwid",
     prereq: "Je sais lire",
     prix: 149,
-    rythme: '15 séances · 40 min / semaine',
+    rythme: '15 séances · 40 min / semaine · Petit groupe',
     features: [
       'Apprentissage des règles de tajwid',
       'Ghunna, Idgham, Iqlab, Idhar',
