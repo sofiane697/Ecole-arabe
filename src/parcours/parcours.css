@@ -440,7 +440,6 @@
 .tarif-groupe-hint {
   position: relative;
   z-index: 1;
-  flex: 1;
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-size: 1.05rem;
