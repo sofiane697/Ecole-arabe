@@ -181,7 +181,7 @@ const TARIFS_EDI = [
     rythme: '15 séances · 40 min / semaine',
     features: [
       'Découverte de la vie du Prophète',
-      "Compréhension d’événements marquants",
+      "Compréhension d’évènements marquants de son histoire",
       'Sa vie et notre quotidien',
       'Mise en pratique des enseignements',
     ],
