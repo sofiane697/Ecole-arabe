@@ -487,7 +487,7 @@ const TARIFS_EDI_ENFANT_VISIO = [
     id: 'enf-edi-visio-mod1',
     titre: 'Module 1',
     prix: 190,
-    rythme: '25 séances · 40 min / semaine',
+    rythme: '20 séances · 40 min / semaine',
     features: [
       'Connaître Allah ﷻ et l’attestation de Foi',
       'Découvrir le Prophète Mohammed ﷺ et les premiers chapitres de son histoire',
