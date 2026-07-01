@@ -653,7 +653,7 @@ const TARIFS_HALAQA_ADO = [
     prix: null,
     prixNote: '… €',
     features: [
-      ‘Cercle d’étude (halaqa) encadré(e) par un(e) enseignant(e)’,
+      "Cercle d’étude (halaqa) encadré(e) par un(e) enseignant(e)",
       'Assises religieuses adaptées aux adolescent(e)s',
       'Compréhension du Coran et de la Sunna',
       'Échanges sur la foi et les défis du quotidien',
