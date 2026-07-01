@@ -725,7 +725,6 @@ export const PARCOURS = {
                   label: 'Coran',
                   ar: 'القرآن الكريم',
                   ico: 'ق',
-                  desc: 'Lecture, Tajwid et mémorisation.',
                   tarifs: TARIFS_CORAN_ENFANT,
                 },
                 {
@@ -733,7 +732,6 @@ export const PARCOURS = {
                   label: 'Éducation islamique',
                   ar: 'التربية الإسلامية',
                   ico: 'إ',
-                  desc: 'Modules de sciences islamiques.',
                   tarifs: TARIFS_EDI_ENFANT,
                 },
                 {
@@ -741,7 +739,6 @@ export const PARCOURS = {
                   label: 'Langue arabe',
                   ar: 'اللغة العربية',
                   ico: 'ع',
-                  desc: 'Apprentissage de la langue arabe.',
                   tarifs: TARIFS_ARABE_ENFANT,
                   disabled: true,
                 },
@@ -768,7 +765,6 @@ export const PARCOURS = {
                   label: 'Coran',
                   ar: 'القرآن الكريم',
                   ico: 'ق',
-                  desc: 'Lecture, Tajwid et mémorisation.',
                   tarifs: TARIFS_CORAN_ENFANT_VISIO,
                 },
                 {
@@ -776,7 +772,6 @@ export const PARCOURS = {
                   label: 'Éducation islamique',
                   ar: 'التربية الإسلامية',
                   ico: 'إ',
-                  desc: 'Modules de sciences islamiques.',
                   tarifs: TARIFS_EDI_ENFANT_VISIO,
                 },
                 {
@@ -784,7 +779,6 @@ export const PARCOURS = {
                   label: 'Langue arabe',
                   ar: 'اللغة العربية',
                   ico: 'ع',
-                  desc: 'Apprentissage de la langue arabe.',
                   tarifs: TARIFS_ARABE_ENFANT_VISIO,
                 },
                 {
