@@ -164,7 +164,7 @@ const TARIFS_CORAN = [
     prix: 69,
     rythme: 'Cours individuels · 5 séances',
     features: [
-      "Récitation devant l’enseignant",
+      "Récitation devant l’enseignant(e)",
       'Correction de la prononciation',
       'Bonne articulation des lettres',
       'Respect des règles de Tajwid',
@@ -653,8 +653,8 @@ const TARIFS_HALAQA_ADO = [
     prix: null,
     prixNote: '… €',
     features: [
-      'Cercle d’étude (halaqa) encadré par un enseignant',
-      'Assises religieuses adaptées aux adolescents',
+      ‘Cercle d’étude (halaqa) encadré(e) par un(e) enseignant(e)’,
+      'Assises religieuses adaptées aux adolescent(e)s',
       'Compréhension du Coran et de la Sunna',
       'Échanges sur la foi et les défis du quotidien',
       'Renforcement du comportement et des valeurs islamiques',
@@ -718,7 +718,7 @@ export const PARCOURS = {
               ar: 'التعلّم الذاتي',
               ico: 'س',
               illu: 'autonomie',
-              desc: "L’enfant apprend seul ou avec un parent sur notre plateforme. Bilan de compétences une fois par mois avec un enseignant.",
+              desc: "L’enfant apprend seul(e) ou avec un(e) parent sur notre plateforme. Bilan de compétences une fois par mois avec un(e) enseignant(e).",
               children: [
                 {
                   id: 'enfant-auto-coran',
@@ -817,7 +817,7 @@ export const PARCOURS = {
                   label: 'Halaqa encadrée pour ado',
                   ar: 'حلقة مسيرة للمراهقين',
                   ico: 'ح',
-                  desc: 'Assises religieuses encadrées pour adolescents.',
+                  desc: 'Assises religieuses encadrées pour adolescent(e)s.',
                   tarifs: TARIFS_HALAQA_ADO,
                 },
               ],
@@ -828,7 +828,7 @@ export const PARCOURS = {
               ar: 'دروس خصوصية',
               ico: 'خ',
               illu: 'particulier',
-              desc: 'Cours individuel avec un enseignant en visioconférence.',
+              desc: 'Cours individuel avec un(e) enseignant(e) en visioconférence.',
               devis: true, // ⇒ clic = formulaire de devis direct (DevisStep), pas d'étape intermédiaire
             },
           ],
