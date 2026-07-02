@@ -5,6 +5,7 @@ import {
   ADMIN_EVENT_INSCRIPTIONS_CHANGED,
   ADMIN_EVENT_MESSAGES_CHANGED,
   ADMIN_EVENT_DECLARATIONS_CHANGED,
+  ADMIN_EVENT_PAGE_TITLE,
 } from './adminEvents';
 import { usePageTransition } from '../animations';
 import { preloadRoute } from '../routeLoaders';
@@ -58,7 +59,7 @@ const PAGE_TITLES = {
   '/admin':                 'Tableau de bord',
   '/admin/messages':        'Messages',
   '/admin/cours':           'Gestion des cours',
-  '/admin/classes':         'Gestion des classes',
+  '/admin/classes':         'Gestion des niveaux',
   '/admin/etudiants':       'Gestion des étudiants',
   '/admin/eleves':          'Gestion des élèves',
   '/admin/parents':         'Gestion des parents',
@@ -143,7 +144,18 @@ export default function AdminApp() {
     return () => events.forEach(ev => window.removeEventListener(ev, handler));
   }, [refreshCounters]);
 
-  const currentTitle    = PAGE_TITLES[location.pathname] || 'Admin';
+  // Titre de la topbar : celui de la route, surchargeable par la page courante
+  // (ex: Classes.jsx bascule « Gestion des niveaux » ↔ « Gestion des classes »
+  // selon sa vue interne). Réinitialisé à chaque navigation.
+  const [titleOverride, setTitleOverride] = useState(null);
+  useEffect(() => { setTitleOverride(null); }, [location.pathname]);
+  useEffect(() => {
+    const handler = (e) => setTitleOverride(e.detail || null);
+    window.addEventListener(ADMIN_EVENT_PAGE_TITLE, handler);
+    return () => window.removeEventListener(ADMIN_EVENT_PAGE_TITLE, handler);
+  }, []);
+
+  const currentTitle    = titleOverride || PAGE_TITLES[location.pathname] || 'Admin';
   const outletRef       = usePageTransition(location.pathname);
 
   const today = new Date().toLocaleDateString('fr-FR', {

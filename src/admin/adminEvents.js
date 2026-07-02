@@ -7,6 +7,14 @@
 export const ADMIN_EVENT_INSCRIPTIONS_CHANGED = 'inscriptions:changed';
 export const ADMIN_EVENT_MESSAGES_CHANGED     = 'messages:changed';
 export const ADMIN_EVENT_DECLARATIONS_CHANGED = 'declarations:changed';
+export const ADMIN_EVENT_PAGE_TITLE           = 'admin:page-title';
+
+/** Surcharge le titre de la topbar pour la page courante (ex: Classes.jsx
+ *  affiche « Gestion des niveaux » ou « Gestion des classes » selon sa vue
+ *  interne). Remis à zéro par AdminApp à chaque changement de route. */
+export function emitPageTitle(title) {
+  window.dispatchEvent(new CustomEvent(ADMIN_EVENT_PAGE_TITLE, { detail: title || null }));
+}
 
 export function emitInscriptionsChanged() {
   window.dispatchEvent(new CustomEvent(ADMIN_EVENT_INSCRIPTIONS_CHANGED));

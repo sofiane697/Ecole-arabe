@@ -5,6 +5,7 @@ import {
   fetchClasses, createClasse, updateClasse, deleteClasse, fetchEleves,
   updateEleve, updateEleveNiveauScolaire,
 } from './supabaseAdmin';
+import { emitPageTitle } from './adminEvents';
 import gsap from 'gsap';
 
 // Référence stable pour le ref-callback (anime les enfants directs au mount).
@@ -102,6 +103,11 @@ export default function Classes() {
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  // Titre topbar selon la vue : liste des niveaux ↔ classes d'un niveau.
+  useEffect(() => {
+    emitPageTitle(selNiveau ? 'Gestion des classes' : 'Gestion des niveaux');
+  }, [selNiveau]);
 
   const openNiveau = (n) => { setSelNiveau(n); setSelClasse(null); loadClasses(n.id); };
   const openClasse = (c) => setSelClasse(c);
