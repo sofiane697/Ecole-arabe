@@ -240,7 +240,10 @@ export default function Eleves({ variant = 'eleves' }) {
       const activation = !eleve.actif; // true = on active, false = on désactive
       await updateEleveActif(eleve.id, activation);
 
-      if (activation) {
+      // Reset + envoi d'identifiants uniquement pour un compte qui n'a jamais
+      // défini son propre mot de passe (1ère activation post-conversion).
+      // Réactiver un élève existant ne doit PAS écraser son mot de passe.
+      if (activation && eleve.must_change_password !== false) {
         // Générer un nouveau mot de passe provisoire et l'envoyer par email
         const tempPwd = generateTempPassword();
         await resetElevePassword(eleve.id, tempPwd);
@@ -1854,7 +1857,9 @@ function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
     try {
       const tempPwd  = generateTempPassword();
       const idLogin  = identifiant.toLowerCase();
-      const eleve    = await createEleve(fmtNom(nom), fmtPrenom(prenom), idLogin, tempPwd);
+      // `inactif` coché → compte créé directement inactif (pas de fenêtre où un
+      // compte actif subsisterait si un appel suivant échoue).
+      const eleve    = await createEleve(fmtNom(nom), fmtPrenom(prenom), idLogin, tempPwd, !inactif);
       const eleveId  = eleve?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       // Sans eleveId on ne peut ni patcher la classe/email, ni rattacher les parents.
       // Mieux vaut remonter l'erreur que de laisser l'admin croire que tout s'est bien passé.
@@ -1863,7 +1868,6 @@ function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
       const patch = {};
       if (isAdulte)              patch.est_adulte   = true;
       if (classeId)              patch.classe_id    = classeId;
-      if (inactif)               patch.actif        = false;
       if (emailContact.trim())   patch.email_contact = emailContact.trim();
       if (dateNaissance)         patch.date_naissance = dateNaissance;
       if (Object.keys(patch).length) await updateEleve(eleveId, patch);

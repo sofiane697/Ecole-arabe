@@ -5,6 +5,7 @@ import {
   fetchPreinscriptions, updatePreinscriptionStatut, markPreinscriptionViewed,
   createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses, fetchNiveauxScolaires,
   fetchEleveIdParIdentifiant, adminLinkPreinscriptionEleve, adminUpdatePreinscriptionNote,
+  sendPendingEmail, sendParentWelcomeEmail, sendParentAttachEmail,
 } from './supabaseAdmin';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parentsLogic';
@@ -40,9 +41,11 @@ const IconArrow = () => (
 
 /**
  * Conversion d'une préinscription ADULTE en compte étudiant + affectation à une
- * classe. Génère identifiant + mot de passe, crée le compte (profils_eleves),
- * affecte la classe (et le niveau scolaire dérivé), passe la demande à « Inscrit »
- * et envoie l'e-mail de bienvenue. Pas de parent (adulte majeur).
+ * classe. Génère identifiant + mot de passe, crée le compte (profils_eleves)
+ * INACTIF, affecte la classe (et le niveau scolaire dérivé) et passe la demande
+ * à « Traité ». Un mail « dossier en traitement » part au contact ; l'e-mail de
+ * bienvenue (identifiants) part à l'ACTIVATION du compte dans « Gestion des
+ * étudiants ». Pas de parent (adulte majeur).
  */
 function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
   const [open,     setOpen]     = useState(false);
@@ -86,12 +89,12 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
       const idLogin = generateIdentifiant(prenom, nom).toLowerCase();
       const tempPwd = generateTempPassword();
 
-      const created = await createEleve(nom, prenom, idLogin, tempPwd);
+      // Compte créé directement INACTIF : l'activation le fera passer en « inscrit ».
+      const created = await createEleve(nom, prenom, idLogin, tempPwd, false);
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      // Compte créé INACTIF : l'activation le fera passer en « inscrit ».
-      const patch = { classe_id: classeId, est_adulte: true, actif: false };
+      const patch = { classe_id: classeId, est_adulte: true };
       if (i.contact_email)      patch.email_contact  = i.contact_email;
       if (i.contact_telephone)  patch.telephone      = i.contact_telephone;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
@@ -103,6 +106,11 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
       // Rattache la préinscription + passe à « Traité » (contacté).
       await adminLinkPreinscriptionEleve(i.id, eleveId);
       onConverted(eleveId);
+
+      // Informe le contact que son dossier est en traitement (best-effort).
+      if (i.contact_email) {
+        sendPendingEmail({ email: i.contact_email, prenom, nom }).catch(() => {});
+      }
 
       setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom });
     } catch (e) {
@@ -157,9 +165,12 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
 
 /**
  * Conversion d'une préinscription ENFANT en compte élève + un responsable (parent),
- * avec affectation à une classe. Crée l'élève, crée/rattache le parent (anti-doublon
- * par email/téléphone), passe la demande à « Inscrit » et envoie l'e-mail de bienvenue
- * (identifiants élève + parent).
+ * avec affectation à une classe. Crée l'élève INACTIF, crée/rattache le parent
+ * (anti-doublon par email/téléphone) et passe la demande à « Traité ».
+ * Emails à la conversion : identifiants du parent créé (le mdp provisoire n'est
+ * plus récupérable ensuite) ou notification de rattachement si parent existant,
+ * + « dossier en traitement » au contact. L'e-mail de bienvenue élève part à
+ * l'ACTIVATION du compte dans « Gestion des élèves ».
  */
 function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
   const [open,     setOpen]     = useState(false);
@@ -183,10 +194,15 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
           <div><span>Élève · mot de passe</span><strong>{result.tempPassword}</strong></div>
         </div>
         {p && p.kind === 'created' && (
-          <div className="insc-convert-creds">
-            <div><span>Parent · identifiant</span><strong>{p.identifiant}</strong></div>
-            <div><span>Parent · mot de passe</span><strong>{p.password}</strong></div>
-          </div>
+          <>
+            <div className="insc-convert-creds">
+              <div><span>Parent · identifiant</span><strong>{p.identifiant}</strong></div>
+              <div><span>Parent · mot de passe</span><strong>{p.password}</strong></div>
+            </div>
+            {result.parentEmail && (
+              <span className="insc-convert-mail">✉ Identifiants parent envoyés à {result.parentEmail}.</span>
+            )}
+          </>
         )}
         {p && p.kind === 'linked'  && <span className="insc-convert-mail">↪ Rattaché au compte parent existant ({p.identifiant}).</span>}
         {p && p.kind === 'failed'  && <span className="insc-convert-error">⚠ Élève créé, mais parent non enregistré : {p.error}</span>}
@@ -217,12 +233,12 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
       const idLogin = generateIdentifiant(prenom, nom).toLowerCase();
       const tempPwd = generateTempPassword();
 
-      const created = await createEleve(nom, prenom, idLogin, tempPwd);
+      // Compte créé directement INACTIF : l'activation le fera passer en « inscrit ».
+      const created = await createEleve(nom, prenom, idLogin, tempPwd, false);
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      // Compte créé INACTIF : l'activation le fera passer en « inscrit ».
-      const patch = { classe_id: classeId, actif: false };
+      const patch = { classe_id: classeId };
       if (i.contact_email)        patch.email_contact  = i.contact_email;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
       await updateEleve(eleveId, patch);
@@ -249,7 +265,26 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
       await adminLinkPreinscriptionEleve(i.id, eleveId);
       onConverted(eleveId);
 
-      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, email: i.contact_email, parent: pResults[0] || null });
+      // Emails à la conversion (best-effort) : le mdp provisoire du parent créé
+      // n'est plus récupérable ensuite (hash bcrypt), il doit partir maintenant.
+      const pr = pResults[0] || null;
+      if (pr?.kind === 'created' && pEmail.trim()) {
+        sendParentWelcomeEmail({
+          email: pEmail.trim(), foyerLabel: pr.label, identifiant: pr.identifiant,
+          password: pr.password, elevePrenom: prenom, eleveNom: nom,
+        }).catch(() => {});
+      } else if (pr?.kind === 'linked' && pr.email) {
+        sendParentAttachEmail({
+          email: pr.email, foyerLabel: pr.label, identifiant: pr.identifiant,
+          elevePrenom: prenom, eleveNom: nom, classeNom: classe?.nom || null,
+        }).catch(() => {});
+      }
+      // Informe le contact que le dossier est en traitement.
+      if (i.contact_email) {
+        sendPendingEmail({ email: i.contact_email, prenom, nom }).catch(() => {});
+      }
+
+      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, email: i.contact_email, parent: pResults[0] || null, parentEmail: pEmail.trim() || null });
     } catch (e) {
       setError(e.message || "Erreur lors de la création de l'élève.");
     } finally {

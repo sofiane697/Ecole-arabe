@@ -324,10 +324,10 @@ export async function deleteQuestion(id) {
 // ─── ÉLÈVES ──────────────────────────────────────────────────────────────────
 
 /** Créer un compte élève via fonction SQL */
-export async function createEleve(nom, prenom, identifiant, password) {
+export async function createEleve(nom, prenom, identifiant, password, actif = true) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_user`, {
     method: 'POST',
-    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_identifiant: identifiant, p_password: password, p_nom: nom, p_prenom: prenom }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_identifiant: identifiant, p_password: password, p_nom: nom, p_prenom: prenom, p_actif: actif }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -970,6 +970,16 @@ export function sendWelcomeEmail({ email, prenom, nom, identifiant, tempPassword
 /** Mail envoyé à l'élève créé inactif : confirme que la demande est en cours de traitement. */
 export function sendPendingEmail({ email, prenom, nom }) {
   return postEdgeMail({ kind: 'pending', email, prenom, nom }, 'Erreur envoi email (pending)');
+}
+
+/** Mail envoyé à un parent **nouvellement créé** (conversion préinscription) :
+ *  contient ses identifiants de portail parent. Envoyé dès la création, car le
+ *  mot de passe provisoire n'est plus récupérable ensuite (hash bcrypt). */
+export function sendParentWelcomeEmail({ email, foyerLabel, identifiant, password, elevePrenom, eleveNom }) {
+  return postEdgeMail({
+    kind: 'parent-welcome',
+    email, foyerLabel, identifiant, password, elevePrenom, eleveNom,
+  }, 'Erreur envoi email (parent)');
 }
 
 /** Mail de notification envoyé à un parent **existant** rattaché à un nouvel
