@@ -327,7 +327,7 @@ export async function deleteQuestion(id) {
 export async function createEleve(nom, prenom, identifiant, password) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_user`, {
     method: 'POST',
-    body: JSON.stringify({ p_identifiant: identifiant, p_password: password, p_nom: nom, p_prenom: prenom }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_identifiant: identifiant, p_password: password, p_nom: nom, p_prenom: prenom }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -621,7 +621,7 @@ export async function deleteElevePhoto(eleveId) {
 export async function resetElevePassword(id, newPassword) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_eleve_password`, {
     method: 'POST',
-    body: JSON.stringify({ p_id: id, p_new_password: newPassword }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_id: id, p_new_password: newPassword }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -655,7 +655,7 @@ export async function updateEleve(id, data) {
 export async function updateEleveNiveauScolaire(eleveId, niveauScolaireId) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_update_eleve_niveau_scolaire`, {
     method: 'POST',
-    body: JSON.stringify({ p_id: eleveId, p_niveau_scolaire_id: niveauScolaireId || null }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_id: eleveId, p_niveau_scolaire_id: niveauScolaireId || null }),
   });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
 }
@@ -824,7 +824,7 @@ export async function setEnseignantClasses(enseignantId, classeIds) {
 export async function adminCreateEnseignantAccount(id, identifiant, password) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_create_enseignant`, {
     method: 'POST',
-    body: JSON.stringify({ p_id: id, p_identifiant: identifiant, p_password: password }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_id: id, p_identifiant: identifiant, p_password: password }),
   });
   if (!res.ok) throw new Error(`Erreur création compte enseignant ${res.status}`);
 }
@@ -833,7 +833,7 @@ export async function adminCreateEnseignantAccount(id, identifiant, password) {
 export async function adminResetEnseignantPassword(id, newPassword) {
   const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_reset_enseignant_password`, {
     method: 'POST',
-    body: JSON.stringify({ p_id: id, p_new_password: newPassword }),
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_id: id, p_new_password: newPassword }),
   });
   if (!res.ok) throw new Error(`Erreur reset mot de passe enseignant ${res.status}`);
 }
