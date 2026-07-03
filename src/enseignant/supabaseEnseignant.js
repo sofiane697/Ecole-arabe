@@ -588,35 +588,42 @@ export async function fetchMyPresence(_enseignantId) {
   }
 }
 
-// ─── DÉCLARATIONS PARENTS (RPCs déjà sécurisées par enseignant_id) ───────────
-// Ces RPCs existent depuis avant — elles vérifient déjà que p_enseignant_id correspond
-// à un enseignant rattaché à la classe. Elles seront migrées vers le pattern token au
-// chantier 5 quand on fermera complètement le RLS.
+// ─── DÉCLARATIONS PARENTS (auth par token de session, comme le reste) ────────
+// Migrées du pattern `p_enseignant_id` brut (audit 2026-07-03, faille S1 : un
+// UUID d'enseignant n'est pas un secret) vers le token résolu côté serveur.
+// Les signatures gardent le paramètre enseignantId (ignoré) pour ne pas casser
+// les appelants existants.
 
-export async function fetchDeclarationsClasse(enseignantId, classeId) {
+export async function fetchDeclarationsClasse(_enseignantId, classeId) {
+  const token = getEnseignantToken();
+  if (!token) return [];
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/fetch_declarations_classe`, {
     method: 'POST',
     headers: ANON_HEADERS,
-    body: JSON.stringify({ p_enseignant_id: enseignantId, p_classe_id: classeId }),
+    body: JSON.stringify({ p_token: token, p_classe_id: classeId }),
   });
   if (!res.ok) return [];
   return res.json();
 }
 
-export async function markDeclarationVueEnseignant(enseignantId, declarationId) {
+export async function markDeclarationVueEnseignant(_enseignantId, declarationId) {
+  const token = getEnseignantToken();
+  if (!token) return false;
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/mark_declaration_vue_enseignant`, {
     method: 'POST',
     headers: ANON_HEADERS,
-    body: JSON.stringify({ p_enseignant_id: enseignantId, p_declaration_id: declarationId }),
+    body: JSON.stringify({ p_token: token, p_declaration_id: declarationId }),
   });
   return res.ok;
 }
 
-export async function countDeclarationsEnseignant(enseignantId) {
+export async function countDeclarationsEnseignant(_enseignantId) {
+  const token = getEnseignantToken();
+  if (!token) return 0;
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/count_declarations_enseignant`, {
     method: 'POST',
     headers: ANON_HEADERS,
-    body: JSON.stringify({ p_enseignant_id: enseignantId }),
+    body: JSON.stringify({ p_token: token }),
   });
   if (!res.ok) return 0;
   const n = await res.json();
