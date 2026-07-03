@@ -3306,25 +3306,42 @@
 .elv-date  { font-size: 0.68rem; color: var(--a-fg-light); margin-top: 3px; }
 
 /* ─── Fiche détail élève ─── */
+/* En-tête « héro » : dégradé doré subtil + filet décoratif (même langage
+   visuel que la fiche de préinscription) */
 .elv-detail-header {
+  position: relative;
   margin-bottom: 1.25rem;
   padding: 1.375rem 1.5rem 1.125rem;
-  background: var(--a-bg-card);
+  background:
+    linear-gradient(135deg, rgba(var(--a-gold-rgb), 0.10), rgba(var(--a-gold-rgb), 0.02) 45%, transparent 70%),
+    var(--a-bg-card);
   border-radius: var(--a-radius);
-  border: 1px solid var(--a-border);
+  border: 1px solid rgba(var(--a-gold-rgb), 0.18);
   box-shadow: var(--a-shadow-sm);
+  overflow: hidden;
+}
+.elv-detail-header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--a-gold), var(--a-gold-l) 35%, transparent 75%);
+  opacity: 0.6;
+  pointer-events: none;
 }
 .elv-detail-top {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.1rem;
   margin-bottom: 1rem;
 }
 .elv-detail-avatar {
-  width: 3.75rem;
-  height: 3.75rem;
-  font-size: 1.35rem;
-  box-shadow: 0 4px 14px rgba(var(--a-gold-rgb), 0.28);
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.4rem;
+  box-shadow: 0 6px 18px rgba(var(--a-gold-rgb), 0.35);
+  outline: 3px solid rgba(var(--a-gold-rgb), 0.18);
+  outline-offset: 2px;
 }
 
 /* ─── Zone photo dans la modal d'édition ─── */
@@ -3370,30 +3387,49 @@
 }
 .elv-detail-body { flex: 1; min-width: 0; }
 .elv-detail-name {
-  font-size: 1.2rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--a-fg);
   letter-spacing: -0.025em;
   line-height: 1.25;
 }
 .elv-detail-id {
-  font-size: 0.72rem;
-  color: var(--a-fg-light);
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--a-fg-mid);
   font-family: var(--a-font-mono);
-  letter-spacing: 0.05em;
-  margin-top: 4px;
+  letter-spacing: 0.06em;
+  margin-top: 6px;
+  padding: 0.15rem 0.55rem;
+  background: rgba(var(--a-gold-rgb), 0.08);
+  border: 1px solid rgba(var(--a-gold-rgb), 0.2);
+  border-radius: 999px;
 }
 .elv-detail-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  margin-top: 0.5rem;
+  gap: 0.4rem 0.45rem;
+  margin-top: 0.6rem;
 }
-.elv-detail-meta-item { font-size: 0.78rem; color: var(--a-fg-mid); }
-.elv-detail-meta-item.gold { color: var(--a-gold); font-weight: 600; }
+/* Métadonnées en chips */
+.elv-detail-meta-item {
+  font-size: 0.76rem;
+  color: var(--a-fg-mid);
+  background: var(--a-bg);
+  border: 1px solid var(--a-border);
+  border-radius: 999px;
+  padding: 0.26rem 0.7rem;
+  white-space: nowrap;
+}
+.elv-detail-meta-item.gold {
+  color: var(--a-gold);
+  font-weight: 600;
+  background: rgba(var(--a-gold-rgb), 0.09);
+  border-color: rgba(var(--a-gold-rgb), 0.35);
+}
 .elv-detail-divider {
   height: 1px;
-  background: var(--a-border);
+  background: linear-gradient(90deg, rgba(var(--a-gold-rgb), 0.3), var(--a-border) 45%, transparent);
   margin-bottom: 1rem;
 }
 .elv-detail-actions {
@@ -3406,10 +3442,10 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 13px;
-  border-radius: 9px;
+  padding: 7px 14px;
+  border-radius: 999px;
   border: 1px solid var(--a-border);
-  background: transparent;
+  background: var(--a-bg);
   font-size: 0.79rem;
   font-weight: 600;
   cursor: pointer;
@@ -3504,13 +3540,24 @@
   border-color: var(--a-gold);
 }
 
-/* ─── Section title ─── */
+/* ─── Section title — tick doré à gauche ─── */
 .elv-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--a-fg);
   margin-bottom: 0.875rem;
   letter-spacing: -0.01em;
+}
+.elv-section-title::before {
+  content: '';
+  width: 3px;
+  height: 0.95em;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--a-gold-l), var(--a-gold));
+  flex-shrink: 0;
 }
 .elv-section-title + * { }
 
@@ -3519,22 +3566,41 @@
   margin-top: 0.25rem;
 }
 
-/* ─── Stats grid ─── */
+/* ─── Stats grid — cartes à dégradé, liseré coloré en haut ─── */
 .elv-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.625rem;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
 }
 .elv-stat-card {
+  position: relative;
   background: var(--a-bg-card);
   border: 1px solid var(--a-border);
-  border-radius: var(--a-radius-sm);
-  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem 1rem;
   text-align: center;
+  overflow: hidden;
+  box-shadow: var(--a-shadow-sm);
+  transition: transform 0.18s var(--a-ease), box-shadow 0.18s var(--a-ease);
 }
+.elv-stat-card:hover { transform: translateY(-2px); box-shadow: var(--a-shadow-md); }
+.elv-stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 3px;
+  pointer-events: none;
+}
+/* Un dégradé d'accent par carte : or, bleu, vert */
+.elv-stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--a-gold), var(--a-gold-l)); }
+.elv-stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--a-blue), #7db4ff); }
+.elv-stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--a-green), #6fe8a4); }
+.elv-stat-card:nth-child(1) { background: linear-gradient(160deg, rgba(var(--a-gold-rgb), 0.08), transparent 55%), var(--a-bg-card); }
+.elv-stat-card:nth-child(2) { background: linear-gradient(160deg, rgba(85, 150, 247, 0.08), transparent 55%), var(--a-bg-card); }
+.elv-stat-card:nth-child(3) { background: linear-gradient(160deg, rgba(52, 212, 114, 0.08), transparent 55%), var(--a-bg-card); }
 .elv-stat-value {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 700;
   color: var(--a-fg);
   letter-spacing: -0.04em;
@@ -3546,15 +3612,16 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--a-fg-light);
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
 /* ─── Table card ─── */
 .elv-table-card {
   background: var(--a-bg-card);
   border: 1px solid var(--a-border);
-  border-radius: var(--a-radius-sm);
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: var(--a-shadow-sm);
 }
 
 /* ─── Progress card ─── */
