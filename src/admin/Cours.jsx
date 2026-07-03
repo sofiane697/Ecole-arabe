@@ -958,29 +958,45 @@ function useCoverImageState(data) {
 }
 
 // ── Composant partagé : sélecteur niveaux scolaires ──────────────────────────
+// Chips groupées Enfants / Adultes (via `est_adulte`) pour repérer d'un coup
+// d'œil à quel public le module/la thématique sera visible.
 function NsSelectorField({ list, selected, onChange, warnIfEmpty, warnMsg }) {
+  const groupes = [
+    { titre: '🧒 Niveaux enfants', items: list.filter(ns => !ns.est_adulte) },
+    { titre: '🧑 Niveaux adultes', items: list.filter(ns => !!ns.est_adulte) },
+  ].filter(g => g.items.length > 0);
+
+  const chip = ns => (
+    <label key={ns.id} style={{
+      display: 'flex', alignItems: 'center', gap: 6,
+      cursor: 'pointer', userSelect: 'none',
+      borderRadius: 'var(--a-radius-sm)',
+      padding: '5px 12px', fontSize: 13,
+      transition: 'all .15s',
+      background: selected.includes(ns.id) ? 'rgba(191,138,48,.13)' : 'var(--a-bg)',
+      border: `1px solid ${selected.includes(ns.id) ? 'var(--a-gold)' : 'var(--a-border)'}`,
+    }}>
+      <input type="checkbox" checked={selected.includes(ns.id)}
+        onChange={() => onChange(ns.id)}
+        style={{ accentColor:'var(--a-gold)', cursor:'pointer' }} />
+      {ns.nom}
+    </label>
+  );
+
   return (
     <div className={S.field}>
       <label className={S.label}>Niveaux scolaires autorisés</label>
-      <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginTop:6 }}>
-        {list.map(ns => (
-          <label key={ns.id} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            cursor: 'pointer', userSelect: 'none',
-            borderRadius: 'var(--a-radius-sm)',
-            padding: '5px 12px', fontSize: 13,
-            transition: 'all .15s',
-            background: selected.includes(ns.id) ? 'rgba(191,138,48,.13)' : 'var(--a-bg)',
-            border: `1px solid ${selected.includes(ns.id) ? 'var(--a-gold)' : 'var(--a-border)'}`,
-          }}>
-            <input type="checkbox" checked={selected.includes(ns.id)}
-              onChange={() => onChange(ns.id)}
-              style={{ accentColor:'var(--a-gold)', cursor:'pointer' }} />
-            {ns.nom}
-          </label>
-        ))}
-        {list.length === 0 && <span style={{ fontSize:12, color:'var(--a-fg-mid)' }}>Chargement…</span>}
-      </div>
+      {groupes.map(g => (
+        <div key={g.titre} style={{ marginTop: 8 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:'var(--a-fg-light)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:4 }}>
+            {g.titre}
+          </div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {g.items.map(chip)}
+          </div>
+        </div>
+      ))}
+      {list.length === 0 && <span style={{ fontSize:12, color:'var(--a-fg-mid)', marginTop:6, display:'inline-block' }}>Chargement…</span>}
       {warnIfEmpty && selected.length === 0 && list.length > 0 && (
         <div style={{ color:'var(--a-red)', fontSize:12, marginTop:6 }}>
           ⚠ {warnMsg || 'Aucun niveau sélectionné.'}
