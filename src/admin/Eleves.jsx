@@ -730,7 +730,7 @@ export default function Eleves({ variant = 'eleves' }) {
           }, 0);
           const pctGlobal = totalQCM > 0 ? Math.round((totalReussis / totalQCM) * 100) : 0;
           return (
-            <div className="elv-stats-grid">
+            <div className="elv-stats-grid elv-stats-grid--accent">
               {[
                 { label:'Modules', value: modules.length, color: null },
                 { label:'Niveaux réussis', value: totalQCM > 0 ? `${totalReussis} / ${totalQCM}` : '—', color: null },

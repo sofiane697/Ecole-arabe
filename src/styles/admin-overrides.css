@@ -3585,20 +3585,24 @@
   transition: transform 0.18s var(--a-ease), box-shadow 0.18s var(--a-ease);
 }
 .elv-stat-card:hover { transform: translateY(-2px); box-shadow: var(--a-shadow-md); }
-.elv-stat-card::before {
+
+/* Dégradés d'accent (or/bleu/vert par position) : réservés à la grille de
+   résumé de progression. Les autres grilles (.elv-stats-grid des notes,
+   retards, appréciations) portent chacune leur propre couleur sémantique via
+   un border-top inline — pas de double liseré. */
+.elv-stats-grid--accent .elv-stat-card::before {
   content: '';
   position: absolute;
   left: 0; right: 0; top: 0;
   height: 3px;
   pointer-events: none;
 }
-/* Un dégradé d'accent par carte : or, bleu, vert */
-.elv-stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--a-gold), var(--a-gold-l)); }
-.elv-stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--a-blue), #7db4ff); }
-.elv-stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--a-green), #6fe8a4); }
-.elv-stat-card:nth-child(1) { background: linear-gradient(160deg, rgba(var(--a-gold-rgb), 0.08), transparent 55%), var(--a-bg-card); }
-.elv-stat-card:nth-child(2) { background: linear-gradient(160deg, rgba(85, 150, 247, 0.08), transparent 55%), var(--a-bg-card); }
-.elv-stat-card:nth-child(3) { background: linear-gradient(160deg, rgba(52, 212, 114, 0.08), transparent 55%), var(--a-bg-card); }
+.elv-stats-grid--accent .elv-stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--a-gold), var(--a-gold-l)); }
+.elv-stats-grid--accent .elv-stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--a-blue), #7db4ff); }
+.elv-stats-grid--accent .elv-stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--a-green), #6fe8a4); }
+.elv-stats-grid--accent .elv-stat-card:nth-child(1) { background: linear-gradient(160deg, rgba(var(--a-gold-rgb), 0.08), transparent 55%), var(--a-bg-card); }
+.elv-stats-grid--accent .elv-stat-card:nth-child(2) { background: linear-gradient(160deg, rgba(85, 150, 247, 0.08), transparent 55%), var(--a-bg-card); }
+.elv-stats-grid--accent .elv-stat-card:nth-child(3) { background: linear-gradient(160deg, rgba(52, 212, 114, 0.08), transparent 55%), var(--a-bg-card); }
 .elv-stat-value {
   font-size: 1.65rem;
   font-weight: 700;
