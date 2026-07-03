@@ -1,6 +1,7 @@
 import { sendWelcomeEmail, sendParentAttachEmail } from './supabaseAdmin';
 
 const ADMIN_ID = '99999999-8888-7777-6666-555555555555';
+const ADMIN_TOKEN = 'tok-test-0123456789abcdef0123456789abcdef';
 
 function mockFetchOnce({ ok = true, status = 200, body = {} } = {}) {
   const calls = [];
@@ -15,8 +16,8 @@ function mockFetchOnce({ ok = true, status = 200, body = {} } = {}) {
 }
 
 beforeEach(() => {
-  // Les 2 fonctions mail appellent requireAdminId() qui lit la session admin.
-  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, identifiant: 'admin' }));
+  // Les 2 fonctions mail appellent requireAdminToken() qui lit la session admin.
+  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, token: ADMIN_TOKEN, identifiant: 'admin' }));
 });
 
 afterEach(() => {
@@ -83,13 +84,13 @@ describe('sendWelcomeEmail', () => {
     })).rejects.toThrow(/Erreur envoi email 500/);
   });
 
-  test('envoie le header x-admin-id pour authentifier l\'appel côté Edge', async () => {
+  test('envoie le header x-admin-token pour authentifier l\'appel côté Edge', async () => {
     const calls = mockFetchOnce();
     await sendWelcomeEmail({
       email: 'e@e.f', prenom: 'P', nom: 'N',
       identifiant: 'X', tempPassword: 'y',
     });
-    expect(calls[0].options.headers['x-admin-id']).toBe(ADMIN_ID);
+    expect(calls[0].options.headers['x-admin-token']).toBe(ADMIN_TOKEN);
   });
 
   test('throw si aucune session admin en sessionStorage', async () => {

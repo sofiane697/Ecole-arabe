@@ -112,16 +112,13 @@ export async function fetchModulesEleve() {
   return res.json();
 }
 
-export async function fetchNiveauxEleve(moduleId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/niveaux?module_id=eq.${moduleId}&order=ordre`, { headers: ANON_HEADERS });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
-}
-
+/** Contenus d'un niveau — via RPC token-gated. La table `contenus` est fermée
+ *  à anon depuis l'audit 2026-07-03 (S3) : les cours (vidéos, PDF, textes) ne
+ *  sont plus lisibles sans compte élève connecté. */
 export async function fetchContenusEleve(niveauId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/contenus?niveau_id=eq.${niveauId}&order=ordre`, { headers: ANON_HEADERS });
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
-  return res.json();
+  const token = getEleveSessionToken();
+  if (!token) throw new Error('Session expirée');
+  return await rpc('fetch_contenus_for_eleve_secure', { p_token: token, p_niveau_id: niveauId });
 }
 
 /** QCM du niveau pour l'élève authentifié.
@@ -329,8 +326,7 @@ export async function fetchUnreadCountParEnseignant(_eleveId, enseignantId) {
   } catch { return 0; }
 }
 
-/** Traverse la vraie hiérarchie Module→Thématiques→(Leçons→)Niveaux.
- *  Remplace fetchNiveauxEleve(moduleId) qui utilisait l'ancienne colonne module_id. */
+/** Traverse la vraie hiérarchie Module→Thématiques→(Leçons→)Niveaux. */
 export async function fetchAllNiveauxForModuleEleve(moduleId) {
   const thRes = await fetch(`${SUPABASE_URL}/rest/v1/thematiques?module_id=eq.${moduleId}&order=ordre`, { headers: ANON_HEADERS });
   const thematiques = thRes.ok ? await thRes.json() : [];

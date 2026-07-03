@@ -2,6 +2,7 @@ import { uploadElevePhoto, deleteElevePhoto } from './supabaseAdmin';
 
 const ELEVE_ID = '11111111-2222-3333-4444-555555555555';
 const ADMIN_ID = '99999999-8888-7777-6666-555555555555';
+const ADMIN_TOKEN = 'tok-test-0123456789abcdef0123456789abcdef';
 
 function makeFile({ name = 'photo.jpg', type = 'image/jpeg', size = 1024 } = {}) {
   const content = 'x'.repeat(size);
@@ -25,7 +26,7 @@ function mockFetchSequence(responses) {
 }
 
 beforeEach(() => {
-  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, identifiant: 'admin' }));
+  sessionStorage.setItem('admin_session', JSON.stringify({ id: ADMIN_ID, token: ADMIN_TOKEN, identifiant: 'admin' }));
 });
 
 afterEach(() => {
@@ -81,7 +82,7 @@ describe('uploadElevePhoto — appel Edge Function', () => {
     expect(calls.length).toBe(1);
     expect(calls[0].url).toMatch(/\/functions\/v1\/eleve-photo$/);
     expect(calls[0].options.method).toBe('POST');
-    expect(calls[0].options.headers['x-admin-id']).toBe(ADMIN_ID);
+    expect(calls[0].options.headers['x-admin-token']).toBe(ADMIN_TOKEN);
     expect(calls[0].options.headers['x-op']).toBe('upload');
     expect(calls[0].options.headers['x-eleve-id']).toBe(ELEVE_ID);
     expect(calls[0].options.headers['x-ext']).toBe('jpg');
@@ -132,7 +133,7 @@ describe('deleteElevePhoto — appel Edge Function', () => {
     expect(calls[0].options.method).toBe('POST');
     expect(calls[0].options.headers['x-op']).toBe('delete');
     expect(calls[0].options.headers['x-eleve-id']).toBe(ELEVE_ID);
-    expect(calls[0].options.headers['x-admin-id']).toBe(ADMIN_ID);
+    expect(calls[0].options.headers['x-admin-token']).toBe(ADMIN_TOKEN);
   });
 
   test('rejette si la session admin est absente', async () => {

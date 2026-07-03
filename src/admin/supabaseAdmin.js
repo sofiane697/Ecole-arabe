@@ -197,8 +197,13 @@ export async function deleteNiveau(id) {
     'Erreur suppression niveau');
 }
 
+/** Contenus d'un niveau — via RPC token-gated (table `contenus` fermée à anon,
+ *  audit 2026-07-03 S3 : le contenu des cours n'est plus lisible sans compte). */
 export async function fetchContenus(niveauId) {
-  const res = await authFetch(`${SUPABASE_URL}/rest/v1/contenus?niveau_id=eq.${niveauId}&order=ordre`);
+  const res = await authFetch(`${SUPABASE_URL}/rest/v1/rpc/admin_fetch_contenus`, {
+    method: 'POST',
+    body: JSON.stringify({ p_admin_token: requireAdminToken(), p_niveau_id: niveauId }),
+  });
   if (!res.ok) throw new Error(`Erreur ${res.status}`);
   return res.json();
 }
@@ -470,65 +475,51 @@ export function toSlug(str) {
 }
 
 /** Supprimer récursivement tous les fichiers sous un préfixe dans le bucket "cours" */
-export async function deleteStorageFolder(prefix) {
-  const BUCKET = 'cours';
-  const listRes = await authFetch(
-    `${SUPABASE_URL}/storage/v1/object/list/${encodeURIComponent(BUCKET)}`,
-    { method: 'POST', body: JSON.stringify({ prefix, limit: 1000, offset: 0 }) }
-  );
-  if (!listRes.ok) return;
-  const items = await listRes.json().catch(() => []);
-  if (!Array.isArray(items)) return;
+// ─── STORAGE COURS (proxifié par l'Edge Function "cours-file") ───────────────
+// Audit 2026-07-03 (S3) : les policies storage publiques du bucket `cours`
+// (read/upload/delete ouverts à anon) sont supprimées. Toutes les opérations
+// passent par l'Edge Function, authentifiée par le token de session admin et
+// exécutée avec la service_role key. La lecture des fichiers existants reste
+// par URL publique exacte (bucket public non listable).
 
-  const files   = items.filter(i => i.id).map(i => `${prefix}/${i.name}`);
-  const folders = items.filter(i => !i.id && i.name).map(i => `${prefix}/${i.name}`);
+const COURS_FILE_FN = `${SUPABASE_URL}/functions/v1/cours-file`;
 
-  for (const folder of folders) await deleteStorageFolder(folder);
-
-  if (files.length > 0) {
-    await authFetch(
-      `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`,
-      { method: 'DELETE', body: JSON.stringify({ prefixes: files }) }
-    );
+async function coursFileOp(op, { path, prefix, file } = {}) {
+  const headers = {
+    'apikey': SUPABASE_ANON,
+    'Authorization': `Bearer ${SUPABASE_ANON}`,
+    'x-admin-token': requireAdminToken(),
+    'x-op': op,
+  };
+  let body;
+  if (op === 'upload') {
+    headers['x-path'] = encodeURIComponent(path);
+    headers['Content-Type'] = file.type || 'application/octet-stream';
+    body = file;
+  } else {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify({ prefix });
   }
+  const res = await fetch(COURS_FILE_FN, { method: 'POST', headers, body });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Erreur storage ${res.status}`);
+  return data;
+}
+
+export async function deleteStorageFolder(prefix) {
+  // Best-effort, comme l'ancienne implémentation REST (les appelants .catch déjà).
+  try { await coursFileOp('delete-folder', { prefix }); } catch { /* best-effort */ }
 }
 
 /** Supprimer l'ancienne image de couverture (cover.*) d'un dossier avant un nouvel upload */
 export async function deleteOldCover(folderPath) {
-  const BUCKET = 'cours';
-  const listRes = await authFetch(
-    `${SUPABASE_URL}/storage/v1/object/list/${encodeURIComponent(BUCKET)}`,
-    { method: 'POST', body: JSON.stringify({ prefix: folderPath, limit: 20, offset: 0 }) }
-  );
-  if (!listRes.ok) return;
-  const items = await listRes.json().catch(() => []);
-  if (!Array.isArray(items)) return;
-  const covers = items
-    .filter(i => i.id && i.name.startsWith('cover.'))
-    .map(i => `${folderPath}/${i.name}`);
-  if (covers.length === 0) return;
-  await authFetch(
-    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}`,
-    { method: 'DELETE', body: JSON.stringify({ prefixes: covers }) }
-  );
+  try { await coursFileOp('delete-old-cover', { prefix: folderPath }); } catch { /* best-effort */ }
 }
 
-/** Uploader un fichier dans le bucket "cours" au chemin spécifié */
+/** Uploader un fichier dans le bucket "cours" au chemin spécifié — retourne l'URL publique */
 export async function uploadFile(file, path) {
-  const BUCKET = 'cours';
-  const res = await authFetch(
-    `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(BUCKET)}/${path}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': file.type || 'application/octet-stream' },
-      body: file,
-    }
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Erreur upload ${res.status}`);
-  }
-  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(BUCKET)}/${path}`;
+  const data = await coursFileOp('upload', { path, file });
+  return data.url;
 }
 
 // ─── PHOTOS ÉLÈVES ────────────────────────────────────────────────────────────
@@ -541,13 +532,6 @@ export async function uploadFile(file, path) {
 const PHOTO_MAX_BYTES = 3 * 1024 * 1024;
 const PHOTO_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp'];
 const ELEVE_PHOTO_FN = `${SUPABASE_URL}/functions/v1/eleve-photo`;
-
-function getAdminId() {
-  try {
-    const s = JSON.parse(sessionStorage.getItem('admin_session'));
-    return s?.id || null;
-  } catch { return null; }
-}
 
 /** Récupère le token de session admin (phase 3). NULL si pas connecté ou
  *  ancienne session sans token (admin doit alors se reloguer). */
@@ -572,16 +556,13 @@ export async function uploadElevePhoto(eleveId, file) {
   if (file.size > PHOTO_MAX_BYTES) {
     throw new Error('Image trop lourde (3 Mo maximum).');
   }
-  const adminId = getAdminId();
-  if (!adminId) throw new Error('Session admin invalide. Reconnectez-vous.');
-
   const res = await fetch(ELEVE_PHOTO_FN, {
     method: 'POST',
     headers: {
       'apikey': SUPABASE_ANON,
       'Authorization': `Bearer ${SUPABASE_ANON}`,
       'Content-Type': file.type,
-      'x-admin-id': adminId,
+      'x-admin-token': requireAdminToken(),
       'x-op': 'upload',
       'x-eleve-id': eleveId,
       'x-ext': ext,
@@ -597,16 +578,13 @@ export async function uploadElevePhoto(eleveId, file) {
 
 /** Supprime la photo d'un élève via l'Edge Function (storage + DB). */
 export async function deleteElevePhoto(eleveId) {
-  const adminId = getAdminId();
-  if (!adminId) throw new Error('Session admin invalide. Reconnectez-vous.');
-
   const res = await fetch(ELEVE_PHOTO_FN, {
     method: 'POST',
     headers: {
       'apikey': SUPABASE_ANON,
       'Authorization': `Bearer ${SUPABASE_ANON}`,
       'Content-Type': 'application/json',
-      'x-admin-id': adminId,
+      'x-admin-token': requireAdminToken(),
       'x-op': 'delete',
       'x-eleve-id': eleveId,
     },
@@ -939,14 +917,15 @@ export async function fetchConversationMessages(eleveId, enseignantId) {
 }
 
 /** POST authentifié vers la Edge function d'envoi mail. Ajoute le header
- *  `x-admin-id` que l'Edge vérifie via _is_admin avant d'appeler Resend. */
+ *  `x-admin-token` (token de session) que l'Edge vérifie via _is_admin avant
+ *  d'appeler Resend. */
 async function postEdgeMail(payload, errorLabel) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${SUPABASE_ANON}`,
-      'x-admin-id': requireAdminId(),
+      'x-admin-token': requireAdminToken(),
     },
     body: JSON.stringify(payload),
   });
@@ -992,16 +971,6 @@ export function sendParentAttachEmail({ email, foyerLabel, identifiant, elevePre
 }
 
 // ─── PARENTS ─────────────────────────────────────────────────────────────────
-// Toutes les fonctions admin_* côté SQL exigent un p_admin_id valide (vérifié
-// via _is_admin). On le lit depuis admin_session juste avant l'appel — si la
-// session a expiré localement, on remonte une erreur claire plutôt que de laisser
-// la RPC échouer avec un message générique.
-
-function requireAdminId() {
-  const id = getAdminId();
-  if (!id) throw new Error('Session admin invalide. Reconnecte-toi.');
-  return id;
-}
 
 /** Phase 3 : retourne le token admin. Toutes les RPCs admin_* l'attendent
  *  comme p_admin_token. Si l'admin est connecté avec une ancienne session

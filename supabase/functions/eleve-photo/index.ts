@@ -7,7 +7,7 @@
 //   avec rollback storage si l'update DB échoue (évite les orphelins).
 //
 // verify_jwt: false — le projet utilise une auth bcrypt custom (pas Supabase Auth).
-// La confiance repose sur verify_admin_session(p_id) côté DB.
+// La confiance repose sur le token de session admin vérifié via _is_admin(p_admin_token).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -19,8 +19,8 @@ const MAX_BYTES    = 3 * 1024 * 1024;
 const MIN_BYTES    = 64;
 
 // CORS : restreint via la variable `ALLOWED_ORIGINS` (séparée par virgules).
-// Défaut localhost pour le dev. En prod, poser ALLOWED_ORIGINS=https://ton-domaine.fr.
-const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000')
+// Défaut : prod Vercel + localhost dev, surchargeable par secret sans redéploiement.
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,http://localhost:3000')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
@@ -30,7 +30,7 @@ function corsHeaders(req: Request): Record<string, string> {
   const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : (ALLOWED_ORIGINS[0] || '');
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-admin-id, x-op, x-eleve-id, x-ext',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-admin-token, x-op, x-eleve-id, x-ext',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Vary': 'Origin',
   };
@@ -55,16 +55,16 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'Method not allowed' }, 405, cors);
   }
 
-  const adminId = req.headers.get('x-admin-id');
+  const adminToken = req.headers.get('x-admin-token');
   const op      = req.headers.get('x-op');
   const eleveId = req.headers.get('x-eleve-id');
   const ext     = (req.headers.get('x-ext') || '').toLowerCase();
 
-  if (!adminId || !op || !eleveId) {
-    return jsonResponse({ error: 'Missing headers (x-admin-id, x-op, x-eleve-id)' }, 400, cors);
+  if (!adminToken || !op || !eleveId) {
+    return jsonResponse({ error: 'Missing headers (x-admin-token, x-op, x-eleve-id)' }, 400, cors);
   }
-  if (!UUID_RE.test(adminId) || !UUID_RE.test(eleveId)) {
-    return jsonResponse({ error: 'Invalid UUID' }, 400, cors);
+  if (adminToken.length < 16 || adminToken.length > 500 || !UUID_RE.test(eleveId)) {
+    return jsonResponse({ error: 'Invalid credentials' }, 400, cors);
   }
   if (op !== 'upload' && op !== 'delete') {
     return jsonResponse({ error: 'Unknown op' }, 400, cors);
@@ -80,9 +80,10 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  // Vérification admin_session via RPC
+  // Vérification du TOKEN DE SESSION admin via _is_admin (audit 2026-07-03, S2 :
+  // l'ancien check verify_admin_session(p_id) acceptait un simple UUID, non secret).
   const { data: isAdmin, error: verifyErr } = await supabase
-    .rpc('verify_admin_session', { p_id: adminId });
+    .rpc('_is_admin', { p_admin_token: adminToken });
   if (verifyErr || isAdmin !== true) {
     return jsonResponse({ error: 'Unauthorized' }, 401, cors);
   }

@@ -26,18 +26,17 @@ function corsHeaders(req: Request): Record<string, string> {
   const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0] || '';
   return {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Headers': 'authorization, content-type, x-admin-id',
+    'Access-Control-Allow-Headers': 'authorization, content-type, x-admin-token',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Vary': 'Origin',
   };
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// Vérifie via RPC _is_admin (SECURITY DEFINER) que p_admin_id correspond à un admin valide.
-// Utilise la service_role key pour contourner RLS et garantir un appel authentifié serveur-à-serveur.
-async function isAdmin(adminId: string | null): Promise<boolean> {
-  if (!adminId || !UUID_RE.test(adminId)) return false;
+// Vérifie via RPC _is_admin (SECURITY DEFINER) que le TOKEN DE SESSION admin
+// est valide (audit 2026-07-03, S2 : un UUID d'admin n'est ni secret ni
+// révocable — on exige le token opaque de session, comme les RPCs admin_*).
+async function isAdmin(token: string | null): Promise<boolean> {
+  if (!token || token.length < 16 || token.length > 500) return false;
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return false;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/_is_admin`, {
@@ -47,7 +46,7 @@ async function isAdmin(adminId: string | null): Promise<boolean> {
         'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ p_admin_id: adminId }),
+      body: JSON.stringify({ p_admin_token: token }),
     });
     if (!res.ok) return false;
     const data = await res.json();
@@ -86,10 +85,10 @@ serve(async (req) => {
     return new Response('ok', { headers: cors });
   }
 
-  // Authentification : x-admin-id obligatoire et vérifié côté serveur via _is_admin.
+  // Authentification : x-admin-token (token de session) vérifié via _is_admin.
   // Sans ce check, n'importe qui avec la clé anon pouvait envoyer des emails au nom de l'école.
-  const adminId = req.headers.get('x-admin-id');
-  if (!(await isAdmin(adminId))) {
+  const adminToken = req.headers.get('x-admin-token');
+  if (!(await isAdmin(adminToken))) {
     return jsonError('Non autorisé', 401, cors);
   }
 
