@@ -868,6 +868,7 @@ export default function Inscriptions() {
         return (
           <div className="insc-sheet-overlay" ref={overlayRef} onClick={closeSheet}>
             <div className="insc-sheet" ref={sheetRef} onClick={e => e.stopPropagation()}>
+              <div className="insc-sheet-handle" aria-hidden="true" />
               <button className="insc-sheet-close" onClick={closeSheet} aria-label="Fermer le panneau">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -897,8 +898,8 @@ export default function Inscriptions() {
                       <p className="insc-detail-path">
                         {crumbs.map((c, idx) => (
                           <React.Fragment key={idx}>
-                            {idx > 0 && <span className="insc-detail-path-sep"> › </span>}
-                            {idx === crumbs.length - 1 ? <b>{c}</b> : c}
+                            {idx > 0 && <span className="insc-detail-path-sep">›</span>}
+                            <span className={`insc-path-chip${idx === crumbs.length - 1 ? ' is-last' : ''}`}>{c}</span>
                           </React.Fragment>
                         ))}
                       </p>
@@ -915,7 +916,7 @@ export default function Inscriptions() {
                         </div>
                         <div className="insc-detail-field">
                           <span className="insc-detail-field-label">Tarif</span>
-                          <span className="insc-detail-field-value">{i.formule_prix != null ? `${i.formule_prix} €` : '—'}</span>
+                          <span className="insc-detail-field-value insc-detail-field-value--price">{i.formule_prix != null ? `${i.formule_prix} €` : '—'}</span>
                         </div>
                         {i.formule_rythme && (
                           <div className="insc-detail-field">
@@ -924,7 +925,7 @@ export default function Inscriptions() {
                           </div>
                         )}
                         {Array.isArray(i.disponibilites) && i.disponibilites.length > 0 && (
-                          <div className="insc-detail-field">
+                          <div className="insc-detail-field insc-detail-field--wide">
                             <span className="insc-detail-field-label">Disponibilités</span>
                             <span className="insc-detail-field-value">{i.disponibilites.join(' · ')}</span>
                           </div>
