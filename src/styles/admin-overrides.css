@@ -68,6 +68,11 @@
   --a-shadow-md:    0 6px 20px rgba(0,0,0,0.32), 0 2px 6px rgba(0,0,0,0.18);
   --a-shadow-lg:    0 16px 48px rgba(0,0,0,0.44), 0 6px 16px rgba(0,0,0,0.26);
   --a-shadow-gold:  0 4px 20px rgba(var(--a-gold-rgb),0.2);
+  /* Reliefs « carte surélevée » : ombre portée en 2 couches (contact + ambiante)
+     + reflet interne en haut. Utilisés sur les fiches pour donner de la
+     profondeur. Version sombre : reflet blanc discret. */
+  --a-depth:        0 2px 4px rgba(0,0,0,0.20), 0 10px 26px -8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+  --a-depth-hover:  0 4px 8px rgba(0,0,0,0.24), 0 22px 46px -12px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
@@ -93,6 +98,10 @@
   --a-shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --a-shadow-md:  0 4px 16px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.05);
   --a-shadow-lg:  0 16px 40px rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.06);
+  /* Reliefs mode clair : ombres plus prononcées pour casser l'aspect plat,
+     reflet interne blanc en haut de carte. */
+  --a-depth:       0 1px 2px rgba(60,40,15,0.10), 0 8px 22px -6px rgba(60,40,15,0.18), inset 0 1px 0 rgba(255,255,255,0.7);
+  --a-depth-hover: 0 3px 6px rgba(60,40,15,0.14), 0 18px 40px -10px rgba(60,40,15,0.26), inset 0 1px 0 rgba(255,255,255,0.85);
 }
 .admin-root.admin-light *,
 .admin-root.admin-light *::before,
@@ -3317,7 +3326,7 @@
     var(--a-bg-card);
   border-radius: var(--a-radius);
   border: 1px solid rgba(var(--a-gold-rgb), 0.18);
-  box-shadow: var(--a-shadow-sm);
+  box-shadow: var(--a-depth);
   overflow: hidden;
 }
 .elv-detail-header::after {
@@ -3581,10 +3590,10 @@
   padding: 1.1rem 1.25rem 1rem;
   text-align: center;
   overflow: hidden;
-  box-shadow: var(--a-shadow-sm);
+  box-shadow: var(--a-depth);
   transition: transform 0.18s var(--a-ease), box-shadow 0.18s var(--a-ease);
 }
-.elv-stat-card:hover { transform: translateY(-2px); box-shadow: var(--a-shadow-md); }
+.elv-stat-card:hover { transform: translateY(-3px); box-shadow: var(--a-depth-hover); }
 
 /* Dégradés d'accent (or/bleu/vert par position) : réservés à la grille de
    résumé de progression. Les autres grilles (.elv-stats-grid des notes,
@@ -3625,7 +3634,7 @@
   border: 1px solid var(--a-border);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: var(--a-shadow-sm);
+  box-shadow: var(--a-depth);
 }
 
 /* ─── Progress card ─── */

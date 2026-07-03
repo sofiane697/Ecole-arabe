@@ -95,7 +95,7 @@ const fmtDateFr = (d) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric
 
 // ─── Helpers JSX locaux pour les sections Notes / Absences / Appréciations ─
 const EleveEmptyState = ({ children }) => (
-  <div style={{ padding: 32, textAlign: 'center', color: 'var(--a-fg-light)', background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius-sm)', border: '1px solid var(--a-border)', fontSize: 13 }}>
+  <div style={{ padding: 32, textAlign: 'center', color: 'var(--a-fg-light)', background: 'var(--a-bg-card)', borderRadius: 'var(--a-radius-sm)', border: '1px solid var(--a-border)', boxShadow: 'var(--a-depth)', fontSize: 13 }}>
     {children}
   </div>
 );
@@ -893,7 +893,7 @@ export default function Eleves({ variant = 'eleves' }) {
                     return (
                       <div key={n.id} style={{
                         padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
-                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', boxShadow: 'var(--a-shadow-sm)',
                       }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center' }}>
                           <div>
@@ -1048,7 +1048,7 @@ export default function Eleves({ variant = 'eleves' }) {
                     return (
                       <div key={item.id} style={{
                         padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
-                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', boxShadow: 'var(--a-shadow-sm)',
                         borderLeft: `4px solid ${cfg.color}`,
                         display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center',
                       }}>
@@ -1189,7 +1189,7 @@ export default function Eleves({ variant = 'eleves' }) {
                     return (
                       <div key={obs.id} style={{
                         padding: '14px 16px', borderRadius: 'var(--a-radius-sm)',
-                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)',
+                        background: 'var(--a-bg-card)', border: '1px solid var(--a-border)', boxShadow: 'var(--a-shadow-sm)',
                         borderLeft: `4px solid ${cfg.color}`,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
