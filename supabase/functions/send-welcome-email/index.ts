@@ -14,8 +14,9 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
 // CORS : restreint via la variable `ALLOWED_ORIGINS` (séparée par virgules).
-// Défaut localhost pour le dev. En prod, poser ALLOWED_ORIGINS=https://ton-domaine.fr.
-const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:3000')
+// Défaut : prod Vercel + localhost dev. Surchargeable sans redéploiement en
+// posant le secret ALLOWED_ORIGINS (ex. après migration vers un domaine custom).
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,http://localhost:3000')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
