@@ -40,12 +40,14 @@ const IconArrow = () => (
 );
 
 /**
- * Conversion d'une préinscription ADULTE en compte étudiant + affectation à une
- * classe. Génère identifiant + mot de passe, crée le compte (profils_eleves)
- * INACTIF, affecte la classe (et le niveau scolaire dérivé) et passe la demande
- * à « Traité ». Un mail « dossier en traitement » part au contact ; l'e-mail de
- * bienvenue (identifiants) part à l'ACTIVATION du compte dans « Gestion des
- * étudiants ». Pas de parent (adulte majeur).
+ * Conversion d'une préinscription ADULTE en compte étudiant, avec affectation à
+ * une classe optionnelle (peut être laissée vide pour être assignée plus tard
+ * depuis « Gestion des étudiants »). Génère identifiant + mot de passe, crée le
+ * compte (profils_eleves) INACTIF, affecte la classe si choisie (et le niveau
+ * scolaire dérivé) et passe la demande à « Traité ». Un mail « dossier en
+ * traitement » part au contact ; l'e-mail de bienvenue (identifiants) part à
+ * l'ACTIVATION du compte dans « Gestion des étudiants ». Pas de parent (adulte
+ * majeur).
  */
 function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
   const [open,     setOpen]     = useState(false);
@@ -81,7 +83,6 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
   }
 
   const handleCreate = async () => {
-    if (!classeId) { setError('Choisis une classe.'); return; }
     setBusy(true); setError('');
     try {
       const prenom = fmtPrenom(i.eleve_prenom);
@@ -94,14 +95,15 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      const patch = { classe_id: classeId, est_adulte: true };
+      const patch = { est_adulte: true };
+      if (classeId)              patch.classe_id      = classeId;
       if (i.contact_email)      patch.email_contact  = i.contact_email;
       if (i.contact_telephone)  patch.telephone      = i.contact_telephone;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
       await updateEleve(eleveId, patch);
 
       const classe = classes.find(c => c.id === classeId);
-      await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
+      if (classeId) await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
 
       // Rattache la préinscription + passe à « Traité » (contacté).
       await adminLinkPreinscriptionEleve(i.id, eleveId);
@@ -139,7 +141,7 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
         onChange={e => { setClasseId(e.target.value); setError(''); }}
         disabled={busy}
       >
-        <option value="">— Choisir une classe —</option>
+        <option value="">— Aucune classe (à assigner plus tard) —</option>
         {niveaux.map(n => {
           const cs = classes.filter(c => c.niveau_id === n.id);
           if (!cs.length) return null;
@@ -152,8 +154,8 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
       </select>
       {error && <p className="insc-convert-error">{error}</p>}
       <div className="insc-detail-actions">
-        <button className="msg-action-primary" onClick={handleCreate} disabled={busy || !classeId}>
-          {busy ? 'Création…' : 'Créer et affecter'} <IconArrow />
+        <button className="msg-action-primary" onClick={handleCreate} disabled={busy}>
+          {busy ? 'Création…' : 'Créer le compte'} <IconArrow />
         </button>
         <button className="insc-convert-cancel" onClick={() => { setOpen(false); setError(''); }} disabled={busy}>
           Annuler
@@ -165,8 +167,10 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted }) {
 
 /**
  * Conversion d'une préinscription ENFANT en compte élève + un responsable (parent),
- * avec affectation à une classe. Crée l'élève INACTIF, crée/rattache le parent
- * (anti-doublon par email/téléphone) et passe la demande à « Traité ».
+ * avec affectation à une classe optionnelle (peut être laissée vide pour être
+ * assignée plus tard depuis « Gestion des élèves »). Crée l'élève INACTIF,
+ * crée/rattache le parent (anti-doublon par email/téléphone) et passe la
+ * demande à « Traité ».
  * Emails à la conversion : identifiants du parent créé (le mdp provisoire n'est
  * plus récupérable ensuite) ou notification de rattachement si parent existant,
  * + « dossier en traitement » au contact. L'e-mail de bienvenue élève part à
@@ -223,7 +227,6 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
   }
 
   const handleCreate = async () => {
-    if (!classeId) { setError('Choisis une classe.'); return; }
     if (!pPrenom.trim() || !pNom.trim()) { setError('Renseigne le nom et le prénom du responsable.'); return; }
     if (!pEmail.trim() && !pTel.trim()) { setError('Renseigne un e-mail ou un téléphone pour le responsable.'); return; }
     setBusy(true); setError('');
@@ -238,13 +241,14 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
       const eleveId = created?.id ?? await fetchEleveIdParIdentifiant(idLogin);
       if (!eleveId) throw new Error('Compte créé mais introuvable.');
 
-      const patch = { classe_id: classeId };
+      const patch = {};
+      if (classeId)               patch.classe_id      = classeId;
       if (i.contact_email)        patch.email_contact  = i.contact_email;
       if (i.eleve_date_naissance) patch.date_naissance = i.eleve_date_naissance;
-      await updateEleve(eleveId, patch);
+      if (Object.keys(patch).length) await updateEleve(eleveId, patch);
 
       const classe = classes.find(c => c.id === classeId);
-      await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
+      if (classeId) await updateEleveNiveauScolaire(eleveId, classe?.niveau_id || null);
 
       // Responsable → bloc parent. Anti-doublon : si un parent existe déjà
       // (même e-mail/téléphone), on le rattache au lieu d'en créer un second.
@@ -311,7 +315,7 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
         onChange={e => { setClasseId(e.target.value); setError(''); }}
         disabled={busy}
       >
-        <option value="">— Choisir une classe —</option>
+        <option value="">— Aucune classe (à assigner plus tard) —</option>
         {niveaux.map(n => {
           const cs = classes.filter(c => c.niveau_id === n.id);
           if (!cs.length) return null;
@@ -339,8 +343,8 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted }) {
 
       {error && <p className="insc-convert-error">{error}</p>}
       <div className="insc-detail-actions">
-        <button className="msg-action-primary" onClick={handleCreate} disabled={busy || !classeId}>
-          {busy ? 'Création…' : 'Créer et affecter'} <IconArrow />
+        <button className="msg-action-primary" onClick={handleCreate} disabled={busy}>
+          {busy ? 'Création…' : 'Créer le compte'} <IconArrow />
         </button>
         <button className="insc-convert-cancel" onClick={() => { setOpen(false); setError(''); }} disabled={busy}>
           Annuler
