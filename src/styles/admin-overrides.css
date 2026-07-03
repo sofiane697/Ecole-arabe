@@ -5163,4 +5163,79 @@ a.parent-card-contact:hover > svg {
   line-height: 1.4;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   RELIEF & DÉGRADÉS — passe transverse sur les cartes de sections
+   (Élèves, Étudiants, Parents, Enseignants, Classes, Cours)
+   Ce bloc est volontairement placé en fin de fichier pour surcharger,
+   à spécificité égale, les box-shadow des définitions d'origine.
+═══════════════════════════════════════════════════════════════ */
+
+/* 1) Profondeur : ombres multi-couches homogènes au repos + au survol */
+.admin-stat-card,
+.a-card,
+.cls-niveau-card,
+.cls-classe-card,
+.cls-eleve-card,
+.elv-card,
+.cours-card,
+.a-cours-card,
+.cours-list-item,
+.admin-table-wrap {
+  box-shadow: var(--a-depth);
+}
+.admin-stat-card:hover,
+.a-card:hover,
+.cls-niveau-card:hover,
+.cls-classe-card:hover,
+.cls-eleve-card:hover,
+.elv-card:hover,
+.cours-card:hover,
+.a-cours-card:hover,
+.cours-list-item:hover {
+  box-shadow: var(--a-depth-hover);
+}
+
+/* 2) Liseré dégradé doré en haut des cartes de grille/liste.
+   Ces cartes n'utilisaient aucun pseudo-élément — on ajoute ::after
+   sans risque de collision. position + overflow garantissent le clip
+   aux coins arrondis. */
+.a-card,
+.cls-niveau-card,
+.cls-classe-card,
+.cls-eleve-card,
+.elv-card,
+.a-cours-card {
+  position: relative;
+  overflow: hidden;
+}
+.a-card::after,
+.cls-niveau-card::after,
+.cls-classe-card::after,
+.cls-eleve-card::after,
+.elv-card::after,
+.a-cours-card::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--a-gold), var(--a-gold-l) 45%, transparent 85%);
+  opacity: 0.55;
+  transition: opacity 0.2s var(--a-ease);
+  pointer-events: none;
+}
+.a-card:hover::after,
+.cls-niveau-card:hover::after,
+.cls-classe-card:hover::after,
+.cls-eleve-card:hover::after,
+.elv-card:hover::after,
+.a-cours-card:hover::after {
+  opacity: 1;
+}
+
+/* 3) Avatars de liste rehaussés (halo doré discret) pour la profondeur */
+.a-avatar,
+.elv-avatar,
+.cls-eleve-avatar {
+  box-shadow: 0 4px 12px rgba(var(--a-gold-rgb), 0.28);
+}
 
