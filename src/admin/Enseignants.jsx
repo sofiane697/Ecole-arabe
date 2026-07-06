@@ -75,6 +75,7 @@ export default function Enseignants() {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
   const [page, setPage]               = useState(0);
+  const [filterClasse, setFilterClasse] = useState(''); // '' = toutes | 'sans' | classe_id
   const [result, setResult]           = useState(null); // { prenom, nom, identifiant, tempPassword }
   const [resetResult, setResetResult] = useState(null);
   const [pwdVisible, setPwdVisible]         = useState(true);
@@ -188,25 +189,52 @@ export default function Enseignants() {
     });
   };
 
+  const enseignantsFiltered = enseignants.filter(ens => {
+    if (!filterClasse) return true;
+    const ids = classesMap[ens.id] || [];
+    return filterClasse === 'sans' ? ids.length === 0 : ids.includes(filterClasse);
+  });
+
   return (
     <div ref={pageRef} className={S.page}>
       <div className={S.header}>
         <div className={S.headerLeft}>
-          <span className="a-section-count">{enseignants.length} enseignant{enseignants.length > 1 ? 's' : ''}</span>
+          <span className="a-section-count">
+            {enseignantsFiltered.length} enseignant{enseignantsFiltered.length > 1 ? 's' : ''}
+            {enseignantsFiltered.length !== enseignants.length ? ` (sur ${enseignants.length})` : ''}
+          </span>
         </div>
         <button className={S.addBtn} onClick={() => setModal({ type:'add' })}>
           <IconPlus /> Ajouter un enseignant
         </button>
       </div>
 
+      {enseignants.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <select className="a-filter-select" value={filterClasse} onChange={e => { setFilterClasse(e.target.value); setPage(0); }}>
+            <option value="">Toutes les classes</option>
+            <option value="sans">— Sans classe assignée —</option>
+            {niveaux.map(n => {
+              const cs = allClasses.filter(c => c.niveau_id === n.id);
+              if (!cs.length) return null;
+              return (
+                <optgroup key={n.id} label={n.nom}>
+                  {cs.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                </optgroup>
+              );
+            })}
+          </select>
+        </div>
+      )}
+
       {error && <p style={{ color:'var(--a-red)', fontSize:13, marginBottom:12 }}>{error}</p>}
 
-      {enseignants.length === 0 ? (
-        <div className={S.empty}>Aucun enseignant créé.<br />Commencez par ajouter le premier enseignant.</div>
+      {enseignantsFiltered.length === 0 ? (
+        <div className={S.empty}>{enseignants.length === 0 ? <>Aucun enseignant créé.<br />Commencez par ajouter le premier enseignant.</> : 'Aucun enseignant pour cette classe.'}</div>
       ) : (() => {
-        const totalPages = Math.max(1, Math.ceil(enseignants.length / PAGE_SIZE));
+        const totalPages = Math.max(1, Math.ceil(enseignantsFiltered.length / PAGE_SIZE));
         const safePage   = Math.min(page, totalPages - 1);
-        const paginated  = enseignants.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+        const paginated  = enseignantsFiltered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
         return (<>
         <div className={S.grid} key={safePage} ref={animateGridChildren}>
           {paginated.map(ens => {

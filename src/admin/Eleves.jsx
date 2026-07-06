@@ -125,6 +125,7 @@ export default function Eleves({ variant = 'eleves' }) {
   const [resetResult, setResetResult] = useState(null);   // { identifiant, tempPassword }
   const [search, setSearch]       = useState('');
   const [filterActif, setFilterActif] = useState('tous'); // 'tous' | 'actif' | 'inactif'
+  const [filterClasse, setFilterClasse] = useState(''); // '' = toutes | 'sans' | classe_id
   const [sortBy, setSortBy]       = useState('date');     // 'date' | 'nom'
   const [page, setPage]           = useState(0);
   const [confirmReset, setConfirmReset] = useState(null);  // élève en attente de confirmation reset
@@ -1345,7 +1346,8 @@ export default function Eleves({ variant = 'eleves' }) {
         || `${e.prenom} ${e.nom}`.toLowerCase().includes(q)
         || e.identifiant?.toLowerCase().includes(q);
       const matchActif = filterActif === 'tous' || (filterActif === 'actif' ? e.actif : !e.actif);
-      return matchSearch && matchActif;
+      const matchClasse = !filterClasse || (filterClasse === 'sans' ? !e.classe_id : e.classe_id === filterClasse);
+      return matchSearch && matchActif && matchClasse;
     })
     .sort((a, b) => sortBy === 'nom'
       ? `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`)
@@ -1705,6 +1707,19 @@ export default function Eleves({ variant = 'eleves' }) {
             <button style={S.filterOpt(filterActif === 'actif')}  onClick={() => { setFilterActif('actif');   setPage(0); }}>Actifs</button>
             <button style={S.filterOpt(filterActif === 'inactif')} onClick={() => { setFilterActif('inactif'); setPage(0); }}>Inactifs</button>
           </div>
+          <select className={CLS.sortSelect} value={filterClasse} onChange={e => { setFilterClasse(e.target.value); setPage(0); }}>
+            <option value="">Toutes les classes</option>
+            <option value="sans">— Sans classe —</option>
+            {niveauxScolaires.filter(n => !!n.est_adulte === isAdulte).map(n => {
+              const cs = allClasses.filter(c => c.niveau_id === n.id);
+              if (!cs.length) return null;
+              return (
+                <optgroup key={n.id} label={n.nom}>
+                  {cs.map(c => <option key={c.id} value={c.id}>{c.nom}</option>)}
+                </optgroup>
+              );
+            })}
+          </select>
           <select className={CLS.sortSelect} value={sortBy} onChange={e => { setSortBy(e.target.value); setPage(0); }}>
             <option value="date">↓ Plus récents</option>
             <option value="nom">↑ Nom A→Z</option>
