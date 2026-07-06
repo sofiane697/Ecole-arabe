@@ -680,90 +680,134 @@ export default function Inscriptions() {
     setPdfLoading(true);
     try {
       const { jsPDF } = await import('jspdf');
+      const { applyPlugin } = await import('jspdf-autotable');
+      applyPlugin(jsPDF);
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
       const margin = 14;
       const contentW = pageW - margin * 2;
-      const GOLD = [191, 138, 48], DARK = [50, 40, 30], MID = [110, 95, 75], WHITE = [255, 255, 255];
+      const GOLD = [191, 138, 48], DARK = [50, 40, 30], MID = [110, 95, 75], LIGHT = [245, 241, 233], WHITE = [255, 255, 255];
+      const STATUT_COLOR = { nouveau: [199, 146, 46], 'contacté': [59, 130, 246], inscrit: [52, 168, 105], 'refusé': [225, 76, 76] };
 
-      // En-tête
+      // ── En-tête ──
       doc.setFillColor(...GOLD); doc.rect(0, 0, pageW, 24, 'F');
-      doc.setTextColor(...WHITE); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...WHITE); doc.setFontSize(17); doc.setFont('helvetica', 'bold');
       doc.text('FICHE PRÉINSCRIPTION', margin, 11);
       doc.setFontSize(9); doc.setFont('helvetica', 'normal');
       doc.text('Educamoov — ENT', margin, 18);
       const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
       doc.setFontSize(8); doc.text(`Généré le ${dateGen}`, pageW - margin, 18, { align: 'right' });
 
-      let y = 33;
-      const ensure = (h) => { if (y + h > pageH - 14) { doc.addPage(); y = 18; } };
-      const section = (title) => {
-        ensure(12);
-        doc.setFillColor(...GOLD); doc.rect(margin, y - 3.5, 2.4, 5, 'F');
-        doc.setTextColor(...DARK); doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
-        doc.text(title, margin + 5, y);
-        y += 7;
-      };
-      const row = (label, value) => {
-        const v = (value == null || value === '') ? '—' : String(value);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...MID);
-        const lines = doc.splitTextToSize(v, contentW - 44);
-        ensure(Math.max(6, lines.length * 4.6));
-        doc.text(label, margin + 2, y);
-        doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
-        doc.text(lines, margin + 44, y);
-        y += Math.max(6, lines.length * 4.6);
-      };
+      let y = 32;
 
-      // Apprenant
-      section('Apprenant');
-      row('Nom', fmtNom(i.eleve_nom || ''));
-      row('Prénom', fmtPrenom(i.eleve_prenom || ''));
-      row('Public', i.est_enfant ? 'Enfant' : 'Adulte');
+      // ── Bloc identité (carte arrondie) ──
       const age = calcAge(i.eleve_date_naissance);
-      row('Date de naissance', i.eleve_date_naissance
-        ? `${formatDateNaissance(i.eleve_date_naissance)}${age != null ? ` (${age} ans)` : ''}` : '—');
-      y += 2;
-
-      // Demande
-      section('Demande');
-      const crumbs = (Array.isArray(i.parcours) ? i.parcours : []).filter((c, idx) => idx !== 0 && c !== 'Enfant' && c !== 'Adulte');
-      if (crumbs.length) row('Parcours', crumbs.join(' › '));
-      if (i.type === 'tarif') {
-        row('Formule', i.formule_nom || i.matiere || '—');
-        row('Tarif', i.formule_prix != null ? `${i.formule_prix} €` : '—');
-        if (i.formule_rythme) row('Rythme', i.formule_rythme);
-        if (Array.isArray(i.disponibilites) && i.disponibilites.length) row('Disponibilités', i.disponibilites.join(' · '));
-      } else {
-        row('Type', 'Devis sur mesure');
-        if (i.devis_sujet)  row('Sujet', i.devis_sujet);
-        if (i.devis_besoin) row('Besoin', i.devis_besoin);
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(margin, y, contentW, 30, 3, 3, 'F');
+      const col1x = margin + 5, col2x = margin + contentW / 2 + 5, labelW = 26;
+      const idRows = [
+        [['Nom', fmtNom(i.eleve_nom || '') || '—'], ['Prénom', fmtPrenom(i.eleve_prenom || '') || '—']],
+        [['Public', i.est_enfant ? 'Enfant' : 'Adulte'], ['Date de naissance', i.eleve_date_naissance
+          ? `${formatDateNaissance(i.eleve_date_naissance)}${age != null ? ` (${age} ans)` : ''}` : '—']],
+      ];
+      let iy = y + 8;
+      for (const r of idRows) {
+        doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
+        doc.text(r[0][0], col1x, iy);
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+        doc.text(r[0][1], col1x + labelW, iy);
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
+        doc.text(r[1][0], col2x, iy);
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(...DARK);
+        doc.text(r[1][1], col2x + labelW, iy);
+        iy += 8;
       }
-      y += 2;
+      y += 36;
 
-      // Contact / Responsable
-      section(i.est_enfant ? 'Responsable' : 'Contact');
-      if (i.contact_prenom || i.contact_nom) row('Nom', `${fmtPrenom(i.contact_prenom)} ${fmtNom(i.contact_nom)}`);
-      row('Téléphone', i.contact_telephone);
-      row('Email', i.contact_email);
-      y += 2;
+      // ── Statut · type · date (cartes) ──
+      const statutCfg   = STATUT_CFG[i.statut] || {};
+      const statutColor = STATUT_COLOR[i.statut] || GOLD;
+      const statsW = (contentW - 4) / 3;
+      [
+        { label: 'STATUT',         value: statutCfg.label || i.statut || '—', color: statutColor },
+        { label: 'TYPE DE DEMANDE', value: i.type === 'tarif' ? 'Formule' : 'Devis sur mesure', color: GOLD },
+        { label: 'REÇUE LE',       value: i.created_at ? new Date(i.created_at).toLocaleDateString('fr-FR') : '—', color: GOLD },
+      ].forEach((s, idx) => {
+        const sx = margin + idx * (statsW + 2);
+        doc.setFillColor(...WHITE);
+        doc.setDrawColor(...s.color);
+        doc.roundedRect(sx, y, statsW, 18, 2, 2, 'FD');
+        doc.setFontSize(10.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...s.color);
+        doc.text(s.value, sx + statsW / 2, y + 9, { align: 'center' });
+        doc.setFontSize(6.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
+        doc.text(s.label, sx + statsW / 2, y + 15, { align: 'center' });
+      });
+      y += 26;
 
-      // Suivi
-      section('Suivi');
-      row('Statut', (STATUT_CFG[i.statut] || {}).label || i.statut);
-      row('Reçue le', formatFullDate(i.created_at));
-      y += 2;
+      const addSectionTitle = (title) => {
+        doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...GOLD);
+        doc.text(title, margin, y);
+        doc.setDrawColor(...GOLD);
+        doc.line(margin, y + 1.5, margin + contentW, y + 1.5);
+        y += 6;
+      };
+      const detailTable = (rows) => {
+        doc.autoTable({
+          startY: y,
+          body: rows,
+          theme: 'plain',
+          styles: { fontSize: 8.5, cellPadding: 1.8 },
+          columnStyles: {
+            0: { cellWidth: 42, textColor: MID },
+            1: { textColor: DARK, fontStyle: 'bold' },
+          },
+          alternateRowStyles: { fillColor: LIGHT },
+          margin: { left: margin, right: margin },
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      };
 
-      // Observations
-      section('Observations');
+      // ── Demande ──
+      addSectionTitle('DEMANDE');
+      const crumbs = (Array.isArray(i.parcours) ? i.parcours : []).filter((c, idx) => idx !== 0 && c !== 'Enfant' && c !== 'Adulte');
+      const demandeRows = [];
+      if (crumbs.length) demandeRows.push(['Parcours', crumbs.join(' › ')]);
+      if (i.type === 'tarif') {
+        demandeRows.push(['Formule', i.formule_nom || i.matiere || '—']);
+        demandeRows.push(['Tarif', i.formule_prix != null ? `${i.formule_prix} €` : '—']);
+        if (i.formule_rythme) demandeRows.push(['Rythme', i.formule_rythme]);
+        if (Array.isArray(i.disponibilites) && i.disponibilites.length) demandeRows.push(['Disponibilités', i.disponibilites.join(' · ')]);
+      } else {
+        demandeRows.push(['Type', 'Devis sur mesure']);
+        if (i.devis_sujet)  demandeRows.push(['Sujet', i.devis_sujet]);
+        if (i.devis_besoin) demandeRows.push(['Besoin', i.devis_besoin]);
+      }
+      detailTable(demandeRows);
+
+      // ── Contact / Responsable ──
+      if (y > pageH - 55) { doc.addPage(); y = 20; }
+      addSectionTitle(i.est_enfant ? 'RESPONSABLE' : 'CONTACT');
+      const contactRows = [];
+      if (i.contact_prenom || i.contact_nom) contactRows.push(['Nom', `${fmtPrenom(i.contact_prenom)} ${fmtNom(i.contact_nom)}`]);
+      contactRows.push(['Téléphone', i.contact_telephone || '—']);
+      contactRows.push(['Email', i.contact_email || '—']);
+      detailTable(contactRows);
+
+      // ── Observations ──
+      if (y > pageH - 45) { doc.addPage(); y = 20; }
+      addSectionTitle('OBSERVATIONS');
       const note = (i.admin_note || '').trim();
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DARK);
-      const noteLines = doc.splitTextToSize(note || 'Aucune observation.', contentW - 4);
-      ensure(noteLines.length * 4.8);
-      doc.text(noteLines, margin + 2, y);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+      const noteLines = doc.splitTextToSize(note || 'Aucune observation.', contentW - 8);
+      const noteH = Math.max(14, noteLines.length * 4.6 + 8);
+      doc.setFillColor(...LIGHT);
+      doc.roundedRect(margin, y, contentW, noteH, 2, 2, 'F');
+      doc.setTextColor(...DARK);
+      doc.text(noteLines, margin + 4, y + 7);
+      y += noteH + 8;
 
-      // Pied de page
+      // ── Pied de page ──
       doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
       doc.text('Educamoov — Document confidentiel', margin, pageH - 6);
 
