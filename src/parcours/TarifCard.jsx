@@ -18,7 +18,7 @@ export default function TarifCard({ tarif: t, onChoose }) {
   return (
     <button
       type="button"
-      className={`tarif-card parcours-anim ${isMini ? 'tarif-card--mini' : ''}`}
+      className={`tarif-card parcours-anim ${isMini ? 'tarif-card--mini' : ''} ${isGroupe ? 'tarif-card--groupe' : ''}`}
       onClick={onChoose}
       onMouseEnter={cardEnter}
       onMouseLeave={cardLeave}

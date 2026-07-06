@@ -448,6 +448,12 @@
   margin: 0.2rem 0 1.6rem;
 }
 
+/* Carte-groupe : le bouton « Découvrir » remonte juste sous le texte
+   au lieu d'être plaqué en bas de carte (hauteur alignée sur les cartes voisines). */
+.tarif-card--groupe .tarif-pick {
+  margin-top: 0;
+}
+
 /* ─── Prix + rythme ─────────────────────────────────── */
 .tarif-price-row {
   position: relative;
