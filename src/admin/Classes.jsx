@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePageAnimation } from '../shared/usePageAnimation';
 import {
   fetchNiveauxScolaires, createNiveauScolaire, updateNiveauScolaire, deleteNiveauScolaire,
-  fetchClasses, createClasse, updateClasse, deleteClasse, fetchEleves,
+  fetchClasses, createClasse, updateClasse, deleteClasse, fetchEleves, fetchAllClasses,
   updateEleve, updateEleveNiveauScolaire,
 } from './supabaseAdmin';
 import { emitPageTitle } from './adminEvents';
@@ -35,6 +35,7 @@ const S = {
   niveauGrid: 'cls-niveau-grid',
   niveauCard: 'cls-niveau-card',
   niveauName: 'cls-niveau-name',
+  niveauCount: 'cls-niveau-count',
   niveauFooter: 'cls-niveau-footer',
   addNiveauCard: 'cls-add-card',
 
@@ -78,8 +79,9 @@ const DS = {
 };
 
 export default function Classes() {
-  const [niveaux, setNiveaux]     = useState([]);
-  const [eleves, setEleves]       = useState([]);
+  const [niveaux, setNiveaux]       = useState([]);
+  const [eleves, setEleves]         = useState([]);
+  const [allClasses, setAllClasses] = useState([]);
   const [selNiveau, setSelNiveau] = useState(null);
   const [classes, setClasses]     = useState([]);
   const [selClasse, setSelClasse] = useState(null);
@@ -92,9 +94,10 @@ export default function Classes() {
 
   const loadAll = useCallback(async () => {
     try {
-      const [ns, es] = await Promise.all([fetchNiveauxScolaires(), fetchEleves()]);
+      const [ns, es, cs] = await Promise.all([fetchNiveauxScolaires(), fetchEleves(), fetchAllClasses()]);
       setNiveaux(ns);
       setEleves(es);
+      setAllClasses(cs);
     } catch(e) {}
   }, []);
 
@@ -115,6 +118,11 @@ export default function Classes() {
   const goToClasses = () => setSelClasse(null);
 
   const elevesDeClasse = (classeId) => eleves.filter(e => e.classe_id === classeId);
+  // Somme des élèves des classes du niveau (carte niveau).
+  const nbElevesDuNiveau = (niveauId) => {
+    const classeIds = new Set(allClasses.filter(c => c.niveau_id === niveauId).map(c => c.id));
+    return eleves.filter(e => classeIds.has(e.classe_id)).length;
+  };
 
   // ─── VUE 1 : Liste des niveaux scolaires ──────────────────────────────────────
   if (!selNiveau) {
@@ -139,13 +147,16 @@ export default function Classes() {
         )}
 
         <div className={S.niveauGrid} ref={animateGridChildren}>
-          {niveauxVisibles.map(n => (
+          {niveauxVisibles.map(n => {
+            const nb = nbElevesDuNiveau(n.id);
+            return (
             <div key={n.id} className={S.niveauCard}
               style={{ transition: 'transform .25s ease, box-shadow .2s ease, border-color .2s ease', cursor: 'pointer' }}
               onClick={() => openNiveau(n)}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 12px 40px rgba(0,0,0,.2)'; e.currentTarget.style.borderColor='var(--a-gold)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; e.currentTarget.style.borderColor=''; }}>
               <div className={S.niveauName}>{n.nom}</div>
+              <div className={S.niveauCount}><IconUsers /> {nb} élève{nb > 1 ? 's' : ''}</div>
               <div className={S.niveauFooter}>
                 <button className="a-action-btn blue" onClick={e => { e.stopPropagation(); setModal({ type:'niveau', data:n }); }}>
                   <IconEdit /> Renommer
@@ -155,7 +166,8 @@ export default function Classes() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           <div className={S.addNiveauCard}
             style={{ transition: 'transform .25s ease, border-color .2s ease, color .2s ease', cursor: 'pointer' }}

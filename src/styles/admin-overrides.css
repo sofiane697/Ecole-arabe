@@ -3138,6 +3138,15 @@
   word-break: break-word;
   hyphens: auto;
 }
+.cls-niveau-count {
+  font-size: 0.78rem;
+  color: var(--a-fg-mid);
+  margin-top: 0.375rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .cls-niveau-footer {
   display: flex;
   gap: 0.5rem;
