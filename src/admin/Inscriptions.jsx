@@ -687,8 +687,7 @@ export default function Inscriptions() {
       const pageH = doc.internal.pageSize.getHeight();
       const margin = 14;
       const contentW = pageW - margin * 2;
-      const GOLD = [191, 138, 48], DARK = [50, 40, 30], MID = [110, 95, 75], LIGHT = [245, 241, 233], WHITE = [255, 255, 255];
-      const STATUT_COLOR = { nouveau: [199, 146, 46], 'contacté': [59, 130, 246], inscrit: [52, 168, 105], 'refusé': [225, 76, 76] };
+      const GOLD = [191, 138, 48], DARK = [50, 40, 30], MID = [110, 95, 75], LIGHT = [245, 241, 233];
 
       // ── En-tête (sobre : fond blanc, filet doré) ──
       doc.setTextColor(...DARK); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
@@ -726,26 +725,6 @@ export default function Inscriptions() {
         iy += 8;
       }
       y += 36;
-
-      // ── Statut · type · date (cartes) ──
-      const statutCfg   = STATUT_CFG[i.statut] || {};
-      const statutColor = STATUT_COLOR[i.statut] || GOLD;
-      const statsW = (contentW - 4) / 3;
-      [
-        { label: 'STATUT',         value: statutCfg.label || i.statut || '—', color: statutColor },
-        { label: 'TYPE DE DEMANDE', value: i.type === 'tarif' ? 'Formule' : 'Devis sur mesure', color: GOLD },
-        { label: 'REÇUE LE',       value: i.created_at ? new Date(i.created_at).toLocaleDateString('fr-FR') : '—', color: GOLD },
-      ].forEach((s, idx) => {
-        const sx = margin + idx * (statsW + 2);
-        doc.setFillColor(...WHITE);
-        doc.setDrawColor(...s.color);
-        doc.roundedRect(sx, y, statsW, 18, 2, 2, 'FD');
-        doc.setFontSize(10.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...s.color);
-        doc.text(s.value, sx + statsW / 2, y + 9, { align: 'center' });
-        doc.setFontSize(6.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
-        doc.text(s.label, sx + statsW / 2, y + 15, { align: 'center' });
-      });
-      y += 26;
 
       const addSectionTitle = (title) => {
         doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...GOLD);
