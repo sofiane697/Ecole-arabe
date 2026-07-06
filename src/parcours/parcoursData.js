@@ -645,14 +645,16 @@ const TARIFS_COMBO_ENFANT_VISIO = [
 ];
 
 // ─── Enfant · Visioconférence · Enseignement spécifique (accompagnement) ───
-// ⚠️ Tarifs à définir avec Sofiane — placeholders « Sur devis » pour l'instant.
-const TARIFS_ACC_PRIERE    = [{ id: 'acc-priere-1',    titre: 'Prière et ablution', prixNote: 'Sur devis', rythme: '5 séances · 30 min / semaine' }];
-const TARIFS_ACC_SIRA      = [{ id: 'acc-sira-1',      titre: 'Sira',               prixNote: 'Sur devis', rythme: '10 séances · 30 min / semaine' }];
-const TARIFS_ACC_SEIGNEUR  = [{ id: 'acc-seigneur-1',  titre: 'Mon Seigneur',       prixNote: 'Sur devis', rythme: '5 séances · 30 min / semaine' }];
-const TARIFS_ACC_ADAM      = [{ id: 'acc-adam-1',      titre: 'Adam',               prixNote: 'Sur devis', rythme: '5 séances · 20 min / semaine' }];
-const TARIFS_ACC_NOUH      = [{ id: 'acc-nouh-1',      titre: 'Nouh',               prixNote: 'Sur devis', rythme: '5 séances · 20 min / semaine' }];
-const TARIFS_ACC_SOULEYMAN = [{ id: 'acc-souleyman-1', titre: 'Souleyman',          prixNote: 'Sur devis', rythme: '5 séances · 20 min / semaine' }];
-const TARIFS_ACC_IBRAHIM   = [{ id: 'acc-ibrahim-1',   titre: 'Ibrahim',            prixNote: 'Sur devis', rythme: '5 séances · 20 min / semaine' }];
+// ⚠️ Prix provisoire à 59 € pour tous les packs — à ajuster avec Sofiane.
+const TARIFS_ACC = [
+  { id: 'acc-priere',    titre: 'Prière et ablution', prix: 59, rythme: '5 séances · 30 min / semaine' },
+  { id: 'acc-sira',      titre: 'Sira',               prix: 59, rythme: '10 séances · 30 min / semaine' },
+  { id: 'acc-seigneur',  titre: 'Mon Seigneur',       prix: 59, rythme: '5 séances · 30 min / semaine' },
+  { id: 'acc-adam',      titre: 'Adam',               prix: 59, rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-nouh',      titre: 'Nouh',               prix: 59, rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-souleyman', titre: 'Souleyman',          prix: 59, rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-ibrahim',   titre: 'Ibrahim',            prix: 59, rythme: '5 séances · 20 min / semaine' },
+];
 
 // ─── Enfant · Visioconférence · Halaqa encadrée pour ado ───
 // ⚠️ Placeholder : prix et contenu à compléter plus tard.
@@ -805,15 +807,7 @@ export const PARCOURS = {
                   ar: 'التعليم الخاص',
                   ico: 'خ',
                   desc: 'Cours adaptés aux enfants neuroatypiques (TDAH, TDA, autisme, dysorthographie…). Classes de 3 à 5 élèves maximum.',
-                  children: [
-                    { id: 'enfant-visio-acc-priere', label: 'Prière et ablution', ar: 'الصلاة والوضوء', ico: 'ص', tarifs: TARIFS_ACC_PRIERE },
-                    { id: 'enfant-visio-acc-sira', label: 'Sira', ar: 'السيرة', ico: 'س', tarifs: TARIFS_ACC_SIRA },
-                    { id: 'enfant-visio-acc-seigneur', label: 'Mon Seigneur', ar: 'ربّي', ico: 'ر', tarifs: TARIFS_ACC_SEIGNEUR },
-                    { id: 'enfant-visio-acc-adam', label: 'Adam', ar: 'آدم', ico: 'أ', tarifs: TARIFS_ACC_ADAM },
-                    { id: 'enfant-visio-acc-nouh', label: 'Nouh', ar: 'نوح', ico: 'ن', tarifs: TARIFS_ACC_NOUH },
-                    { id: 'enfant-visio-acc-souleyman', label: 'Souleyman', ar: 'سليمان', ico: 'ل', tarifs: TARIFS_ACC_SOULEYMAN },
-                    { id: 'enfant-visio-acc-ibrahim', label: 'Ibrahim', ar: 'إبراهيم', ico: 'ب', tarifs: TARIFS_ACC_IBRAHIM },
-                  ],
+                  tarifs: TARIFS_ACC,
                 },
                 {
                   id: 'enfant-visio-halaqa',
