@@ -82,14 +82,14 @@
 
 /* ─── Mode clair — Admin ─── */
 .admin-root.admin-light {
-  --a-bg:         #f0ece5;
+  --a-bg:         #ffffff;
   --a-bg-card:    #ffffff;
-  --a-bg-hover:   #e8e2da;
+  --a-bg-hover:   #f1f2f4;
   --a-bg-input:   #ffffff;
-  --a-border:     rgba(30,20,10,0.07);
-  --a-fg:         #18140e;
-  --a-fg-mid:     #6e6862;
-  --a-fg-light:   #a09a94;
+  --a-border:     rgba(20,20,30,0.08);
+  --a-fg:         #16171a;
+  --a-fg-mid:     #63666b;
+  --a-fg-light:   #9a9da2;
   --a-green:      #1a9a52;
   --a-blue:       #1a6db8;
   --a-red:        #d43838;
@@ -99,9 +99,9 @@
   --a-shadow-md:  0 4px 16px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.05);
   --a-shadow-lg:  0 16px 40px rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.06);
   /* Reliefs mode clair : ombres plus prononcées pour casser l'aspect plat,
-     reflet interne blanc en haut de carte. */
-  --a-depth:       0 1px 2px rgba(60,40,15,0.10), 0 8px 22px -6px rgba(60,40,15,0.18), inset 0 1px 0 rgba(255,255,255,0.7);
-  --a-depth-hover: 0 3px 6px rgba(60,40,15,0.14), 0 18px 40px -10px rgba(60,40,15,0.26), inset 0 1px 0 rgba(255,255,255,0.85);
+     reflet interne blanc en haut de carte. Teinte neutre (plus de sépia). */
+  --a-depth:       0 1px 2px rgba(20,20,25,0.08), 0 8px 22px -6px rgba(20,20,25,0.14), inset 0 1px 0 rgba(255,255,255,0.7);
+  --a-depth-hover: 0 3px 6px rgba(20,20,25,0.11), 0 18px 40px -10px rgba(20,20,25,0.20), inset 0 1px 0 rgba(255,255,255,0.85);
 }
 .admin-root.admin-light *,
 .admin-root.admin-light *::before,
@@ -113,11 +113,11 @@
 }
 .admin-root.admin-light .admin-sidebar {
   background: #ffffff;
-  border-right-color: rgba(30,20,10,0.07);
+  border-right-color: rgba(20,20,30,0.08);
   box-shadow: 4px 0 24px rgba(0,0,0,0.06);
 }
 .admin-root.admin-light .admin-msg-body {
-  background: #f1f0ec !important;
+  background: #f5f6f8 !important;
 }
 .admin-root.admin-light .admin-login-page {
   background: var(--a-bg);
@@ -141,7 +141,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 .admin-root.admin-light .admin-msg-body {
-  background: #f5f5f7;
+  background: #f5f6f8;
 }
 .admin-root.admin-light .badge-nouveau  { background: rgba(154,104,0,0.08);   color: var(--a-yellow); border-color: rgba(154,104,0,0.18); }
 .admin-root.admin-light .badge-contacte { background: rgba(26,109,184,0.08);  color: var(--a-blue);   border-color: rgba(26,109,184,0.18); }
@@ -1909,7 +1909,7 @@
      d'adresse mobile. Le scroll se fait à l'intérieur. */
   max-height: calc(100vh - 40px);
   max-height: calc(100dvh - 40px);
-  /* Fond thémé (dark/light) — le blanc cassé est réservé au mode clair. */
+  /* Fond thémé (dark/light). */
   background: var(--a-bg);
   border-radius: 26px 26px 0 0;
   box-shadow: 0 -24px 70px rgba(0,0,0,0.38);
@@ -1917,7 +1917,6 @@
   overscroll-behavior: contain;
   padding: 14px 44px 48px;
 }
-.admin-root.admin-light .insc-sheet { background: #faf8f3; }
 /* Poignée de bottom-sheet (affordance « glisser pour fermer ») */
 .insc-sheet-handle {
   width: 46px;
