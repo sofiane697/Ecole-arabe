@@ -12,6 +12,7 @@ import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parentsLogic';
 import { emitInscriptionsChanged } from './adminEvents';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
+import { classeLabel } from '../shared/classeLabel';
 
 const STATUT_CFG  = {
   nouveau:  { label: 'Non traité', cls: 'badge-nouveau',  icon: '●', color: 'var(--a-yellow)' },
@@ -54,7 +55,7 @@ const IconArrow = () => (
  * `visible={false}` masque le bouton (demande déjà inscrite) tout en gardant le
  * récap `done` affiché après une activation faite ici.
  */
-function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, classeNom, visible = true, onDone }) {
+function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, niveaux, classeNom, visible = true, onDone }) {
   const [busy,  setBusy]  = useState(false);
   const [error, setError] = useState('');
   const [done,  setDone]  = useState(null); // { identifiant, tempPassword|null, emailSent|null }
@@ -92,7 +93,7 @@ function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, c
         if (!eleve) throw new Error('Compte élève introuvable.');
         identifiant = eleve.identifiant;
         email       = eleve.email_contact || email;
-        nomClasse   = (classes || []).find(c => c.id === eleve.classe_id)?.nom || null;
+        nomClasse   = classeLabel(eleve.classe_id, classes, niveaux) || null;
         mustReset   = eleve.must_change_password !== false;
       }
 
@@ -187,6 +188,7 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted, onActiva
           nom={fmtNom(i.eleve_nom)}
           contactEmail={i.contact_email}
           classes={classes}
+          niveaux={niveaux}
           visible={i.statut !== 'inscrit'}
           onDone={onActivated}
         />
@@ -226,7 +228,7 @@ function ConvertAdulte({ inscription: i, classes, niveaux, onConverted, onActiva
         sendPendingEmail({ email: i.contact_email, prenom, nom }).catch(() => {});
       }
 
-      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, eleveId });
+      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classeLabel(classeId, classes, niveaux), eleveId });
     } catch (e) {
       setError(e.message || "Erreur lors de la création de l'étudiant.");
     } finally {
@@ -351,6 +353,7 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
           nom={fmtNom(i.eleve_nom)}
           contactEmail={i.contact_email}
           classes={classes}
+          niveaux={niveaux}
           visible={i.statut !== 'inscrit'}
           onDone={onActivated}
         />
@@ -412,7 +415,7 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
       } else if (pr?.kind === 'linked' && pr.email) {
         sendParentAttachEmail({
           email: pr.email, foyerLabel: pr.label, identifiant: pr.identifiant,
-          elevePrenom: prenom, eleveNom: nom, classeNom: classe?.nom || null,
+          elevePrenom: prenom, eleveNom: nom, classeNom: classeLabel(classeId, classes, niveaux),
         }).catch(() => {});
       }
       // Informe le contact que le dossier est en traitement.
@@ -420,7 +423,7 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
         sendPendingEmail({ email: i.contact_email, prenom, nom }).catch(() => {});
       }
 
-      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classe?.nom, eleveId, email: i.contact_email, parent: pResults[0] || null, parentEmail: pEmail.trim() || null });
+      setResult({ identifiant: idLogin, tempPassword: tempPwd, classeNom: classeLabel(classeId, classes, niveaux), eleveId, email: i.contact_email, parent: pResults[0] || null, parentEmail: pEmail.trim() || null });
     } catch (e) {
       setError(e.message || "Erreur lors de la création de l'élève.");
     } finally {

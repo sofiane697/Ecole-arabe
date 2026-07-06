@@ -8,6 +8,7 @@ import {
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
+import { classeLabel } from '../shared/classeLabel';
 import gsap from 'gsap';
 
 // Référence stable pour le ref-callback (anime les enfants directs au mount).
@@ -230,9 +231,8 @@ export default function Enseignants() {
                   <div className={S.classesLabel}>Classes assignées</div>
                   <div className={S.classesTags}>
                     {classeObjs.length > 0
-                      ? classeObjs.map(c => <span key={c.id} className={S.classeTag}>{c.nom}</span>)
-                      : <span className={S.noClasse}>Aucune classe assignée</span>
-                    }
+                      ? classeObjs.map(c => <span key={c.id} className={S.classeTag}>{classeLabel(c.id, allClasses, niveaux)}</span>)
+                      : <span className={S.noClasse}>Aucune classe assignée</span>}
                   </div>
                 </div>
 

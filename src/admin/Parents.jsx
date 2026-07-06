@@ -4,11 +4,12 @@ import {
   adminUpdateParent, adminDeleteParent,
   adminFetchElevesOfParent, adminUnlinkParentEleve,
   adminResetParentPassword, adminLinkParentEleve,
-  fetchEleves, fetchAllClasses,
+  fetchEleves, fetchAllClasses, fetchNiveauxScolaires,
 } from './supabaseAdmin';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword, normalizeTelephone, formatFoyer, safeMailtoHref, safeTelHref, getParentInitials } from './adminUtils';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
+import { classeLabel } from '../shared/classeLabel';
 import gsap from 'gsap';
 
 function staggerOnMount(el) {
@@ -813,17 +814,18 @@ function CreateParentModal({ onClose, onCreated }) {
 function LinkEleveModal({ parent, existingEleveIds, onClose, onLinked }) {
   const [allEleves, setAllEleves] = useState([]);
   const [classes, setClasses]     = useState([]);
+  const [niveaux, setNiveaux]     = useState([]);
   const [search, setSearch]       = useState('');
   const [linking, setLinking]     = useState(false);
   const [error, setError]         = useState('');
 
   useEffect(() => {
-    Promise.all([fetchEleves(), fetchAllClasses()])
-      .then(([el, cl]) => { setAllEleves(el); setClasses(cl); })
+    Promise.all([fetchEleves(), fetchAllClasses(), fetchNiveauxScolaires()])
+      .then(([el, cl, nv]) => { setAllEleves(el); setClasses(cl); setNiveaux(nv); })
       .catch(() => {});
   }, []);
 
-  const classeNom = (id) => classes.find(c => c.id === id)?.nom;
+  const classeNom = (id) => classeLabel(id, classes, niveaux);
   const excluded = new Set(existingEleveIds);
   const q = search.trim().toLowerCase();
   const filtered = allEleves
