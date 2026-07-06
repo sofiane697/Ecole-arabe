@@ -690,16 +690,18 @@ export default function Inscriptions() {
       const GOLD = [191, 138, 48], DARK = [50, 40, 30], MID = [110, 95, 75], LIGHT = [245, 241, 233], WHITE = [255, 255, 255];
       const STATUT_COLOR = { nouveau: [199, 146, 46], 'contacté': [59, 130, 246], inscrit: [52, 168, 105], 'refusé': [225, 76, 76] };
 
-      // ── En-tête ──
-      doc.setFillColor(...GOLD); doc.rect(0, 0, pageW, 24, 'F');
-      doc.setTextColor(...WHITE); doc.setFontSize(17); doc.setFont('helvetica', 'bold');
-      doc.text('FICHE PRÉINSCRIPTION', margin, 11);
-      doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-      doc.text('Educamoov — ENT', margin, 18);
+      // ── En-tête (sobre : fond blanc, filet doré) ──
+      doc.setTextColor(...DARK); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+      doc.text('FICHE PRÉINSCRIPTION', margin, 15);
+      doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...MID);
+      doc.text('Educamoov — ENT', margin, 21);
       const dateGen = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-      doc.setFontSize(8); doc.text(`Généré le ${dateGen}`, pageW - margin, 18, { align: 'right' });
+      doc.setFontSize(8); doc.text(`Généré le ${dateGen}`, pageW - margin, 15, { align: 'right' });
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.6);
+      doc.line(margin, 25, pageW - margin, 25);
+      doc.setLineWidth(0.2);
 
-      let y = 32;
+      let y = 33;
 
       // ── Bloc identité (carte arrondie) ──
       const age = calcAge(i.eleve_date_naissance);
