@@ -90,7 +90,12 @@ export function dispatchPostCreationEmails({
  */
 export async function activateParentsForEleve(eleveId, { elevePrenom, eleveNom, classeNom }) {
   let parents = [];
-  try { parents = await adminFetchParentsOfEleve(eleveId); } catch { return; }
+  try {
+    parents = await adminFetchParentsOfEleve(eleveId);
+  } catch (e) {
+    console.error('[activateParentsForEleve] échec adminFetchParentsOfEleve', e);
+    return;
+  }
   for (const p of parents) {
     try {
       if (p.must_change_password !== false) {
@@ -100,14 +105,17 @@ export async function activateParentsForEleve(eleveId, { elevePrenom, eleveNom, 
           await sendParentWelcomeEmail({
             email: p.email, foyerLabel: formatFoyer(p), identifiant: p.identifiant,
             password: pwd, elevePrenom, eleveNom,
-          }).catch(() => {});
+          }).catch(e => console.error('[activateParentsForEleve] échec sendParentWelcomeEmail', p.id, e));
         }
       } else if (p.email) {
         await sendParentAttachEmail({
           email: p.email, foyerLabel: formatFoyer(p), identifiant: p.identifiant,
           elevePrenom, eleveNom, classeNom,
-        }).catch(() => {});
+        }).catch(e => console.error('[activateParentsForEleve] échec sendParentAttachEmail', p.id, e));
       }
-    } catch { /* un parent en échec ne doit pas bloquer les autres */ }
+    } catch (e) {
+      // un parent en échec ne doit pas bloquer les autres
+      console.error('[activateParentsForEleve] échec pour le parent', p.id, e);
+    }
   }
 }

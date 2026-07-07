@@ -108,7 +108,8 @@ function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, n
       // Parents rattachés (enfant) : reçoivent leurs propres identifiants à ce
       // même moment (première activation), jamais avant.
       if (hasParents) {
-        activateParentsForEleve(eleveId, { elevePrenom: prenom, eleveNom: nom, classeNom: nomClasse }).catch(() => {});
+        await activateParentsForEleve(eleveId, { elevePrenom: prenom, eleveNom: nom, classeNom: nomClasse })
+          .catch(e => console.error('[ActivateAccount] échec activateParentsForEleve', e));
       }
 
       if (email && tempPassword) {

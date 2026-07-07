@@ -262,11 +262,11 @@ export default function Eleves({ variant = 'eleves' }) {
         // Parents rattachés (enfant) : reçoivent leurs propres identifiants
         // à ce même moment (première activation), jamais avant.
         if (eleve.est_adulte !== true) {
-          activateParentsForEleve(eleve.id, {
+          await activateParentsForEleve(eleve.id, {
             elevePrenom: eleve.prenom,
             eleveNom:    eleve.nom,
             classeNom:   allClasses.find(c => c.id === eleve.classe_id)?.nom || null,
-          }).catch(() => {});
+          }).catch(e => console.error('[handleToggleActif] échec activateParentsForEleve', e));
         }
       }
 
