@@ -959,18 +959,18 @@ function DuplicateBanner({ matched, onAttach, onDismiss }) {
 }
 
 // ─── Résultats post-création : cartes stylées par type (created/linked/failed)
-export function ParentResults({ results }) {
+export function ParentResults({ results, inactif = false }) {
   if (!results || results.length === 0) return null;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
       {results.map((r, i) => (
-        <ResultCard key={i} result={r} />
+        <ResultCard key={i} result={r} inactif={inactif} />
       ))}
     </div>
   );
 }
 
-function ResultCard({ result: r }) {
+function ResultCard({ result: r, inactif }) {
   const variants = {
     created: {
       color: 'var(--a-green)', bg: 'rgba(52,212,114,0.06)', border: 'rgba(52,212,114,0.30)',
@@ -1022,10 +1022,19 @@ function ResultCard({ result: r }) {
             <span style={{ color: 'var(--a-fg-light)' }}>Identifiant</span>
             <span><MonoChip>{r.identifiant}</MonoChip>{r.kind === 'linked' && <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--a-fg-light)' }}>(déjà transmis)</span>}</span>
             {r.kind === 'created' && (
-              <>
-                <span style={{ color: 'var(--a-fg-light)' }}>Mot de passe</span>
-                <span><MonoChip>{r.password}</MonoChip></span>
-              </>
+              inactif ? (
+                <>
+                  <span />
+                  <span style={{ fontSize: 11, color: 'var(--a-fg-light)', fontStyle: 'italic' }}>
+                    Le parent recevra son mot de passe à l'activation du compte élève.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span style={{ color: 'var(--a-fg-light)' }}>Mot de passe</span>
+                  <span><MonoChip>{r.password}</MonoChip></span>
+                </>
+              )
             )}
             {r.kind === 'linked' && (
               <>

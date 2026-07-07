@@ -6,10 +6,11 @@ import {
   createEleve, updateEleve, updateEleveNiveauScolaire, fetchAllClasses, fetchNiveauxScolaires,
   fetchEleveIdParIdentifiant, fetchEleveById, adminLinkPreinscriptionEleve, adminUpdatePreinscriptionNote,
   updateEleveActif, resetElevePassword,
-  sendPendingEmail, sendWelcomeEmail, sendParentWelcomeEmail, sendParentAttachEmail,
+  sendPendingEmail, sendWelcomeEmail,
 } from './supabaseAdmin';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emptyBloc, checkDuplicatesOnSubmit, processParentBlocs } from './parentsLogic';
+import { activateParentsForEleve } from './parentsMail';
 import { emitInscriptionsChanged } from './adminEvents';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import { classeLabel } from '../shared/classeLabel';
@@ -55,7 +56,7 @@ const IconArrow = () => (
  * `visible={false}` masque le bouton (demande déjà inscrite) tout en gardant le
  * récap `done` affiché après une activation faite ici.
  */
-function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, niveaux, classeNom, visible = true, onDone }) {
+function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, niveaux, classeNom, hasParents = false, visible = true, onDone }) {
   const [busy,  setBusy]  = useState(false);
   const [error, setError] = useState('');
   const [done,  setDone]  = useState(null); // { identifiant, tempPassword|null, emailSent|null }
@@ -102,6 +103,12 @@ function ActivateAccount({ eleveId, prenom, nom, contactEmail, creds, classes, n
       if (mustReset) {
         tempPassword = generateTempPassword();
         await resetElevePassword(eleveId, tempPassword);
+      }
+
+      // Parents rattachés (enfant) : reçoivent leurs propres identifiants à ce
+      // même moment (première activation), jamais avant.
+      if (hasParents) {
+        activateParentsForEleve(eleveId, { elevePrenom: prenom, eleveNom: nom, classeNom: nomClasse }).catch(() => {});
       }
 
       if (email && tempPassword) {
@@ -317,14 +324,13 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
           <>
             <div className="insc-convert-creds">
               <div><span>Parent · identifiant</span><strong>{p.identifiant}</strong></div>
-              <div><span>Parent · mot de passe</span><strong>{p.password}</strong></div>
             </div>
-            {result.parentEmail && (
-              <span className="insc-convert-mail">✉ Identifiants parent envoyés à {result.parentEmail}.</span>
+            {!activated && (
+              <span className="insc-convert-mail">Le parent recevra son mot de passe à l'activation du compte.</span>
             )}
           </>
         )}
-        {p && p.kind === 'linked'  && <span className="insc-convert-mail">↪ Rattaché au compte parent existant ({p.identifiant}).</span>}
+        {p && p.kind === 'linked'  && <span className="insc-convert-mail">↪ Rattaché au compte parent existant ({p.identifiant}){!activated ? ' — notifié à l\'activation.' : '.'}</span>}
         {p && p.kind === 'failed'  && <span className="insc-convert-error">⚠ Élève créé, mais parent non enregistré : {p.error}</span>}
         {!activated && <span className="insc-convert-mail">Active le compte ci-dessous, ou plus tard depuis « Gestion des élèves ».</span>}
         <ActivateAccount
@@ -334,6 +340,7 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
           contactEmail={i.contact_email}
           creds={{ identifiant: result.identifiant, tempPassword: result.tempPassword }}
           classeNom={result.classeNom}
+          hasParents={!!p && p.kind !== 'failed'}
           onDone={() => { setActivated(true); onActivated(); }}
         />
       </div>
@@ -354,6 +361,7 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
           contactEmail={i.contact_email}
           classes={classes}
           niveaux={niveaux}
+          hasParents
           visible={i.statut !== 'inscrit'}
           onDone={onActivated}
         />
@@ -404,20 +412,10 @@ function ConvertEnfant({ inscription: i, classes, niveaux, onConverted, onActiva
       await adminLinkPreinscriptionEleve(i.id, eleveId);
       onConverted(eleveId);
 
-      // Emails à la conversion (best-effort) : le mdp provisoire du parent créé
-      // n'est plus récupérable ensuite (hash bcrypt), il doit partir maintenant.
-      const pr = pResults[0] || null;
-      if (pr?.kind === 'created' && pEmail.trim()) {
-        sendParentWelcomeEmail({
-          email: pEmail.trim(), foyerLabel: pr.label, identifiant: pr.identifiant,
-          password: pr.password, elevePrenom: prenom, eleveNom: nom,
-        }).catch(() => {});
-      } else if (pr?.kind === 'linked' && pr.email) {
-        sendParentAttachEmail({
-          email: pr.email, foyerLabel: pr.label, identifiant: pr.identifiant,
-          elevePrenom: prenom, eleveNom: nom, classeNom: classeLabel(classeId, classes, niveaux),
-        }).catch(() => {});
-      }
+      // Les identifiants du parent (créé ou rattaché) ne partent volontairement
+      // PAS ici : le compte élève est créé inactif, donc ni l'élève ni le parent
+      // ne doivent rien recevoir avant l'activation (voir `ActivateAccount` /
+      // `activateParentsForEleve`, appelés au clic sur « Activer le compte »).
       // Informe le contact que le dossier est en traitement.
       if (i.contact_email) {
         sendPendingEmail({ email: i.contact_email, prenom, nom }).catch(() => {});

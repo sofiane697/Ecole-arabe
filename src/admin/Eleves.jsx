@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePageAnimation } from '../shared/usePageAnimation';
 import { fetchEleves, createEleve, updateEleve, updateEleveNiveauScolaire, deleteEleve, updateEleveActif, resetElevePassword, fetchEleveProgression, fetchModules, fetchAllNiveauxForModule, fetchQCMNiveauxIds, fetchAllClasses, fetchNiveauxScolaires, fetchEleveActivite, fetchEleveIdParIdentifiant, uploadElevePhoto, deleteElevePhoto, fetchNotesEleve, fetchRetardsAbsencesEleve, fetchObservationsEleve, sendWelcomeEmail, sendPendingEmail, adminCreateObservation, adminCreateRetardAbsence, adminFetchNoteAcks } from './supabaseAdmin';
-import { dispatchPostCreationEmails } from './parentsMail';
+import { dispatchPostCreationEmails, activateParentsForEleve } from './parentsMail';
 import ConfirmModal from './ConfirmModal';
 import { generateIdentifiant, generateTempPassword } from './adminUtils';
 import { emptyBloc, isBlocUtilisable, processParentBlocs, checkDuplicatesOnSubmit } from './parentsLogic';
@@ -256,6 +256,15 @@ export default function Eleves({ variant = 'eleves' }) {
             nom:         eleve.nom,
             identifiant: eleve.identifiant,
             tempPassword: tempPwd,
+            classeNom:   allClasses.find(c => c.id === eleve.classe_id)?.nom || null,
+          }).catch(() => {});
+        }
+        // Parents rattachés (enfant) : reçoivent leurs propres identifiants
+        // à ce même moment (première activation), jamais avant.
+        if (eleve.est_adulte !== true) {
+          activateParentsForEleve(eleve.id, {
+            elevePrenom: eleve.prenom,
+            eleveNom:    eleve.nom,
             classeNom:   allClasses.find(c => c.id === eleve.classe_id)?.nom || null,
           }).catch(() => {});
         }
@@ -1992,7 +2001,7 @@ function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
           )}
 
           {/* Identifiants des comptes parents créés / rattachés */}
-          <ParentResults results={parentResults} />
+          <ParentResults results={parentResults} inactif={result.inactif} />
 
           <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap', marginTop: 12 }}>
             <button className={CLS.btnSave} onClick={() => {

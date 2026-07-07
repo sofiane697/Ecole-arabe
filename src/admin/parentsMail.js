@@ -8,7 +8,11 @@
 //
 // Tous les envois sont best-effort (.catch(() => {})) : une erreur d'envoi mail
 // ne doit pas rollback la création du compte qui a déjà réussi.
-import { sendWelcomeEmail, sendParentAttachEmail } from './supabaseAdmin';
+import {
+  sendWelcomeEmail, sendParentAttachEmail, sendParentWelcomeEmail,
+  adminFetchParentsOfEleve, adminResetParentPassword,
+} from './supabaseAdmin';
+import { formatFoyer, generateTempPassword } from './adminUtils';
 
 /**
  * @param {object} opts
@@ -19,7 +23,9 @@ import { sendWelcomeEmail, sendParentAttachEmail } from './supabaseAdmin';
  * @param {string} opts.eleveTempPassword        mot de passe provisoire
  * @param {string|null} opts.classeNom           libellé de classe ou null
  * @param {Array} opts.parentResults             résultats de processParentBlocs
- * @param {boolean} [opts.sendWelcome=true]      false pour élève inactif (pas de welcome)
+ * @param {boolean} [opts.sendWelcome=true]      false pour élève inactif (pas de welcome
+ *                                               élève ni de notification parent — différés
+ *                                               à l'activation via `activateParentsForEleve`)
  */
 export function dispatchPostCreationEmails({
   contactEmail,
@@ -49,16 +55,59 @@ export function dispatchPostCreationEmails({
 
   // Mail de rattachement pour chaque parent existant rattaché au nouvel enfant.
   // Envoyé même si l'élève n'a pas d'email de contact (on a celui du parent).
-  for (const r of parentResults) {
-    if (r.kind === 'linked' && r.email) {
-      sendParentAttachEmail({
-        email:        r.email,
-        foyerLabel:   r.label,
-        identifiant:  r.identifiant,
-        elevePrenom,
-        eleveNom,
-        classeNom,
-      }).catch(() => {});
+  // Différé (comme le welcome élève) si l'élève est créé inactif : le parent
+  // sera notifié à l'activation via `activateParentsForEleve`.
+  if (sendWelcome) {
+    for (const r of parentResults) {
+      if (r.kind === 'linked' && r.email) {
+        sendParentAttachEmail({
+          email:        r.email,
+          foyerLabel:   r.label,
+          identifiant:  r.identifiant,
+          elevePrenom,
+          eleveNom,
+          classeNom,
+        }).catch(() => {});
+      }
     }
+  }
+}
+
+/**
+ * À l'activation d'un compte élève (enfant) : envoie leurs identifiants aux
+ * parents rattachés qui n'ont encore jamais changé leur mot de passe (jamais
+ * onboardés — `must_change_password !== false`). Un nouveau mot de passe
+ * provisoire est systématiquement généré pour eux : celui créé initialement
+ * (le cas échéant) n'a jamais été communiqué, ce sera donc leur premier mdp
+ * dans tous les cas. Les parents déjà actifs (mdp déjà personnalisé) reçoivent
+ * simplement une notification de rattachement, sans toucher à leur mot de passe.
+ *
+ * @param {string} eleveId
+ * @param {object} opts
+ * @param {string} opts.elevePrenom
+ * @param {string} opts.eleveNom
+ * @param {string|null} opts.classeNom
+ */
+export async function activateParentsForEleve(eleveId, { elevePrenom, eleveNom, classeNom }) {
+  let parents = [];
+  try { parents = await adminFetchParentsOfEleve(eleveId); } catch { return; }
+  for (const p of parents) {
+    try {
+      if (p.must_change_password !== false) {
+        const pwd = generateTempPassword();
+        await adminResetParentPassword(p.id, pwd);
+        if (p.email) {
+          await sendParentWelcomeEmail({
+            email: p.email, foyerLabel: formatFoyer(p), identifiant: p.identifiant,
+            password: pwd, elevePrenom, eleveNom,
+          }).catch(() => {});
+        }
+      } else if (p.email) {
+        await sendParentAttachEmail({
+          email: p.email, foyerLabel: formatFoyer(p), identifiant: p.identifiant,
+          elevePrenom, eleveNom, classeNom,
+        }).catch(() => {});
+      }
+    } catch { /* un parent en échec ne doit pas bloquer les autres */ }
   }
 }
