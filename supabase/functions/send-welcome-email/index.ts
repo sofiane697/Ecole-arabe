@@ -5,8 +5,8 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
 // Défaut : onboarding@resend.dev — domaine de test Resend, fonctionne SANS vérification
 // mais N'ACCEPTE d'envoyer QU'À l'email owner du compte Resend. Pour envoyer à n'importe
 // qui, vérifier un vrai domaine sur https://resend.com/domains et poser la var
-// FROM_EMAIL=Institut As-Safaa <noreply@ton-domaine.fr>.
-const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Institut As-Safaa <onboarding@resend.dev>';
+// FROM_EMAIL=Educamoov <noreply@ton-domaine.fr>.
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') || 'Educamoov <onboarding@resend.dev>';
 
 // SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY sont injectés automatiquement par Supabase
 // dans toutes les Edge Functions. Service role nécessaire pour appeler _is_admin (RLS bypass).
@@ -173,7 +173,7 @@ async function handleWelcome(body: any, cors: Record<string, string>): Promise<R
 
         <tr><td style="background:#BF8A30;padding:32px 40px;text-align:center;">
           <div style="font-size:32px;margin-bottom:8px;">🕌</div>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Bienvenue à l'Institut As-Safaa</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Bienvenue à Educamoov</h1>
         </td></tr>
 
         <tr><td style="padding:36px 40px;">
@@ -205,7 +205,7 @@ async function handleWelcome(body: any, cors: Record<string, string>): Promise<R
 
           <p style="margin:24px 0 0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
-            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
+            <strong style="color:#1a1a1a;">L'équipe d'Educamoov</strong>
           </p>
         </td></tr>
 
@@ -220,8 +220,8 @@ async function handleWelcome(body: any, cors: Record<string, string>): Promise<R
 </html>`;
 
   const subject = parentsList.length > 0
-    ? `Bienvenue à l'Institut As-Safaa — identifiants élève et parent`
-    : `Bienvenue à l'Institut As-Safaa — vos identifiants de connexion`;
+    ? `Bienvenue à Educamoov — identifiants élève et parent`
+    : `Bienvenue à Educamoov — vos identifiants de connexion`;
 
   return await sendResendEmail(email, subject, html, cors);
 }
@@ -245,7 +245,7 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
 
         <tr><td style="background:#BF8A30;padding:32px 40px;text-align:center;">
           <div style="font-size:32px;margin-bottom:8px;">🕌</div>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Institut As-Safaa</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Educamoov</h1>
         </td></tr>
 
         <tr><td style="padding:36px 40px;">
@@ -253,7 +253,7 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
             Bonjour <strong>${escapeHtml(prenom)} ${escapeHtml(nom)}</strong>,
           </p>
           <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
-            Nous avons bien reçu votre demande d'inscription à l'Institut As-Safaa.
+            Nous avons bien reçu votre demande d'inscription à Educamoov.
             Votre dossier est actuellement <strong>en cours de traitement</strong> par notre équipe.
           </p>
           <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
@@ -262,7 +262,7 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
           </p>
           <p style="margin:0 0 0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
-            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
+            <strong style="color:#1a1a1a;">L'équipe d'Educamoov</strong>
           </p>
         </td></tr>
 
@@ -276,7 +276,7 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
 </body>
 </html>`;
 
-  const subject = `Institut As-Safaa — votre demande d'inscription est en cours de traitement`;
+  const subject = `Educamoov — votre demande d'inscription est en cours de traitement`;
   return await sendResendEmail(email, subject, html, cors);
 }
 
@@ -301,7 +301,7 @@ async function handleParentWelcome(body: any, cors: Record<string, string>): Pro
 
         <tr><td style="background:#2c5cc4;padding:32px 40px;text-align:center;">
           <div style="font-size:32px;margin-bottom:8px;">👨‍👩‍👧</div>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Votre accès parent — Institut As-Safaa</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Votre accès parent — Educamoov</h1>
         </td></tr>
 
         <tr><td style="padding:36px 40px;">
@@ -337,7 +337,7 @@ async function handleParentWelcome(body: any, cors: Record<string, string>): Pro
 
           <p style="margin:0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
-            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
+            <strong style="color:#1a1a1a;">L'équipe d'Educamoov</strong>
           </p>
         </td></tr>
 
@@ -351,7 +351,7 @@ async function handleParentWelcome(body: any, cors: Record<string, string>): Pro
 </body>
 </html>`;
 
-  const subject = `Institut As-Safaa — vos identifiants de portail parent`;
+  const subject = `Educamoov — vos identifiants de portail parent`;
   return await sendResendEmail(email, subject, html, cors);
 }
 
@@ -395,7 +395,7 @@ async function handleAttach(body: any, cors: Record<string, string>): Promise<Re
 
         <tr><td style="background:#2c5cc4;padding:32px 40px;text-align:center;">
           <div style="font-size:32px;margin-bottom:8px;">👨‍👩‍👧</div>
-          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Nouveau rattachement — Institut As-Safaa</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.3px;">Nouveau rattachement — Educamoov</h1>
         </td></tr>
 
         <tr><td style="padding:36px 40px;">
@@ -418,7 +418,7 @@ async function handleAttach(body: any, cors: Record<string, string>): Promise<Re
 
           <p style="margin:0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
-            <strong style="color:#1a1a1a;">L'équipe de l'Institut As-Safaa</strong>
+            <strong style="color:#1a1a1a;">L'équipe d'Educamoov</strong>
           </p>
         </td></tr>
 
@@ -432,7 +432,7 @@ async function handleAttach(body: any, cors: Record<string, string>): Promise<Re
 </body>
 </html>`;
 
-  const subject = `Institut As-Safaa — vous êtes désormais rattaché à ${elevePrenom} ${eleveNom}`;
+  const subject = `Educamoov — vous êtes désormais rattaché à ${elevePrenom} ${eleveNom}`;
   return await sendResendEmail(email, subject, html, cors);
 }
 
