@@ -16,7 +16,7 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 // CORS : restreint via la variable `ALLOWED_ORIGINS` (séparée par virgules).
 // Défaut : prod Vercel + localhost dev. Surchargeable sans redéploiement en
 // posant le secret ALLOWED_ORIGINS (ex. après migration vers un domaine custom).
-const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,http://localhost:3000')
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,https://www.educamoov.com,https://educamoov.com,http://localhost:3000')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);

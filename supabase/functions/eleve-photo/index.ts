@@ -20,7 +20,7 @@ const MIN_BYTES    = 64;
 
 // CORS : restreint via la variable `ALLOWED_ORIGINS` (séparée par virgules).
 // Défaut : prod Vercel + localhost dev, surchargeable par secret sans redéploiement.
-const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,http://localhost:3000')
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,https://www.educamoov.com,https://educamoov.com,http://localhost:3000')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);

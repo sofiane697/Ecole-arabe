@@ -18,7 +18,7 @@ const BUCKET = 'cours';
 const MAX_BYTES = 100 * 1024 * 1024; // pdf/pptx/docx de cours potentiellement lourds
 const MIN_BYTES = 16;
 
-const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,http://localhost:3000')
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || 'https://ecole-arabe.vercel.app,https://www.educamoov.com,https://educamoov.com,http://localhost:3000')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
