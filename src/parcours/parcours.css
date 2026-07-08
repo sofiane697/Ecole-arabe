@@ -1031,9 +1031,9 @@
   .tarif-carousel { overflow: hidden; }
   .tarif-grid {
     display: flex;
-    align-items: flex-start; /* chaque carte garde SA propre hauteur, pas
-      celle de la plus haute du lot : évite le vide en bas des cartes
-      courtes (utile en grille, inutile — et disgracieux — en carrousel). */
+    align-items: stretch; /* même hauteur pour toutes les cartes du
+      carrousel — évite un « saut » de hauteur en passant de l'une à
+      l'autre (comme sur desktop, où les boutons restent alignés). */
     grid-template-columns: none;
     gap: 0;
     overflow-x: auto;
