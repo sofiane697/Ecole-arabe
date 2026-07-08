@@ -254,11 +254,10 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
           </p>
           <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
             Nous avons bien reçu votre demande d'inscription à Educamoov.
-            Votre dossier est actuellement <strong>en cours de traitement</strong> par notre équipe.
+            Votre dossier <strong>a été traité</strong> par notre équipe.
           </p>
           <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
-            Vous recevrez très prochainement un email contenant vos identifiants de connexion
-            dès que votre compte sera activé.
+            Vous serez recontacté(e) à la rentrée afin de finaliser l'inscription.
           </p>
           <p style="margin:0 0 0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
@@ -276,7 +275,7 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
 </body>
 </html>`;
 
-  const subject = `Educamoov — votre demande d'inscription est en cours de traitement`;
+  const subject = `Educamoov — votre demande d'inscription a été traitée`;
   return await sendResendEmail(email, subject, html, cors);
 }
 
