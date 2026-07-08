@@ -25,6 +25,7 @@ export default function RecapStep({ path, tarif, onSent }) {
   const [dispos, setDispos]           = useState([]);
   const [joursOuverts, setJoursOuverts] = useState([]);
   const [besoin, setBesoin]           = useState('');
+  const [choixSelected, setChoixSelected] = useState('');
   const [sending, setSending]         = useState(false);
   const [error, setError]             = useState('');
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -64,9 +65,18 @@ export default function RecapStep({ path, tarif, onSent }) {
   // Pack « sur mesure » (pas de prix fixe) : le besoin de l'enfant conditionne
   // l'accompagnement proposé → on invite la famille à le décrire ici.
   const showBesoin = prixNum == null;
+  // Choix obligatoire (ex. Hizb à mémoriser) : plusieurs options équivalentes,
+  // aucune par défaut — la famille doit trancher avant l'envoi.
+  const choixOptions = Array.isArray(tarif.choix?.options) ? tarif.choix.options : [];
+  const hasChoix = choixOptions.length > 0;
+  const choixManquant = hasChoix && !choixSelected;
 
   const submit = async (e) => {
     e.preventDefault();
+    if (choixManquant) {
+      setError('Choisissez une option.');
+      return;
+    }
     if (dispoManquante) {
       setError('Sélectionnez au moins une disponibilité.');
       return;
@@ -83,7 +93,9 @@ export default function RecapStep({ path, tarif, onSent }) {
           rythme: tarif.rythme || null,
         },
         disponibilites: dispos.length ? dispos : null,
-        devis: showBesoin ? { besoin: besoin.trim() || null } : undefined,
+        devis: (hasChoix || showBesoin)
+          ? { sujet: hasChoix ? choixSelected : null, besoin: showBesoin ? (besoin.trim() || null) : null }
+          : undefined,
         eleve, contact, estEnfant,
       });
       onSent({ choix: path.map((n) => n.label), coord: { prenom: contact.prenom } });
@@ -178,6 +190,28 @@ export default function RecapStep({ path, tarif, onSent }) {
         </div>
 
         <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
+
+        {hasChoix && (
+          <fieldset className="recap-dispo">
+            <legend className="recap-group-label">{tarif.choix.label || 'Choisissez une option'}</legend>
+            <div className="recap-dispo-opts">
+              {choixOptions.map((opt) => (
+                <label
+                  key={opt}
+                  className={`recap-dispo-chip${choixSelected === opt ? ' is-on' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="choix"
+                    checked={choixSelected === opt}
+                    onChange={() => setChoixSelected(opt)}
+                  />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         {showBesoin && (
           <div className="recap-field">
@@ -306,7 +340,7 @@ export default function RecapStep({ path, tarif, onSent }) {
 
         {error && <p className="recap-error">{error}</p>}
 
-        <button type="submit" className="recap-send" disabled={sending || dispoManquante}
+        <button type="submit" className="recap-send" disabled={sending || dispoManquante || choixManquant}
           onMouseEnter={btnEnter} onMouseLeave={btnLeave}>
           {sending ? 'Envoi…' : 'Envoyer ma demande'}
           {!sending && <span className="recap-send-arrow" aria-hidden="true">→</span>}

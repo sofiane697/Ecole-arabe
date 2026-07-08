@@ -11,7 +11,9 @@
 //
 //  Tarif (une formule) :
 //    { id, titre, niveau?, ar?, prix(number|null), prixNote?, rythme?,
-//      features?:string[], note? }
+//      features?:string[], note?, choix?:{label, options:string[]} }
+//    → `choix` = sélection obligatoire à l'inscription (RecapStep), ex. un
+//      Hizb à mémoriser parmi plusieurs options équivalentes.
 //
 //  Données issues de la maquette de Sofiane (niveau Adulte).
 //  Les branches Enfant / Soutien scolaire / Social restent à dérouler.
@@ -559,6 +561,21 @@ const TARIFS_CORAN_ENFANT_VISIO = [
       'Apprendre à lire de façon fluide et progressive',
       'Apprentissage de sourate Al Fil à sourate Al Qadr et leurs enseignements',
     ],
+  },
+  {
+    id: 'enf-co-visio-sourates',
+    titre: "J'apprends des sourates",
+    prix: 149,
+    rythme: '15 séances · 1 fois par semaine',
+    // Choix obligatoire à l'inscription (voir RecapStep) : le Hizb mémorisé
+    // détermine le contenu du cours, aucun des deux n'est un défaut implicite.
+    choix: {
+      label: 'Choisissez le Hizb à mémoriser',
+      options: [
+        'Hizb de An-Nas à Al-A\'la',
+        'Hizb de At-Tariq à An-Naba',
+      ],
+    },
   },
 ];
 
