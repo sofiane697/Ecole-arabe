@@ -566,7 +566,7 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     id: 'enf-co-visio-sourates',
     titre: "J'apprends des sourates",
     prix: 149,
-    rythme: '15 séances · 1 fois par semaine',
+    rythme: '15 séances · 40 min / semaine',
     features: [
       'Mémorisation accompagnée, verset par verset',
       'Correction de la prononciation et des règles de Tajwid',
