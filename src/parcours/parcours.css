@@ -258,18 +258,54 @@
   color: var(--fg-mid);
   margin-bottom: 2rem;
 }
+/* Carrousel horizontal (version web) : cartes de largeur fixe, défilement
+   au doigt/molette + flèches. Repasse en liste empilée simple sur mobile
+   (cf. media query ≤768px) où le défilement vertical de page suffit. */
+.tarif-carousel { position: relative; }
 .tarif-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.3rem;
+  display: flex;
   align-items: stretch;
+  gap: 1.3rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.3rem;
+  margin: -0.3rem;
 }
-/* Une seule formule (ex. Halaqa ado) : auto-fit l'étirerait sur toute la
-   largeur → on garde une dimension de carte classique, centrée. */
-.tarif-grid--single {
-  grid-template-columns: minmax(280px, 360px);
+.tarif-grid::-webkit-scrollbar { display: none; }
+.tarif-card {
+  scroll-snap-align: start;
+  flex: 0 0 300px;
+}
+/* Tout tient déjà à l'écran (une seule formule, ou peu de cartes) :
+   centrées plutôt que collées à gauche avec du vide à droite. */
+.tarif-grid--fits { justify-content: center; }
+
+.tarif-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--gold);
+  font-size: 1.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
 }
+.tarif-carousel-arrow:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+.tarif-carousel-arrow--prev { left: -22px; }
+.tarif-carousel-arrow--next { right: -22px; }
 
 /* ═══════════════════════════════════════════════════════════
    CARTE FORMULE — « manuscrit doré » éditorial
@@ -988,7 +1024,7 @@
 @media (max-width: 1024px) {
   .parcours-inner { padding: 2.4rem 1.6rem 3.2rem; }
   .sticker-grid { gap: 1.1rem; }
-  .tarif-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .tarif-card { flex-basis: 260px; }
 }
 
 @media (max-width: 768px) {
@@ -1000,7 +1036,18 @@
   .sticker-grid,
   .sticker-grid.count-2,
   .sticker-grid.count-1 { grid-template-columns: 1fr; max-width: 440px; }
-  .tarif-grid { grid-template-columns: 1fr; max-width: 440px; margin-inline: auto; }
+  /* Mobile : liste empilée classique, pas de carrousel (le scroll de page suffit). */
+  .tarif-grid {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    scroll-snap-type: none;
+    padding: 0; margin: 0;
+    max-width: 440px;
+    margin-inline: auto;
+  }
+  .tarif-card { flex: none; }
+  .tarif-carousel-arrow { display: none; }
   .tarif-titre { min-height: 0; }
   .tarif-titre-lvl { margin-bottom: 1rem; }
 

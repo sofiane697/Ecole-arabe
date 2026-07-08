@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { PARCOURS } from './parcoursData';
 import StickerGrid from './StickerGrid';
-import TarifCard from './TarifCard';
+import TarifCarousel from './TarifCarousel';
 import RecapStep from './RecapStep';
 import DevisStep from './DevisStep';
 import IslamUniverse from './IslamUniverse';
@@ -148,19 +148,14 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
         ) : atTarifs ? (
           <div className="tarif-wrap">
             {node.meta && <p className="tarif-meta parcours-anim">{node.meta}</p>}
-            <div className={`tarif-grid${node.tarifs.length === 1 ? ' tarif-grid--single' : ''}`}>
-              {node.tarifs.map((t) => (
-                <TarifCard
-                  key={t.id}
-                  tarif={t}
-                  onChoose={() =>
-                    t.tarifs
-                      ? pick({ id: t.id, label: t.niveau || t.titre, ar: t.ar, tarifs: t.tarifs })
-                      : (setTarif(t), toTop())
-                  }
-                />
-              ))}
-            </div>
+            <TarifCarousel
+              tarifs={node.tarifs}
+              onChoose={(t) =>
+                t.tarifs
+                  ? pick({ id: t.id, label: t.niveau || t.titre, ar: t.ar, tarifs: t.tarifs })
+                  : (setTarif(t), toTop())
+              }
+            />
           </div>
         ) : (
           <StickerGrid nodes={node.children} onPick={pick} />
