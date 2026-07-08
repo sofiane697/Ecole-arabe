@@ -473,12 +473,6 @@
   color: var(--fg-title);
   letter-spacing: -0.02em;
 }
-.tarif-amount-sm {
-  font-size: 1.5rem;
-  font-style: italic;
-  font-weight: 500;
-  color: var(--fg-mid);
-}
 
 .tarif-unit {
   font-family: 'Cormorant Garamond', serif;
@@ -510,6 +504,19 @@
   border-radius: 2px;
   opacity: 0.8;
   margin: 0.3rem 0 1.7rem;
+}
+
+/* Tarif « sur mesure » : sous le filet doré, en sans-serif (au lieu du serif
+   décoratif utilisé pour un prix chiffré) pour bien le distinguer d'un prix fixe. */
+.tarif-prixnote {
+  position: relative;
+  z-index: 1;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-style: normal;
+  color: var(--fg-title);
+  margin: -1.1rem 0 1.5rem;
 }
 
 /* ─── Acquis (features) ─────────────────────────────── */

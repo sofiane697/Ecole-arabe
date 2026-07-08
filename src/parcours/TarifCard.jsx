@@ -56,16 +56,12 @@ export default function TarifCard({ tarif: t, onChoose }) {
       ) : (
         <>
           <div className="tarif-price-row">
-            <span className="tarif-price">
-              {t.prix != null ? (
-                <>
-                  <span className="tarif-amount">{t.prix}</span>
-                  <span className="tarif-unit">€</span>
-                </>
-              ) : (
-                <span className="tarif-amount tarif-amount-sm">{t.prixNote}</span>
-              )}
-            </span>
+            {t.prix != null && (
+              <span className="tarif-price">
+                <span className="tarif-amount">{t.prix}</span>
+                <span className="tarif-unit">€</span>
+              </span>
+            )}
             {t.rythme && (
               <span className="tarif-rythme">
                 {t.rythme.split(' · ').map((r, i) => (
@@ -76,6 +72,10 @@ export default function TarifCard({ tarif: t, onChoose }) {
           </div>
 
           <span className="tarif-rule" aria-hidden="true" />
+
+          {t.prix == null && t.prixNote && (
+            <p className="tarif-prixnote">{t.prixNote}</p>
+          )}
 
           {Array.isArray(t.featureGroups) ? (
             t.featureGroups.map((g, gi) => (
