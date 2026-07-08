@@ -803,8 +803,8 @@
    en pleine largeur sous les coordonnées (enfant : pas de 3e colonne). */
 .recap-dispo-standalone {
   border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-  margin-top: 0.2rem;
+  padding-top: 1.8rem;
+  margin-top: 1.8rem;
 }
 .recap-field { display: flex; flex-direction: column; gap: 0.4rem; }
 .recap-field label {
@@ -836,7 +836,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--fg-light);
+  color: var(--fg-title);
 }
 
 /* ─── Disponibilités (cases à cocher, parcours adulte) ─── */
