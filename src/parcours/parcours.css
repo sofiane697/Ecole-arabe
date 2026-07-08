@@ -634,8 +634,8 @@
 /* ─── Récapitulatif (compte rendu) — layout « checkout » ──── */
 .recap {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  max-width: 980px;
+  grid-template-columns: 0.72fr 1.28fr;
+  max-width: 1000px;
   margin-inline: auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -780,13 +780,32 @@
 /* Coordonnées + disponibilités côte à côte : fiche plus courte à remplir.
    Chaque colonne restant étroite (largeur de carte plafonnée), on désempile
    les paires prénom/nom pour éviter un double rétrécissement. */
-.recap-form-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 1.8rem; align-items: start; }
+.recap-form-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
 .recap-form-col { display: flex; flex-direction: column; gap: 0.95rem; }
 .recap-form-cols .recap-row2 { grid-template-columns: 1fr; }
+/* Léger filet vertical entre coordonnées et disponibilités (adulte). */
+.recap-form-col + .recap-form-col {
+  border-left: 1px solid var(--border);
+  margin-left: 1.8rem;
+  padding-left: 1.8rem;
+}
 
 /* Coordonnées enfant : bloc « L'enfant » et bloc « Le parent » côte à côte. */
-.recap-coord-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 1.6rem; align-items: start; }
+.recap-coord-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
 .recap-coord-col { display: flex; flex-direction: column; gap: 0.95rem; }
+/* Léger filet vertical entre le bloc enfant et le bloc parent. */
+.recap-coord-col + .recap-coord-col {
+  border-left: 1px solid var(--border);
+  margin-left: 1.6rem;
+  padding-left: 1.6rem;
+}
+/* Léger filet horizontal au-dessus des disponibilités quand elles passent
+   en pleine largeur sous les coordonnées (enfant : pas de 3e colonne). */
+.recap-dispo-standalone {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+  margin-top: 0.2rem;
+}
 .recap-field { display: flex; flex-direction: column; gap: 0.4rem; }
 .recap-field label {
   font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
@@ -849,7 +868,7 @@
    qui les laisse en rang inégal) → chaque chip s'étire pour remplir sa colonne. */
 .recap-dispo-days {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
   gap: 0.5rem;
 }
 .recap-dispo-days .recap-dispo-chip { justify-content: center; }
@@ -973,6 +992,16 @@
   .recap-row2 { grid-template-columns: 1fr; }
   .recap-form-cols { grid-template-columns: 1fr; }
   .recap-coord-split { grid-template-columns: 1fr; }
+  /* Empilé : le filet passe de vertical à horizontal entre les blocs. */
+  .recap-form-col + .recap-form-col,
+  .recap-coord-col + .recap-coord-col {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    margin-top: 0.3rem;
+    padding-top: 1.4rem;
+  }
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
 

@@ -224,7 +224,7 @@ export default function RecapStep({ path, tarif, onSent }) {
           </div>
 
           {showDispo && (
-            <fieldset className={`recap-dispo${splitFormCols ? ' recap-form-col' : ''}`}>
+            <fieldset className={`recap-dispo${splitFormCols ? ' recap-form-col' : ' recap-dispo-standalone'}`}>
               <legend className="recap-group-label">Vos disponibilités</legend>
               <p className="recap-dispo-help">
                 Choisir un ou plusieurs créneaux ou aucune préférence.
