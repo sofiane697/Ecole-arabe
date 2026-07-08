@@ -11,6 +11,7 @@ import { calcAge } from '../shared/dateUtils';
 import { fmtPrenom, fmtNom } from '../shared/nameUtils';
 import EleveAvatar from '../shared/EleveAvatar';
 import PhotoEditor from '../shared/PhotoEditor';
+import { classeLabel } from '../shared/classeLabel';
 
 const PAGE_SIZE = 25;
 
@@ -256,7 +257,7 @@ export default function Eleves({ variant = 'eleves' }) {
             nom:         eleve.nom,
             identifiant: eleve.identifiant,
             tempPassword: tempPwd,
-            classeNom:   allClasses.find(c => c.id === eleve.classe_id)?.nom || null,
+            classeNom:   classeLabel(eleve.classe_id, allClasses, niveauxScolaires),
           }).catch(() => {});
         }
         // Parents rattachés (enfant) : reçoivent leurs propres identifiants
@@ -265,7 +266,7 @@ export default function Eleves({ variant = 'eleves' }) {
           await activateParentsForEleve(eleve.id, {
             elevePrenom: eleve.prenom,
             eleveNom:    eleve.nom,
-            classeNom:   allClasses.find(c => c.id === eleve.classe_id)?.nom || null,
+            classeNom:   classeLabel(eleve.classe_id, allClasses, niveauxScolaires),
           }).catch(e => console.error('[handleToggleActif] échec activateParentsForEleve', e));
         }
       }
@@ -1904,7 +1905,7 @@ function CreateEleveModal({ onClose, onCreated, isAdulte = false }) {
       const pResults = await processParentBlocs(eleveId, blocsValides);
       setParentResults(pResults);
 
-      const classeNom = allClasses.find(c => c.id === classeId)?.nom || null;
+      const classeNom = classeLabel(classeId, allClasses, niveauxScolaires);
       dispatchPostCreationEmails({
         contactEmail:      emailContact,
         elevePrenom:       fmtPrenom(prenom),
