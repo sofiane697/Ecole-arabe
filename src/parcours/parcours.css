@@ -1030,6 +1030,9 @@
      en grille classique sans carrousel). */
   .tarif-grid {
     display: flex;
+    align-items: flex-start; /* chaque carte garde SA propre hauteur, pas
+      celle de la plus haute du lot : évite le vide en bas des cartes
+      courtes (utile en grille, inutile — et disgracieux — en carrousel). */
     grid-template-columns: none;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -1041,7 +1044,9 @@
   }
   .tarif-grid::-webkit-scrollbar { display: none; }
   .tarif-grid--fits { justify-content: center; }
-  .tarif-card { flex: 0 0 82vw; scroll-snap-align: start; }
+  /* Aperçu de largeur fixe (~64px) plutôt qu'un % du viewport : reste
+     lisible sur petit écran au lieu de devenir un filet trop fin. */
+  .tarif-card { flex: 0 0 calc(100% - 64px); scroll-snap-align: start; }
   .tarif-carousel-arrow {
     display: flex;
     width: 38px;
