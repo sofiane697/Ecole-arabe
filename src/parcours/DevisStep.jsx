@@ -74,9 +74,7 @@ export default function DevisStep({ path, onSent }) {
 
       {/* ─ Colonne formulaire ─ */}
       <form className="recap-form" onSubmit={submit}>
-        <div className="recap-eyebrow">
-          {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
-        </div>
+        <div className="recap-eyebrow">Vos coordonnées</div>
 
         <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="d" />
 

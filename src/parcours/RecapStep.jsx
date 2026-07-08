@@ -216,16 +216,14 @@ export default function RecapStep({ path, tarif, onSent }) {
             dessous plutôt qu'un 3e niveau de colonnes. */}
         <div className={splitFormCols ? 'recap-form-cols' : undefined}>
           <div className={splitFormCols ? 'recap-form-col' : undefined}>
-            <div className="recap-eyebrow">
-              {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
-            </div>
+            <div className="recap-eyebrow">Vos coordonnées</div>
 
             <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
           </div>
 
           {showDispo && (
             <fieldset className={`recap-dispo${splitFormCols ? ' recap-form-col' : ' recap-dispo-standalone'}`}>
-              <legend className="recap-group-label">Vos disponibilités</legend>
+              <legend className="recap-eyebrow">Vos disponibilités</legend>
               <p className="recap-dispo-help">
                 Choisir un ou plusieurs créneaux ou aucune préférence.
               </p>
