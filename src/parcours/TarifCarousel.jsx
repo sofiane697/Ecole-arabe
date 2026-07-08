@@ -43,7 +43,9 @@ export default function TarifCarousel({ tarifs, onChoose }) {
     const el = trackRef.current;
     if (!el) return;
     const card = el.querySelector('.tarif-card');
-    const gap = 1.3 * 16; // 1.3rem, cf. parcours.css .tarif-grid { gap }
+    // Lu depuis le DOM plutôt que codé en dur : le gap diffère entre le
+    // desktop (grille, 1.3rem) et le mobile (carrousel plein écran, 0).
+    const gap = card ? parseFloat(getComputedStyle(el).columnGap) || 0 : 0;
     const step = card ? card.getBoundingClientRect().width + gap : el.clientWidth * 0.8;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };

@@ -1025,36 +1025,36 @@
   .sticker-grid.count-2,
   .sticker-grid.count-1 { grid-template-columns: 1fr; max-width: 440px; }
 
-  /* Mobile : carrousel (une carte à la fois + aperçu de la suivante),
-     défilement au doigt ET flèches (contrairement au desktop, qui reste
-     en grille classique sans carrousel). */
+  /* Mobile : une seule carte à la fois, centrée sur l'écran (pas d'aperçu
+     de la carte voisine), navigation par les flèches gauche/droite ou le
+     glissement au doigt. Desktop : reste en grille classique sans carrousel. */
+  .tarif-carousel { overflow: hidden; }
   .tarif-grid {
     display: flex;
     align-items: flex-start; /* chaque carte garde SA propre hauteur, pas
       celle de la plus haute du lot : évite le vide en bas des cartes
       courtes (utile en grille, inutile — et disgracieux — en carrousel). */
     grid-template-columns: none;
+    gap: 0;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 0.3rem;
-    margin: -0.3rem;
+    padding: 0;
+    margin: 0;
   }
   .tarif-grid::-webkit-scrollbar { display: none; }
   .tarif-grid--fits { justify-content: center; }
-  /* Aperçu de largeur fixe (~64px) plutôt qu'un % du viewport : reste
-     lisible sur petit écran au lieu de devenir un filet trop fin. */
-  .tarif-card { flex: 0 0 calc(100% - 64px); scroll-snap-align: start; }
+  .tarif-card { flex: 0 0 100%; scroll-snap-align: center; }
   .tarif-carousel-arrow {
     display: flex;
     width: 38px;
     height: 38px;
     font-size: 1.1rem;
   }
-  .tarif-carousel-arrow--prev { left: 4px; }
-  .tarif-carousel-arrow--next { right: 4px; }
+  .tarif-carousel-arrow--prev { left: 8px; }
+  .tarif-carousel-arrow--next { right: 8px; }
   .tarif-titre { min-height: 0; }
   .tarif-titre-lvl { margin-bottom: 1rem; }
 
