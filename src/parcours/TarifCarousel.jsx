@@ -42,11 +42,14 @@ export default function TarifCarousel({ tarifs, onChoose }) {
   const scroll = (dir) => {
     const el = trackRef.current;
     if (!el) return;
-    const card = el.querySelector('.tarif-card');
-    // Lu depuis le DOM plutôt que codé en dur : le gap diffère entre le
-    // desktop (grille, 1.3rem) et le mobile (carrousel plein écran, 0).
-    const gap = card ? parseFloat(getComputedStyle(el).columnGap) || 0 : 0;
-    const step = card ? card.getBoundingClientRect().width + gap : el.clientWidth * 0.8;
+    // Mesuré entre deux cartes consécutives plutôt que déduit des règles
+    // CSS (gap, marges…) : reste juste quelle que soit la mise en page,
+    // grille desktop ou carrousel mobile à une carte + marges réservées.
+    const cards = el.querySelectorAll('.tarif-card');
+    const step =
+      cards.length > 1
+        ? cards[1].getBoundingClientRect().left - cards[0].getBoundingClientRect().left
+        : el.clientWidth * 0.8;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 

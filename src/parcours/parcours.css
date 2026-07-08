@@ -1046,15 +1046,18 @@
   }
   .tarif-grid::-webkit-scrollbar { display: none; }
   .tarif-grid--fits { justify-content: center; }
-  .tarif-card { flex: 0 0 100%; scroll-snap-align: center; }
+  /* Marge réservée de chaque côté pour les flèches : la carte reste
+     centrée mais plus étroite que l'écran, sans jamais passer sous les
+     flèches ni empiéter sur le texte. */
+  .tarif-card { flex: 0 0 calc(100% - 92px); margin: 0 46px; scroll-snap-align: center; }
   .tarif-carousel-arrow {
     display: flex;
     width: 38px;
     height: 38px;
     font-size: 1.1rem;
   }
-  .tarif-carousel-arrow--prev { left: 8px; }
-  .tarif-carousel-arrow--next { right: 8px; }
+  .tarif-carousel-arrow--prev { left: 4px; }
+  .tarif-carousel-arrow--next { right: 4px; }
   .tarif-titre { min-height: 0; }
   .tarif-titre-lvl { margin-bottom: 1rem; }
 
