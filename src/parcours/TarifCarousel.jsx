@@ -2,10 +2,12 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import TarifCard from './TarifCard';
 
 /**
- * Carrousel horizontal des cartes tarif (version web) : défilement au
- * doigt/molette + flèches, avec repli en liste empilée classique sur
- * mobile (cf. media query ≤768px dans parcours.css — les flèches restent
- * dans le DOM mais sont masquées, pas de JS spécifique à débrancher).
+ * Cartes tarif : grille classique sur desktop (pas de carrousel), et
+ * carrousel avec flèches + défilement au doigt sur mobile (cf. media
+ * query ≤768px dans parcours.css, qui bascule `.tarif-grid` en rangée
+ * horizontale défilante). Les flèches ne s'affichent que si le contenu
+ * déborde réellement — sur desktop (grille, jamais de débordement
+ * horizontal) elles ne s'affichent donc jamais, sans JS spécifique.
  *
  * @param {Array}    tarifs   Formules à afficher (node.tarifs)
  * @param {Function} onChoose Appelé avec la formule cliquée
@@ -14,17 +16,15 @@ export default function TarifCarousel({ tarifs, onChoose }) {
   const trackRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
-  // Distinct de canPrev/canNext (qui dépendent de la position de scroll) :
-  // vrai dès que tout tient déjà à l'écran → cartes centrées plutôt que
-  // plaquées à gauche avec du vide à droite.
-  const [overflows, setOverflows] = useState(false);
 
   const updateArrows = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
-    setCanPrev(el.scrollLeft > 4);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-    setOverflows(el.scrollWidth > el.clientWidth + 4);
+    // Tolérance généreuse : le padding du track peut donner un scrollLeft
+    // initial de quelques px (snap/arrondi navigateur) sans qu'il y ait
+    // vraiment de contenu à découvrir en arrière.
+    setCanPrev(el.scrollLeft > 16);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 16);
   }, []);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function TarifCarousel({ tarifs, onChoose }) {
         </button>
       )}
       <div
-        className={`tarif-grid${tarifs.length === 1 || !overflows ? ' tarif-grid--fits' : ''}`}
+        className={`tarif-grid${tarifs.length === 1 ? ' tarif-grid--fits' : ''}`}
         ref={trackRef}
       >
         {tarifs.map((t) => (
