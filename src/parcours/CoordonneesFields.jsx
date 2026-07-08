@@ -78,12 +78,12 @@ export default function CoordonneesFields({ estEnfant, form, onChange, idPrefix 
         <p className="recap-group-label">L’enfant</p>
         <div className="recap-row2">
           <div className="recap-field">
-            <label htmlFor={id('e-prenom')}>Prénom de l’enfant</label>
+            <label htmlFor={id('e-prenom')}>Prénom</label>
             <input id={id('e-prenom')} name="elevePrenom" type="text" required
               value={form.elevePrenom} onChange={onChange} placeholder="Prénom" />
           </div>
           <div className="recap-field">
-            <label htmlFor={id('e-nom')}>Nom de l’enfant</label>
+            <label htmlFor={id('e-nom')}>Nom</label>
             <input id={id('e-nom')} name="eleveNom" type="text" required
               value={form.eleveNom} onChange={onChange} placeholder="Nom" />
           </div>
@@ -100,12 +100,12 @@ export default function CoordonneesFields({ estEnfant, form, onChange, idPrefix 
         <p className="recap-group-label">Le parent (responsable)</p>
         <div className="recap-row2">
           <div className="recap-field">
-            <label htmlFor={id('p-prenom')}>Prénom du parent</label>
+            <label htmlFor={id('p-prenom')}>Prénom</label>
             <input id={id('p-prenom')} name="parentPrenom" type="text" required
               value={form.parentPrenom} onChange={onChange} placeholder="Prénom" />
           </div>
           <div className="recap-field">
-            <label htmlFor={id('p-nom')}>Nom du parent</label>
+            <label htmlFor={id('p-nom')}>Nom</label>
             <input id={id('p-nom')} name="parentNom" type="text" required
               value={form.parentNom} onChange={onChange} placeholder="Nom" />
           </div>
