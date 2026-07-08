@@ -34,6 +34,9 @@ export default function RecapStep({ path, tarif, onSent }) {
   // Disponibilités : adulte toujours ; enfant uniquement en visioconférence
   // (pas en autonomie ni en cours particulier).
   const showDispo = !estEnfant || format === 'visioconference';
+  // Adulte : coordonnées courtes → côte à côte avec les disponibilités.
+  // Enfant : coordonnées déjà scindées enfant/parent → dispo pleine largeur.
+  const splitFormCols = showDispo && !estEnfant;
   // En semaine : enfant = soirée uniquement.
   const creneauxSemaine = estEnfant ? DISPO_CRENEAUX_SEMAINE_ENFANT : DISPO_CRENEAUX_SEMAINE;
   // Semaine : on ouvre un jour, puis on coche ses créneaux (libellé « Jour · Créneau »).
@@ -207,8 +210,12 @@ export default function RecapStep({ path, tarif, onSent }) {
           </fieldset>
         )}
 
-        <div className={showDispo ? 'recap-form-cols' : undefined}>
-          <div className={showDispo ? 'recap-form-col' : undefined}>
+        {/* Adulte : coordonnées et disponibilités côte à côte (les deux sont
+            courtes). Enfant : coordonnées déjà scindées enfant/parent en
+            interne (CoordonneesFields) → disponibilités pleine largeur en
+            dessous plutôt qu'un 3e niveau de colonnes. */}
+        <div className={splitFormCols ? 'recap-form-cols' : undefined}>
+          <div className={splitFormCols ? 'recap-form-col' : undefined}>
             <div className="recap-eyebrow">
               {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
             </div>
@@ -217,7 +224,7 @@ export default function RecapStep({ path, tarif, onSent }) {
           </div>
 
           {showDispo && (
-            <fieldset className="recap-dispo recap-form-col">
+            <fieldset className={`recap-dispo${splitFormCols ? ' recap-form-col' : ''}`}>
               <legend className="recap-group-label">Vos disponibilités</legend>
               <p className="recap-dispo-help">
                 Choisir un ou plusieurs créneaux ou aucune préférence.
@@ -237,7 +244,7 @@ export default function RecapStep({ path, tarif, onSent }) {
               {/* En semaine : jour → créneaux révélés */}
               <div className="recap-dispo-group">
                 <p className="recap-dispo-titre">En semaine</p>
-                <div className="recap-dispo-opts">
+                <div className="recap-dispo-days">
                   {DISPO_JOURS_SEMAINE.map((jour) => (
                     <label
                       key={jour}
@@ -281,7 +288,7 @@ export default function RecapStep({ path, tarif, onSent }) {
               {/* Le week-end : jour → créneaux révélés */}
               <div className="recap-dispo-group">
                 <p className="recap-dispo-titre">Le week-end</p>
-                <div className="recap-dispo-opts">
+                <div className="recap-dispo-days">
                   {DISPO_WEEKEND_JOURS.map(({ jour }) => (
                     <label
                       key={jour}

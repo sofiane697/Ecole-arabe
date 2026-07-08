@@ -73,50 +73,54 @@ export default function CoordonneesFields({ estEnfant, form, onChange, idPrefix 
   }
 
   return (
-    <>
-      <p className="recap-group-label">L’enfant</p>
-      <div className="recap-row2">
-        <div className="recap-field">
-          <label htmlFor={id('e-prenom')}>Prénom de l’enfant</label>
-          <input id={id('e-prenom')} name="elevePrenom" type="text" required
-            value={form.elevePrenom} onChange={onChange} placeholder="Prénom" />
+    <div className="recap-coord-split">
+      <div className="recap-coord-col">
+        <p className="recap-group-label">L’enfant</p>
+        <div className="recap-row2">
+          <div className="recap-field">
+            <label htmlFor={id('e-prenom')}>Prénom de l’enfant</label>
+            <input id={id('e-prenom')} name="elevePrenom" type="text" required
+              value={form.elevePrenom} onChange={onChange} placeholder="Prénom" />
+          </div>
+          <div className="recap-field">
+            <label htmlFor={id('e-nom')}>Nom de l’enfant</label>
+            <input id={id('e-nom')} name="eleveNom" type="text" required
+              value={form.eleveNom} onChange={onChange} placeholder="Nom" />
+          </div>
         </div>
         <div className="recap-field">
-          <label htmlFor={id('e-nom')}>Nom de l’enfant</label>
-          <input id={id('e-nom')} name="eleveNom" type="text" required
-            value={form.eleveNom} onChange={onChange} placeholder="Nom" />
+          <label htmlFor={id('e-naiss')}>Date de naissance</label>
+          <input id={id('e-naiss')} name="eleveDateNaissance" type="date" required
+            max={new Date().toISOString().split('T')[0]}
+            value={form.eleveDateNaissance} onChange={onChange} />
         </div>
-      </div>
-      <div className="recap-field">
-        <label htmlFor={id('e-naiss')}>Date de naissance</label>
-        <input id={id('e-naiss')} name="eleveDateNaissance" type="date" required
-          max={new Date().toISOString().split('T')[0]}
-          value={form.eleveDateNaissance} onChange={onChange} />
       </div>
 
-      <p className="recap-group-label">Le parent (responsable)</p>
-      <div className="recap-row2">
-        <div className="recap-field">
-          <label htmlFor={id('p-prenom')}>Prénom du parent</label>
-          <input id={id('p-prenom')} name="parentPrenom" type="text" required
-            value={form.parentPrenom} onChange={onChange} placeholder="Prénom" />
+      <div className="recap-coord-col">
+        <p className="recap-group-label">Le parent (responsable)</p>
+        <div className="recap-row2">
+          <div className="recap-field">
+            <label htmlFor={id('p-prenom')}>Prénom du parent</label>
+            <input id={id('p-prenom')} name="parentPrenom" type="text" required
+              value={form.parentPrenom} onChange={onChange} placeholder="Prénom" />
+          </div>
+          <div className="recap-field">
+            <label htmlFor={id('p-nom')}>Nom du parent</label>
+            <input id={id('p-nom')} name="parentNom" type="text" required
+              value={form.parentNom} onChange={onChange} placeholder="Nom" />
+          </div>
         </div>
         <div className="recap-field">
-          <label htmlFor={id('p-nom')}>Nom du parent</label>
-          <input id={id('p-nom')} name="parentNom" type="text" required
-            value={form.parentNom} onChange={onChange} placeholder="Nom" />
+          <label htmlFor={id('tel')}>Téléphone</label>
+          <input id={id('tel')} name="telephone" type="tel" required
+            value={form.telephone} onChange={onChange} placeholder="+33 6 12 34 56 78" />
+        </div>
+        <div className="recap-field">
+          <label htmlFor={id('email')}>Email</label>
+          <input id={id('email')} name="email" type="email" required
+            value={form.email} onChange={onChange} placeholder="votre@email.com" />
         </div>
       </div>
-      <div className="recap-field">
-        <label htmlFor={id('tel')}>Téléphone</label>
-        <input id={id('tel')} name="telephone" type="tel" required
-          value={form.telephone} onChange={onChange} placeholder="+33 6 12 34 56 78" />
-      </div>
-      <div className="recap-field">
-        <label htmlFor={id('email')}>Email</label>
-        <input id={id('email')} name="email" type="email" required
-          value={form.email} onChange={onChange} placeholder="votre@email.com" />
-      </div>
-    </>
+    </div>
   );
 }

@@ -775,14 +775,18 @@
   gap: 0.95rem;
   padding: 2.4rem 2rem;
 }
-.recap-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.recap-row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.9rem; }
 
 /* Coordonnées + disponibilités côte à côte : fiche plus courte à remplir.
    Chaque colonne restant étroite (largeur de carte plafonnée), on désempile
    les paires prénom/nom pour éviter un double rétrécissement. */
-.recap-form-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.8rem; align-items: start; }
+.recap-form-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 1.8rem; align-items: start; }
 .recap-form-col { display: flex; flex-direction: column; gap: 0.95rem; }
 .recap-form-cols .recap-row2 { grid-template-columns: 1fr; }
+
+/* Coordonnées enfant : bloc « L'enfant » et bloc « Le parent » côte à côte. */
+.recap-coord-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 1.6rem; align-items: start; }
+.recap-coord-col { display: flex; flex-direction: column; gap: 0.95rem; }
 .recap-field { display: flex; flex-direction: column; gap: 0.4rem; }
 .recap-field label {
   font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
@@ -840,6 +844,15 @@
   margin: 0.2rem 0 0;
 }
 .recap-dispo-opts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Jours de la semaine / week-end : grille à colonnes égales (plutôt qu'un flex-wrap
+   qui les laisse en rang inégal) → chaque chip s'étire pour remplir sa colonne. */
+.recap-dispo-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 0.5rem;
+}
+.recap-dispo-days .recap-dispo-chip { justify-content: center; }
 
 /* Sous-bloc des créneaux d'un jour de semaine (révélé après sélection du jour) */
 .recap-dispo-jour {
@@ -959,6 +972,7 @@
   .recap-summary { border-right: none; border-bottom: 1px solid var(--border); }
   .recap-row2 { grid-template-columns: 1fr; }
   .recap-form-cols { grid-template-columns: 1fr; }
+  .recap-coord-split { grid-template-columns: 1fr; }
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
 
