@@ -635,7 +635,7 @@
 .recap {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
-  max-width: 880px;
+  max-width: 980px;
   margin-inline: auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -776,6 +776,13 @@
   padding: 2.4rem 2rem;
 }
 .recap-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+
+/* Coordonnées + disponibilités côte à côte : fiche plus courte à remplir.
+   Chaque colonne restant étroite (largeur de carte plafonnée), on désempile
+   les paires prénom/nom pour éviter un double rétrécissement. */
+.recap-form-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.8rem; align-items: start; }
+.recap-form-col { display: flex; flex-direction: column; gap: 0.95rem; }
+.recap-form-cols .recap-row2 { grid-template-columns: 1fr; }
 .recap-field { display: flex; flex-direction: column; gap: 0.4rem; }
 .recap-field label {
   font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
@@ -951,6 +958,7 @@
   .recap { grid-template-columns: 1fr; max-width: 460px; }
   .recap-summary { border-right: none; border-bottom: 1px solid var(--border); }
   .recap-row2 { grid-template-columns: 1fr; }
+  .recap-form-cols { grid-template-columns: 1fr; }
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
 

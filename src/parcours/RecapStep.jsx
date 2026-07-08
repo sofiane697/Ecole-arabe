@@ -207,11 +207,125 @@ export default function RecapStep({ path, tarif, onSent }) {
           </fieldset>
         )}
 
-        <div className="recap-eyebrow">
-          {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
-        </div>
+        <div className={showDispo ? 'recap-form-cols' : undefined}>
+          <div className={showDispo ? 'recap-form-col' : undefined}>
+            <div className="recap-eyebrow">
+              {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
+            </div>
 
-        <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
+            <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
+          </div>
+
+          {showDispo && (
+            <fieldset className="recap-dispo recap-form-col">
+              <legend className="recap-group-label">Vos disponibilités</legend>
+              <p className="recap-dispo-help">
+                Choisir un ou plusieurs créneaux ou aucune préférence.
+              </p>
+
+              <label
+                className={`recap-dispo-chip recap-dispo-none${dispos.includes(DISPO_AUCUNE) ? ' is-on' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={dispos.includes(DISPO_AUCUNE)}
+                  onChange={toggleAucune}
+                />
+                {DISPO_AUCUNE}
+              </label>
+
+              {/* En semaine : jour → créneaux révélés */}
+              <div className="recap-dispo-group">
+                <p className="recap-dispo-titre">En semaine</p>
+                <div className="recap-dispo-opts">
+                  {DISPO_JOURS_SEMAINE.map((jour) => (
+                    <label
+                      key={jour}
+                      className={`recap-dispo-chip${joursOuverts.includes(jour) ? ' is-on' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={joursOuverts.includes(jour)}
+                        onChange={() => toggleJour(jour)}
+                      />
+                      {jour}
+                    </label>
+                  ))}
+                </div>
+
+                {DISPO_JOURS_SEMAINE.filter((j) => joursOuverts.includes(j)).map((jour) => (
+                  <div className="recap-dispo-jour" key={jour}>
+                    <p className="recap-dispo-jour-label">{jour}</p>
+                    <div className="recap-dispo-opts">
+                      {creneauxSemaine.map((creneau) => {
+                        const label = weekLabel(jour, creneau);
+                        return (
+                          <label
+                            key={creneau}
+                            className={`recap-dispo-chip${dispos.includes(label) ? ' is-on' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={dispos.includes(label)}
+                              onChange={() => toggleCreneau(jour, creneau)}
+                            />
+                            {creneau}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Le week-end : jour → créneaux révélés */}
+              <div className="recap-dispo-group">
+                <p className="recap-dispo-titre">Le week-end</p>
+                <div className="recap-dispo-opts">
+                  {DISPO_WEEKEND_JOURS.map(({ jour }) => (
+                    <label
+                      key={jour}
+                      className={`recap-dispo-chip${joursOuverts.includes(jour) ? ' is-on' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={joursOuverts.includes(jour)}
+                        onChange={() => toggleJour(jour)}
+                      />
+                      {jour}
+                    </label>
+                  ))}
+                </div>
+
+                {DISPO_WEEKEND_JOURS.filter(({ jour }) => joursOuverts.includes(jour)).map(
+                  ({ jour, creneaux }) => (
+                    <div className="recap-dispo-jour" key={jour}>
+                      <p className="recap-dispo-jour-label">{jour}</p>
+                      <div className="recap-dispo-opts">
+                        {creneaux.map((creneau) => {
+                          const label = weekendLabel(jour, creneau);
+                          return (
+                            <label
+                              key={creneau}
+                              className={`recap-dispo-chip${dispos.includes(label) ? ' is-on' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={dispos.includes(label)}
+                                onChange={() => toggleCreneauWeekend(jour, creneau)}
+                              />
+                              {creneau}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </fieldset>
+          )}
+        </div>
 
         {showBesoin && (
           <div className="recap-field">
@@ -226,116 +340,6 @@ export default function RecapStep({ path, tarif, onSent }) {
               placeholder="Diagnostic, difficultés rencontrées, aménagements utiles, objectifs souhaités…"
             />
           </div>
-        )}
-
-        {showDispo && (
-          <fieldset className="recap-dispo">
-            <legend className="recap-group-label">Vos disponibilités</legend>
-            <p className="recap-dispo-help">
-              Choisir un ou plusieurs créneaux ou aucune préférence.
-            </p>
-
-            <label
-              className={`recap-dispo-chip recap-dispo-none${dispos.includes(DISPO_AUCUNE) ? ' is-on' : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={dispos.includes(DISPO_AUCUNE)}
-                onChange={toggleAucune}
-              />
-              {DISPO_AUCUNE}
-            </label>
-
-            {/* En semaine : jour → créneaux révélés */}
-            <div className="recap-dispo-group">
-              <p className="recap-dispo-titre">En semaine</p>
-              <div className="recap-dispo-opts">
-                {DISPO_JOURS_SEMAINE.map((jour) => (
-                  <label
-                    key={jour}
-                    className={`recap-dispo-chip${joursOuverts.includes(jour) ? ' is-on' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={joursOuverts.includes(jour)}
-                      onChange={() => toggleJour(jour)}
-                    />
-                    {jour}
-                  </label>
-                ))}
-              </div>
-
-              {DISPO_JOURS_SEMAINE.filter((j) => joursOuverts.includes(j)).map((jour) => (
-                <div className="recap-dispo-jour" key={jour}>
-                  <p className="recap-dispo-jour-label">{jour}</p>
-                  <div className="recap-dispo-opts">
-                    {creneauxSemaine.map((creneau) => {
-                      const label = weekLabel(jour, creneau);
-                      return (
-                        <label
-                          key={creneau}
-                          className={`recap-dispo-chip${dispos.includes(label) ? ' is-on' : ''}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={dispos.includes(label)}
-                            onChange={() => toggleCreneau(jour, creneau)}
-                          />
-                          {creneau}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Le week-end : jour → créneaux révélés */}
-            <div className="recap-dispo-group">
-              <p className="recap-dispo-titre">Le week-end</p>
-              <div className="recap-dispo-opts">
-                {DISPO_WEEKEND_JOURS.map(({ jour }) => (
-                  <label
-                    key={jour}
-                    className={`recap-dispo-chip${joursOuverts.includes(jour) ? ' is-on' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={joursOuverts.includes(jour)}
-                      onChange={() => toggleJour(jour)}
-                    />
-                    {jour}
-                  </label>
-                ))}
-              </div>
-
-              {DISPO_WEEKEND_JOURS.filter(({ jour }) => joursOuverts.includes(jour)).map(
-                ({ jour, creneaux }) => (
-                  <div className="recap-dispo-jour" key={jour}>
-                    <p className="recap-dispo-jour-label">{jour}</p>
-                    <div className="recap-dispo-opts">
-                      {creneaux.map((creneau) => {
-                        const label = weekendLabel(jour, creneau);
-                        return (
-                          <label
-                            key={creneau}
-                            className={`recap-dispo-chip${dispos.includes(label) ? ' is-on' : ''}`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={dispos.includes(label)}
-                              onChange={() => toggleCreneauWeekend(jour, creneau)}
-                            />
-                            {creneau}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </fieldset>
         )}
 
         {error && <p className="recap-error">{error}</p>}
