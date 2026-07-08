@@ -274,7 +274,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 3.2rem 2.4rem 2.4rem;
+  padding: 2.6rem 2.2rem 2.2rem;
   background: #fffdfa;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -294,7 +294,7 @@
 .tarif-card::after {
   content: '';
   position: absolute;
-  top: 0; left: 2.4rem; right: 2.4rem;
+  top: 0; left: 2.2rem; right: 2.2rem;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
   transform: scaleX(0);
@@ -392,7 +392,7 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 /* Ligne de prérequis sous le niveau (cartes arabe adulte).
@@ -406,8 +406,8 @@
   font-weight: 500;
   line-height: 1.35;
   color: var(--fg-mid);
-  min-height: 4.4rem;
-  margin: 0.2rem 0 1.6rem;
+  min-height: 3.2rem;
+  margin: 0.2rem 0 1.2rem;
 }
 
 /* Titre long — cartes sans module (Coran, EDI) */
@@ -445,7 +445,7 @@
   font-size: 1.05rem;
   line-height: 1.5;
   color: var(--fg-mid);
-  margin: 0.2rem 0 1.6rem;
+  margin: 0.2rem 0 1.2rem;
 }
 
 /* Carte-groupe : le bouton « Découvrir » remonte juste sous le texte
@@ -462,7 +462,7 @@
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.4rem 1.1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.1rem;
 }
 .tarif-price { display: inline-flex; align-items: flex-start; gap: 0.14rem; }
 .tarif-amount {
@@ -503,7 +503,7 @@
   background: var(--gold);
   border-radius: 2px;
   opacity: 0.8;
-  margin: 0.3rem 0 1.7rem;
+  margin: 0.3rem 0 1.3rem;
 }
 
 /* Tarif « sur mesure » : sous le filet doré, en sans-serif (au lieu du serif
@@ -516,7 +516,7 @@
   font-weight: 600;
   font-style: normal;
   color: var(--fg-title);
-  margin: -1.1rem 0 1.5rem;
+  margin: -1.1rem 0 1.2rem;
 }
 
 /* ─── Acquis (features) ─────────────────────────────── */
@@ -526,9 +526,9 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.65rem;
   flex: 1;
-  margin-bottom: 2.2rem;
+  margin-bottom: 1.5rem;
 }
 .tarif-feats li {
   display: flex;
@@ -553,11 +553,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.1rem;
 }
 .tarif-feat-group:last-of-type {
   flex: 1;
-  margin-bottom: 2.2rem;
+  margin-bottom: 1.5rem;
 }
 .tarif-feat-group-label {
   font-size: 0.64rem;
@@ -578,7 +578,7 @@
   font-style: italic;
   line-height: 1.5;
   color: var(--fg-light);
-  margin: -0.9rem 0 1.5rem;
+  margin: -0.9rem 0 1.2rem;
 }
 
 /* ─── Bouton S'inscrire ─────────────────────────────── */
