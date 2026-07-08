@@ -577,8 +577,8 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     choix: {
       label: 'Choisissez le Hizb à mémoriser',
       options: [
-        'Hizb de An-Nas à Al-A\'la',
-        'Hizb de At-Tariq à An-Naba',
+        'Hizb de sourate An-Nas à sourate Al-A\'la',
+        'Hizb de sourate At-Tariq à sourate An-Naba',
       ],
     },
   },
