@@ -185,12 +185,6 @@ export default function RecapStep({ path, tarif, onSent }) {
 
       {/* ─ Colonne formulaire ─ */}
       <form className="recap-form" onSubmit={submit}>
-        <div className="recap-eyebrow">
-          {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
-        </div>
-
-        <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
-
         {hasChoix && (
           <fieldset className="recap-dispo">
             <legend className="recap-group-label">{tarif.choix.label || 'Choisissez une option'}</legend>
@@ -212,6 +206,12 @@ export default function RecapStep({ path, tarif, onSent }) {
             </div>
           </fieldset>
         )}
+
+        <div className="recap-eyebrow">
+          {estEnfant ? 'Coordonnées' : 'Vos coordonnées'}
+        </div>
+
+        <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
 
         {showBesoin && (
           <div className="recap-field">

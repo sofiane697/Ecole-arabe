@@ -567,6 +567,12 @@ const TARIFS_CORAN_ENFANT_VISIO = [
     titre: "J'apprends des sourates",
     prix: 149,
     rythme: '15 séances · 1 fois par semaine',
+    features: [
+      'Mémorisation accompagnée, verset par verset',
+      'Correction de la prononciation et des règles de Tajwid',
+      'Révision régulière pour consolider les sourates apprises',
+      'Compréhension du sens général des sourates mémorisées',
+    ],
     // Choix obligatoire à l'inscription (voir RecapStep) : le Hizb mémorisé
     // détermine le contenu du cours, aucun des deux n'est un défaut implicite.
     choix: {
