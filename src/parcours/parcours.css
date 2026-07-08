@@ -264,6 +264,12 @@
   gap: 1.3rem;
   align-items: stretch;
 }
+/* Une seule formule (ex. Halaqa ado) : auto-fit l'étirerait sur toute la
+   largeur → on garde une dimension de carte classique, centrée. */
+.tarif-grid--single {
+  grid-template-columns: minmax(280px, 360px);
+  justify-content: center;
+}
 
 /* ═══════════════════════════════════════════════════════════
    CARTE FORMULE — « manuscrit doré » éditorial

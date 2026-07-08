@@ -148,7 +148,7 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
         ) : atTarifs ? (
           <div className="tarif-wrap">
             {node.meta && <p className="tarif-meta parcours-anim">{node.meta}</p>}
-            <div className="tarif-grid">
+            <div className={`tarif-grid${node.tarifs.length === 1 ? ' tarif-grid--single' : ''}`}>
               {node.tarifs.map((t) => (
                 <TarifCard
                   key={t.id}
