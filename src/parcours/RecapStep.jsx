@@ -24,6 +24,7 @@ export default function RecapStep({ path, tarif, onSent }) {
   const [form, setForm]               = useState(emptyCoordForm);
   const [dispos, setDispos]           = useState([]);
   const [joursOuverts, setJoursOuverts] = useState([]);
+  const [besoin, setBesoin]           = useState('');
   const [sending, setSending]         = useState(false);
   const [error, setError]             = useState('');
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -60,6 +61,9 @@ export default function RecapStep({ path, tarif, onSent }) {
   const FRAIS_DOSSIER = 25;
   const prixNum = typeof tarif.prix === 'number' ? tarif.prix : null;
   const total = prixNum != null ? prixNum + FRAIS_DOSSIER : null;
+  // Pack « sur mesure » (pas de prix fixe) : le besoin de l'enfant conditionne
+  // l'accompagnement proposé → on invite la famille à le décrire ici.
+  const showBesoin = prixNum == null;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -79,6 +83,7 @@ export default function RecapStep({ path, tarif, onSent }) {
           rythme: tarif.rythme || null,
         },
         disponibilites: dispos.length ? dispos : null,
+        devis: showBesoin ? { besoin: besoin.trim() || null } : undefined,
         eleve, contact, estEnfant,
       });
       onSent({ choix: path.map((n) => n.label), coord: { prenom: contact.prenom } });
@@ -173,6 +178,21 @@ export default function RecapStep({ path, tarif, onSent }) {
         </div>
 
         <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
+
+        {showBesoin && (
+          <div className="recap-field">
+            <p className="recap-group-label">Discutons ensemble</p>
+            <label htmlFor="r-besoin">Décrivez les besoins de votre enfant</label>
+            <textarea
+              id="r-besoin"
+              name="besoin"
+              rows={4}
+              value={besoin}
+              onChange={(e) => setBesoin(e.target.value)}
+              placeholder="Diagnostic, difficultés rencontrées, aménagements utiles, objectifs souhaités…"
+            />
+          </div>
+        )}
 
         {showDispo && (
           <fieldset className="recap-dispo">

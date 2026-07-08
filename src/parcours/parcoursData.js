@@ -645,15 +645,16 @@ const TARIFS_COMBO_ENFANT_VISIO = [
 ];
 
 // ─── Enfant · Visioconférence · Enseignement spécifique (accompagnement) ───
-// ⚠️ Prix provisoire à 59 € pour tous les packs — à ajuster avec Sofiane.
+// Accompagnement individualisé (neuroatypique) : tarif ajusté au cas par cas,
+// pas de prix fixe affiché → `prixNote` (voir TarifCard/RecapStep).
 const TARIFS_ACC = [
-  { id: 'acc-priere',    titre: 'Prière et ablution', prix: 59, rythme: '5 séances · 30 min / semaine' },
-  { id: 'acc-sira',      titre: 'Sira',               prix: 59, rythme: '10 séances · 30 min / semaine' },
-  { id: 'acc-seigneur',  titre: 'Mon Seigneur',       prix: 59, rythme: '5 séances · 30 min / semaine' },
-  { id: 'acc-adam',      titre: 'Adam',               prix: 59, rythme: '5 séances · 20 min / semaine' },
-  { id: 'acc-nouh',      titre: 'Nouh',               prix: 59, rythme: '5 séances · 20 min / semaine' },
-  { id: 'acc-souleyman', titre: 'Souleyman',          prix: 59, rythme: '5 séances · 20 min / semaine' },
-  { id: 'acc-ibrahim',   titre: 'Ibrahim',            prix: 59, rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-priere',    titre: 'Prière et ablution', prixNote: 'Tarif sur mesure', rythme: '5 séances · 30 min / semaine' },
+  { id: 'acc-sira',      titre: 'Sira',               prixNote: 'Tarif sur mesure', rythme: '10 séances · 30 min / semaine' },
+  { id: 'acc-seigneur',  titre: 'Mon Seigneur',       prixNote: 'Tarif sur mesure', rythme: '5 séances · 30 min / semaine' },
+  { id: 'acc-adam',      titre: 'Adam',               prixNote: 'Tarif sur mesure', rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-nouh',      titre: 'Nouh',               prixNote: 'Tarif sur mesure', rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-souleyman', titre: 'Souleyman',          prixNote: 'Tarif sur mesure', rythme: '5 séances · 20 min / semaine' },
+  { id: 'acc-ibrahim',   titre: 'Ibrahim',            prixNote: 'Tarif sur mesure', rythme: '5 séances · 20 min / semaine' },
 ];
 
 // ─── Enfant · Visioconférence · Halaqa encadrée pour ado ───
