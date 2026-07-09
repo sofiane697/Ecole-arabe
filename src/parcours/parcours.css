@@ -439,8 +439,9 @@
 }
 
 /* Ligne de prérequis sous le niveau (cartes arabe adulte).
-   min-height réserve l'espace de ~2 lignes → prix et description alignés
-   entre les 4 cartes, quelle que soit la longueur du prérequis (vide = Expert). */
+   min-height réserve l'espace du libellé + jusqu'à 3 lignes de texte (le
+   prérequis le plus long, ex. Expert, y tient) → prix et description
+   alignés entre les 4 cartes quelle que soit la longueur du prérequis. */
 .tarif-prereq-line {
   display: block;
   font-family: 'Cormorant Garamond', serif;
@@ -449,7 +450,7 @@
   font-weight: 500;
   line-height: 1.35;
   color: var(--fg-mid);
-  min-height: 3.2rem;
+  min-height: 6.5rem;
   margin: 0.2rem 0 1.2rem;
 }
 
