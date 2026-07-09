@@ -711,6 +711,26 @@
   margin-bottom: 1.1rem;
 }
 
+/* ── Accordéon mobile (Votre sélection / Vos coordonnées / Vos
+   disponibilités) — desktop : les 3 sections restent toujours visibles,
+   le bouton se comporte comme le simple intitulé d'origine. ── */
+.recap-acc-head {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: default;
+}
+.recap-acc-head-preview,
+.recap-acc-chevron { display: none; }
+
 /* ── Colonne résumé / pack ── */
 .recap-summary {
   display: flex;
@@ -855,8 +875,10 @@
   padding-left: 1.6rem;
 }
 /* Léger filet horizontal au-dessus des disponibilités quand elles passent
-   en pleine largeur sous les coordonnées (enfant : pas de 3e colonne). */
-.recap-dispo-standalone {
+   en pleine largeur sous les coordonnées (enfant : pas de 3e colonne).
+   Sélecteur doublé (.recap-dispo.recap-dispo-standalone) pour l'emporter
+   sur le `margin: 0` de .recap-dispo, déclaré juste après dans ce fichier. */
+.recap-dispo.recap-dispo-standalone {
   border-top: 1px solid var(--border);
   padding-top: 1.8rem;
   margin-top: 1.8rem;
@@ -1154,6 +1176,61 @@
     margin-top: 0.3rem;
     padding-top: 1.4rem;
   }
+
+  /* Accordéon : « Votre sélection », « Vos coordonnées », « Vos
+     disponibilités » repliées par défaut, un seul ouvert à la fois — la
+     fiche tient sur un écran au lieu d'un long défilement continu. */
+  .recap-acc-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  .recap-acc-head-label { flex-shrink: 0; white-space: nowrap; }
+  .recap-acc-head-preview {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-left: auto;
+    min-width: 0;
+    font-size: 0.72rem;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--fg-mid);
+  }
+  .recap-acc-head-formule {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--fg-title);
+  }
+  .recap-acc-head-total { flex-shrink: 0; font-weight: 700; color: var(--gold); }
+  .recap-acc-chevron {
+    display: inline-block;
+    flex-shrink: 0;
+    color: var(--gold);
+    transition: transform .3s var(--ease-out);
+  }
+  .recap-acc.is-open .recap-acc-chevron { transform: rotate(180deg); }
+
+  .recap-acc-body { display: none; }
+  .recap-acc.is-open .recap-acc-body {
+    display: block;
+    margin-top: 1.1rem;
+    animation: recap-acc-open .35s var(--ease-out);
+  }
+  @keyframes recap-acc-open {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* L'eyebrow/legend qui enveloppe le bouton ne garde sa marge basse que
+     lorsque la section est ouverte (sinon vide inutile sous le bouton). */
+  .recap-acc .recap-eyebrow { margin-bottom: 0; }
+  .recap-acc.is-open .recap-eyebrow { margin-bottom: 0.3rem; }
+
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
 

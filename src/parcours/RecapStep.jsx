@@ -30,6 +30,12 @@ export default function RecapStep({ path, tarif, onSent }) {
   const [error, setError]             = useState('');
   const change = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
+  // Accordéon mobile (« Votre sélection » / « Vos coordonnées » / « Vos
+  // disponibilités ») : un seul ouvert à la fois. Sans effet sur desktop, où
+  // les trois sections restent toujours visibles (cf. parcours.css).
+  const [openAcc, setOpenAcc] = useState('coordonnees');
+  const toggleAcc = (key) => setOpenAcc((cur) => (cur === key ? null : key));
+
   const { est_enfant: estEnfant, format } = derivePathMeta(path);
   // Disponibilités : adulte toujours ; enfant uniquement en visioconférence
   // (pas en autonomie ni en cours particulier).
@@ -112,77 +118,93 @@ export default function RecapStep({ path, tarif, onSent }) {
   return (
     <div className="recap parcours-anim">
       {/* ─ Colonne résumé / pack ─ */}
-      <aside className="recap-summary">
-        <div className="recap-eyebrow">Votre sélection</div>
-
-        <nav className="recap-path">
-          {path.map((n, i) => (
-            <span className="recap-crumb" key={n.id}>
-              {i > 0 && <span className="recap-sep">›</span>}
-              {n.label}
+      <aside className={`recap-summary recap-acc${openAcc === 'selection' ? ' is-open' : ''}`}>
+        <div className="recap-eyebrow">
+          <button
+            type="button"
+            className="recap-acc-head"
+            onClick={() => toggleAcc('selection')}
+            aria-expanded={openAcc === 'selection'}
+          >
+            <span className="recap-acc-head-label">Votre sélection</span>
+            <span className="recap-acc-head-preview">
+              <span className="recap-acc-head-formule">{formuleNom}</span>
+              <span className="recap-acc-head-total">{prixNum != null ? `${total} €` : 'Sur devis'}</span>
             </span>
-          ))}
-        </nav>
-
-        <div className="recap-formule">
-          <span className="recap-formule-nom">{formuleNom}</span>
-          {tarif.ar && <span className="recap-formule-ar">{tarif.ar}</span>}
+            <span className="recap-acc-chevron" aria-hidden="true">⌄</span>
+          </button>
         </div>
-        {tarif.rythme && <p className="recap-rythme">{tarif.rythme}</p>}
 
-        {Array.isArray(tarif.featureGroups) ? (
-          tarif.featureGroups.map((g, gi) => (
-            <div className="recap-feat-group" key={gi}>
-              <span className="recap-feat-group-label">{g.titre}</span>
+        <div className="recap-acc-body">
+          <nav className="recap-path">
+            {path.map((n, i) => (
+              <span className="recap-crumb" key={n.id}>
+                {i > 0 && <span className="recap-sep">›</span>}
+                {n.label}
+              </span>
+            ))}
+          </nav>
+
+          <div className="recap-formule">
+            <span className="recap-formule-nom">{formuleNom}</span>
+            {tarif.ar && <span className="recap-formule-ar">{tarif.ar}</span>}
+          </div>
+          {tarif.rythme && <p className="recap-rythme">{tarif.rythme}</p>}
+
+          {Array.isArray(tarif.featureGroups) ? (
+            tarif.featureGroups.map((g, gi) => (
+              <div className="recap-feat-group" key={gi}>
+                <span className="recap-feat-group-label">{g.titre}</span>
+                <ul className="recap-feats">
+                  {g.items.map((f, i) => (
+                    <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          ) : (
+            tarif.features?.length > 0 && (
               <ul className="recap-feats">
-                {g.items.map((f, i) => (
+                {tarif.features.map((f, i) => (
                   <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
                 ))}
               </ul>
-            </div>
-          ))
-        ) : (
-          tarif.features?.length > 0 && (
-            <ul className="recap-feats">
-              {tarif.features.map((f, i) => (
-                <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
-              ))}
-            </ul>
-          )
-        )}
-
-        <div className="recap-cost">
-          {prixNum != null ? (
-            <>
-              <div className="recap-cost-row">
-                <span>Prix du pack</span>
-                <span>{prixNum} €</span>
-              </div>
-              <div className="recap-cost-row">
-                <span>Frais de dossier</span>
-                <span>{FRAIS_DOSSIER} €</span>
-              </div>
-              <div className="recap-total">
-                <span className="recap-total-label">Total</span>
-                <span className="recap-total-val">{total} €</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="recap-cost-row">
-                <span>Prix du pack</span>
-                <span>{tarif.prixNote}</span>
-              </div>
-              <div className="recap-cost-row">
-                <span>Frais de dossier</span>
-                <span>{FRAIS_DOSSIER} €</span>
-              </div>
-              <div className="recap-total">
-                <span className="recap-total-label">Tarif</span>
-                <span className="recap-total-val">Sur devis</span>
-              </div>
-            </>
+            )
           )}
+
+          <div className="recap-cost">
+            {prixNum != null ? (
+              <>
+                <div className="recap-cost-row">
+                  <span>Prix du pack</span>
+                  <span>{prixNum} €</span>
+                </div>
+                <div className="recap-cost-row">
+                  <span>Frais de dossier</span>
+                  <span>{FRAIS_DOSSIER} €</span>
+                </div>
+                <div className="recap-total">
+                  <span className="recap-total-label">Total</span>
+                  <span className="recap-total-val">{total} €</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="recap-cost-row">
+                  <span>Prix du pack</span>
+                  <span>{tarif.prixNote}</span>
+                </div>
+                <div className="recap-cost-row">
+                  <span>Frais de dossier</span>
+                  <span>{FRAIS_DOSSIER} €</span>
+                </div>
+                <div className="recap-total">
+                  <span className="recap-total-label">Tarif</span>
+                  <span className="recap-total-val">Sur devis</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </aside>
 
@@ -215,15 +237,39 @@ export default function RecapStep({ path, tarif, onSent }) {
             interne (CoordonneesFields) → disponibilités pleine largeur en
             dessous plutôt qu'un 3e niveau de colonnes. */}
         <div className={splitFormCols ? 'recap-form-cols' : undefined}>
-          <div className={splitFormCols ? 'recap-form-col' : undefined}>
-            <div className="recap-eyebrow">Vos coordonnées</div>
+          <div className={`recap-acc${splitFormCols ? ' recap-form-col' : ''}${openAcc === 'coordonnees' ? ' is-open' : ''}`}>
+            <div className="recap-eyebrow">
+              <button
+                type="button"
+                className="recap-acc-head"
+                onClick={() => toggleAcc('coordonnees')}
+                aria-expanded={openAcc === 'coordonnees'}
+              >
+                Vos coordonnées
+                <span className="recap-acc-chevron" aria-hidden="true">⌄</span>
+              </button>
+            </div>
 
-            <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
+            <div className="recap-acc-body">
+              <CoordonneesFields estEnfant={estEnfant} form={form} onChange={change} idPrefix="r" />
+            </div>
           </div>
 
           {showDispo && (
-            <fieldset className={`recap-dispo${splitFormCols ? ' recap-form-col' : ' recap-dispo-standalone'}`}>
-              <legend className="recap-eyebrow">Vos disponibilités</legend>
+            <fieldset className={`recap-dispo recap-acc${splitFormCols ? ' recap-form-col' : ' recap-dispo-standalone'}${openAcc === 'dispo' ? ' is-open' : ''}`}>
+              <legend className="recap-eyebrow">
+                <button
+                  type="button"
+                  className="recap-acc-head"
+                  onClick={() => toggleAcc('dispo')}
+                  aria-expanded={openAcc === 'dispo'}
+                >
+                  Vos disponibilités
+                  <span className="recap-acc-chevron" aria-hidden="true">⌄</span>
+                </button>
+              </legend>
+
+              <div className="recap-acc-body">
               <p className="recap-dispo-help">
                 Choisir un ou plusieurs créneaux ou aucune préférence.
               </p>
@@ -327,6 +373,7 @@ export default function RecapStep({ path, tarif, onSent }) {
                     </div>
                   )
                 )}
+              </div>
               </div>
             </fieldset>
           )}
