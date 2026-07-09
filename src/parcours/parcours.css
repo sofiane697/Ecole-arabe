@@ -403,16 +403,28 @@
   align-items: flex-start;
 }
 
-/* Nom du module — display serif élégant */
+/* Nom du module — même style que .tarif-titre (uniformisé sur toutes les
+   cartes) : filet dégradé doré sous le texte, couleur brun chaud. */
 .tarif-niveau {
   display: block;
+  position: relative;
+  z-index: 1;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 2rem;
+  font-size: 1.3rem;
+  font-style: normal;
   font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.005em;
+  line-height: 1.25;
   color: #2e2416;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+.tarif-niveau::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 3px;
+  margin-top: 0.55rem;
+  background: linear-gradient(90deg, var(--gold), rgba(191, 138, 48, 0.1));
+  border-radius: 3px;
 }
 
 /* Sous-titre niveau (Débutant, Intermédiaire…) — eyebrow doré */
