@@ -1034,8 +1034,23 @@
 
   /* Une seule colonne, centrée */
   .sticker-grid,
-  .sticker-grid.count-2,
   .sticker-grid.count-1 { grid-template-columns: 1fr; max-width: 440px; }
+
+  /* Écrans à 2 choix (ex. Adulte/Enfant) : les deux cartes restent côte
+     à côte, alignées et redimensionnées pour tenir. */
+  .sticker-grid.count-2 {
+    grid-template-columns: 1fr 1fr;
+    max-width: 480px;
+    gap: 0.8rem;
+  }
+  .sticker-grid.count-2 .sticker { padding: 1.5rem 1rem; gap: 0.6rem; }
+  .sticker-grid.count-2 .sticker-ico {
+    width: 3.2rem; height: 3.2rem; font-size: 1.6rem;
+  }
+  .sticker-grid.count-2 .sticker-ico--multi { font-size: 1rem; }
+  .sticker-grid.count-2 .sticker-label { font-size: 0.95rem; }
+  .sticker-grid.count-2 .sticker-ar { font-size: 0.82rem; }
+  .sticker-grid.count-2 .sticker-desc { font-size: 0.74rem; line-height: 1.4; }
 
   /* Mobile : une seule carte à la fois, centrée sur l'écran (pas d'aperçu
      de la carte voisine), navigation par les flèches gauche/droite ou le
