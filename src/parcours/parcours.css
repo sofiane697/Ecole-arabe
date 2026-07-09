@@ -1036,40 +1036,55 @@
   .sticker-grid,
   .sticker-grid.count-1 { grid-template-columns: 1fr; max-width: 440px; }
 
-  /* Écrans à 2, 3 ou 4 choix : les cartes restent alignées deux par deux
-     (la 3e carte d'un écran à 3 choix se centre seule sur la ligne du
-     dessous), redimensionnées pour tenir. */
+  /* Écrans à 2, 3, 4, 5 ou 6 choix : les cartes restent alignées deux par
+     deux (la carte impaire finale d'un écran à 3 ou 5 choix se centre
+     seule sur la dernière ligne), redimensionnées pour tenir. */
   .sticker-grid.count-2,
   .sticker-grid.count-3,
-  .sticker-grid.count-4 {
+  .sticker-grid.count-4,
+  .sticker-grid.count-5,
+  .sticker-grid.count-6 {
     grid-template-columns: 1fr 1fr;
     max-width: 480px;
     gap: 0.8rem;
   }
   .sticker-grid.count-2 .sticker,
   .sticker-grid.count-3 .sticker,
-  .sticker-grid.count-4 .sticker { padding: 1.5rem 1rem; gap: 0.6rem; }
+  .sticker-grid.count-4 .sticker,
+  .sticker-grid.count-5 .sticker,
+  .sticker-grid.count-6 .sticker { padding: 1.5rem 1rem; gap: 0.6rem; }
   .sticker-grid.count-2 .sticker-ico,
   .sticker-grid.count-3 .sticker-ico,
-  .sticker-grid.count-4 .sticker-ico {
+  .sticker-grid.count-4 .sticker-ico,
+  .sticker-grid.count-5 .sticker-ico,
+  .sticker-grid.count-6 .sticker-ico {
     width: 3.2rem; height: 3.2rem; font-size: 1.6rem;
   }
   .sticker-grid.count-2 .sticker-ico--multi,
   .sticker-grid.count-3 .sticker-ico--multi,
-  .sticker-grid.count-4 .sticker-ico--multi { font-size: 1rem; }
+  .sticker-grid.count-4 .sticker-ico--multi,
+  .sticker-grid.count-5 .sticker-ico--multi,
+  .sticker-grid.count-6 .sticker-ico--multi { font-size: 1rem; }
   .sticker-grid.count-2 .sticker-label,
   .sticker-grid.count-3 .sticker-label,
-  .sticker-grid.count-4 .sticker-label { font-size: 0.95rem; }
+  .sticker-grid.count-4 .sticker-label,
+  .sticker-grid.count-5 .sticker-label,
+  .sticker-grid.count-6 .sticker-label { font-size: 0.95rem; }
   .sticker-grid.count-2 .sticker-ar,
   .sticker-grid.count-3 .sticker-ar,
-  .sticker-grid.count-4 .sticker-ar { font-size: 0.82rem; }
+  .sticker-grid.count-4 .sticker-ar,
+  .sticker-grid.count-5 .sticker-ar,
+  .sticker-grid.count-6 .sticker-ar { font-size: 0.82rem; }
   .sticker-grid.count-2 .sticker-desc,
   .sticker-grid.count-3 .sticker-desc,
-  .sticker-grid.count-4 .sticker-desc { font-size: 0.74rem; line-height: 1.4; }
+  .sticker-grid.count-4 .sticker-desc,
+  .sticker-grid.count-5 .sticker-desc,
+  .sticker-grid.count-6 .sticker-desc { font-size: 0.74rem; line-height: 1.4; }
 
-  /* 3e carte d'un écran à 3 choix : seule sur sa ligne, centrée entre les
-     deux cartes du dessus (même largeur qu'une colonne). */
-  .sticker-grid.count-3 .sticker:nth-child(3) {
+  /* Carte impaire finale (3e sur 3, 5e sur 5) : seule sur sa ligne,
+     centrée entre les deux cartes du dessus (même largeur qu'une colonne). */
+  .sticker-grid.count-3 .sticker:nth-child(3),
+  .sticker-grid.count-5 .sticker:nth-child(5) {
     grid-column: 1 / -1;
     justify-self: center;
     width: calc(50% - 0.4rem);
