@@ -7,7 +7,7 @@ import ILLUS from './StickerIllus';
  * @param {Function} onPick Appelé avec le nœud cliqué (ignoré si disabled)
  */
 export default function StickerGrid({ nodes, onPick }) {
-  const countCls = nodes.length <= 2 ? `count-${nodes.length}` : '';
+  const countCls = nodes.length <= 4 ? `count-${nodes.length}` : '';
 
   return (
     <div className={`sticker-grid ${countCls}`}>
