@@ -1121,8 +1121,20 @@
     height: 38px;
     font-size: 1.1rem;
   }
-  .tarif-carousel-arrow--prev { left: 4px; }
-  .tarif-carousel-arrow--next { right: 4px; }
+  .tarif-carousel-arrow--prev { left: 4px; animation: tarif-arrow-bounce-prev 1.6s ease-in-out infinite; }
+  .tarif-carousel-arrow--next { right: 4px; animation: tarif-arrow-bounce-next 1.6s ease-in-out infinite; }
+  /* Rebond suspendu pendant l'interaction, pour ne pas gêner le survol/appui. */
+  .tarif-carousel-arrow:hover,
+  .tarif-carousel-arrow:active { animation-play-state: paused; }
+
+  @keyframes tarif-arrow-bounce-prev {
+    0%, 100% { transform: translateY(-50%) translateX(0); }
+    50% { transform: translateY(-50%) translateX(-5px); }
+  }
+  @keyframes tarif-arrow-bounce-next {
+    0%, 100% { transform: translateY(-50%) translateX(0); }
+    50% { transform: translateY(-50%) translateX(5px); }
+  }
   .tarif-titre { min-height: 0; }
   .tarif-titre-lvl { margin-bottom: 1rem; }
 
