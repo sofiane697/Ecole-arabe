@@ -105,10 +105,10 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
             </button>
             {path.length > 0 && (
               <span className="parcours-crumbs">
-                {path.map((n, i) => (
+                {path.slice(-2).map((n, i, arr) => (
                   <span key={n.id}>
                     {i > 0 && ' › '}
-                    {i === path.length - 1 ? <b>{n.label}</b> : n.label}
+                    {i === arr.length - 1 ? <b>{n.label}</b> : n.label}
                   </span>
                 ))}
               </span>
