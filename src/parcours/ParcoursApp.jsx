@@ -19,6 +19,10 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
   const [done, setDone] = useState(null);   // pack envoyé (confirmation)
 
   const stageRef = useRef(null);
+  // Historique navigateur : chaque étape « en avant » pousse une entrée, pour
+  // que la flèche précédente du navigateur équivaille au bouton « Retour ».
+  const isPopRef = useRef(false);
+  const mountedRef = useRef(false);
 
   // Nœud courant : dernier du chemin, ou la racine si on est à l'accueil
   const node = path.length ? path[path.length - 1] : PARCOURS;
@@ -36,6 +40,36 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
   useEffect(() => { onIslamChange?.(inIslam); }, [inIslam, onIslamChange]);
 
   const toTop = () => window.scrollTo({ top: 0 });
+
+  // Étape initiale de cette instance du parcours (utile après un retour à
+  // l'accueil, qui remonte le composant via `key`) : on retague l'entrée
+  // d'historique courante sans en créer une nouvelle.
+  useEffect(() => {
+    window.history.replaceState({ parcours: true, path: [], tarif: null, done: null }, '');
+  }, []);
+
+  // Pousse une nouvelle entrée d'historique à chaque navigation « en avant ».
+  // Ignoré juste après un popstate (retour navigateur), pour ne pas la
+  // repousser en double.
+  useEffect(() => {
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    if (isPopRef.current) { isPopRef.current = false; return; }
+    window.history.pushState({ parcours: true, path, tarif, done }, '');
+  }, [path, tarif, done]);
+
+  // Flèche précédente du navigateur = équivalent du bouton « Retour ».
+  useEffect(() => {
+    const onPopState = (e) => {
+      isPopRef.current = true;
+      const state = e.state;
+      setPath(state?.parcours ? state.path || [] : []);
+      setTarif(state?.parcours ? state.tarif || null : null);
+      setDone(state?.parcours ? state.done || null : null);
+      toTop();
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   // Clé d'étape : change à chaque transition → déclenche l'animation d'entrée
   const stepKey = done
@@ -61,11 +95,10 @@ export default function ParcoursApp({ onAtHomeChange, onIslamChange }) {
 
   // ─── Navigation ───
   const pick = (n) => { setPath((p) => [...p, n]); toTop(); };   // descendre d'un niveau
-  const back = () => {
-    toTop();
-    if (tarif) return setTarif(null);
-    setPath((p) => p.slice(0, -1));
-  };
+  // Délègue à l'historique du navigateur : le popstate ci-dessus restaure
+  // l'état précédent — bouton « Retour » et flèche précédente du navigateur
+  // font ainsi exactement la même chose.
+  const back = () => window.history.back();
   const reset = () => { setPath([]); setTarif(null); setDone(null); toTop(); };
 
   // ─── En-tête selon l'étape ───

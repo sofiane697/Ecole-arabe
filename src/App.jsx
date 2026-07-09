@@ -68,15 +68,23 @@ export default function App() {
   }, [menuOpen]);
 
   /* — Navigation — */
+  // Pousse une entrée d'historique « accueil » avant de remonter le parcours
+  // (via `homeKey`), pour que la flèche précédente du navigateur retrouve
+  // l'étape quittée au lieu de rejouer une ancienne entrée du parcours.
+  const pushHomeHistory = () => {
+    window.history.pushState({ parcours: true, path: [], tarif: null, done: null }, '');
+  };
+
   const goHome = useCallback(() => {
     setMenuOpen(false);
+    if (!atHome) pushHomeHistory();
     setHomeKey((k) => k + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [atHome]);
 
   const scrollToId = useCallback((id) => {
     setMenuOpen(false);
-    if (!atHome) setHomeKey((k) => k + 1); // dans le parcours → revenir à l'accueil d'abord
+    if (!atHome) { pushHomeHistory(); setHomeKey((k) => k + 1); } // dans le parcours → revenir à l'accueil d'abord
     setTimeout(() => {
       const el = document.getElementById(id);
       if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
