@@ -1178,7 +1178,7 @@
     display: block;
     grid-column: 1 / -1;
     order: -1;
-    padding: 0 2rem 1.1rem;
+    padding: 1.6rem 2rem 1.1rem;
   }
   .wiz-progress-label {
     font-size: 0.7rem;
@@ -1457,5 +1457,5 @@
   .parcours-bar { margin-bottom: 1.1rem; margin-left: 0; }
   .parcours-back { padding: 0.4rem 0.85rem; font-size: 0.76rem; }
   .recap-summary, .recap-form { padding: 1.8rem 1.4rem; }
-  .wiz-progress { padding: 0 1.4rem 1rem; }
+  .wiz-progress { padding: 1.3rem 1.4rem 1rem; }
 }
