@@ -1150,6 +1150,9 @@
   /* Récap : empilé en une colonne */
   .recap { grid-template-columns: 1fr; max-width: 460px; }
   .recap-summary { border-right: none; border-bottom: 1px solid var(--border); }
+  /* Étape « Votre sélection » plus courte : séances/rythme/prix suffisent,
+     le détail des points du module reste réservé au desktop. */
+  .recap-summary-detail { display: none; }
   .recap-row2 { grid-template-columns: 1fr; }
   .recap-form-cols { grid-template-columns: 1fr; }
   .recap-coord-split { grid-template-columns: 1fr; }

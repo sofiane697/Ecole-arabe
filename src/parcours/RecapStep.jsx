@@ -173,26 +173,31 @@ export default function RecapStep({ path, tarif, onSent }) {
         </div>
         {tarif.rythme && <p className="recap-rythme">{tarif.rythme}</p>}
 
-        {Array.isArray(tarif.featureGroups) ? (
-          tarif.featureGroups.map((g, gi) => (
-            <div className="recap-feat-group" key={gi}>
-              <span className="recap-feat-group-label">{g.titre}</span>
+        {/* Détail des points du module : masqué sur mobile (étape « Votre
+            sélection » plus courte — séances/rythme/prix suffisent), gardé
+            sur desktop où tout reste visible. */}
+        <div className="recap-summary-detail">
+          {Array.isArray(tarif.featureGroups) ? (
+            tarif.featureGroups.map((g, gi) => (
+              <div className="recap-feat-group" key={gi}>
+                <span className="recap-feat-group-label">{g.titre}</span>
+                <ul className="recap-feats">
+                  {g.items.map((f, i) => (
+                    <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          ) : (
+            tarif.features?.length > 0 && (
               <ul className="recap-feats">
-                {g.items.map((f, i) => (
+                {tarif.features.map((f, i) => (
                   <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
                 ))}
               </ul>
-            </div>
-          ))
-        ) : (
-          tarif.features?.length > 0 && (
-            <ul className="recap-feats">
-              {tarif.features.map((f, i) => (
-                <li key={i}><span className="tarif-check" aria-hidden="true" />{f}</li>
-              ))}
-            </ul>
-          )
-        )}
+            )
+          )}
+        </div>
 
         <div className="recap-cost">
           {prixNum != null ? (
