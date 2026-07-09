@@ -702,6 +702,13 @@
     0 6px 18px -10px rgba(31, 29, 26, 0.12);
 }
 
+/* ── Parcours pas-à-pas mobile (« wizard ») ──────────────────
+   Desktop : tout reste toujours visible, comme avant — ces règles n'ont
+   d'effet que dans le media query mobile plus bas. ── */
+.wiz-progress,
+.wiz-nav { display: none; }
+.wiz-send { display: inline-flex; }
+
 .recap-eyebrow {
   font-size: 0.62rem;
   font-weight: 700;
@@ -710,26 +717,6 @@
   color: var(--gold);
   margin-bottom: 1.1rem;
 }
-
-/* ── Accordéon mobile (Votre sélection / Vos coordonnées / Vos
-   disponibilités) — desktop : les 3 sections restent toujours visibles,
-   le bouton se comporte comme le simple intitulé d'origine. ── */
-.recap-acc-head {
-  display: block;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  text-align: left;
-  cursor: default;
-}
-.recap-acc-head-preview,
-.recap-acc-chevron { display: none; }
 
 /* ── Colonne résumé / pack ── */
 .recap-summary {
@@ -1176,60 +1163,91 @@
     margin-top: 0.3rem;
     padding-top: 1.4rem;
   }
+  /* Étapes affichées une par une : pas de filet séparateur, chaque étape
+     étant seule visible à l'écran (l'étape précédente, masquée, ne doit
+     laisser aucune trace visuelle au-dessus de l'étape affichée). */
+  .wiz-step.recap-form-col + .wiz-step.recap-form-col,
+  .wiz-step + .wiz-step.recap-dispo-standalone {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
 
-  /* Accordéon : « Votre sélection », « Vos coordonnées », « Vos
-     disponibilités » repliées par défaut, un seul ouvert à la fois — la
-     fiche tient sur un écran au lieu d'un long défilement continu. */
-  .recap-acc-head {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-  }
-  .recap-acc-head-label { flex-shrink: 0; white-space: nowrap; }
-  .recap-acc-head-preview {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin-left: auto;
-    min-width: 0;
-    font-size: 0.72rem;
-    letter-spacing: normal;
-    text-transform: none;
-    color: var(--fg-mid);
-  }
-  .recap-acc-head-formule {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 0.85rem;
-    color: var(--fg-title);
-  }
-  .recap-acc-head-total { flex-shrink: 0; font-weight: 700; color: var(--gold); }
-  .recap-acc-chevron {
-    display: inline-block;
-    flex-shrink: 0;
-    color: var(--gold);
-    transition: transform .3s var(--ease-out);
-  }
-  .recap-acc.is-open .recap-acc-chevron { transform: rotate(180deg); }
-
-  .recap-acc-body { display: none; }
-  .recap-acc.is-open .recap-acc-body {
+  /* ── Parcours pas-à-pas (« wizard ») : une étape à la fois ── */
+  .wiz-progress {
     display: block;
-    margin-top: 1.1rem;
-    animation: recap-acc-open .35s var(--ease-out);
+    grid-column: 1 / -1;
+    order: -1;
+    padding: 0 2rem 1.1rem;
   }
-  @keyframes recap-acc-open {
-    from { opacity: 0; transform: translateY(-6px); }
+  .wiz-progress-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-mid);
+    margin-bottom: 0.5rem;
+  }
+  .wiz-progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .wiz-progress-bar {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width .35s var(--ease-out);
+  }
+
+  .wiz-step { display: none; }
+  .wiz-step.is-active {
+    display: block;
+    animation: wiz-step-in .35s var(--ease-out);
+  }
+  .recap-summary.wiz-step.is-active,
+  .recap-field.wiz-step.is-active,
+  fieldset.wiz-step.is-active { display: flex; }
+  @keyframes wiz-step-in {
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  /* L'eyebrow/legend qui enveloppe le bouton ne garde sa marge basse que
-     lorsque la section est ouverte (sinon vide inutile sous le bouton). */
-  .recap-acc .recap-eyebrow { margin-bottom: 0; }
-  .recap-acc.is-open .recap-eyebrow { margin-bottom: 0.3rem; }
+
+  .wiz-nav {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 0.4rem;
+  }
+  .wiz-nav-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 0.85rem 1rem;
+    border-radius: 980px;
+    cursor: pointer;
+    transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
+  }
+  .wiz-nav-prev {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--fg-title);
+  }
+  .wiz-nav-prev:hover { border-color: var(--gold); color: var(--gold); }
+  .wiz-nav-next {
+    background: var(--gold);
+    border: none;
+    color: #fff;
+    box-shadow: 0 10px 24px -10px rgba(191, 138, 48, 0.55);
+  }
+  .wiz-nav-next:hover { background: var(--gold-light); }
+
+  .wiz-send { display: none; }
+  .wiz-send.is-active { display: inline-flex; }
 
   .parcours-done { padding: 2.4rem 1.6rem; }
 }
@@ -1439,4 +1457,5 @@
   .parcours-bar { margin-bottom: 1.1rem; margin-left: 0; }
   .parcours-back { padding: 0.4rem 0.85rem; font-size: 0.76rem; }
   .recap-summary, .recap-form { padding: 1.8rem 1.4rem; }
+  .wiz-progress { padding: 0 1.4rem 1rem; }
 }
