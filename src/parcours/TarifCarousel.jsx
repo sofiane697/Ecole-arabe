@@ -2,6 +2,20 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import TarifCard from './TarifCard';
 
 /**
+ * Aligne la hauteur de la zone « prérequis » sur la plus haute des cartes
+ * affichées ensemble (plutôt qu'une valeur fixe globale) : les écrans à
+ * prérequis courts (Coran…) restent compacts, seul l'écran qui a vraiment
+ * un prérequis long (Langue arabe, « Expert ») réserve plus d'espace.
+ */
+function equalizePrereqHeights(container) {
+  const lines = container.querySelectorAll('.tarif-prereq-line');
+  if (!lines.length) return;
+  lines.forEach((l) => { l.style.minHeight = ''; });
+  const max = Math.max(...Array.from(lines).map((l) => l.getBoundingClientRect().height));
+  lines.forEach((l) => { l.style.minHeight = `${max}px`; });
+}
+
+/**
  * Cartes tarif : grille classique sur desktop (pas de carrousel), et
  * carrousel avec flèches + défilement au doigt sur mobile (cf. media
  * query ≤768px dans parcours.css, qui bascule `.tarif-grid` en rangée
@@ -38,6 +52,15 @@ export default function TarifCarousel({ tarifs, onChoose }) {
       window.removeEventListener('resize', updateArrows);
     };
   }, [updateArrows, tarifs]);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    equalizePrereqHeights(el);
+    const onResize = () => equalizePrereqHeights(el);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [tarifs]);
 
   const scroll = (dir) => {
     const el = trackRef.current;

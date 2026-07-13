@@ -438,10 +438,12 @@
   margin-bottom: 1.2rem;
 }
 
-/* Ligne de prérequis sous le niveau (cartes arabe adulte).
-   min-height réserve l'espace du libellé + jusqu'à 3 lignes de texte (le
-   prérequis le plus long, ex. Expert, y tient) → prix et description
-   alignés entre les 4 cartes quelle que soit la longueur du prérequis. */
+/* Ligne de prérequis sous le niveau (cartes arabe adulte). La hauteur
+   réelle est égalisée en JS entre les cartes affichées ensemble
+   (TarifCarousel, equalizePrereqHeights) : compacte quand les prérequis
+   sont courts (Coran…), plus grande seulement quand l'un d'eux est long
+   (Langue arabe, « Expert »). min-height ici = repli avant l'exécution du
+   JS (évite un flash trop court à l'affichage initial). */
 .tarif-prereq-line {
   display: block;
   font-family: 'Cormorant Garamond', serif;
@@ -450,7 +452,7 @@
   font-weight: 500;
   line-height: 1.35;
   color: var(--fg-mid);
-  min-height: 6.5rem;
+  min-height: 3.2rem;
   margin: 0.2rem 0 1.2rem;
 }
 
@@ -1212,6 +1214,7 @@
   }
   .recap-summary.wiz-step.is-active,
   .recap-field.wiz-step.is-active,
+  .recap-form-col.wiz-step.is-active,
   fieldset.wiz-step.is-active { display: flex; }
   @keyframes wiz-step-in {
     from { opacity: 0; transform: translateY(8px); }
