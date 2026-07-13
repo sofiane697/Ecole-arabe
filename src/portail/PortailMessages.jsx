@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import gsap from 'gsap';
 import { getEleveUser, fetchEnseignantsDeLEleve, fetchChatMessages, sendChatMessage, markMessagesReadEleve, fetchUnreadCountParEnseignant, fetchEnseignantsPresence, fetchBroadcastsEleve, markBroadcastsReadEleve, fetchUnreadBroadcastsCount } from './supabasePortail';
 
 const fmtPrenom = (s) => s ? s.trim().charAt(0).toUpperCase() + s.trim().slice(1).toLowerCase() : '';
@@ -73,6 +74,18 @@ export default function PortailMessages() {
   const bottomRef                     = useRef(null);
   const pollRef                       = useRef(null);
   const textareaRef                   = useRef(null);
+  const annoncesRef                   = useRef(null);
+
+  // Apparition en cascade des communiqués (GSAP)
+  useEffect(() => {
+    if (!viewBroadcasts || !annoncesRef.current) return;
+    const cards = annoncesRef.current.querySelectorAll('[data-annonce-card]');
+    if (cards.length === 0) return;
+    const ctx = gsap.context(() => {
+      gsap.from(cards, { opacity: 0, y: 22, duration: 0.4, stagger: 0.08, delay: 0.05, ease: 'power2.out' });
+    }, annoncesRef);
+    return () => ctx.revert();
+  }, [viewBroadcasts, broadcasts.length]);
 
   useEffect(() => {
     if (!eleveId) return;
@@ -286,176 +299,103 @@ export default function PortailMessages() {
       <div className="portail-msg-chat" style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
         {viewBroadcasts ? (
           <>
-            {/* En-tête officiel */}
-            <div className="relative flex items-center gap-3.5 overflow-hidden" style={{
-              padding:'18px 24px 16px',
-              borderBottom:'2px solid var(--p-gold)',
-              background:'linear-gradient(180deg, #faf4e6 0%, #f6ecd5 100%)',
+            {/* En-tête */}
+            <div className="flex items-center gap-3.5" style={{
+              padding:'20px 28px',
+              borderBottom:'1px solid rgba(0,0,0,.06)',
+              background:'#ffffff',
             }}>
-              <div className="absolute top-0 left-0 right-0 h-1.5" style={{
-                backgroundImage:'repeating-linear-gradient(-45deg, var(--p-gold) 0 10px, #e8c36b 10px 20px)',
-                opacity:.9,
-              }} />
-              <button className="portail-msg-back hidden items-center justify-center w-[34px] h-[34px] rounded-lg cursor-pointer shrink-0 mt-1.5" onClick={handleBack} aria-label="Retour" style={{ background:'rgba(255,255,255,.6)', border:'1px solid var(--p-gold)', color:'#6b5220' }}>
+              <button className="portail-msg-back hidden items-center justify-center w-9 h-9 rounded-full cursor-pointer shrink-0" onClick={handleBack} aria-label="Retour" style={{ background:'#f5f5f7', border:'none', color:'#1d1d1f' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
-              <div className="mt-1.5 w-[52px] h-[52px] rounded-full text-white flex items-center justify-center text-[22px] shrink-0" style={{
-                background:'radial-gradient(circle at 30% 28%, #e8c36b, #bf8a30 68%)',
-                boxShadow:'0 4px 14px rgba(191,138,48,.45), inset 0 -3px 6px rgba(0,0,0,.18)',
-                border:'2px solid #fffaf0',
+              <div className="w-11 h-11 rounded-full flex items-center justify-center text-[20px] shrink-0" style={{
+                background:'rgba(91,168,122,.12)',
               }}>📢</div>
-              <div className="mt-1.5 min-w-0">
+              <div className="min-w-0">
                 <div style={{
-                  fontFamily:'"Playfair Display", "Cormorant Garamond", Georgia, serif',
-                  fontSize:24, fontWeight:800, color:'#2d2008',
-                  letterSpacing:0.3, lineHeight:1.05,
+                  fontFamily:'var(--p-font-display)',
+                  fontSize:22, fontWeight:700, color:'#1d1d1f',
+                  letterSpacing:'-0.02em', lineHeight:1.1,
                 }}>
-                  Tableau d'annonces
+                  Annonces
                 </div>
-                <div className="flex items-center gap-2 uppercase mt-1.5" style={{
-                  fontSize:10.5, fontWeight:700, letterSpacing:2.8,
-                  color:'#8a6a28',
-                }}>
-                  <span className="w-4 h-px" style={{ background:'#8a6a28' }} />
-                  Communiqués officiels · de tes professeurs
+                <div style={{ fontSize:13.5, color:'#86868b', marginTop:2 }}>
+                  Communiqués de tes professeurs
                 </div>
               </div>
             </div>
 
             {/* Liste des communiqués */}
-            <div className="flex-1 overflow-y-auto flex flex-col gap-6" style={{
-              padding:'28px 32px 36px',
-              backgroundImage:`
-                radial-gradient(ellipse at top, rgba(191,138,48,.06), transparent 55%),
-                repeating-linear-gradient(0deg, rgba(191,138,48,.035) 0 1px, transparent 1px 30px)
-              `,
-              backgroundColor:'#fbf7ee',
+            <div ref={annoncesRef} className="flex-1 overflow-y-auto flex flex-col gap-[18px]" style={{
+              padding:'24px 28px 40px',
+              backgroundColor:'#f5f5f7',
             }}>
               {broadcasts.length === 0 ? (
-                <div className="text-center mt-[70px]">
-                  <div className="inline-block" style={{
-                    padding:'26px 34px',
-                    background:'#fffdf7',
-                    border:'1px dashed var(--p-gold)',
-                    fontFamily:'"Playfair Display", Georgia, serif',
-                    fontStyle:'italic', fontSize:17, color:'#6b5220',
-                    transform:'rotate(-1.4deg)',
-                    boxShadow:'0 10px 28px rgba(58,42,16,.12)',
-                  }}>
-                    « Aucun communiqué à afficher pour le moment. »
+                <div className="flex flex-col items-center justify-center text-center" style={{ marginTop:80, gap:14 }}>
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{
+                    background:'#ffffff', fontSize:28,
+                    boxShadow:'0 4px 16px rgba(0,0,0,.05)',
+                  }}>📢</div>
+                  <div style={{ fontSize:16, fontWeight:600, color:'#1d1d1f', fontFamily:'var(--p-font-display)' }}>
+                    Aucune annonce
+                  </div>
+                  <div style={{ fontSize:13.5, color:'#86868b', maxWidth:260, lineHeight:1.6 }}>
+                    Les communiqués de tes professeurs apparaîtront ici.
                   </div>
                 </div>
-              ) : broadcasts.map((b, idx) => {
+              ) : broadcasts.map((b) => {
                 const ens = b.enseignants || {};
-                const num = String(broadcasts.length - idx).padStart(3, '0');
                 const d = new Date(b.created_at);
-                const day = d.getDate();
-                const month = d.toLocaleDateString('fr-FR', { month:'short' }).toUpperCase().replace(/\./g,'');
-                const year = d.getFullYear();
-                const time = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+                const dateLabel = d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }).replace(/\./g,'')
+                  + ' · ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+                const acolor = avatarColor(ens.id || b.enseignant_id || b.id);
                 return (
-                  <article key={b.id} className="relative overflow-hidden" style={{
-                    background:'#fffdf7',
-                    border:'1px solid rgba(191,138,48,.35)',
-                    boxShadow:'0 14px 32px rgba(58,42,16,.08), 0 2px 0 #f3e6c6',
+                  <article key={b.id} data-annonce-card style={{
+                    background:'#ffffff',
+                    borderRadius:20,
+                    boxShadow:'0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.045)',
+                    padding:'22px 26px 24px',
                   }}>
-                    {/* Ruban à rayures */}
-                    <div className="h-2.5" style={{
-                      backgroundImage:'repeating-linear-gradient(-45deg, var(--p-gold) 0 8px, #e8c36b 8px 16px)',
-                    }} />
-
-                    {/* En-tête : date + numéro + sceau */}
-                    <header className="flex items-stretch" style={{ borderBottom:'1px solid rgba(191,138,48,.22)' }}>
-                      <div className="w-[92px] shrink-0 text-center flex flex-col items-center justify-center" style={{
-                        background:'linear-gradient(180deg, #3a2a10 0%, #5b4218 100%)',
-                        color:'#f6dea0',
-                        padding:'14px 8px',
-                        fontFamily:'"Playfair Display", Georgia, serif',
-                        borderRight:'1px solid rgba(191,138,48,.25)',
+                    {/* En-tête : avatar prof + nom + date */}
+                    <header className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{
+                        background:acolor + '1f', color:acolor,
+                        fontSize:14, fontWeight:700, fontFamily:'var(--p-font-display)',
                       }}>
-                        <div style={{ fontSize:10, letterSpacing:2.5, fontWeight:700, opacity:.8 }}>{month}</div>
-                        <div className="font-extrabold leading-none my-1" style={{ fontSize:34 }}>{day}</div>
-                        <div style={{ fontSize:10, letterSpacing:2.5, opacity:.8 }}>{year}</div>
+                        {initiales(ens.prenom, ens.nom)}
                       </div>
-                      <div className="flex-1 min-w-0" style={{ padding:'14px 20px' }}>
-                        <div className="flex items-center gap-2.5 flex-wrap uppercase" style={{
-                          fontSize:10, letterSpacing:3, fontWeight:800,
-                          color:'var(--p-gold)', textTransform:'uppercase',
-                        }}>
-                          <span>Communiqué N° {num}</span>
-                          <span className="w-1 h-1 rounded-full bg-p-gold" />
-                          <span style={{ color:'#8a6a28' }}>{time}</span>
+                      <div className="flex-1 min-w-0">
+                        <div style={{ fontSize:15, fontWeight:600, color:'#1d1d1f', fontFamily:'var(--p-font-display)', lineHeight:1.25 }}>
+                          {fmtPrenom(ens.prenom) || '—'} {fmtNom(ens.nom)}
                         </div>
-                        <div className="mt-1.5" style={{
-                          fontFamily:'"Playfair Display", Georgia, serif',
-                          fontSize:20, fontWeight:700, color:'#2d2008', lineHeight:1.22,
-                        }}>
-                          À l'attention de la classe
+                        <div style={{ fontSize:12.5, color:'#86868b', marginTop:1 }}>
+                          Communiqué à la classe
                         </div>
                       </div>
-                      <div className="w-[78px] shrink-0 flex items-center justify-center px-3">
-                        <div className="w-[54px] h-[54px] rounded-full flex items-center justify-center text-center uppercase leading-tight" style={{
-                          background:'radial-gradient(circle at 35% 32%, #d18642, #8a3c14 75%)',
-                          color:'#fbe8c2',
-                          fontSize:9, fontWeight:800, letterSpacing:.6,
-                          border:'2px solid #fbe8c2',
-                          boxShadow:'0 3px 10px rgba(138,60,20,.35), inset 0 -2px 5px rgba(0,0,0,.28)',
-                          transform:'rotate(-8deg)',
-                          fontFamily:'"Playfair Display", Georgia, serif',
-                        }}>
-                          Educa<br/>moov
-                        </div>
+                      <div className="shrink-0" style={{ fontSize:12.5, color:'#86868b' }}>
+                        {dateLabel}
                       </div>
                     </header>
 
                     {/* Corps du communiqué */}
-                    <div className="relative" style={{ padding:'24px 32px 14px' }}>
-                      <div className="absolute select-none pointer-events-none" style={{
-                        left:14, top:4,
-                        fontFamily:'"Playfair Display", Georgia, serif',
-                        fontSize:76, color:'rgba(191,138,48,.18)',
-                        lineHeight:0.8,
-                      }}>"</div>
-                      <div className="break-words whitespace-pre-wrap" style={{
-                        fontFamily:'"Playfair Display", "Cormorant Garamond", Georgia, serif',
-                        fontSize:17.5, color:'#2d2008', lineHeight:1.7,
-                        padding:'0 4px 0 34px',
-                      }}>
-                        {b.contenu}
-                      </div>
-                    </div>
-
-                    {/* Signature */}
-                    <footer className="flex items-center justify-end gap-3 flex-wrap" style={{
-                      padding:'12px 28px 18px',
-                      borderTop:'1px dashed rgba(191,138,48,.28)',
+                    <div className="break-words whitespace-pre-wrap" style={{
+                      marginTop:16,
+                      fontSize:16.5, color:'#1d1d1f', lineHeight:1.6, letterSpacing:'-0.01em',
                     }}>
-                      <span className="uppercase font-bold" style={{ fontSize:10.5, letterSpacing:2.4, color:'#8a6a28' }}>
-                        Transmis par
-                      </span>
-                      <span className="font-bold italic" style={{
-                        fontFamily:'"Playfair Display", Georgia, serif',
-                        fontSize:17, color:'#2d2008',
-                      }}>
-                        {fmtPrenom(ens.prenom) || '—'} {fmtNom(ens.nom)}
-                      </span>
-                    </footer>
+                      {b.contenu}
+                    </div>
                   </article>
                 );
               })}
             </div>
 
-            {/* Pied officiel */}
-            <div className="flex items-center justify-center gap-3 text-center uppercase font-bold" style={{
-              padding:'10px 20px',
-              borderTop:'1px solid var(--p-gold)',
-              background:'linear-gradient(180deg, #faf4e6 0%, #f6ecd5 100%)',
-              fontSize:10.5, letterSpacing:2.8,
-              color:'#8a6a28',
+            {/* Pied discret */}
+            <div className="flex items-center justify-center" style={{
+              padding:'12px 20px',
+              background:'#f5f5f7',
+              fontSize:12, color:'#a1a1a6',
             }}>
-              <span className="w-6 h-px" style={{ background:'#8a6a28' }} />
-              Lecture seule · Panneau officiel
-              <span className="w-6 h-px" style={{ background:'#8a6a28' }} />
+              Lecture seule
             </div>
           </>
         ) : !selEns ? (

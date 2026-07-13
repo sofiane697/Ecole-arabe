@@ -126,6 +126,7 @@ export default function EnseignantObservations() {
   const [saving,     setSaving]     = useState(false);
   const [modalErr,   setModalErr]   = useState('');
   const [eleveQ,     setEleveQ]     = useState('');
+  const [confirmDel, setConfirmDel] = useState(false);
 
   // ── Load classes ──
   useEffect(() => {
@@ -175,9 +176,20 @@ export default function EnseignantObservations() {
   const openEdit = (obs) => {
     setEditingObs(obs); setModalEleve(getEleve(obs.eleve_id));
     setModalType(obs.type); setModalText(obs.contenu);
-    setModalErr(''); setEleveQ(''); setModal('edit');
+    setModalErr(''); setEleveQ(''); setConfirmDel(false); setModal('edit');
   };
-  const closeModal = () => { setModal(false); setSaving(false); };
+  const closeModal = () => { setModal(false); setSaving(false); setConfirmDel(false); };
+
+  const handleDelete = async () => {
+    if (!editingObs) return;
+    if (!confirmDel) { setConfirmDel(true); return; }
+    setSaving(true); setModalErr('');
+    try {
+      await deleteObservation(editingObs.id, user.id);
+      setObservations(prev => prev.filter(o => o.id !== editingObs.id));
+      closeModal();
+    } catch (e) { setModalErr(e.message || 'Erreur.'); setSaving(false); }
+  };
 
   const handleSave = async () => {
     if (!modalEleve || !modalText.trim()) return;
@@ -547,32 +559,50 @@ export default function EnseignantObservations() {
             {modalErr && <p style={{ color: '#8B3A1F', fontSize: 12, margin: '8px 0 0' }}>{modalErr}</p>}
 
             {/* Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 18 }}>
-              <button
-                onClick={closeModal}
-                style={{
-                  padding: '9px 20px', borderRadius: 999,
-                  border: `1px solid ${C.rule}`, background: 'transparent',
-                  color: C.ink2, fontSize: 13, cursor: 'pointer',
-                  fontFamily: "'Manrope', sans-serif", fontWeight: 600,
-                }}
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || !modalEleve || !modalText.trim()}
-                style={{
-                  padding: '10px 22px', borderRadius: 10, border: 'none',
-                  background: (saving || !modalEleve || !modalText.trim()) ? C.rule : C.gold,
-                  color:      (saving || !modalEleve || !modalText.trim()) ? C.ink3 : C.paper,
-                  fontSize: 13, fontWeight: 600,
-                  cursor: (saving || !modalEleve || !modalText.trim()) ? 'not-allowed' : 'pointer',
-                  fontFamily: "'Manrope', sans-serif",
-                }}
-              >
-                {saving ? 'Enregistrement…' : modal === 'edit' ? 'Modifier' : 'Enregistrer'}
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 18 }}>
+              {modal === 'edit' ? (
+                <button
+                  onClick={handleDelete}
+                  disabled={saving}
+                  style={{
+                    padding: '9px 18px', borderRadius: 999,
+                    border: confirmDel ? 'none' : '1px solid rgba(139,58,31,0.32)',
+                    background: confirmDel ? '#8B3A1F' : 'transparent',
+                    color: confirmDel ? C.paper : '#8B3A1F',
+                    fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer',
+                    fontFamily: "'Manrope', sans-serif", transition: 'all 0.15s',
+                  }}
+                >
+                  {confirmDel ? 'Confirmer la suppression' : 'Supprimer'}
+                </button>
+              ) : <span />}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={closeModal}
+                  style={{
+                    padding: '9px 20px', borderRadius: 999,
+                    border: `1px solid ${C.rule}`, background: 'transparent',
+                    color: C.ink2, fontSize: 13, cursor: 'pointer',
+                    fontFamily: "'Manrope', sans-serif", fontWeight: 600,
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !modalEleve || !modalText.trim()}
+                  style={{
+                    padding: '10px 22px', borderRadius: 10, border: 'none',
+                    background: (saving || !modalEleve || !modalText.trim()) ? C.rule : C.gold,
+                    color:      (saving || !modalEleve || !modalText.trim()) ? C.ink3 : C.paper,
+                    fontSize: 13, fontWeight: 600,
+                    cursor: (saving || !modalEleve || !modalText.trim()) ? 'not-allowed' : 'pointer',
+                    fontFamily: "'Manrope', sans-serif",
+                  }}
+                >
+                  {saving ? 'Enregistrement…' : modal === 'edit' ? 'Modifier' : 'Enregistrer'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
