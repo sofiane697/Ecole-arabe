@@ -2,6 +2,7 @@ import './index.css';
 import React, { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const App = lazy(() => import('./App'));
 
@@ -142,3 +143,7 @@ root.render(
     <AnimatedRoutes />
   </BrowserRouter>
 );
+
+// App installable (PWA) + écran d'accueil disponible hors-ligne pour les 4
+// portails. N'enregistre rien en dev (cf. serviceWorkerRegistration.js).
+serviceWorkerRegistration.register();
