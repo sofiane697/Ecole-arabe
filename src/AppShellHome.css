@@ -1,0 +1,96 @@
+/* ─── Écran d'accueil de l'app installée : sélection du portail ─── */
+.app-shell-home {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2.4rem 1.6rem 3rem;
+  background: var(--bg);
+  overflow: hidden;
+}
+.app-shell-glow {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(191, 138, 48, 0.12), transparent 70%);
+  pointer-events: none;
+}
+.app-shell-logo {
+  position: relative;
+  width: 4.2rem;
+  height: 4.2rem;
+  object-fit: contain;
+  margin-bottom: 0.4rem;
+}
+.app-shell-title {
+  position: relative;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--fg-title);
+}
+.app-shell-sub {
+  position: relative;
+  font-size: 0.9rem;
+  color: var(--fg-mid);
+  margin-bottom: 2rem;
+}
+
+.app-shell-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 180px));
+  gap: 1rem;
+  width: 100%;
+  max-width: 420px;
+}
+.app-shell-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 1.8rem 1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfaf5 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 30px -14px rgba(31, 29, 26, 0.20);
+  transition: transform 0.3s var(--ease-out), border-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+}
+.app-shell-card:active {
+  transform: scale(0.97);
+  border-color: rgba(191, 138, 48, 0.35);
+}
+.app-shell-card-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--fg-title);
+}
+.app-shell-card-ar {
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  opacity: 0.8;
+}
+
+@media (hover: hover) {
+  .app-shell-card:hover {
+    border-color: rgba(191, 138, 48, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 20px 44px -18px rgba(191, 138, 48, 0.35);
+    transform: translateY(-3px);
+  }
+}

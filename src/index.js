@@ -1,10 +1,24 @@
 import './index.css';
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import AppShellHome from './AppShellHome';
 
 const App = lazy(() => import('./App'));
+
+// App installée (PWA, lancée depuis l'écran d'accueil) → accès direct aux 4
+// portails (AppShellHome), sans le site vitrine. Visite normale au navigateur
+// → site public inchangé. iOS expose ce mode via `navigator.standalone`
+// (pas de support de la media query display-mode avant iOS 16.4).
+const isStandalone = () =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true);
+
+function HomeRoute() {
+  const [standalone] = useState(isStandalone);
+  return standalone ? <AppShellHome /> : <App />;
+}
 
 const AdminLogin         = lazy(() => import('./admin/AdminLogin'));
 const AdminApp           = lazy(() => import('./admin/AdminApp'));
@@ -78,8 +92,8 @@ function AnimatedRoutes() {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes location={location} key={location.pathname.split('/')[1] || 'root'}>
-          {/* Site public */}
-          <Route path="/" element={<App />} />
+          {/* Site public (ou 4 portails si l'app est installée, cf. HomeRoute) */}
+          <Route path="/" element={<HomeRoute />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
