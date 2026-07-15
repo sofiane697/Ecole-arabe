@@ -42,6 +42,13 @@
 }
 
 .jeu-maison-emoji { font-size: 3.4rem; margin-bottom: 0.6rem; }
+.jeu-intro-kids {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin-bottom: 0.4rem;
+  filter: drop-shadow(0 8px 18px rgba(191, 138, 48, 0.18));
+}
 .jeu-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.9rem;

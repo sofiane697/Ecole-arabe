@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
+import kidsTaarif from './assets/kids-taarif.png';
 import './jeu.css';
 
 /**
@@ -41,7 +42,7 @@ export default function JeuApp() {
 
       {ecran === 'intro' && (
         <div className="jeu-screen jeu-intro">
-          <div className="jeu-maison-emoji">🏠</div>
+          <img src={kidsTaarif} alt="" className="jeu-intro-kids" />
           <h1 className="jeu-title">{maison.nom}</h1>
           <p className="jeu-title-ar">{maison.nomAr}</p>
           <p className="jeu-desc">{maison.desc}</p>
