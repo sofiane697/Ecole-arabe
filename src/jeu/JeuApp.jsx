@@ -8,6 +8,7 @@ import villageScene from './assets/village-scene.jpg';
 import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
 import leconShamsiya from './assets/lecon-shamsiya.jpg';
 import leconQamariya from './assets/lecon-qamariya.jpg';
+import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
 import './jeu.css';
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
@@ -24,14 +25,14 @@ const LECON_SCENES = {
   shamsiya: {
     img: leconShamsiya,
     hotspots: [
-      { text: 'اَلشَّمْسُ', x: 54, y: 16 },
-      { text: 'وَالشَّمْسِ', x: 53, y: 26 },
-      { text: 'اَلسَّمَاءُ', x: 43, y: 64 },
-      { text: 'اَلصُّبْحُ', x: 70, y: 64 },
-      { text: 'اَلنَّاسُ', x: 86, y: 64 },
-      { text: 'وَالزَّيْتُونِ', x: 43, y: 72 },
-      { text: 'وَالطَّارِقِ', x: 70, y: 72 },
-      { text: 'وَالضُّحَى', x: 86, y: 72 },
+      { text: 'اَلشَّمْسُ', x: 63, y: 20 },
+      { text: 'وَالشَّمْسِ', x: 62, y: 30 },
+      { text: 'اَلسَّمَاءُ', x: 50, y: 69 },
+      { text: 'اَلصُّبْحُ', x: 77, y: 69 },
+      { text: 'اَلنَّاسُ', x: 93, y: 69 },
+      { text: 'وَالزَّيْتُونِ', x: 50, y: 77 },
+      { text: 'وَالطَّارِقِ', x: 77, y: 77 },
+      { text: 'وَالضُّحَى', x: 93, y: 77 },
     ],
   },
   // NB : les cases du coin lecture sont vides sur l'image fournie (contrairement
@@ -40,16 +41,40 @@ const LECON_SCENES = {
   qamariya: {
     img: leconQamariya,
     hotspots: [
-      { text: 'اَلْقَمَرُ', x: 55, y: 17 },
-      { text: 'وَالْقَمَرِ', x: 54, y: 27 },
-      { text: 'بِالْهَزْلِ', x: 47, y: 63 },
-      { text: 'وَالْفَجْرِ', x: 63, y: 63 },
-      { text: 'الْوَتْرِ', x: 80, y: 63 },
-      { text: 'الْغَاشِيَةِ', x: 47, y: 73 },
-      { text: 'الْخُنَّاسِ', x: 63, y: 73 },
-      { text: 'وَالْمَلَكُ', x: 80, y: 73 },
+      { text: 'اَلْقَمَرُ', x: 64, y: 21 },
+      { text: 'وَالْقَمَرِ', x: 63, y: 31 },
+      { text: 'بِالْهَزْلِ', x: 54, y: 68 },
+      { text: 'وَالْفَجْرِ', x: 70, y: 68 },
+      { text: 'الْوَتْرِ', x: 87, y: 68 },
+      { text: 'الْغَاشِيَةِ', x: 54, y: 78 },
+      { text: 'الْخُنَّاسِ', x: 70, y: 78 },
+      { text: 'وَالْمَلَكُ', x: 87, y: 78 },
     ],
   },
+};
+
+// Coin lecture avant la salle de jeux — grille de 15 mots شمسية avec audio,
+// affichée après le choix des 2 portes et avant le défi de tri. Repères
+// décalés vers le coin bas-droit de chaque case pour ne pas chevaucher le mot.
+const COIN_LECTURE_SHAMSIYA = {
+  img: coinLectureShamsiya,
+  hotspots: [
+    { text: 'وَالزَّيْتُونِ', x: 24, y: 32 },
+    { text: 'اَلثَّرَائِبِ', x: 50, y: 32 },
+    { text: 'إِذَا اَلشَّمْسُ', x: 75, y: 32 },
+    { text: 'اَلنَّهَارَ', x: 98, y: 32 },
+    { text: 'اَلرَّحِيمِ', x: 24, y: 47 },
+    { text: 'وَالصُّبْحِ', x: 50, y: 47 },
+    { text: 'اَلسَّمَاءُ', x: 75, y: 47 },
+    { text: 'وَاللَّهِ', x: 98, y: 47 },
+    { text: 'اَلظَّالِمِينَ', x: 24, y: 62 },
+    { text: 'اَلثَّاقِبِ', x: 50, y: 62 },
+    { text: 'اَلطَّارِقِ', x: 75, y: 62 },
+    { text: 'اَلذِّكْرَى', x: 98, y: 62 },
+    { text: 'اَلدُّنْيَا', x: 50, y: 77 },
+    { text: 'اَلضَّالِّينَ', x: 75, y: 77 },
+    { text: 'اَلذِّكْرَى', x: 98, y: 77 },
+  ],
 };
 
 // Repères sur la carte du Royaume (en % de l'image) — un seul point d'entrée
@@ -155,16 +180,16 @@ export default function JeuApp() {
       setTimeout(() => setJeuxVerrouille(false), 1600);
       return;
     }
-    setEcran('defi');
+    setEcran('lecture');
   };
 
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
 
-  const retourLabel = ecran === 'village' ? '← Carte du Royaume' : '← Village du Coran';
-  const retourCible = ecran === 'village' ? 'carte' : 'village';
+  const retourLabel = ecran === 'village' ? '← Carte du Royaume' : ecran === 'lecture' ? '← Choisir une porte' : '← Village du Coran';
+  const retourCible = ecran === 'village' ? 'carte' : ecran === 'lecture' ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'village', 'portes'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'village', 'portes', 'lecture'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -282,6 +307,14 @@ export default function JeuApp() {
         <LeconPorte porte={maison.portes.find((p) => p.id === porteActive)} onFini={fermerPorte} />
       )}
 
+      {ecran === 'lecture' && (
+        <LeconScene
+          scene={COIN_LECTURE_SHAMSIYA}
+          onFini={() => setEcran('defi')}
+          boutonLabel="Commencer le défi →"
+        />
+      )}
+
       {ecran === 'defi' && (
         <div className="jeu-screen">
           <h2 className="jeu-h2">Salle de jeux — trie les mots</h2>
@@ -322,7 +355,7 @@ export default function JeuApp() {
   );
 }
 
-function LeconScene({ scene, onFini }) {
+function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
   return (
     <div className="jeu-carte jeu-lecon-scene">
       <div className="jeu-carte-inner">
@@ -341,7 +374,7 @@ function LeconScene({ scene, onFini }) {
         ))}
       </div>
       <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={onFini}>
-        J'ai compris →
+        {boutonLabel}
       </button>
     </div>
   );

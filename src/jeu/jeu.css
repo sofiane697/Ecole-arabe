@@ -227,15 +227,15 @@
 /* ─── Leçon illustrée (image + repères audio) ─── */
 .jeu-lecon-scene { position: relative; }
 .jeu-repere--audio .jeu-repere-point {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   background: rgba(255, 255, 255, 0.92);
-  border: 2px solid rgba(191, 138, 48, 0.4);
-  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(191, 138, 48, 0.4);
+  box-shadow: 0 3px 8px -3px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.55rem;
   animation: none;
 }
 .jeu-repere--audio:active .jeu-repere-point { transform: scale(0.9); }
