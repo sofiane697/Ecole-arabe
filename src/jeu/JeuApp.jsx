@@ -7,6 +7,7 @@ import royaumeMap from './assets/royaume-map.jpg';
 import villageScene from './assets/village-scene.jpg';
 import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
 import leconShamsiya from './assets/lecon-shamsiya.jpg';
+import leconQamariya from './assets/lecon-qamariya.jpg';
 import './jeu.css';
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
@@ -17,9 +18,8 @@ const PORTES_HOTSPOTS = {
 };
 const SALLE_JEUX_HOTSPOT = { x: 83, y: 44 };
 
-// Leçons illustrées (page du PDF) avec repères audio par mot — seule la
-// leçon شمسية en dispose pour l'instant. Sans entrée ici, la leçon retombe
-// sur l'ancien écran texte (cf. LeconPorte).
+// Leçons illustrées (page du PDF) avec repères audio par mot. Sans entrée
+// ici, la leçon retombe sur l'ancien écran texte (cf. LeconPorte).
 const LECON_SCENES = {
   shamsiya: {
     img: leconShamsiya,
@@ -32,6 +32,22 @@ const LECON_SCENES = {
       { text: 'وَالزَّيْتُونِ', x: 43, y: 72 },
       { text: 'وَالطَّارِقِ', x: 70, y: 72 },
       { text: 'وَالضُّحَى', x: 86, y: 72 },
+    ],
+  },
+  // NB : les cases du coin lecture sont vides sur l'image fournie (contrairement
+  // à la leçon شمسية) — l'ordre des mots ci-dessous suit jeuData.js à défaut de
+  // pouvoir se caler sur un texte visible dans les cases.
+  qamariya: {
+    img: leconQamariya,
+    hotspots: [
+      { text: 'اَلْقَمَرُ', x: 55, y: 17 },
+      { text: 'وَالْقَمَرِ', x: 54, y: 27 },
+      { text: 'بِالْهَزْلِ', x: 47, y: 63 },
+      { text: 'وَالْفَجْرِ', x: 63, y: 63 },
+      { text: 'الْوَتْرِ', x: 80, y: 63 },
+      { text: 'الْغَاشِيَةِ', x: 47, y: 73 },
+      { text: 'الْخُنَّاسِ', x: 63, y: 73 },
+      { text: 'وَالْمَلَكُ', x: 80, y: 73 },
     ],
   },
 };
