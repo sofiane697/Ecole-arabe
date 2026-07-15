@@ -16,19 +16,19 @@ const SCENES = { shamsiya: porteShamsiya, qamariya: porteQamariya };
 // Les autres maisons du Palais des Lettres sont affichées pour l'immersion
 // mais pas encore développées.
 const REPERES_CARTE = [
-  { id: 'village', label: 'Village du Coran', x: 84, y: 33, actif: true },
-  { id: 'tresor', label: 'Le trésor caché', x: 10, y: 26, actif: false },
-  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 19, y: 44, actif: false },
-  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 15, y: 75, actif: false },
-  { id: 'soukoun', label: 'Maison du soukoun', x: 85, y: 53, actif: false },
-  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 86, y: 79, actif: false },
+  { id: 'village', label: 'Village du Coran', x: 89, y: 20, actif: true },
+  { id: 'tresor', label: 'Le trésor caché', x: 12, y: 20, actif: false },
+  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 22, y: 31, actif: false },
+  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 15, y: 54, actif: false },
+  { id: 'soukoun', label: 'Maison du soukoun', x: 89, y: 38, actif: false },
+  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 90, y: 59, actif: false },
 ];
 
 // Les 3 maisons du Village du Coran — seule « ال التعريف » est développée.
 const MAISONS_VILLAGE = [
-  { id: 'waqf', label: 'Les secrets du Waqf', x: 16, y: 27, actif: false },
-  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 49, y: 30, actif: false },
-  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 84, y: 24, actif: true },
+  { id: 'waqf', label: 'Les secrets du Waqf', x: 18, y: 40, actif: false },
+  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 50, y: 40, actif: false },
+  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 85, y: 38, actif: true },
 ];
 
 const VILLAGE_NARRATION =
@@ -133,12 +133,11 @@ export default function JeuApp() {
               </button>
             ))}
           </div>
-          <span className="jeu-carte-hint">↔ Fais glisser pour explorer</span>
         </div>
       )}
 
       {ecran === 'village' && (
-        <div className="jeu-carte jeu-carte--village">
+        <div className="jeu-carte">
           <div className="jeu-carte-inner">
             <img src={villageScene} alt="Village du Coran" className="jeu-carte-img" />
             {MAISONS_VILLAGE.map((m) => (
