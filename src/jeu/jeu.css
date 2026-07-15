@@ -24,6 +24,7 @@
   color: #6e6e73;
   text-decoration: none;
 }
+.jeu-back-btn { background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
 .jeu-topbar-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.05rem;
@@ -39,6 +40,78 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+
+/* ─── Carte du Royaume ─── */
+.jeu-carte {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  animation: jeu-fade-in 0.4s ease;
+}
+.jeu-carte-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0 0 28px 28px;
+}
+.jeu-repere {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+}
+.jeu-repere-point {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffd166;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.5), 0 6px 14px -4px rgba(0, 0, 0, 0.4);
+}
+.jeu-repere.is-actif .jeu-repere-point { animation: jeu-pulse 1.8s ease-in-out infinite; }
+.jeu-repere.is-verrouille .jeu-repere-point { background: #cfcfcf; box-shadow: 0 0 0 3px rgba(207, 207, 207, 0.4), 0 6px 14px -4px rgba(0, 0, 0, 0.35); }
+.jeu-repere-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(30, 24, 12, 0.72);
+  padding: 0.2rem 0.55rem;
+  border-radius: 980px;
+  white-space: nowrap;
+  max-width: 34vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jeu-repere.is-actif .jeu-repere-label { background: #bf8a30; }
+.jeu-repere-toast {
+  position: absolute;
+  top: 100%;
+  margin-top: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(30, 24, 12, 0.85);
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+  white-space: nowrap;
+  animation: jeu-fade-in 0.2s ease;
+  z-index: 6;
+}
+@keyframes jeu-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.5), 0 6px 14px -4px rgba(0, 0, 0, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 209, 102, 0.15), 0 6px 14px -4px rgba(0, 0, 0, 0.4); }
+}
+@keyframes jeu-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .jeu-maison-emoji { font-size: 3.4rem; margin-bottom: 0.6rem; }
@@ -88,43 +161,62 @@
 }
 
 /* ─── Sélection des portes ─── */
-.jeu-portes-grid {
+.jeu-portes-screen { max-width: 640px; }
+.jeu-portes-scenes {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   width: 100%;
   margin-top: 1.4rem;
 }
-.jeu-porte {
+.jeu-porte-scene {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1.8rem 1rem;
-  background: #fff;
-  border: 2px solid color-mix(in srgb, var(--porte-c) 35%, white);
+  aspect-ratio: 3 / 5;
+  border: 3px solid color-mix(in srgb, var(--porte-c) 45%, white);
   border-radius: 20px;
   cursor: pointer;
-  box-shadow: 0 12px 28px -16px rgba(31, 29, 26, 0.25);
+  background-size: cover;
+  background-position: top center;
+  box-shadow: 0 14px 30px -16px rgba(31, 29, 26, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
 }
-.jeu-porte:hover { transform: translateY(-3px); box-shadow: 0 18px 36px -16px rgba(31, 29, 26, 0.3); }
-.jeu-porte.is-vue { background: color-mix(in srgb, var(--porte-c) 8%, white); }
-.jeu-porte-emoji { font-size: 2.2rem; }
-.jeu-porte-label { font-family: 'Amiri', 'Scheherazade New', serif; font-size: 1.05rem; font-weight: 700; }
+.jeu-porte-scene:hover { transform: translateY(-4px) scale(1.015); box-shadow: 0 20px 40px -16px rgba(31, 29, 26, 0.4); }
+.jeu-porte-scene.is-vue { box-shadow: 0 0 0 3px color-mix(in srgb, var(--porte-c) 55%, white), 0 14px 30px -16px rgba(31, 29, 26, 0.35); }
+.jeu-porte-scene-label {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 1.6rem 0.6rem 0.7rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+}
 .jeu-porte-check {
   position: absolute; top: 0.6rem; right: 0.6rem;
-  width: 22px; height: 22px;
+  width: 24px; height: 24px;
   border-radius: 50%;
   background: var(--porte-c);
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.4);
 }
-.jeu-porte--jeux.is-locked { opacity: 0.55; cursor: not-allowed; }
-.jeu-porte-lock { position: absolute; top: 0.6rem; right: 0.6rem; font-size: 0.9rem; }
-.jeu-hint { margin-top: 1.2rem; font-size: 0.82rem; color: #9a9a9a; }
+.jeu-salle-jeux {
+  margin-top: 1.4rem;
+  width: 100%;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #bf8a30, #d4a245);
+  border: none;
+  border-radius: 16px;
+  padding: 1rem;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(191, 138, 48, 0.55);
+}
+.jeu-salle-jeux.is-locked { background: #d8d3c8; color: #7a7466; cursor: not-allowed; box-shadow: none; }
 
 /* ─── Leçon d'une porte ─── */
 .jeu-lecon { align-items: stretch; text-align: left; }
@@ -162,6 +254,19 @@
 }
 .jeu-regle-exemple-mot { font-family: 'Amiri', 'Scheherazade New', serif; font-size: 1.4rem; color: #bf8a30; }
 .jeu-regle-exemple-note { font-size: 0.76rem; color: #9a9a9a; font-style: italic; }
+.jeu-voice-btn {
+  margin-left: auto;
+  background: rgba(191, 138, 48, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 30px; height: 30px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.jeu-voice-btn:hover { background: rgba(191, 138, 48, 0.2); }
+.jeu-voice-btn:active { transform: scale(0.9); }
 
 .jeu-astuce {
   font-size: 0.82rem;
@@ -186,7 +291,13 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   padding: 0.6rem 0.3rem;
+  cursor: pointer;
+  color: inherit;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
+.jeu-lecture-mot:hover { background: rgba(191, 138, 48, 0.08); }
+.jeu-lecture-mot:active { transform: scale(0.96); }
+.jeu-lecture-mot-icon { font-size: 0.7rem; opacity: 0.6; }
 
 .jeu-lecon > .jeu-btn { align-self: center; }
 
@@ -273,7 +384,7 @@
 .jeu-etoile.is-off { filter: grayscale(1); opacity: 0.4; }
 
 @media (max-width: 480px) {
-  .jeu-portes-grid { grid-template-columns: repeat(2, 1fr); }
   .jeu-lecture-grid { grid-template-columns: repeat(2, 1fr); }
   .jeu-dragsort-zones { grid-template-columns: 1fr 1fr; }
+  .jeu-repere-label { max-width: 30vw; font-size: 0.6rem; }
 }

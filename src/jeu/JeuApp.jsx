@@ -3,22 +3,64 @@ import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
 import kidsTaarif from './assets/kids-taarif.png';
+import royaumeMap from './assets/royaume-map.jpg';
+import porteShamsiya from './assets/porte-shamsiya.jpg';
+import porteQamariya from './assets/porte-qamariya.jpg';
 import './jeu.css';
+
+const SCENES = { shamsiya: porteShamsiya, qamariya: porteQamariya };
+
+// Repères sur la carte du Royaume (en % de l'image) — un seul point d'entrée
+// actif pour l'instant (Village du Coran, qui contient la maison ال التعريف).
+// Les autres maisons du Palais des Lettres sont affichées pour l'immersion
+// mais pas encore développées.
+const REPERES_CARTE = [
+  { id: 'village', label: 'Village du Coran', x: 84, y: 33, actif: true },
+  { id: 'tresor', label: 'Le trésor caché', x: 10, y: 26, actif: false },
+  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 19, y: 44, actif: false },
+  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 15, y: 75, actif: false },
+  { id: 'soukoun', label: 'Maison du soukoun', x: 85, y: 53, actif: false },
+  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 86, y: 79, actif: false },
+];
+
+function speak(text, lang) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new window.SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = 0.82;
+  window.speechSynthesis.speak(u);
+}
+
+function VoiceBtn({ text, lang = 'ar-SA', className = 'jeu-voice-btn' }) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-label="Écouter la prononciation"
+      onClick={(e) => { e.stopPropagation(); speak(text, lang); }}
+    >
+      🔊
+    </button>
+  );
+}
 
 /**
  * Prototype du jeu « Le Royaume du Coran » — une seule maison pour l'instant
  * (« ال » التعريف), pour valider le gameplay avant de transcrire le reste
  * du contenu (149 pages du PDF fourni par Sofiane).
  *
- * Parcours : intro maison → 2 portes (règle + lecture) → salle de jeux
- * (tri par glisser-déposer, débloquée une fois les 2 portes visitées) →
- * réussite.
+ * Parcours : carte du Royaume → intro maison → 2 portes (scènes réelles avec
+ * les mascottes) → salle de jeux (tri par glisser-déposer, débloquée une fois
+ * les 2 portes visitées) → réussite.
  */
 export default function JeuApp() {
-  const [ecran, setEcran] = useState('intro');       // intro | portes | lecon | defi | reussite
+  const [ecran, setEcran] = useState('carte');       // carte | intro | portes | lecon | defi | reussite
   const [porteActive, setPorteActive] = useState(null);
   const [portesVues, setPortesVues] = useState([]);
   const [resultat, setResultat] = useState(null);
+  const [repereVerrouille, setRepereVerrouille] = useState(null);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -29,6 +71,14 @@ export default function JeuApp() {
     setPorteActive(null);
     setEcran('portes');
   };
+  const cliquerRepere = (repere) => {
+    if (!repere.actif) {
+      setRepereVerrouille(repere.id);
+      setTimeout(() => setRepereVerrouille((r) => (r === repere.id ? null : r)), 1600);
+      return;
+    }
+    setEcran('intro');
+  };
 
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
@@ -36,9 +86,30 @@ export default function JeuApp() {
   return (
     <div className="jeu-app">
       <div className="jeu-topbar">
-        <Link to="/" className="jeu-back">← Quitter</Link>
+        {ecran === 'carte'
+          ? <Link to="/" className="jeu-back">← Quitter</Link>
+          : <button type="button" className="jeu-back jeu-back-btn" onClick={() => setEcran('carte')}>← Carte du Royaume</button>}
         <span className="jeu-topbar-title">Le Royaume du Coran</span>
       </div>
+
+      {ecran === 'carte' && (
+        <div className="jeu-carte">
+          <img src={royaumeMap} alt="Carte du Royaume du Coran" className="jeu-carte-img" />
+          {REPERES_CARTE.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              className={`jeu-repere${r.actif ? ' is-actif' : ' is-verrouille'}`}
+              style={{ left: `${r.x}%`, top: `${r.y}%` }}
+              onClick={() => cliquerRepere(r)}
+            >
+              <span className="jeu-repere-point" />
+              <span className="jeu-repere-label">{r.label}</span>
+              {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
+            </button>
+          ))}
+        </div>
+      )}
 
       {ecran === 'intro' && (
         <div className="jeu-screen jeu-intro">
@@ -53,36 +124,30 @@ export default function JeuApp() {
       )}
 
       {ecran === 'portes' && (
-        <div className="jeu-screen">
+        <div className="jeu-screen jeu-portes-screen">
           <h2 className="jeu-h2">Choisis une porte</h2>
-          <div className="jeu-portes-grid">
+          <div className="jeu-portes-scenes">
             {maison.portes.map((p) => (
               <button
                 key={p.id}
                 type="button"
-                className={`jeu-porte${portesVues.includes(p.id) ? ' is-vue' : ''}`}
-                style={{ '--porte-c': p.couleur }}
+                className={`jeu-porte-scene${portesVues.includes(p.id) ? ' is-vue' : ''}`}
+                style={{ '--porte-c': p.couleur, backgroundImage: `url(${SCENES[p.id]})` }}
                 onClick={() => ouvrirPorte(p.id)}
               >
                 {portesVues.includes(p.id) && <span className="jeu-porte-check">✓</span>}
-                <span className="jeu-porte-emoji">{p.mascotte}</span>
-                <span className="jeu-porte-label">{p.nom}</span>
+                <span className="jeu-porte-scene-label">{p.nom}</span>
               </button>
             ))}
-            <button
-              type="button"
-              className={`jeu-porte jeu-porte--jeux${!toutesPortesVues ? ' is-locked' : ''}`}
-              disabled={!toutesPortesVues}
-              onClick={() => setEcran('defi')}
-            >
-              {!toutesPortesVues && <span className="jeu-porte-lock">🔒</span>}
-              <span className="jeu-porte-emoji">🎮</span>
-              <span className="jeu-porte-label">Salle de jeux</span>
-            </button>
           </div>
-          {!toutesPortesVues && (
-            <p className="jeu-hint">Visite les 2 portes pour débloquer la salle de jeux.</p>
-          )}
+          <button
+            type="button"
+            className={`jeu-salle-jeux${!toutesPortesVues ? ' is-locked' : ''}`}
+            disabled={!toutesPortesVues}
+            onClick={() => setEcran('defi')}
+          >
+            {!toutesPortesVues ? '🔒 Visite les 2 portes pour débloquer' : '🎮 Entrer dans la salle de jeux →'}
+          </button>
         </div>
       )}
 
@@ -150,6 +215,7 @@ function LeconPorte({ porte, onFini }) {
           <div className="jeu-regle-exemple">
             <span className="jeu-regle-exemple-mot">{r.exemple.mot}</span>
             <span className="jeu-regle-exemple-note">{r.exemple.note}</span>
+            <VoiceBtn text={r.exemple.mot} />
           </div>
         </div>
       ))}
@@ -157,9 +223,13 @@ function LeconPorte({ porte, onFini }) {
       <p className="jeu-astuce">💡 {porte.astuce}</p>
 
       <div className="jeu-lecture">
-        <p className="jeu-lecture-titre">Coin lecture — lis les mots</p>
+        <p className="jeu-lecture-titre">Coin lecture — écoute et lis les mots</p>
         <div className="jeu-lecture-grid">
-          {porte.lecture.map((mot, i) => <span key={i} className="jeu-lecture-mot">{mot}</span>)}
+          {porte.lecture.map((mot, i) => (
+            <button key={i} type="button" className="jeu-lecture-mot" onClick={() => speak(mot, 'ar-SA')}>
+              {mot} <span className="jeu-lecture-mot-icon">🔊</span>
+            </button>
+          ))}
         </div>
       </div>
 
