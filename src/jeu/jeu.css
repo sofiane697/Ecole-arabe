@@ -137,19 +137,6 @@
 }
 .jeu-repere.is-actif .jeu-repere-point { animation: jeu-pulse 1.8s ease-in-out infinite; }
 .jeu-repere.is-verrouille .jeu-repere-point { background: #cfcfcf; box-shadow: 0 0 0 3px rgba(207, 207, 207, 0.4), 0 6px 14px -4px rgba(0, 0, 0, 0.35); }
-.jeu-repere-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(30, 24, 12, 0.72);
-  padding: 0.2rem 0.55rem;
-  border-radius: 980px;
-  white-space: nowrap;
-  max-width: 34vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.jeu-repere.is-actif .jeu-repere-label { background: #bf8a30; }
 .jeu-repere-toast {
   position: absolute;
   top: 100%;
@@ -445,7 +432,6 @@
 @media (max-width: 480px) {
   .jeu-lecture-grid { grid-template-columns: repeat(2, 1fr); }
   .jeu-dragsort-zones { grid-template-columns: 1fr 1fr; }
-  .jeu-repere-label { max-width: 30vw; font-size: 0.6rem; }
 }
 
 /* Sur grand écran, la carte/le village ne s'étirent pas démesurément. */

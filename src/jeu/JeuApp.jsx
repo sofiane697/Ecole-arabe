@@ -133,9 +133,9 @@ export default function JeuApp() {
                 className={`jeu-repere${r.actif ? ' is-actif' : ' is-verrouille'}`}
                 style={{ left: `${r.x}%`, top: `${r.y}%` }}
                 onClick={() => cliquerRepere(r)}
+                aria-label={r.label}
               >
                 <span className="jeu-repere-point" />
-                <span className="jeu-repere-label">{r.label}</span>
                 {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
@@ -160,9 +160,9 @@ export default function JeuApp() {
                 className={`jeu-repere${m.actif ? ' is-actif' : ' is-verrouille'}`}
                 style={{ left: `${m.x}%`, top: `${m.y}%` }}
                 onClick={() => cliquerMaisonVillage(m)}
+                aria-label={m.label}
               >
                 <span className="jeu-repere-point" />
-                <span className="jeu-repere-label">{m.label}</span>
                 {maisonVerrouillee === m.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
