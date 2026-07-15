@@ -84,7 +84,7 @@ export default function JeuApp() {
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
 
   return (
-    <div className="jeu-app">
+    <div className={`jeu-app${ecran === 'carte' ? ' jeu-app--carte' : ''}`}>
       <div className="jeu-topbar">
         {ecran === 'carte'
           ? <Link to="/" className="jeu-back">← Quitter</Link>
@@ -94,20 +94,23 @@ export default function JeuApp() {
 
       {ecran === 'carte' && (
         <div className="jeu-carte">
-          <img src={royaumeMap} alt="Carte du Royaume du Coran" className="jeu-carte-img" />
-          {REPERES_CARTE.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              className={`jeu-repere${r.actif ? ' is-actif' : ' is-verrouille'}`}
-              style={{ left: `${r.x}%`, top: `${r.y}%` }}
-              onClick={() => cliquerRepere(r)}
-            >
-              <span className="jeu-repere-point" />
-              <span className="jeu-repere-label">{r.label}</span>
-              {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
-            </button>
-          ))}
+          <div className="jeu-carte-inner">
+            <img src={royaumeMap} alt="Carte du Royaume du Coran" className="jeu-carte-img" />
+            {REPERES_CARTE.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                className={`jeu-repere${r.actif ? ' is-actif' : ' is-verrouille'}`}
+                style={{ left: `${r.x}%`, top: `${r.y}%` }}
+                onClick={() => cliquerRepere(r)}
+              >
+                <span className="jeu-repere-point" />
+                <span className="jeu-repere-label">{r.label}</span>
+                {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
+              </button>
+            ))}
+          </div>
+          <span className="jeu-carte-hint">↔ Fais glisser pour explorer</span>
         </div>
       )}
 

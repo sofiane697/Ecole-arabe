@@ -42,19 +42,53 @@
   text-align: center;
 }
 
-/* ─── Carte du Royaume ─── */
+/* ─── Carte du Royaume — plein écran, défilement horizontal ─── */
+.jeu-app--carte {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+.jeu-app--carte .jeu-topbar { flex: none; }
 .jeu-carte {
   position: relative;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   animation: jeu-fade-in 0.4s ease;
+  background: linear-gradient(180deg, #6ec9f2 0%, #bfe8c9 100%);
+}
+.jeu-carte-inner {
+  position: relative;
+  display: inline-block;
+  height: 100%;
+  vertical-align: top;
 }
 .jeu-carte-img {
-  width: 100%;
-  height: auto;
+  height: 100%;
+  width: auto;
   display: block;
-  border-radius: 0 0 28px 28px;
+}
+.jeu-carte-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0.9rem;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(30, 24, 12, 0.6);
+  padding: 0.35rem 0.8rem;
+  border-radius: 980px;
+  pointer-events: none;
+  animation: jeu-hint-fade 3.5s ease forwards;
+}
+@keyframes jeu-hint-fade {
+  0%, 55% { opacity: 1; }
+  100% { opacity: 0; }
 }
 .jeu-repere {
   position: absolute;
@@ -387,4 +421,10 @@
   .jeu-lecture-grid { grid-template-columns: repeat(2, 1fr); }
   .jeu-dragsort-zones { grid-template-columns: 1fr 1fr; }
   .jeu-repere-label { max-width: 30vw; font-size: 0.6rem; }
+}
+
+/* Sur grand écran, la carte du Royaume reste plein écran mais centrée
+   horizontalement puisqu'elle tient généralement dans la largeur. */
+@media (min-width: 700px) {
+  .jeu-carte { display: flex; justify-content: center; }
 }
