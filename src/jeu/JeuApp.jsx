@@ -4,6 +4,7 @@ import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
 import kidsTaarif from './assets/kids-taarif.png';
 import royaumeMap from './assets/royaume-map.jpg';
+import villageScene from './assets/village-scene.jpg';
 import porteShamsiya from './assets/porte-shamsiya.jpg';
 import porteQamariya from './assets/porte-qamariya.jpg';
 import './jeu.css';
@@ -22,6 +23,16 @@ const REPERES_CARTE = [
   { id: 'soukoun', label: 'Maison du soukoun', x: 85, y: 53, actif: false },
   { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 86, y: 79, actif: false },
 ];
+
+// Les 3 maisons du Village du Coran — seule « ال التعريف » est développée.
+const MAISONS_VILLAGE = [
+  { id: 'waqf', label: 'Les secrets du Waqf', x: 16, y: 27, actif: false },
+  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 49, y: 30, actif: false },
+  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 84, y: 24, actif: true },
+];
+
+const VILLAGE_NARRATION =
+  "Le Coran est la parole d'Allah, révélée à notre Prophète. Pour bien le lire, il est important d'apprendre les règles de tajwid. Dans cette aventure, nous allons découvrir des secrets merveilleux qui rendent notre récitation plus belle et plus juste. Bienvenue au Village du Coran !";
 
 function speak(text, lang) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -56,11 +67,12 @@ function VoiceBtn({ text, lang = 'ar-SA', className = 'jeu-voice-btn' }) {
  * les 2 portes visitées) → réussite.
  */
 export default function JeuApp() {
-  const [ecran, setEcran] = useState('carte');       // carte | intro | portes | lecon | defi | reussite
+  const [ecran, setEcran] = useState('carte');       // carte | village | intro | portes | lecon | defi | reussite
   const [porteActive, setPorteActive] = useState(null);
   const [portesVues, setPortesVues] = useState([]);
   const [resultat, setResultat] = useState(null);
   const [repereVerrouille, setRepereVerrouille] = useState(null);
+  const [maisonVerrouillee, setMaisonVerrouillee] = useState(null);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -77,18 +89,29 @@ export default function JeuApp() {
       setTimeout(() => setRepereVerrouille((r) => (r === repere.id ? null : r)), 1600);
       return;
     }
+    setEcran('village');
+  };
+  const cliquerMaisonVillage = (m) => {
+    if (!m.actif) {
+      setMaisonVerrouillee(m.id);
+      setTimeout(() => setMaisonVerrouillee((v) => (v === m.id ? null : v)), 1600);
+      return;
+    }
     setEcran('intro');
   };
 
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
 
+  const retourLabel = ecran === 'village' ? '← Carte du Royaume' : '← Village du Coran';
+  const retourCible = ecran === 'village' ? 'carte' : 'village';
+
   return (
-    <div className={`jeu-app${ecran === 'carte' ? ' jeu-app--carte' : ''}`}>
+    <div className={`jeu-app${ecran === 'carte' || ecran === 'village' ? ' jeu-app--carte' : ''}`}>
       <div className="jeu-topbar">
         {ecran === 'carte'
           ? <Link to="/" className="jeu-back">← Quitter</Link>
-          : <button type="button" className="jeu-back jeu-back-btn" onClick={() => setEcran('carte')}>← Carte du Royaume</button>}
+          : <button type="button" className="jeu-back jeu-back-btn" onClick={() => setEcran(retourCible)}>{retourLabel}</button>}
         <span className="jeu-topbar-title">Le Royaume du Coran</span>
       </div>
 
@@ -111,6 +134,31 @@ export default function JeuApp() {
             ))}
           </div>
           <span className="jeu-carte-hint">↔ Fais glisser pour explorer</span>
+        </div>
+      )}
+
+      {ecran === 'village' && (
+        <div className="jeu-carte jeu-carte--village">
+          <div className="jeu-carte-inner">
+            <img src={villageScene} alt="Village du Coran" className="jeu-carte-img" />
+            {MAISONS_VILLAGE.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className={`jeu-repere${m.actif ? ' is-actif' : ' is-verrouille'}`}
+                style={{ left: `${m.x}%`, top: `${m.y}%` }}
+                onClick={() => cliquerMaisonVillage(m)}
+              >
+                <span className="jeu-repere-point" />
+                <span className="jeu-repere-label">{m.label}</span>
+                {maisonVerrouillee === m.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
+              </button>
+            ))}
+          </div>
+          <div className="jeu-village-dialogue">
+            <VoiceBtn text={VILLAGE_NARRATION} lang="fr-FR" className="jeu-voice-btn jeu-voice-btn--village" />
+            <p>Bienvenue au Village du Coran ! Découvrons ensemble les secrets de la belle récitation.</p>
+          </div>
         </div>
       )}
 
