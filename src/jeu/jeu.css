@@ -206,63 +206,23 @@
   margin-bottom: 0.4rem;
 }
 
-/* ─── Sélection des portes ─── */
-.jeu-portes-screen { max-width: 640px; }
-.jeu-portes-scenes {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  width: 100%;
-  margin-top: 1.4rem;
-}
-.jeu-porte-scene {
-  position: relative;
-  aspect-ratio: 3 / 5;
-  border: 3px solid color-mix(in srgb, var(--porte-c) 45%, white);
-  border-radius: 20px;
-  cursor: pointer;
-  background-size: cover;
-  background-position: top center;
-  box-shadow: 0 14px 30px -16px rgba(31, 29, 26, 0.35);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  overflow: hidden;
-}
-.jeu-porte-scene:hover { transform: translateY(-4px) scale(1.015); box-shadow: 0 20px 40px -16px rgba(31, 29, 26, 0.4); }
-.jeu-porte-scene.is-vue { box-shadow: 0 0 0 3px color-mix(in srgb, var(--porte-c) 55%, white), 0 14px 30px -16px rgba(31, 29, 26, 0.35); }
-.jeu-porte-scene-label {
+/* ─── Sélection des portes (repères sur le couloir) ─── */
+.jeu-repere.is-vue .jeu-repere-point { background: #6fbf73; box-shadow: 0 0 0 3px rgba(111, 191, 115, 0.45), 0 6px 14px -4px rgba(0, 0, 0, 0.4); }
+.jeu-repere-check {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
-  font-family: 'Amiri', 'Scheherazade New', serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #fff;
-  padding: 1.6rem 0.6rem 0.7rem;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
-}
-.jeu-porte-check {
-  position: absolute; top: 0.6rem; right: 0.6rem;
-  width: 24px; height: 24px;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--porte-c);
+  background: #6fbf73;
   color: #fff;
-  font-size: 0.8rem;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.4);
 }
-.jeu-salle-jeux {
-  margin-top: 1.4rem;
-  width: 100%;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #bf8a30, #d4a245);
-  border: none;
-  border-radius: 16px;
-  padding: 1rem;
-  cursor: pointer;
-  box-shadow: 0 10px 24px -10px rgba(191, 138, 48, 0.55);
-}
-.jeu-salle-jeux.is-locked { background: #d8d3c8; color: #7a7466; cursor: not-allowed; box-shadow: none; }
 
 /* ─── Leçon d'une porte ─── */
 .jeu-lecon { align-items: stretch; text-align: left; }

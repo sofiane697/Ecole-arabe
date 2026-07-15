@@ -5,11 +5,15 @@ import DragSort from './DragSort';
 import kidsTaarif from './assets/kids-taarif.png';
 import royaumeMap from './assets/royaume-map.jpg';
 import villageScene from './assets/village-scene.jpg';
-import porteShamsiya from './assets/porte-shamsiya.jpg';
-import porteQamariya from './assets/porte-qamariya.jpg';
+import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
 import './jeu.css';
 
-const SCENES = { shamsiya: porteShamsiya, qamariya: porteQamariya };
+// Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
+const PORTES_HOTSPOTS = {
+  shamsiya: { x: 32, y: 37 },
+  qamariya: { x: 58, y: 37 },
+};
+const SALLE_JEUX_HOTSPOT = { x: 83, y: 37 };
 
 // Repères sur la carte du Royaume (en % de l'image) — un seul point d'entrée
 // actif pour l'instant (Village du Coran, qui contient la maison ال التعريف).
@@ -80,6 +84,7 @@ export default function JeuApp() {
   const [resultat, setResultat] = useState(null);
   const [repereVerrouille, setRepereVerrouille] = useState(null);
   const [maisonVerrouillee, setMaisonVerrouillee] = useState(null);
+  const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -106,6 +111,14 @@ export default function JeuApp() {
     }
     setEcran('intro');
   };
+  const cliquerSalleJeux = () => {
+    if (!toutesPortesVues) {
+      setJeuxVerrouille(true);
+      setTimeout(() => setJeuxVerrouille(false), 1600);
+      return;
+    }
+    setEcran('defi');
+  };
 
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
@@ -114,7 +127,7 @@ export default function JeuApp() {
   const retourCible = ecran === 'village' ? 'carte' : 'village';
 
   return (
-    <div className={`jeu-app${ecran === 'carte' || ecran === 'village' ? ' jeu-app--carte' : ''}`}>
+    <div className={`jeu-app${['carte', 'village', 'portes'].includes(ecran) ? ' jeu-app--carte' : ''}`}>
       <div className="jeu-topbar">
         {ecran === 'carte'
           ? <Link to="/" className="jeu-back">← Quitter</Link>
@@ -187,30 +200,37 @@ export default function JeuApp() {
       )}
 
       {ecran === 'portes' && (
-        <div className="jeu-screen jeu-portes-screen">
-          <h2 className="jeu-h2">Choisis une porte</h2>
-          <div className="jeu-portes-scenes">
-            {maison.portes.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={`jeu-porte-scene${portesVues.includes(p.id) ? ' is-vue' : ''}`}
-                style={{ '--porte-c': p.couleur, backgroundImage: `url(${SCENES[p.id]})` }}
-                onClick={() => ouvrirPorte(p.id)}
-              >
-                {portesVues.includes(p.id) && <span className="jeu-porte-check">✓</span>}
-                <span className="jeu-porte-scene-label">{p.nom}</span>
-              </button>
-            ))}
+        <div className="jeu-carte">
+          <div className="jeu-carte-inner">
+            <img src={maisonTaarifPortes} alt="Le couloir de la maison ال التعريف" className="jeu-carte-img" />
+            {maison.portes.map((p) => {
+              const pos = PORTES_HOTSPOTS[p.id];
+              if (!pos) return null;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`jeu-repere is-actif${portesVues.includes(p.id) ? ' is-vue' : ''}`}
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                  onClick={() => ouvrirPorte(p.id)}
+                  aria-label={p.nom}
+                >
+                  <span className="jeu-repere-point" />
+                  {portesVues.includes(p.id) && <span className="jeu-repere-check">✓</span>}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              className={`jeu-repere${toutesPortesVues ? ' is-actif' : ' is-verrouille'}`}
+              style={{ left: `${SALLE_JEUX_HOTSPOT.x}%`, top: `${SALLE_JEUX_HOTSPOT.y}%` }}
+              onClick={cliquerSalleJeux}
+              aria-label="Salle de jeux"
+            >
+              <span className="jeu-repere-point" />
+              {jeuxVerrouille && <span className="jeu-repere-toast">🔒 Visite les 2 portes d'abord</span>}
+            </button>
           </div>
-          <button
-            type="button"
-            className={`jeu-salle-jeux${!toutesPortesVues ? ' is-locked' : ''}`}
-            disabled={!toutesPortesVues}
-            onClick={() => setEcran('defi')}
-          >
-            {!toutesPortesVues ? '🔒 Visite les 2 portes pour débloquer' : '🎮 Entrer dans la salle de jeux →'}
-          </button>
         </div>
       )}
 
