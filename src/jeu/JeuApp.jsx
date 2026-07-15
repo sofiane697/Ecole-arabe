@@ -9,30 +9,32 @@ import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
 import './jeu.css';
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
+// Positionnés au niveau de la poignée, sous le texte « Salle de jeux ».
 const PORTES_HOTSPOTS = {
-  shamsiya: { x: 32, y: 37 },
-  qamariya: { x: 58, y: 37 },
+  shamsiya: { x: 32, y: 44 },
+  qamariya: { x: 58, y: 44 },
 };
-const SALLE_JEUX_HOTSPOT = { x: 83, y: 37 };
+const SALLE_JEUX_HOTSPOT = { x: 83, y: 44 };
 
 // Repères sur la carte du Royaume (en % de l'image) — un seul point d'entrée
 // actif pour l'instant (Village du Coran, qui contient la maison ال التعريف).
 // Les autres maisons du Palais des Lettres sont affichées pour l'immersion
-// mais pas encore développées.
+// mais pas encore développées. Positionnés sur les toits/icônes plutôt que
+// sur les pancartes de texte.
 const REPERES_CARTE = [
-  { id: 'village', label: 'Village du Coran', x: 88, y: 17, actif: true },
-  { id: 'tresor', label: 'Le trésor caché', x: 10, y: 17, actif: false },
-  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 17, y: 27, actif: false },
-  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 12, y: 42, actif: false },
-  { id: 'soukoun', label: 'Maison du soukoun', x: 88, y: 30, actif: false },
-  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 89, y: 44, actif: false },
+  { id: 'village', label: 'Village du Coran', x: 82, y: 20, actif: true },
+  { id: 'tresor', label: 'Le trésor caché', x: 8, y: 15, actif: false },
+  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 20, y: 20, actif: false },
+  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 10, y: 35, actif: false },
+  { id: 'soukoun', label: 'Maison du soukoun', x: 91, y: 23, actif: false },
+  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 91, y: 39, actif: false },
 ];
 
 // Les 3 maisons du Village du Coran — seule « ال التعريف » est développée.
 const MAISONS_VILLAGE = [
-  { id: 'waqf', label: 'Les secrets du Waqf', x: 18, y: 40, actif: false },
-  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 50, y: 40, actif: false },
-  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 85, y: 38, actif: true },
+  { id: 'waqf', label: 'Les secrets du Waqf', x: 20, y: 30, actif: false },
+  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 51, y: 29, actif: false },
+  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 83, y: 30, actif: true },
 ];
 
 const CARTE_NARRATION =
