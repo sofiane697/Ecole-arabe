@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
 import kidsTaarif from './assets/kids-taarif.png';
-import royaumeMap from './assets/royaume-map.jpg';
+import royaumeMapVideoMp4 from './assets/royaume-map.mp4';
+import royaumeMapVideoWebm from './assets/royaume-map.webm';
 import villageScene from './assets/village-scene.jpg';
 import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
 import leconShamsiya from './assets/lecon-shamsiya.jpg';
@@ -171,6 +172,16 @@ export default function JeuApp() {
   const [repereVerrouille, setRepereVerrouille] = useState(null);
   const [maisonVerrouillee, setMaisonVerrouillee] = useState(null);
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
+  const [carteSonCoupe, setCarteSonCoupe] = useState(true);
+  const carteVideoRef = useRef(null);
+
+  // Autoplay avec son est bloqué par les navigateurs sans interaction
+  // préalable — la vidéo démarre donc coupée, avec un bouton pour activer
+  // le son au premier tap (autorisé une fois que l'utilisateur a interagi).
+  const activerSonCarte = () => {
+    setCarteSonCoupe(false);
+    if (carteVideoRef.current) carteVideoRef.current.muted = false;
+  };
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -227,7 +238,17 @@ export default function JeuApp() {
       {ecran === 'carte' && (
         <div className="jeu-carte">
           <div className="jeu-carte-inner">
-            <img src={royaumeMap} alt="Carte du Royaume du Coran" className="jeu-carte-img" />
+            <video
+              ref={carteVideoRef}
+              className="jeu-carte-img"
+              autoPlay
+              loop
+              muted={carteSonCoupe}
+              playsInline
+            >
+              <source src={royaumeMapVideoWebm} type="video/webm" />
+              <source src={royaumeMapVideoMp4} type="video/mp4" />
+            </video>
             {REPERES_CARTE.map((r) => (
               <button
                 key={r.id}
@@ -241,6 +262,16 @@ export default function JeuApp() {
                 {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
+            {carteSonCoupe && (
+              <button
+                type="button"
+                className="jeu-voice-btn jeu-voice-btn--son"
+                onClick={activerSonCarte}
+                aria-label="Activer le son de la vidéo"
+              >
+                🔇
+              </button>
+            )}
             <VoiceBtn
               text={CARTE_NARRATION}
               lang="fr-FR"
