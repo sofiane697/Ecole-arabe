@@ -31,26 +31,33 @@ const MAISONS_VILLAGE = [
   { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 85, y: 38, actif: true },
 ];
 
+const CARTE_NARRATION =
+  "Bonjour les enfants ! Aujourd'hui, une grande aventure commence avec Anas, Bilal et Assia. Ensemble, nous allons entrer dans le merveilleux Royaume du Coran pour découvrir ses trésors. Alors, êtes-vous prêts à traverser les ponts du Royaume, découvrir les secrets des lettres arabes et apprendre les paroles d'Allah, avec joie ?";
+
 const VILLAGE_NARRATION =
   "Le Coran est la parole d'Allah, révélée à notre Prophète. Pour bien le lire, il est important d'apprendre les règles de tajwid. Dans cette aventure, nous allons découvrir des secrets merveilleux qui rendent notre récitation plus belle et plus juste. Bienvenue au Village du Coran !";
 
-function speak(text, lang) {
+// Voix des personnages : pitch relevé pour se rapprocher d'une voix
+// d'enfant (l'API Web Speech ne propose pas de voix « enfant » dédiée,
+// on approxime avec un pitch plus aigu + un débit un peu plus vif).
+function speak(text, lang, pitch = 1) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new window.SpeechSynthesisUtterance(text);
   u.lang = lang;
-  u.rate = 0.82;
+  u.rate = pitch > 1 ? 0.95 : 0.82;
+  u.pitch = pitch;
   window.speechSynthesis.speak(u);
 }
 
-function VoiceBtn({ text, lang = 'ar-SA', className = 'jeu-voice-btn' }) {
+function VoiceBtn({ text, lang = 'ar-SA', pitch = 1, className = 'jeu-voice-btn' }) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return null;
   return (
     <button
       type="button"
       className={className}
-      aria-label="Écouter la prononciation"
-      onClick={(e) => { e.stopPropagation(); speak(text, lang); }}
+      aria-label="Écouter"
+      onClick={(e) => { e.stopPropagation(); speak(text, lang, pitch); }}
     >
       🔊
     </button>
@@ -132,6 +139,12 @@ export default function JeuApp() {
                 {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
+            <VoiceBtn
+              text={CARTE_NARRATION}
+              lang="fr-FR"
+              pitch={1.35}
+              className="jeu-voice-btn jeu-voice-btn--floating"
+            />
           </div>
         </div>
       )}
@@ -155,7 +168,7 @@ export default function JeuApp() {
             ))}
           </div>
           <div className="jeu-village-dialogue">
-            <VoiceBtn text={VILLAGE_NARRATION} lang="fr-FR" className="jeu-voice-btn jeu-voice-btn--village" />
+            <VoiceBtn text={VILLAGE_NARRATION} lang="fr-FR" pitch={1.35} className="jeu-voice-btn jeu-voice-btn--village" />
             <p>Bienvenue au Village du Coran ! Découvrons ensemble les secrets de la belle récitation.</p>
           </div>
         </div>
