@@ -224,6 +224,30 @@
   box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.4);
 }
 
+/* ─── Leçon illustrée (image + repères audio) ─── */
+.jeu-lecon-scene { position: relative; }
+.jeu-repere--audio .jeu-repere-point {
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(191, 138, 48, 0.4);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  animation: none;
+}
+.jeu-repere--audio:active .jeu-repere-point { transform: scale(0.9); }
+.jeu-lecon-scene-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 0.9rem;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  padding: 0.7rem 1.5rem;
+}
+
 /* ─── Leçon d'une porte ─── */
 .jeu-lecon { align-items: stretch; text-align: left; }
 .jeu-lecon-head {

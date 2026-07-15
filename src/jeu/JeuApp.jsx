@@ -6,6 +6,7 @@ import kidsTaarif from './assets/kids-taarif.png';
 import royaumeMap from './assets/royaume-map.jpg';
 import villageScene from './assets/village-scene.jpg';
 import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
+import leconShamsiya from './assets/lecon-shamsiya.jpg';
 import './jeu.css';
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
@@ -15,6 +16,25 @@ const PORTES_HOTSPOTS = {
   qamariya: { x: 58, y: 44 },
 };
 const SALLE_JEUX_HOTSPOT = { x: 83, y: 44 };
+
+// Leçons illustrées (page du PDF) avec repères audio par mot — seule la
+// leçon شمسية en dispose pour l'instant. Sans entrée ici, la leçon retombe
+// sur l'ancien écran texte (cf. LeconPorte).
+const LECON_SCENES = {
+  shamsiya: {
+    img: leconShamsiya,
+    hotspots: [
+      { text: 'اَلشَّمْسُ', x: 54, y: 16 },
+      { text: 'وَالشَّمْسِ', x: 53, y: 26 },
+      { text: 'اَلسَّمَاءُ', x: 43, y: 64 },
+      { text: 'اَلصُّبْحُ', x: 70, y: 64 },
+      { text: 'اَلنَّاسُ', x: 86, y: 64 },
+      { text: 'وَالزَّيْتُونِ', x: 43, y: 72 },
+      { text: 'وَالطَّارِقِ', x: 70, y: 72 },
+      { text: 'وَالضُّحَى', x: 86, y: 72 },
+    ],
+  },
+};
 
 // Repères sur la carte du Royaume (en % de l'image) — un seul point d'entrée
 // actif pour l'instant (Village du Coran, qui contient la maison ال التعريف).
@@ -127,9 +147,11 @@ export default function JeuApp() {
 
   const retourLabel = ecran === 'village' ? '← Carte du Royaume' : '← Village du Coran';
   const retourCible = ecran === 'village' ? 'carte' : 'village';
+  const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
+  const ecranPleinEcran = ['carte', 'village', 'portes'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
-    <div className={`jeu-app${['carte', 'village', 'portes'].includes(ecran) ? ' jeu-app--carte' : ''}`}>
+    <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
       <div className="jeu-topbar">
         {ecran === 'carte'
           ? <Link to="/" className="jeu-back">← Quitter</Link>
@@ -236,7 +258,11 @@ export default function JeuApp() {
         </div>
       )}
 
-      {ecran === 'lecon' && porteActive && (
+      {ecran === 'lecon' && porteActive && leconScene && (
+        <LeconScene scene={leconScene} onFini={fermerPorte} />
+      )}
+
+      {ecran === 'lecon' && porteActive && !leconScene && (
         <LeconPorte porte={maison.portes.find((p) => p.id === porteActive)} onFini={fermerPorte} />
       )}
 
@@ -276,6 +302,31 @@ export default function JeuApp() {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function LeconScene({ scene, onFini }) {
+  return (
+    <div className="jeu-carte jeu-lecon-scene">
+      <div className="jeu-carte-inner">
+        <img src={scene.img} alt="Leçon illustrée" className="jeu-carte-img" />
+        {scene.hotspots.map((h, i) => (
+          <button
+            key={i}
+            type="button"
+            className="jeu-repere jeu-repere--audio"
+            style={{ left: `${h.x}%`, top: `${h.y}%` }}
+            onClick={() => speak(h.text, 'ar-SA')}
+            aria-label="Écouter la prononciation"
+          >
+            <span className="jeu-repere-point">🔊</span>
+          </button>
+        ))}
+      </div>
+      <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={onFini}>
+        J'ai compris →
+      </button>
     </div>
   );
 }
