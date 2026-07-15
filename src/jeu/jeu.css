@@ -1,0 +1,272 @@
+/* ─── Jeu « Le Royaume du Coran » — prototype ──────────────────────────── */
+.jeu-app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, #faf4e9 0%, #fff 40%);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+  color: #221a10;
+}
+
+.jeu-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.85);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.jeu-back {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6e6e73;
+  text-decoration: none;
+}
+.jeu-topbar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #bf8a30;
+}
+
+.jeu-screen {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 2.4rem 1.4rem 3.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.jeu-maison-emoji { font-size: 3.4rem; margin-bottom: 0.6rem; }
+.jeu-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+}
+.jeu-title-ar {
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  font-size: 1.3rem;
+  color: #bf8a30;
+  margin-top: 0.2rem;
+}
+.jeu-desc { color: #6e6e73; font-size: 0.92rem; margin: 0.7rem 0 1.8rem; max-width: 420px; }
+
+.jeu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background: #bf8a30;
+  border: none;
+  border-radius: 980px;
+  padding: 0.9rem 1.8rem;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(191, 138, 48, 0.55);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.jeu-btn:hover { background: #d4a245; }
+.jeu-btn:active { transform: scale(0.97); }
+
+.jeu-h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+/* ─── Sélection des portes ─── */
+.jeu-portes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1.4rem;
+}
+.jeu-porte {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.8rem 1rem;
+  background: #fff;
+  border: 2px solid color-mix(in srgb, var(--porte-c) 35%, white);
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 12px 28px -16px rgba(31, 29, 26, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.jeu-porte:hover { transform: translateY(-3px); box-shadow: 0 18px 36px -16px rgba(31, 29, 26, 0.3); }
+.jeu-porte.is-vue { background: color-mix(in srgb, var(--porte-c) 8%, white); }
+.jeu-porte-emoji { font-size: 2.2rem; }
+.jeu-porte-label { font-family: 'Amiri', 'Scheherazade New', serif; font-size: 1.05rem; font-weight: 700; }
+.jeu-porte-check {
+  position: absolute; top: 0.6rem; right: 0.6rem;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--porte-c);
+  color: #fff;
+  font-size: 0.75rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.jeu-porte--jeux.is-locked { opacity: 0.55; cursor: not-allowed; }
+.jeu-porte-lock { position: absolute; top: 0.6rem; right: 0.6rem; font-size: 0.9rem; }
+.jeu-hint { margin-top: 1.2rem; font-size: 0.82rem; color: #9a9a9a; }
+
+/* ─── Leçon d'une porte ─── */
+.jeu-lecon { align-items: stretch; text-align: left; }
+.jeu-lecon-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.4rem;
+}
+.jeu-lecon-emoji {
+  font-size: 2.4rem;
+  width: 3.4rem; height: 3.4rem;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--porte-c) 14%, white);
+}
+.jeu-lecon-sous { font-size: 0.85rem; color: #6e6e73; }
+
+.jeu-regle {
+  background: #fffdf8;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 0.9rem;
+}
+.jeu-regle-titre { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.5rem; }
+.jeu-regle-points { padding-left: 1.1rem; font-size: 0.85rem; line-height: 1.65; color: #3d3529; }
+.jeu-regle-exemple {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+}
+.jeu-regle-exemple-mot { font-family: 'Amiri', 'Scheherazade New', serif; font-size: 1.4rem; color: #bf8a30; }
+.jeu-regle-exemple-note { font-size: 0.76rem; color: #9a9a9a; font-style: italic; }
+
+.jeu-astuce {
+  font-size: 0.82rem;
+  background: rgba(191, 138, 48, 0.08);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  margin: 0.4rem 0 1.2rem;
+}
+
+.jeu-lecture-titre { font-size: 0.8rem; font-weight: 700; color: #6e6e73; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.jeu-lecture-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 1.8rem;
+}
+.jeu-lecture-mot {
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  font-size: 1.15rem;
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 0.6rem 0.3rem;
+}
+
+.jeu-lecon > .jeu-btn { align-self: center; }
+
+/* ─── Défi glisser-déposer ─── */
+.jeu-dragsort { width: 100%; margin-top: 1.2rem; }
+.jeu-dragsort-zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+.jeu-dragsort-zone {
+  min-height: 140px;
+  border: 2px dashed color-mix(in srgb, var(--zone-c) 45%, white);
+  border-radius: 16px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  background: color-mix(in srgb, var(--zone-c) 6%, white);
+}
+.jeu-dragsort-zone-emoji { font-size: 1.6rem; }
+.jeu-dragsort-zone-label { font-size: 0.78rem; font-weight: 700; color: #4a4034; }
+.jeu-dragsort-zone-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+
+.jeu-dragsort-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 16px;
+  min-height: 70px;
+}
+.jeu-dragsort-chip {
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  font-size: 1.05rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 980px;
+  padding: 0.5rem 1rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.jeu-dragsort-chip.is-wrong { animation: jeu-shake 0.4s ease; border-color: #c0392b; }
+.jeu-dragsort-chip.is-dragging { opacity: 0.25; }
+.jeu-dragsort-chip--done {
+  cursor: default;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.92rem;
+  padding: 0.35rem 0.8rem;
+}
+.jeu-dragsort-ghost {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  font-family: 'Amiri', 'Scheherazade New', serif;
+  font-size: 1.05rem;
+  background: #fff;
+  border: 1px solid rgba(191, 138, 48, 0.5);
+  border-radius: 980px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 16px 30px -12px rgba(31, 29, 26, 0.35);
+  text-align: center;
+}
+@keyframes jeu-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* ─── Réussite ─── */
+.jeu-etoiles { font-size: 2.4rem; margin-bottom: 0.6rem; letter-spacing: 0.2em; }
+.jeu-etoile.is-off { filter: grayscale(1); opacity: 0.4; }
+
+@media (max-width: 480px) {
+  .jeu-portes-grid { grid-template-columns: repeat(2, 1fr); }
+  .jeu-lecture-grid { grid-template-columns: repeat(2, 1fr); }
+  .jeu-dragsort-zones { grid-template-columns: 1fr 1fr; }
+}

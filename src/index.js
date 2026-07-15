@@ -6,6 +6,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import AppShellHome from './AppShellHome';
 
 const App = lazy(() => import('./App'));
+const JeuApp = lazy(() => import('./jeu/JeuApp'));
 
 // App installée (PWA, lancée depuis l'écran d'accueil) → accès direct aux 4
 // portails (AppShellHome), sans le site vitrine. Visite normale au navigateur
@@ -94,6 +95,9 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname.split('/')[1] || 'root'}>
           {/* Site public (ou 4 portails si l'app est installée, cf. HomeRoute) */}
           <Route path="/" element={<HomeRoute />} />
+
+          {/* Jeu éducatif (prototype) */}
+          <Route path="/jeu" element={<JeuApp />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
