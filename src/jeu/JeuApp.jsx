@@ -16,12 +16,12 @@ const SCENES = { shamsiya: porteShamsiya, qamariya: porteQamariya };
 // Les autres maisons du Palais des Lettres sont affichées pour l'immersion
 // mais pas encore développées.
 const REPERES_CARTE = [
-  { id: 'village', label: 'Village du Coran', x: 89, y: 20, actif: true },
-  { id: 'tresor', label: 'Le trésor caché', x: 12, y: 20, actif: false },
-  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 22, y: 31, actif: false },
-  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 15, y: 54, actif: false },
-  { id: 'soukoun', label: 'Maison du soukoun', x: 89, y: 38, actif: false },
-  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 90, y: 59, actif: false },
+  { id: 'village', label: 'Village du Coran', x: 88, y: 17, actif: true },
+  { id: 'tresor', label: 'Le trésor caché', x: 10, y: 17, actif: false },
+  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 17, y: 27, actif: false },
+  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 12, y: 42, actif: false },
+  { id: 'soukoun', label: 'Maison du soukoun', x: 88, y: 30, actif: false },
+  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 89, y: 44, actif: false },
 ];
 
 // Les 3 maisons du Village du Coran — seule « ال التعريف » est développée.
