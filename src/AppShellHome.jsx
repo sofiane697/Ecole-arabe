@@ -23,6 +23,12 @@ export default function AppShellHome() {
             <span className="app-shell-card-ar">{p.ar}</span>
           </Link>
         ))}
+        {/* Bientôt disponible : pas encore de route, carte non cliquable. */}
+        <div className="app-shell-card app-shell-card--soon" aria-disabled="true">
+          <span className="app-shell-card-badge">Bientôt</span>
+          <span className="app-shell-card-label">Jeux interactif</span>
+          <span className="app-shell-card-ar">لعبة تفاعلية</span>
+        </div>
       </div>
     </div>
   );
