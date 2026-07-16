@@ -242,7 +242,6 @@ export default function JeuApp() {
               ref={carteVideoRef}
               className="jeu-carte-img"
               autoPlay
-              loop
               muted={carteSonCoupe}
               playsInline
             >
