@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
@@ -176,7 +176,10 @@ export default function JeuApp() {
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
   const [carteSonCoupe, setCarteSonCoupe] = useState(true);
   const carteVideoRef = useRef(null);
-  const [leconVideoSonCoupe, setLeconVideoSonCoupe] = useState(true);
+  // Son activé par défaut : la vidéo est déclenchée par le clic sur la porte
+  // (geste utilisateur), ce qui autorise l'autoplay avec son dans la plupart
+  // des navigateurs. Filet de sécurité si un navigateur le bloque quand même.
+  const [leconVideoSonCoupe, setLeconVideoSonCoupe] = useState(false);
   const leconVideoRef = useRef(null);
 
   // Autoplay avec son est bloqué par les navigateurs sans interaction
@@ -191,13 +194,28 @@ export default function JeuApp() {
     if (leconVideoRef.current) leconVideoRef.current.muted = false;
   };
 
+  useEffect(() => {
+    if (ecran !== 'lecon-video') return;
+    const v = leconVideoRef.current;
+    if (!v) return;
+    v.muted = false;
+    const p = v.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        v.muted = true;
+        setLeconVideoSonCoupe(true);
+        v.play().catch(() => {});
+      });
+    }
+  }, [ecran]);
+
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
 
   const ouvrirPorte = (porteId) => {
     setPorteActive(porteId);
     if (porteId === 'shamsiya') {
-      setLeconVideoSonCoupe(true);
+      setLeconVideoSonCoupe(false);
       setEcran('lecon-video');
     } else {
       setEcran('lecon');
@@ -378,6 +396,7 @@ export default function JeuApp() {
               autoPlay
               muted={leconVideoSonCoupe}
               playsInline
+              onEnded={() => setEcran('lecon')}
             >
               <source src={leconShamsiyaVideoWebm} type="video/webm" />
               <source src={leconShamsiyaVideoMp4} type="video/mp4" />
@@ -393,9 +412,6 @@ export default function JeuApp() {
               </button>
             )}
           </div>
-          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('lecon')}>
-            Suivant →
-          </button>
         </div>
       )}
 
