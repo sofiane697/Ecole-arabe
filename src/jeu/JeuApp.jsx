@@ -13,7 +13,17 @@ import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
 import coinLectureQamariya from './assets/coin-lecture-qamariya.jpg';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
+import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
+import leconQamariyaVideoWebm from './assets/lecon-qamariya-video.webm';
 import './jeu.css';
+
+// Vidéos d'intro (soleil/lune qui parlent) jouées avant la leçon illustrée
+// de chaque porte — son actif par défaut, enchaînement automatique vers le
+// PDF à la fin (cf. écran « lecon-video »).
+const LECON_VIDEOS = {
+  shamsiya: { mp4: leconShamsiyaVideoMp4, webm: leconShamsiyaVideoWebm },
+  qamariya: { mp4: leconQamariyaVideoMp4, webm: leconQamariyaVideoWebm },
+};
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
 // Positionnés au niveau de la poignée, sous le texte « Salle de jeux ».
@@ -39,20 +49,17 @@ const LECON_SCENES = {
       { text: 'وَالضُّحَى', x: 93, y: 77 },
     ],
   },
-  // NB : les cases du coin lecture sont vides sur l'image fournie (contrairement
-  // à la leçon شمسية) — l'ordre des mots ci-dessous suit jeuData.js à défaut de
-  // pouvoir se caler sur un texte visible dans les cases.
   qamariya: {
     img: leconQamariya,
     hotspots: [
-      { text: 'اَلْقَمَرُ', x: 64, y: 21 },
-      { text: 'وَالْقَمَرِ', x: 63, y: 31 },
-      { text: 'بِالْهَزْلِ', x: 54, y: 68 },
-      { text: 'وَالْفَجْرِ', x: 70, y: 68 },
-      { text: 'الْوَتْرِ', x: 87, y: 68 },
-      { text: 'الْغَاشِيَةِ', x: 54, y: 78 },
-      { text: 'الْخُنَّاسِ', x: 70, y: 78 },
-      { text: 'وَالْمَلَكُ', x: 87, y: 78 },
+      { text: 'اَلْقَمَرُ', x: 74, y: 20 },
+      { text: 'وَالْقَمَرِ', x: 70, y: 27 },
+      { text: 'اَلْمَسْجِدَ', x: 41, y: 63 },
+      { text: 'اَلْأَرْضَ', x: 60, y: 63 },
+      { text: 'اَلْقُرْآنَ', x: 81, y: 63 },
+      { text: 'وَالْجِبَالِ', x: 41, y: 77 },
+      { text: 'وَالْمَرْجَانُ', x: 63, y: 77 },
+      { text: 'هُوَ الْأَوَّلُ', x: 84, y: 77 },
     ],
   },
 };
@@ -214,7 +221,7 @@ export default function JeuApp() {
 
   const ouvrirPorte = (porteId) => {
     setPorteActive(porteId);
-    if (porteId === 'shamsiya') {
+    if (LECON_VIDEOS[porteId]) {
       setLeconVideoSonCoupe(false);
       setEcran('lecon-video');
     } else {
@@ -258,6 +265,7 @@ export default function JeuApp() {
   const retourLabel = ecran === 'village' ? '← Carte du Royaume' : estEcranLecture ? '← Choisir une porte' : '← Village du Coran';
   const retourCible = ecran === 'village' ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
+  const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
   const ecranPleinEcran = ['carte', 'village', 'portes', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
@@ -387,7 +395,7 @@ export default function JeuApp() {
         </div>
       )}
 
-      {ecran === 'lecon-video' && (
+      {ecran === 'lecon-video' && leconVideo && (
         <div className="jeu-carte">
           <div className="jeu-carte-inner">
             <video
@@ -398,8 +406,8 @@ export default function JeuApp() {
               playsInline
               onEnded={() => setEcran('lecon')}
             >
-              <source src={leconShamsiyaVideoWebm} type="video/webm" />
-              <source src={leconShamsiyaVideoMp4} type="video/mp4" />
+              <source src={leconVideo.webm} type="video/webm" />
+              <source src={leconVideo.mp4} type="video/mp4" />
             </video>
             {leconVideoSonCoupe && (
               <button
