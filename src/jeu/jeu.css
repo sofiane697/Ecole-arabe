@@ -238,6 +238,33 @@
 
 /* ─── Leçon illustrée (image + repères audio) ─── */
 .jeu-lecon-scene { position: relative; }
+.jeu-video-remplace {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.jeu-video-remplace video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.jeu-video-bulle-icone {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(30, 24, 12, 0.75);
+  color: #fff;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .jeu-repere--audio .jeu-repere-point {
   width: 20px;
   height: 20px;

@@ -11,6 +11,7 @@ import leconShamsiya from './assets/lecon-shamsiya.jpg';
 import leconQamariya from './assets/lecon-qamariya.jpg';
 import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
 import coinLectureQamariya from './assets/coin-lecture-qamariya.jpg';
+import soleilParleAlphaWebm from './assets/soleil-parle-alpha.webm';
 import './jeu.css';
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
@@ -26,6 +27,13 @@ const SALLE_JEUX_HOTSPOT = { x: 83, y: 44 };
 const LECON_SCENES = {
   shamsiya: {
     img: leconShamsiya,
+    // Aperçu du soleil animé (HeyGen), fond transparent (WebM/VP9 alpha),
+    // positionné pile sur le soleil dessiné pour le remplacer visuellement.
+    // Filigrane visible — à remplacer par un export propre si validé.
+    // Pas de fallback MP4 : l'alpha n'existe qu'en WebM, donc sur les
+    // navigateurs qui ne le supportent pas (Safari/iOS), le soleil dessiné
+    // reste visible en dessous, inchangé.
+    videoApercu: { webm: soleilParleAlphaWebm, left: 68, top: 21, width: 31, height: 23 },
     hotspots: [
       { text: 'اَلشَّمْسُ', x: 63, y: 20 },
       { text: 'وَالشَّمْسِ', x: 62, y: 30 },
@@ -418,6 +426,14 @@ export default function JeuApp() {
 }
 
 function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
+  const [aperçuSonCoupe, setAperçuSonCoupe] = useState(true);
+  const aperçuVideoRef = useRef(null);
+
+  const activerSonAperçu = () => {
+    setAperçuSonCoupe(false);
+    if (aperçuVideoRef.current) aperçuVideoRef.current.muted = false;
+  };
+
   return (
     <div className="jeu-carte jeu-lecon-scene">
       <div className="jeu-carte-inner">
@@ -434,6 +450,25 @@ function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
             <span className="jeu-repere-point">🔊</span>
           </button>
         ))}
+        {scene.videoApercu && (
+          <button
+            type="button"
+            className="jeu-video-remplace"
+            style={{
+              left: `${scene.videoApercu.left}%`,
+              top: `${scene.videoApercu.top}%`,
+              width: `${scene.videoApercu.width}%`,
+              height: `${scene.videoApercu.height}%`,
+            }}
+            onClick={activerSonAperçu}
+            aria-label="Activer le son du personnage"
+          >
+            <video ref={aperçuVideoRef} autoPlay loop muted={aperçuSonCoupe} playsInline>
+              <source src={scene.videoApercu.webm} type="video/webm" />
+            </video>
+            {aperçuSonCoupe && <span className="jeu-video-bulle-icone">🔇</span>}
+          </button>
+        )}
       </div>
       <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={onFini}>
         {boutonLabel}
