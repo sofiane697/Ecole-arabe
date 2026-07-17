@@ -15,8 +15,10 @@ import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
 import leconQamariyaVideoWebm from './assets/lecon-qamariya-video.webm';
-import portesVideoMp4 from './assets/portes-video.mp4';
-import portesVideoWebm from './assets/portes-video.webm';
+import portesVideo1Mp4 from './assets/portes-video-1.mp4';
+import portesVideo1Webm from './assets/portes-video-1.webm';
+import portesVideo2Mp4 from './assets/portes-video-2.mp4';
+import portesVideo2Webm from './assets/portes-video-2.webm';
 import './jeu.css';
 
 // Vidéos d'intro (soleil/lune qui parlent) jouées avant la leçon illustrée
@@ -208,7 +210,7 @@ export default function JeuApp() {
     const secondeApparitionCouloir = portesVues.length === 0;
     setPortesVues((v) => (v.includes(porteActive) ? v : [...v, porteActive]));
     setPorteActive(null);
-    setEcran(secondeApparitionCouloir ? 'portes-video' : 'portes');
+    setEcran(secondeApparitionCouloir ? 'portes-video-2' : 'portes');
   };
   const cliquerRepere = (repere) => {
     if (!repere.actif) {
@@ -243,7 +245,7 @@ export default function JeuApp() {
   const retourCible = ecran === 'village' ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'village', 'portes', 'portes-video', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'village', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -331,14 +333,18 @@ export default function JeuApp() {
           <h1 className="jeu-title">{maison.nom}</h1>
           <p className="jeu-title-ar">{maison.nomAr}</p>
           <p className="jeu-desc">{maison.desc}</p>
-          <button type="button" className="jeu-btn" onClick={() => setEcran('portes')}>
+          <button type="button" className="jeu-btn" onClick={() => setEcran('portes-video-1')}>
             Entrer dans la maison →
           </button>
         </div>
       )}
 
-      {ecran === 'portes-video' && (
-        <VideoIntro mp4={portesVideoMp4} webm={portesVideoWebm} onEnded={() => setEcran('portes')} />
+      {ecran === 'portes-video-1' && (
+        <VideoIntro mp4={portesVideo1Mp4} webm={portesVideo1Webm} onEnded={() => setEcran('portes')} />
+      )}
+
+      {ecran === 'portes-video-2' && (
+        <VideoIntro mp4={portesVideo2Mp4} webm={portesVideo2Webm} onEnded={() => setEcran('portes')} />
       )}
 
       {ecran === 'portes' && (
