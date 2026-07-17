@@ -19,6 +19,8 @@ import portesVideo1Mp4 from './assets/portes-video-1.mp4';
 import portesVideo1Webm from './assets/portes-video-1.webm';
 import portesVideo2Mp4 from './assets/portes-video-2.mp4';
 import portesVideo2Webm from './assets/portes-video-2.webm';
+import villageVideoMp4 from './assets/village-video.mp4';
+import villageVideoWebm from './assets/village-video.webm';
 import './jeu.css';
 
 // Vidéos d'intro (soleil/lune qui parlent) jouées avant la leçon illustrée
@@ -218,7 +220,7 @@ export default function JeuApp() {
       setTimeout(() => setRepereVerrouille((r) => (r === repere.id ? null : r)), 1600);
       return;
     }
-    setEcran('village');
+    setEcran('village-video');
   };
   const cliquerMaisonVillage = (m) => {
     if (!m.actif) {
@@ -241,11 +243,12 @@ export default function JeuApp() {
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
 
   const estEcranLecture = ecran === 'lecture' || ecran === 'lecture2';
-  const retourLabel = ecran === 'village' ? '← Carte du Royaume' : estEcranLecture ? '← Choisir une porte' : '← Village du Coran';
-  const retourCible = ecran === 'village' ? 'carte' : estEcranLecture ? 'portes' : 'village';
+  const estEcranVillage = ecran === 'village' || ecran === 'village-video';
+  const retourLabel = estEcranVillage ? '← Carte du Royaume' : estEcranLecture ? '← Choisir une porte' : '← Village du Coran';
+  const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'village', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -300,6 +303,10 @@ export default function JeuApp() {
             />
           </div>
         </div>
+      )}
+
+      {ecran === 'village-video' && (
+        <VideoIntro mp4={villageVideoMp4} webm={villageVideoWebm} onEnded={() => setEcran('village')} />
       )}
 
       {ecran === 'village' && (
