@@ -202,9 +202,13 @@ export default function JeuApp() {
     setEcran(LECON_VIDEOS[porteId] ? 'lecon-video' : 'lecon');
   };
   const fermerPorte = () => {
+    // La vidéo du couloir (les enfants qui discutent) se joue au retour de la
+    // 1ère porte visitée — 2e apparition du couloir, après l'arrivée initiale
+    // en image statique.
+    const secondeApparitionCouloir = portesVues.length === 0;
     setPortesVues((v) => (v.includes(porteActive) ? v : [...v, porteActive]));
     setPorteActive(null);
-    setEcran('portes');
+    setEcran(secondeApparitionCouloir ? 'portes-video' : 'portes');
   };
   const cliquerRepere = (repere) => {
     if (!repere.actif) {
@@ -327,7 +331,7 @@ export default function JeuApp() {
           <h1 className="jeu-title">{maison.nom}</h1>
           <p className="jeu-title-ar">{maison.nomAr}</p>
           <p className="jeu-desc">{maison.desc}</p>
-          <button type="button" className="jeu-btn" onClick={() => setEcran('portes-video')}>
+          <button type="button" className="jeu-btn" onClick={() => setEcran('portes')}>
             Entrer dans la maison →
           </button>
         </div>
