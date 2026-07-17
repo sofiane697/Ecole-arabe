@@ -15,6 +15,8 @@ import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
 import leconQamariyaVideoWebm from './assets/lecon-qamariya-video.webm';
+import portesVideoMp4 from './assets/portes-video.mp4';
+import portesVideoWebm from './assets/portes-video.webm';
 import './jeu.css';
 
 // Vidéos d'intro (soleil/lune qui parlent) jouées avant la leçon illustrée
@@ -183,11 +185,6 @@ export default function JeuApp() {
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
   const [carteSonCoupe, setCarteSonCoupe] = useState(true);
   const carteVideoRef = useRef(null);
-  // Son activé par défaut : la vidéo est déclenchée par le clic sur la porte
-  // (geste utilisateur), ce qui autorise l'autoplay avec son dans la plupart
-  // des navigateurs. Filet de sécurité si un navigateur le bloque quand même.
-  const [leconVideoSonCoupe, setLeconVideoSonCoupe] = useState(false);
-  const leconVideoRef = useRef(null);
 
   // Autoplay avec son est bloqué par les navigateurs sans interaction
   // préalable — la vidéo démarre donc coupée, avec un bouton pour activer
@@ -196,37 +193,13 @@ export default function JeuApp() {
     setCarteSonCoupe(false);
     if (carteVideoRef.current) carteVideoRef.current.muted = false;
   };
-  const activerSonLeconVideo = () => {
-    setLeconVideoSonCoupe(false);
-    if (leconVideoRef.current) leconVideoRef.current.muted = false;
-  };
-
-  useEffect(() => {
-    if (ecran !== 'lecon-video') return;
-    const v = leconVideoRef.current;
-    if (!v) return;
-    v.muted = false;
-    const p = v.play();
-    if (p && typeof p.catch === 'function') {
-      p.catch(() => {
-        v.muted = true;
-        setLeconVideoSonCoupe(true);
-        v.play().catch(() => {});
-      });
-    }
-  }, [ecran]);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
 
   const ouvrirPorte = (porteId) => {
     setPorteActive(porteId);
-    if (LECON_VIDEOS[porteId]) {
-      setLeconVideoSonCoupe(false);
-      setEcran('lecon-video');
-    } else {
-      setEcran('lecon');
-    }
+    setEcran(LECON_VIDEOS[porteId] ? 'lecon-video' : 'lecon');
   };
   const fermerPorte = () => {
     setPortesVues((v) => (v.includes(porteActive) ? v : [...v, porteActive]));
@@ -266,7 +239,7 @@ export default function JeuApp() {
   const retourCible = ecran === 'village' ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'village', 'portes', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'village', 'portes', 'portes-video', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -354,10 +327,14 @@ export default function JeuApp() {
           <h1 className="jeu-title">{maison.nom}</h1>
           <p className="jeu-title-ar">{maison.nomAr}</p>
           <p className="jeu-desc">{maison.desc}</p>
-          <button type="button" className="jeu-btn" onClick={() => setEcran('portes')}>
+          <button type="button" className="jeu-btn" onClick={() => setEcran('portes-video')}>
             Entrer dans la maison →
           </button>
         </div>
+      )}
+
+      {ecran === 'portes-video' && (
+        <VideoIntro mp4={portesVideoMp4} webm={portesVideoWebm} onEnded={() => setEcran('portes')} />
       )}
 
       {ecran === 'portes' && (
@@ -396,31 +373,7 @@ export default function JeuApp() {
       )}
 
       {ecran === 'lecon-video' && leconVideo && (
-        <div className="jeu-carte">
-          <div className="jeu-carte-inner">
-            <video
-              ref={leconVideoRef}
-              className="jeu-carte-img"
-              autoPlay
-              muted={leconVideoSonCoupe}
-              playsInline
-              onEnded={() => setEcran('lecon')}
-            >
-              <source src={leconVideo.webm} type="video/webm" />
-              <source src={leconVideo.mp4} type="video/mp4" />
-            </video>
-            {leconVideoSonCoupe && (
-              <button
-                type="button"
-                className="jeu-voice-btn jeu-voice-btn--son"
-                onClick={activerSonLeconVideo}
-                aria-label="Activer le son de la vidéo"
-              >
-                🔇
-              </button>
-            )}
-          </div>
-        </div>
+        <VideoIntro mp4={leconVideo.mp4} webm={leconVideo.webm} onEnded={() => setEcran('lecon')} />
       )}
 
       {ecran === 'lecon' && porteActive && leconScene && (
@@ -483,6 +436,62 @@ export default function JeuApp() {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// Vidéo d'intro plein écran (personnage qui parle) jouée une fois, son actif
+// par défaut (déclenchée par un geste utilisateur), puis enchaîne
+// automatiquement vers l'écran suivant à la fin — avec un filet de sécurité
+// muet si un navigateur bloque quand même l'autoplay avec son.
+function VideoIntro({ mp4, webm, onEnded }) {
+  const [sonCoupe, setSonCoupe] = useState(false);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    const p = v.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        v.muted = true;
+        setSonCoupe(true);
+        v.play().catch(() => {});
+      });
+    }
+  }, []);
+
+  const activerSon = () => {
+    setSonCoupe(false);
+    if (videoRef.current) videoRef.current.muted = false;
+  };
+
+  return (
+    <div className="jeu-carte">
+      <div className="jeu-carte-inner">
+        <video
+          ref={videoRef}
+          className="jeu-carte-img"
+          autoPlay
+          muted={sonCoupe}
+          playsInline
+          onEnded={onEnded}
+        >
+          <source src={webm} type="video/webm" />
+          <source src={mp4} type="video/mp4" />
+        </video>
+        {sonCoupe && (
+          <button
+            type="button"
+            className="jeu-voice-btn jeu-voice-btn--son"
+            onClick={activerSon}
+            aria-label="Activer le son de la vidéo"
+          >
+            🔇
+          </button>
+        )}
+      </div>
     </div>
   );
 }
