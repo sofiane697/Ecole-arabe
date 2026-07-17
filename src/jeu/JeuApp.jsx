@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
 import kidsTaarif from './assets/kids-taarif.png';
-import royaumeMapVideoMp4 from './assets/royaume-map.mp4';
-import royaumeMapVideoWebm from './assets/royaume-map.webm';
+import carteVideoMp4 from './assets/carte-video.mp4';
+import carteVideoWebm from './assets/carte-video.webm';
+import royaumeMap from './assets/royaume-map-nouvelle.jpg';
 import villageScene from './assets/village-scene.jpg';
 import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
 import leconShamsiya from './assets/lecon-shamsiya.jpg';
@@ -122,12 +123,12 @@ const COIN_LECTURE_QAMARIYA = {
 // mais pas encore développées. Positionnés sur les toits/icônes plutôt que
 // sur les pancartes de texte.
 const REPERES_CARTE = [
-  { id: 'village', label: 'Village du Coran', x: 82, y: 20, actif: true },
-  { id: 'tresor', label: 'Le trésor caché', x: 8, y: 15, actif: false },
-  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 20, y: 20, actif: false },
-  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 10, y: 35, actif: false },
-  { id: 'soukoun', label: 'Maison du soukoun', x: 91, y: 23, actif: false },
-  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 91, y: 39, actif: false },
+  { id: 'village', label: 'Village du Coran', x: 85, y: 29, actif: true },
+  { id: 'tresor', label: 'Le trésor caché', x: 15, y: 25, actif: false },
+  { id: 'voyelles-courtes', label: 'Maison des voyelles courtes', x: 20, y: 44, actif: false },
+  { id: 'voyelles-longues', label: 'Maison des voyelles longues', x: 12, y: 62, actif: false },
+  { id: 'soukoun', label: 'Maison du soukoun', x: 78, y: 44, actif: false },
+  { id: 'doubles-voyelles', label: 'Maison des doubles voyelles', x: 89, y: 62, actif: false },
 ];
 
 // Les 3 maisons du Village du Coran — seule « ال التعريف » est développée.
@@ -136,9 +137,6 @@ const MAISONS_VILLAGE = [
   { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 51, y: 29, actif: false },
   { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 83, y: 30, actif: true },
 ];
-
-const CARTE_NARRATION =
-  "Bonjour les enfants ! Aujourd'hui, une grande aventure commence avec Anas, Bilal et Assia. Ensemble, nous allons entrer dans le merveilleux Royaume du Coran pour découvrir ses trésors. Alors, êtes-vous prêts à traverser les ponts du Royaume, découvrir les secrets des lettres arabes et apprendre les paroles d'Allah, avec joie ?";
 
 const VILLAGE_NARRATION =
   "Le Coran est la parole d'Allah, révélée à notre Prophète. Pour bien le lire, il est important d'apprendre les règles de tajwid. Dans cette aventure, nous allons découvrir des secrets merveilleux qui rendent notre récitation plus belle et plus juste. Bienvenue au Village du Coran !";
@@ -180,23 +178,13 @@ function VoiceBtn({ text, lang = 'ar-SA', pitch = 1, className = 'jeu-voice-btn'
  * les 2 portes visitées) → réussite.
  */
 export default function JeuApp() {
-  const [ecran, setEcran] = useState('carte');       // carte | village | intro | portes | lecon | defi | reussite
+  const [ecran, setEcran] = useState('carte-video'); // carte-video | carte | village | intro | portes | lecon | defi | reussite
   const [porteActive, setPorteActive] = useState(null);
   const [portesVues, setPortesVues] = useState([]);
   const [resultat, setResultat] = useState(null);
   const [repereVerrouille, setRepereVerrouille] = useState(null);
   const [maisonVerrouillee, setMaisonVerrouillee] = useState(null);
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
-  const [carteSonCoupe, setCarteSonCoupe] = useState(true);
-  const carteVideoRef = useRef(null);
-
-  // Autoplay avec son est bloqué par les navigateurs sans interaction
-  // préalable — la vidéo démarre donc coupée, avec un bouton pour activer
-  // le son au premier tap (autorisé une fois que l'utilisateur a interagi).
-  const activerSonCarte = () => {
-    setCarteSonCoupe(false);
-    if (carteVideoRef.current) carteVideoRef.current.muted = false;
-  };
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -248,30 +236,25 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
       <div className="jeu-topbar">
-        {ecran === 'carte'
+        {ecran === 'carte' || ecran === 'carte-video'
           ? <Link to="/" className="jeu-back">← Quitter</Link>
           : <button type="button" className="jeu-back jeu-back-btn" onClick={() => setEcran(retourCible)}>{retourLabel}</button>}
         <span className="jeu-topbar-title">Le Royaume du Coran</span>
       </div>
 
+      {ecran === 'carte-video' && (
+        <VideoIntro mp4={carteVideoMp4} webm={carteVideoWebm} onEnded={() => setEcran('carte')} />
+      )}
+
       {ecran === 'carte' && (
         <div className="jeu-carte">
           <div className="jeu-carte-inner">
-            <video
-              ref={carteVideoRef}
-              className="jeu-carte-img"
-              autoPlay
-              muted={carteSonCoupe}
-              playsInline
-            >
-              <source src={royaumeMapVideoWebm} type="video/webm" />
-              <source src={royaumeMapVideoMp4} type="video/mp4" />
-            </video>
+            <img src={royaumeMap} alt="Le Royaume du Coran" className="jeu-carte-img" />
             {REPERES_CARTE.map((r) => (
               <button
                 key={r.id}
@@ -285,22 +268,6 @@ export default function JeuApp() {
                 {repereVerrouille === r.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
-            {carteSonCoupe && (
-              <button
-                type="button"
-                className="jeu-voice-btn jeu-voice-btn--son"
-                onClick={activerSonCarte}
-                aria-label="Activer le son de la vidéo"
-              >
-                🔇
-              </button>
-            )}
-            <VoiceBtn
-              text={CARTE_NARRATION}
-              lang="fr-FR"
-              pitch={1.35}
-              className="jeu-voice-btn jeu-voice-btn--floating"
-            />
           </div>
         </div>
       )}
