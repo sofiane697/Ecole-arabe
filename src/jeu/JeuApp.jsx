@@ -11,7 +11,8 @@ import leconShamsiya from './assets/lecon-shamsiya.jpg';
 import leconQamariya from './assets/lecon-qamariya.jpg';
 import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
 import coinLectureQamariya from './assets/coin-lecture-qamariya.jpg';
-import soleilParleAlphaWebm from './assets/soleil-parle-alpha.webm';
+import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
+import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import './jeu.css';
 
 // Repères des 2 portes + la salle de jeux sur la scène du couloir (en %).
@@ -27,13 +28,6 @@ const SALLE_JEUX_HOTSPOT = { x: 83, y: 44 };
 const LECON_SCENES = {
   shamsiya: {
     img: leconShamsiya,
-    // Aperçu du soleil animé (HeyGen), fond transparent (WebM/VP9 alpha),
-    // positionné pile sur le soleil dessiné pour le remplacer visuellement.
-    // Filigrane visible — à remplacer par un export propre si validé.
-    // Pas de fallback MP4 : l'alpha n'existe qu'en WebM, donc sur les
-    // navigateurs qui ne le supportent pas (Safari/iOS), le soleil dessiné
-    // reste visible en dessous, inchangé.
-    videoApercu: { webm: soleilParleAlphaWebm, left: 68, top: 21, width: 31, height: 23 },
     hotspots: [
       { text: 'اَلشَّمْسُ', x: 63, y: 20 },
       { text: 'وَالشَّمْسِ', x: 62, y: 30 },
@@ -182,6 +176,8 @@ export default function JeuApp() {
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
   const [carteSonCoupe, setCarteSonCoupe] = useState(true);
   const carteVideoRef = useRef(null);
+  const [leconVideoSonCoupe, setLeconVideoSonCoupe] = useState(true);
+  const leconVideoRef = useRef(null);
 
   // Autoplay avec son est bloqué par les navigateurs sans interaction
   // préalable — la vidéo démarre donc coupée, avec un bouton pour activer
@@ -190,11 +186,23 @@ export default function JeuApp() {
     setCarteSonCoupe(false);
     if (carteVideoRef.current) carteVideoRef.current.muted = false;
   };
+  const activerSonLeconVideo = () => {
+    setLeconVideoSonCoupe(false);
+    if (leconVideoRef.current) leconVideoRef.current.muted = false;
+  };
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
 
-  const ouvrirPorte = (porteId) => { setPorteActive(porteId); setEcran('lecon'); };
+  const ouvrirPorte = (porteId) => {
+    setPorteActive(porteId);
+    if (porteId === 'shamsiya') {
+      setLeconVideoSonCoupe(true);
+      setEcran('lecon-video');
+    } else {
+      setEcran('lecon');
+    }
+  };
   const fermerPorte = () => {
     setPortesVues((v) => (v.includes(porteActive) ? v : [...v, porteActive]));
     setPorteActive(null);
@@ -232,7 +240,7 @@ export default function JeuApp() {
   const retourLabel = ecran === 'village' ? '← Carte du Royaume' : estEcranLecture ? '← Choisir une porte' : '← Village du Coran';
   const retourCible = ecran === 'village' ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'village', 'portes', 'lecture', 'lecture2'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'village', 'portes', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -361,6 +369,36 @@ export default function JeuApp() {
         </div>
       )}
 
+      {ecran === 'lecon-video' && (
+        <div className="jeu-carte">
+          <div className="jeu-carte-inner">
+            <video
+              ref={leconVideoRef}
+              className="jeu-carte-img"
+              autoPlay
+              muted={leconVideoSonCoupe}
+              playsInline
+            >
+              <source src={leconShamsiyaVideoWebm} type="video/webm" />
+              <source src={leconShamsiyaVideoMp4} type="video/mp4" />
+            </video>
+            {leconVideoSonCoupe && (
+              <button
+                type="button"
+                className="jeu-voice-btn jeu-voice-btn--son"
+                onClick={activerSonLeconVideo}
+                aria-label="Activer le son de la vidéo"
+              >
+                🔇
+              </button>
+            )}
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('lecon')}>
+            Suivant →
+          </button>
+        </div>
+      )}
+
       {ecran === 'lecon' && porteActive && leconScene && (
         <LeconScene scene={leconScene} onFini={fermerPorte} />
       )}
@@ -426,14 +464,6 @@ export default function JeuApp() {
 }
 
 function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
-  const [aperçuSonCoupe, setAperçuSonCoupe] = useState(true);
-  const aperçuVideoRef = useRef(null);
-
-  const activerSonAperçu = () => {
-    setAperçuSonCoupe(false);
-    if (aperçuVideoRef.current) aperçuVideoRef.current.muted = false;
-  };
-
   return (
     <div className="jeu-carte jeu-lecon-scene">
       <div className="jeu-carte-inner">
@@ -450,25 +480,6 @@ function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
             <span className="jeu-repere-point">🔊</span>
           </button>
         ))}
-        {scene.videoApercu && (
-          <button
-            type="button"
-            className="jeu-video-remplace"
-            style={{
-              left: `${scene.videoApercu.left}%`,
-              top: `${scene.videoApercu.top}%`,
-              width: `${scene.videoApercu.width}%`,
-              height: `${scene.videoApercu.height}%`,
-            }}
-            onClick={activerSonAperçu}
-            aria-label="Activer le son du personnage"
-          >
-            <video ref={aperçuVideoRef} autoPlay loop muted={aperçuSonCoupe} playsInline>
-              <source src={scene.videoApercu.webm} type="video/webm" />
-            </video>
-            {aperçuSonCoupe && <span className="jeu-video-bulle-icone">🔇</span>}
-          </button>
-        )}
       </div>
       <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={onFini}>
         {boutonLabel}
