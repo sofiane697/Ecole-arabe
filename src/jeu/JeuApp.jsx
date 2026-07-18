@@ -12,6 +12,7 @@ import leconShamsiya from './assets/lecon-shamsiya.jpg';
 import leconQamariya from './assets/lecon-qamariya.jpg';
 import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
 import coinLectureQamariya from './assets/coin-lecture-qamariya.jpg';
+import evaluationTaarif from './assets/evaluation-taarif.jpg';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -53,6 +54,34 @@ const PORTES_HOTSPOTS = {
   qamariya: { x: 58, y: 44 },
 };
 const SALLE_JEUX_HOTSPOT = { x: 83, y: 44 };
+
+// Repère de l'évaluation sur l'écran des portes — placé sur le panneau
+// « La maison de ال التعريف » (mur de gauche), débloqué une fois le défi
+// de tri réussi.
+const EVALUATION_HOTSPOT = { x: 10, y: 36 };
+
+// Page d'évaluation illustrée (15 mots شمسية/قمرية mélangés) avec repères
+// audio par mot, affichée une fois le défi de tri de la salle de jeux réussi.
+const EVALUATION_SCENE = {
+  img: evaluationTaarif,
+  hotspots: [
+    { text: 'أَيْنَ الْمَفَرُّ', x: 31, y: 37 },
+    { text: 'بِالْغَيْبِ', x: 49, y: 37 },
+    { text: 'ٱلصَّالِحِينَ', x: 67, y: 37 },
+    { text: 'ٱلْحَيَوٰةُ', x: 85, y: 37 },
+    { text: 'ٱلزَّوْجَيْنِ', x: 31, y: 49 },
+    { text: 'بِٱلْفَصْلِ', x: 49, y: 49 },
+    { text: 'كَٱلْعِهْنِ', x: 67, y: 49 },
+    { text: 'وَٱلرَّجْزَ', x: 85, y: 49 },
+    { text: 'ٱلْقَوْمُ', x: 31, y: 59 },
+    { text: 'ٱلسَّاقُ', x: 49, y: 59 },
+    { text: 'ٱلْخَيْرُ', x: 67, y: 59 },
+    { text: 'لِوَجْهِ ٱللَّهِ', x: 85, y: 59 },
+    { text: 'عَنِ التَّذْكِرَةِ', x: 45, y: 66 },
+    { text: 'عَلَى الْأَرَائِكِ', x: 93, y: 66 },
+    { text: 'وَٱلْكَافِرُونَ', x: 70, y: 76 },
+  ],
+};
 
 // Leçons illustrées (page du PDF) avec repères audio par mot. Sans entrée
 // ici, la leçon retombe sur l'ancien écran texte (cf. LeconPorte).
@@ -206,6 +235,8 @@ export default function JeuApp() {
   const [repereVerrouille, setRepereVerrouille] = useState(null);
   const [maisonVerrouillee, setMaisonVerrouillee] = useState(null);
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
+  const [evaluationDebloquee, setEvaluationDebloquee] = useState(false);
+  const [evaluationVerrouillee, setEvaluationVerrouillee] = useState(false);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -247,6 +278,14 @@ export default function JeuApp() {
     }
     setEcran('lecture');
   };
+  const cliquerEvaluation = () => {
+    if (!evaluationDebloquee) {
+      setEvaluationVerrouillee(true);
+      setTimeout(() => setEvaluationVerrouillee(false), 1600);
+      return;
+    }
+    setEcran('evaluation');
+  };
 
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
@@ -257,7 +296,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video', 'evaluation'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -369,8 +408,22 @@ export default function JeuApp() {
               <span className="jeu-repere-point" />
               {jeuxVerrouille && <span className="jeu-repere-toast">🔒 Visite les 2 portes d'abord</span>}
             </button>
+            <button
+              type="button"
+              className={`jeu-repere${evaluationDebloquee ? ' is-actif' : ' is-verrouille'}`}
+              style={{ left: `${EVALUATION_HOTSPOT.x}%`, top: `${EVALUATION_HOTSPOT.y}%` }}
+              onClick={cliquerEvaluation}
+              aria-label="Évaluation de la maison"
+            >
+              <span className="jeu-repere-point" />
+              {evaluationVerrouillee && <span className="jeu-repere-toast">🔒 Termine d'abord le défi de la salle de jeux</span>}
+            </button>
           </div>
         </div>
+      )}
+
+      {ecran === 'evaluation' && (
+        <LeconScene scene={EVALUATION_SCENE} onFini={() => setEcran('portes')} boutonLabel="Retour à la maison →" />
       )}
 
       {ecran === 'lecon-video' && leconVideo && (
@@ -408,7 +461,7 @@ export default function JeuApp() {
           <DragSort
             items={defiItems}
             zones={zones}
-            onDone={(r) => { setResultat(r); setEcran('reussite'); }}
+            onDone={(r) => { setResultat(r); setEvaluationDebloquee(true); setEcran('reussite'); }}
           />
         </div>
       )}
