@@ -138,9 +138,6 @@ const MAISONS_VILLAGE = [
   { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 83, y: 30, actif: true },
 ];
 
-const VILLAGE_NARRATION =
-  "Le Coran est la parole d'Allah, révélée à notre Prophète. Pour bien le lire, il est important d'apprendre les règles de tajwid. Dans cette aventure, nous allons découvrir des secrets merveilleux qui rendent notre récitation plus belle et plus juste. Bienvenue au Village du Coran !";
-
 // Voix des personnages : pitch relevé pour se rapprocher d'une voix
 // d'enfant (l'API Web Speech ne propose pas de voix « enfant » dédiée,
 // on approxime avec un pitch plus aigu + un débit un peu plus vif).
@@ -293,10 +290,6 @@ export default function JeuApp() {
                 {maisonVerrouillee === m.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
-          </div>
-          <div className="jeu-village-dialogue">
-            <VoiceBtn text={VILLAGE_NARRATION} lang="fr-FR" pitch={1.35} className="jeu-voice-btn jeu-voice-btn--village" />
-            <p>Bienvenue au Village du Coran ! Découvrons ensemble les secrets de la belle récitation.</p>
           </div>
         </div>
       )}

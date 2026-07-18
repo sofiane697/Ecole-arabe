@@ -74,35 +74,6 @@
   object-fit: fill;
 }
 
-.jeu-village-dialogue {
-  position: absolute;
-  left: 0.8rem;
-  right: 0.8rem;
-  bottom: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  background: rgba(255, 253, 248, 0.94);
-  border: 1px solid rgba(191, 138, 48, 0.25);
-  border-radius: 16px;
-  padding: 0.7rem 0.9rem;
-  box-shadow: 0 12px 28px -14px rgba(31, 29, 26, 0.4);
-  backdrop-filter: blur(4px);
-}
-.jeu-village-dialogue p {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.45;
-  color: #3d3529;
-  text-align: left;
-}
-.jeu-voice-btn--village {
-  flex: none;
-  width: 40px;
-  height: 40px;
-  font-size: 1.1rem;
-  background: rgba(191, 138, 48, 0.15);
-}
 .jeu-voice-btn--floating {
   position: absolute;
   right: 0.7rem;
