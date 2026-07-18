@@ -108,17 +108,18 @@ const LECON_SCENES = {
   },
   qamariya: {
     img: leconQamariya,
-    zoneW: 18,
-    zoneH: 10,
+    // Coordonnées précises obtenues via image-map.net (fournies par Sofiane),
+    // converties depuis les pixels de l'image source (864×1821) en % — x,y
+    // représentent le coin bas-droit de chaque zone, comme ailleurs.
     hotspots: [
-      { text: 'اَلْقَمَرُ', x: 82, y: 21 },
-      { text: 'وَالْقَمَرِ', x: 80, y: 32 },
-      { text: 'اَلْمَسْجِدَ', x: 58, y: 65 },
-      { text: 'اَلْأَرْضَ', x: 77, y: 65 },
-      { text: 'اَلْقُرْآنَ', x: 95, y: 65 },
-      { text: 'وَالْجِبَالِ', x: 58, y: 77 },
-      { text: 'وَالْمَرْجَانُ', x: 78, y: 77 },
-      { text: 'هُوَ الْأَوَّلُ', x: 96, y: 77 },
+      { text: 'اَلْقَمَرُ', x: 57.5, y: 16.1, zoneW: 13.8, zoneH: 3.2 },
+      { text: 'وَالْقَمَرِ', x: 57.2, y: 27.6, zoneW: 13.7, zoneH: 5.2 },
+      { text: 'اَلْمَسْجِدَ', x: 52.9, y: 64.5, zoneW: 11.6, zoneH: 3.8 },
+      { text: 'اَلْأَرْضَ', x: 70.3, y: 65.2, zoneW: 13.1, zoneH: 4.4 },
+      { text: 'اَلْقُرْآنَ', x: 86.9, y: 65.2, zoneW: 12.7, zoneH: 4.7 },
+      { text: 'وَالْجِبَالِ', x: 49.8, y: 73.8, zoneW: 8.8, zoneH: 2.9 },
+      { text: 'وَالْمَرْجَانُ', x: 67.9, y: 74.5, zoneW: 12.5, zoneH: 3.8 },
+      { text: 'هُوَ الْأَوَّلُ', x: 82.9, y: 74.4, zoneW: 9.7, zoneH: 2.7 },
     ],
   },
 };
