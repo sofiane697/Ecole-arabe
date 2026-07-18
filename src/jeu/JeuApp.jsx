@@ -179,9 +179,9 @@ const REPERES_CARTE = [
 
 // Les 3 maisons du Village du Coran — seule « ال التعريف » est développée.
 const MAISONS_VILLAGE = [
-  { id: 'waqf', label: 'Les secrets du Waqf', x: 20, y: 30, actif: false },
-  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 51, y: 29, actif: false },
-  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 83, y: 30, actif: true },
+  { id: 'waqf', label: 'Les secrets du Waqf', x: 18, y: 38, actif: false },
+  { id: 'noun-mim', label: 'Les secrets du Noun et Mim', x: 50, y: 38, actif: false },
+  { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 80, y: 38, actif: true },
 ];
 
 // Voix des personnages : pitch relevé pour se rapprocher d'une voix
