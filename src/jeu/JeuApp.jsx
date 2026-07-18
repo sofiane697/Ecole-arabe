@@ -22,6 +22,20 @@ import portesVideo2Mp4 from './assets/portes-video-2.mp4';
 import portesVideo2Webm from './assets/portes-video-2.webm';
 import villageVideoMp4 from './assets/village-video.mp4';
 import villageVideoWebm from './assets/village-video.webm';
+import audioQamariyaAlAqabatu from './assets/audio/qamariya-ma-al-aqabatu.mp3';
+import audioQamariyaWaAlFajri from './assets/audio/qamariya-wa-al-fajri.mp3';
+import audioQamariyaAlWatri from './assets/audio/qamariya-al-watri.mp3';
+import audioQamariyaBilHazli from './assets/audio/qamariya-bil-hazli.mp3';
+import audioQamariyaIlaAlIbili from './assets/audio/qamariya-ila-al-ibili.mp3';
+import audioQamariyaAlKhunnasi from './assets/audio/qamariya-al-khunnasi.mp3';
+import audioQamariyaAlGhashiyati from './assets/audio/qamariya-al-ghashiyati.mp3';
+import audioQamariyaAlJibalu from './assets/audio/qamariya-al-jibalu.mp3';
+import audioQamariyaWalMaliku from './assets/audio/qamariya-wal-maliku.mp3';
+import audioQamariyaAlHutamatu from './assets/audio/qamariya-al-hutamatu.mp3';
+import audioQamariyaAlYaqini from './assets/audio/qamariya-al-yaqini.mp3';
+import audioQamariyaFiAlBaladi from './assets/audio/qamariya-fi-al-baladi.mp3';
+import audioQamariyaAlKawthara from './assets/audio/qamariya-al-kawthara.mp3';
+import audioQamariyaAlQadari from './assets/audio/qamariya-al-qadari.mp3';
 import './jeu.css';
 
 // Vidéos d'intro (soleil/lune qui parlent) jouées avant la leçon illustrée
@@ -100,20 +114,20 @@ const COIN_LECTURE_SHAMSIYA = {
 const COIN_LECTURE_QAMARIYA = {
   img: coinLectureQamariya,
   hotspots: [
-    { text: 'مَا الْعَقَبَةُ', x: 35, y: 32 },
-    { text: 'وَالْفَجْرِ', x: 63, y: 32 },
-    { text: 'الْوَتْرِ', x: 90, y: 32 },
-    { text: 'بِالْهَزْلِ', x: 35, y: 44 },
-    { text: 'إِلَى الْإِبِلِ', x: 63, y: 44 },
-    { text: 'الْخُنَّاسِ', x: 90, y: 44 },
-    { text: 'الْغَشِيَةِ', x: 35, y: 56 },
-    { text: 'الْجِبَالُ', x: 63, y: 56 },
-    { text: 'وَالْمَلِكُ', x: 90, y: 56 },
-    { text: 'الْحُطَمَةُ', x: 35, y: 68 },
-    { text: 'الْيَقِينِ', x: 63, y: 68 },
-    { text: 'فِي الْبَلَدِ', x: 90, y: 68 },
-    { text: 'الْكَوْثَرَ', x: 72, y: 79 },
-    { text: 'الْقَدَرِ', x: 92, y: 79 },
+    { text: 'مَا الْعَقَبَةُ', x: 35, y: 32, audio: audioQamariyaAlAqabatu },
+    { text: 'وَالْفَجْرِ', x: 63, y: 32, audio: audioQamariyaWaAlFajri },
+    { text: 'الْوَتْرِ', x: 90, y: 32, audio: audioQamariyaAlWatri },
+    { text: 'بِالْهَزْلِ', x: 35, y: 44, audio: audioQamariyaBilHazli },
+    { text: 'إِلَى الْإِبِلِ', x: 63, y: 44, audio: audioQamariyaIlaAlIbili },
+    { text: 'الْخُنَّاسِ', x: 90, y: 44, audio: audioQamariyaAlKhunnasi },
+    { text: 'الْغَشِيَةِ', x: 35, y: 56, audio: audioQamariyaAlGhashiyati },
+    { text: 'الْجِبَالُ', x: 63, y: 56, audio: audioQamariyaAlJibalu },
+    { text: 'وَالْمَلِكُ', x: 90, y: 56, audio: audioQamariyaWalMaliku },
+    { text: 'الْحُطَمَةُ', x: 35, y: 68, audio: audioQamariyaAlHutamatu },
+    { text: 'الْيَقِينِ', x: 63, y: 68, audio: audioQamariyaAlYaqini },
+    { text: 'فِي الْبَلَدِ', x: 90, y: 68, audio: audioQamariyaFiAlBaladi },
+    { text: 'الْكَوْثَرَ', x: 72, y: 79, audio: audioQamariyaAlKawthara },
+    { text: 'الْقَدَرِ', x: 92, y: 79, audio: audioQamariyaAlQadari },
   ],
 };
 
@@ -163,6 +177,16 @@ function VoiceBtn({ text, lang = 'ar-SA', pitch = 1, className = 'jeu-voice-btn'
       🔊
     </button>
   );
+}
+
+// Joue le fichier audio pré-généré (voix enregistrée) du mot si disponible,
+// sinon retombe sur la synthèse vocale du navigateur.
+function playHotspot(h) {
+  if (h.audio) {
+    new window.Audio(h.audio).play();
+  } else {
+    speak(h.text, 'ar-SA');
+  }
 }
 
 /**
@@ -484,7 +508,7 @@ function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
             type="button"
             className="jeu-repere jeu-repere--audio"
             style={{ left: `${h.x}%`, top: `${h.y}%` }}
-            onClick={() => speak(h.text, 'ar-SA')}
+            onClick={() => playHotspot(h)}
             aria-label="Écouter la prononciation"
           >
             <span className="jeu-repere-point">🔊</span>
