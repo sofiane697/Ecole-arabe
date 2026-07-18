@@ -67,6 +67,8 @@ const EVALUATION_HOTSPOT = { x: 10, y: 36 };
 // audio par mot, affichée une fois le défi de tri de la salle de jeux réussi.
 const EVALUATION_SCENE = {
   img: evaluationTaarif,
+  zoneW: 16,
+  zoneH: 10,
   hotspots: [
     { text: 'أَيْنَ الْمَفَرُّ', x: 31, y: 37 },
     { text: 'بِالْغَيْبِ', x: 49, y: 37 },
@@ -80,9 +82,9 @@ const EVALUATION_SCENE = {
     { text: 'ٱلسَّاقُ', x: 49, y: 59 },
     { text: 'ٱلْخَيْرُ', x: 67, y: 59 },
     { text: 'لِوَجْهِ ٱللَّهِ', x: 85, y: 59 },
-    { text: 'عَنِ التَّذْكِرَةِ', x: 45, y: 66 },
-    { text: 'عَلَى الْأَرَائِكِ', x: 93, y: 66 },
-    { text: 'وَٱلْكَافِرُونَ', x: 70, y: 76 },
+    { text: 'عَنِ التَّذْكِرَةِ', x: 45, y: 66, zoneW: 22 },
+    { text: 'عَلَى الْأَرَائِكِ', x: 93, y: 66, zoneW: 22 },
+    { text: 'وَٱلْكَافِرُونَ', x: 70, y: 76, zoneW: 22 },
   ],
 };
 
@@ -91,6 +93,8 @@ const EVALUATION_SCENE = {
 const LECON_SCENES = {
   shamsiya: {
     img: leconShamsiya,
+    zoneW: 20,
+    zoneH: 10,
     hotspots: [
       { text: 'اَلشَّمْسُ', x: 68, y: 23 },
       { text: 'وَالشَّمْسِ', x: 68, y: 34 },
@@ -104,6 +108,8 @@ const LECON_SCENES = {
   },
   qamariya: {
     img: leconQamariya,
+    zoneW: 18,
+    zoneH: 10,
     hotspots: [
       { text: 'اَلْقَمَرُ', x: 82, y: 21 },
       { text: 'وَالْقَمَرِ', x: 80, y: 32 },
@@ -122,6 +128,8 @@ const LECON_SCENES = {
 // décalés vers le coin bas-droit de chaque case pour ne pas chevaucher le mot.
 const COIN_LECTURE_SHAMSIYA = {
   img: coinLectureShamsiya,
+  zoneW: 20,
+  zoneH: 13,
   hotspots: [
     { text: 'وَالزَّيْتُونِ', x: 26, y: 32 },
     { text: 'اَلثَّرَائِبِ', x: 48, y: 32 },
@@ -145,6 +153,8 @@ const COIN_LECTURE_SHAMSIYA = {
 // lecture شمسية et avant le défi de tri (3 colonnes au lieu de 4).
 const COIN_LECTURE_QAMARIYA = {
   img: coinLectureQamariya,
+  zoneW: 25,
+  zoneH: 11,
   hotspots: [
     { text: 'مَا الْعَقَبَةُ', x: 35, y: 32, audio: audioQamariyaAlAqabatu },
     { text: 'وَالْفَجْرِ', x: 63, y: 32, audio: audioQamariyaWaAlFajri },
@@ -158,8 +168,8 @@ const COIN_LECTURE_QAMARIYA = {
     { text: 'الْحُطَمَةُ', x: 35, y: 68, audio: audioQamariyaAlHutamatu },
     { text: 'الْيَقِينِ', x: 63, y: 68, audio: audioQamariyaAlYaqini },
     { text: 'فِي الْبَلَدِ', x: 90, y: 68, audio: audioQamariyaFiAlBaladi },
-    { text: 'الْكَوْثَرَ', x: 72, y: 79, audio: audioQamariyaAlKawthara },
-    { text: 'الْقَدَرِ', x: 92, y: 79, audio: audioQamariyaAlQadari },
+    { text: 'الْكَوْثَرَ', x: 72, y: 79, audio: audioQamariyaAlKawthara, zoneW: 18 },
+    { text: 'الْقَدَرِ', x: 92, y: 79, audio: audioQamariyaAlQadari, zoneW: 18 },
   ],
 };
 
@@ -580,6 +590,8 @@ function VideoIntro({ mp4, webm, onEnded }) {
 }
 
 function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
+  const zoneW = scene.zoneW ?? 20;
+  const zoneH = scene.zoneH ?? 12;
   return (
     <div className="jeu-carte jeu-lecon-scene">
       <div className="jeu-carte-inner">
@@ -588,13 +600,16 @@ function LeconScene({ scene, onFini, boutonLabel = "J'ai compris →" }) {
           <button
             key={i}
             type="button"
-            className="jeu-repere jeu-repere--audio"
-            style={{ left: `${h.x}%`, top: `${h.y}%` }}
+            className="jeu-repere-zone"
+            style={{
+              left: `${h.x}%`,
+              top: `${h.y}%`,
+              width: `${h.zoneW ?? zoneW}%`,
+              height: `${h.zoneH ?? zoneH}%`,
+            }}
             onClick={() => playHotspot(h)}
-            aria-label="Écouter la prononciation"
-          >
-            <span className="jeu-repere-point">🔊</span>
-          </button>
+            aria-label={`Écouter la prononciation de ${h.text}`}
+          />
         ))}
       </div>
       <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={onFini}>
