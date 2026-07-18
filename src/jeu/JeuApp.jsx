@@ -13,6 +13,9 @@ import leconQamariya from './assets/lecon-qamariya.jpg';
 import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
 import coinLectureQamariya from './assets/coin-lecture-qamariya.jpg';
 import evaluationTaarif from './assets/evaluation-taarif.jpg';
+import nounMimVideoMp4 from './assets/noun-mim-video.mp4';
+import nounMimVideoWebm from './assets/noun-mim-video.webm';
+import nounMimKids from './assets/noun-mim-kids.jpg';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -237,6 +240,7 @@ export default function JeuApp() {
   const [jeuxVerrouille, setJeuxVerrouille] = useState(false);
   const [evaluationDebloquee, setEvaluationDebloquee] = useState(false);
   const [evaluationVerrouillee, setEvaluationVerrouillee] = useState(false);
+  const [nounMimDebloque, setNounMimDebloque] = useState(false);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -268,7 +272,9 @@ export default function JeuApp() {
       setTimeout(() => setMaisonVerrouillee((v) => (v === m.id ? null : v)), 1600);
       return;
     }
-    setEcran('intro');
+    // Seule la maison ال التعريف a son contenu (règles/portes) déjà transcrit ;
+    // Noun et Mim est débloquée sur la carte mais son contenu arrive plus tard.
+    setEcran(m.id === 'taarif' ? 'intro' : 'bientot');
   };
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
@@ -287,6 +293,8 @@ export default function JeuApp() {
     setEcran('evaluation');
   };
 
+  const maisonsVillage = MAISONS_VILLAGE.map((m) => (m.id === 'noun-mim' ? { ...m, actif: nounMimDebloque } : m));
+
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
 
@@ -296,7 +304,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video', 'evaluation'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -340,7 +348,7 @@ export default function JeuApp() {
         <div className="jeu-carte">
           <div className="jeu-carte-inner">
             <img src={villageScene} alt="Village du Coran" className="jeu-carte-img" />
-            {MAISONS_VILLAGE.map((m) => (
+            {maisonsVillage.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -423,7 +431,28 @@ export default function JeuApp() {
       )}
 
       {ecran === 'evaluation' && (
-        <LeconScene scene={EVALUATION_SCENE} onFini={() => setEcran('portes')} boutonLabel="Retour à la maison →" />
+        <LeconScene scene={EVALUATION_SCENE} onFini={() => setEcran('noun-mim-video')} boutonLabel="Retour à la maison →" />
+      )}
+
+      {ecran === 'noun-mim-video' && (
+        <VideoIntro
+          mp4={nounMimVideoMp4}
+          webm={nounMimVideoWebm}
+          onEnded={() => { setNounMimDebloque(true); setEcran('village'); }}
+        />
+      )}
+
+      {ecran === 'bientot' && (
+        <div className="jeu-screen jeu-intro">
+          <img src={nounMimKids} alt="" className="jeu-intro-kids" />
+          <h1 className="jeu-title">Les secrets du Noun et du Mim</h1>
+          <p className="jeu-desc">
+            Cette maison arrive bientôt. Reviens vite pour découvrir ses secrets !
+          </p>
+          <button type="button" className="jeu-btn" onClick={() => setEcran('village')}>
+            ← Retour au village
+          </button>
+        </div>
       )}
 
       {ecran === 'lecon-video' && leconVideo && (
