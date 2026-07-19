@@ -16,6 +16,7 @@ import evaluationTaarif from './assets/evaluation-taarif.jpg';
 import nounMimVideoMp4 from './assets/noun-mim-video.mp4';
 import nounMimVideoWebm from './assets/noun-mim-video.webm';
 import nounMimKids from './assets/noun-mim-kids.jpg';
+import nounMimLecon from './assets/noun-mim-lecon.jpg';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -65,6 +66,27 @@ const EVALUATION_HOTSPOT = { x: 10, y: 36 };
 
 // Page d'évaluation illustrée (15 mots شمسية/قمرية mélangés) avec repères
 // audio par mot, affichée une fois le défi de tri de la salle de jeux réussi.
+// Leçon de la ghunna (maison Noun et Mim) — zones cliquables issues des
+// coordonnées image-map.net fournies par Sofiane, recalées au pixel près sur
+// les cases détectées dans l'image (x,y = coin bas-droit de chaque zone).
+const NOUN_MIM_LECON = {
+  img: nounMimLecon,
+  hotspots: [
+    { text: 'غُنَّة', x: 68.6, y: 9.7, zoneW: 7.6, zoneH: 3.1 },
+    { text: 'مِيمٌ وَ نُونٌ مُشَدَّدَتَانِ', x: 75.0, y: 57.7, zoneW: 41.5, zoneH: 5.2 },
+    { text: 'أَعِنَّا', x: 89.0, y: 90.3, zoneW: 8.3, zoneH: 5.1 },
+    { text: 'كُنَّا', x: 80.7, y: 90.3, zoneW: 8.4, zoneH: 5.1 },
+    { text: 'إِنَّهُ', x: 72.3, y: 90.3, zoneW: 8.3, zoneH: 5.1 },
+    { text: 'إِنَّ', x: 64.0, y: 90.3, zoneW: 8.3, zoneH: 5.1 },
+    { text: 'يَظُنُّ', x: 55.7, y: 90.3, zoneW: 8.4, zoneH: 5.1 },
+    { text: 'أَمَّا', x: 89.0, y: 94.9, zoneW: 8.3, zoneH: 4.3 },
+    { text: 'ثُمَّ', x: 80.7, y: 94.9, zoneW: 8.4, zoneH: 4.3 },
+    { text: 'أَمَّنْ', x: 72.3, y: 94.9, zoneW: 8.3, zoneH: 4.3 },
+    { text: 'مِمَّ', x: 64.0, y: 94.9, zoneW: 8.3, zoneH: 4.3 },
+    { text: 'لَمَّا', x: 55.7, y: 94.9, zoneW: 8.4, zoneH: 4.3 },
+  ],
+};
+
 const EVALUATION_SCENE = {
   img: evaluationTaarif,
   zoneW: 16,
@@ -283,9 +305,9 @@ export default function JeuApp() {
       setTimeout(() => setMaisonVerrouillee((v) => (v === m.id ? null : v)), 1600);
       return;
     }
-    // Seule la maison ال التعريف a son contenu (règles/portes) déjà transcrit ;
-    // Noun et Mim est débloquée sur la carte mais son contenu arrive plus tard.
-    setEcran(m.id === 'taarif' ? 'intro' : 'bientot');
+    if (m.id === 'taarif') setEcran('intro');
+    else if (m.id === 'noun-mim') setEcran('noun-mim-lecon');
+    else setEcran('bientot');
   };
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
@@ -315,7 +337,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -451,6 +473,10 @@ export default function JeuApp() {
           webm={nounMimVideoWebm}
           onEnded={() => { setNounMimDebloque(true); setEcran('village'); }}
         />
+      )}
+
+      {ecran === 'noun-mim-lecon' && (
+        <LeconScene scene={NOUN_MIM_LECON} onFini={() => setEcran('village')} boutonLabel="J'ai compris →" />
       )}
 
       {ecran === 'bientot' && (
