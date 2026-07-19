@@ -66,24 +66,24 @@ const EVALUATION_HOTSPOT = { x: 10, y: 36 };
 
 // Page d'évaluation illustrée (15 mots شمسية/قمرية mélangés) avec repères
 // audio par mot, affichée une fois le défi de tri de la salle de jeux réussi.
-// Leçon de la ghunna (maison Noun et Mim) — zones cliquables issues des
-// coordonnées image-map.net fournies par Sofiane, recalées au pixel près sur
-// les cases détectées dans l'image (x,y = coin bas-droit de chaque zone).
+// Leçon de la ghunna (maison Noun et Mim) — zones cliquables recalées au
+// pixel près (détection de bordures) sur la nouvelle image fournie par
+// Sofiane (x,y = coin bas-droit de chaque zone).
 const NOUN_MIM_LECON = {
   img: nounMimLecon,
   hotspots: [
-    { text: 'غُنَّة', x: 68.6, y: 9.7, zoneW: 7.6, zoneH: 3.1 },
-    { text: 'مِيمٌ وَ نُونٌ مُشَدَّدَتَانِ', x: 75.0, y: 57.7, zoneW: 41.5, zoneH: 5.2 },
-    { text: 'أَعِنَّا', x: 89.0, y: 90.3, zoneW: 8.3, zoneH: 5.1 },
-    { text: 'كُنَّا', x: 80.7, y: 90.3, zoneW: 8.4, zoneH: 5.1 },
-    { text: 'إِنَّهُ', x: 72.3, y: 90.3, zoneW: 8.3, zoneH: 5.1 },
-    { text: 'إِنَّ', x: 64.0, y: 90.3, zoneW: 8.3, zoneH: 5.1 },
-    { text: 'يَظُنُّ', x: 55.7, y: 90.3, zoneW: 8.4, zoneH: 5.1 },
-    { text: 'أَمَّا', x: 89.0, y: 94.9, zoneW: 8.3, zoneH: 4.3 },
-    { text: 'ثُمَّ', x: 80.7, y: 94.9, zoneW: 8.4, zoneH: 4.3 },
-    { text: 'أَمَّنْ', x: 72.3, y: 94.9, zoneW: 8.3, zoneH: 4.3 },
-    { text: 'مِمَّ', x: 64.0, y: 94.9, zoneW: 8.3, zoneH: 4.3 },
-    { text: 'لَمَّا', x: 55.7, y: 94.9, zoneW: 8.4, zoneH: 4.3 },
+    { text: 'غُنَّة', x: 69.6, y: 5.7, zoneW: 10.5, zoneH: 2.6 },
+    { text: 'مِيمٌ وَ نُونٌ مُشَدَّدَتَانِ', x: 75.7, y: 51.9, zoneW: 45.5, zoneH: 4.2 },
+    { text: 'يَظُنُّ', x: 53.7, y: 82.1, zoneW: 6.6, zoneH: 4.4 },
+    { text: 'إِنَّ', x: 62.1, y: 82.1, zoneW: 6.5, zoneH: 4.4 },
+    { text: 'إِنَّهُ', x: 70.5, y: 82.1, zoneW: 6.5, zoneH: 4.4 },
+    { text: 'كُنَّا', x: 79.1, y: 82.1, zoneW: 6.5, zoneH: 4.4 },
+    { text: 'أَعِنَّا', x: 87.4, y: 82.1, zoneW: 6.5, zoneH: 4.4 },
+    { text: 'لَمَّا', x: 53.7, y: 87.4, zoneW: 6.6, zoneH: 4.6 },
+    { text: 'مِمَّ', x: 62.1, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
+    { text: 'أَمَّنْ', x: 70.5, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
+    { text: 'ثُمَّ', x: 79.1, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
+    { text: 'أَمَّا', x: 87.4, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
   ],
 };
 
