@@ -7,6 +7,7 @@ import AppShellHome from './AppShellHome';
 
 const App = lazy(() => import('./App'));
 const JeuApp = lazy(() => import('./jeu/JeuApp'));
+const JeuGate = lazy(() => import('./jeu/JeuGate'));
 
 // App installée (PWA, lancée depuis l'écran d'accueil) → accès direct aux 4
 // portails (AppShellHome), sans le site vitrine. Visite normale au navigateur
@@ -96,8 +97,8 @@ function AnimatedRoutes() {
           {/* Site public (ou 4 portails si l'app est installée, cf. HomeRoute) */}
           <Route path="/" element={<HomeRoute />} />
 
-          {/* Jeu éducatif (prototype) */}
-          <Route path="/jeu" element={<JeuApp />} />
+          {/* Jeu éducatif (prototype) — protégé par le même code que le portail admin */}
+          <Route path="/jeu" element={<JeuGate><JeuApp /></JeuGate>} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
