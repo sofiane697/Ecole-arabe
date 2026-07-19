@@ -257,7 +257,7 @@ async function handlePending(body: any, cors: Record<string, string>): Promise<R
             Votre dossier <strong>a été traité</strong> par notre équipe.
           </p>
           <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.7;">
-            Vous serez recontacté(e) à la rentrée afin de finaliser l'inscription.
+            Vous serez recontacté(e) durant la première quinzaine du mois de septembre afin de finaliser l'inscription.
           </p>
           <p style="margin:0 0 0;color:#666;font-size:14px;line-height:1.6;">
             À bientôt,<br/>
