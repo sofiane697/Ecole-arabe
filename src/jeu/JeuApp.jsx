@@ -50,6 +50,16 @@ import audioIdghamBiGhunnaFamanYamal from './assets/idgham-bi-ghunna-faman-yamal
 import audioIdghamBiGhunnaMalaWaAdadahu from './assets/idgham-bi-ghunna-mala-wa-adadahu.wav';
 import audioIdghamBiGhunnaSururunMarfuatun from './assets/idgham-bi-ghunna-sururun-marfuatun.wav';
 import audioIdghamBiGhunnaInNafaati from './assets/idgham-bi-ghunna-in-nafaati.wav';
+import ikhfaLecon from './assets/ikhfa-lecon.jpg';
+import audioIkhfaTitre from './assets/ikhfa-titre.wav';
+import audioIkhfaMinSharrin from './assets/ikhfa-min-sharrin.wav';
+import audioIkhfaDharratinSharran from './assets/ikhfa-dharratin-sharran.wav';
+import audioIkhfaAlInsanu from './assets/ikhfa-al-insanu.wav';
+import audioIkhfaNaranDhata from './assets/ikhfa-naran-dhata.wav';
+import audioIkhfaMinJuin from './assets/ikhfa-min-juin.wav';
+import audioIkhfaManThaqulat from './assets/ikhfa-man-thaqulat.wav';
+import audioIkhfaAntum from './assets/ikhfa-antum.wav';
+import audioIkhfaAnSalatihim from './assets/ikhfa-an-salatihim.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -164,6 +174,23 @@ const IDGHAM_BI_GHUNNA_LECON = {
     { text: 'مَالَا وَعَدَدَهُ', x: 31.77, y: 65.43, zoneW: 20.62, zoneH: 7.72, audio: audioIdghamBiGhunnaMalaWaAdadahu },
     { text: 'سُرُرٌ مَّرْفُوعَةٌ', x: 55.58, y: 74.82, zoneW: 19.77, zoneH: 6.82, audio: audioIdghamBiGhunnaSururunMarfuatun },
     { text: 'إِنْ نَّفَعَتِ', x: 32.41, y: 76.08, zoneW: 22.85, zoneH: 8.85, audio: audioIdghamBiGhunnaInNafaati },
+  ],
+};
+
+// Leçon de l'ikhfa (porte إِخْفَاءٌ) — zones cliquables image-map.net
+// fournies par Sofiane, converties en % (x,y = coin bas-droit).
+const IKHFA_LECON = {
+  img: ikhfaLecon,
+  hotspots: [
+    { text: 'إِخْفَاءٌ', x: 57.38, y: 7.78, zoneW: 17.48, zoneH: 4.96, audio: audioIkhfaTitre },
+    { text: 'مِن شَرِّ', x: 92.67, y: 64.71, zoneW: 16.01, zoneH: 6.48, audio: audioIkhfaMinSharrin },
+    { text: 'ذَرَّةِ شَرًّا', x: 72.27, y: 64.43, zoneW: 14.32, zoneH: 6.76, audio: audioIkhfaDharratinSharran },
+    { text: 'الْإِنسَانُ', x: 52.65, y: 65.11, zoneW: 15.90, zoneH: 7.84, audio: audioIkhfaAlInsanu },
+    { text: 'نَارًا ذَاتَ', x: 31.00, y: 64.82, zoneW: 14.77, zoneH: 6.99, audio: audioIkhfaNaranDhata },
+    { text: 'مِن جُوعٍ', x: 93.57, y: 75.65, zoneW: 17.36, zoneH: 7.72, audio: audioIkhfaMinJuin },
+    { text: 'مَن ثَقُلَتْ', x: 73.28, y: 75.65, zoneW: 16.57, zoneH: 8.06, audio: audioIkhfaManThaqulat },
+    { text: 'أَنتُمْ', x: 50.51, y: 74.63, zoneW: 13.08, zoneH: 6.54, audio: audioIkhfaAntum },
+    { text: 'عَن صَلَاتِهِمْ', x: 32.02, y: 75.70, zoneW: 16.80, zoneH: 8.51, audio: audioIkhfaAnSalatihim },
   ],
 };
 
@@ -322,7 +349,7 @@ const PORTES_NOUN_MIM_DOORS = [
   { id: 'iqlab', label: 'إِقْلاَبٌ', x: 38.67, y: 45.38, actif: true, ecran: 'iqlab-lecon' },
   { id: 'idgham-bila-ghunna', label: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 52.65, y: 45.38, actif: true, ecran: 'idgham-bila-ghunna-lecon' },
   { id: 'idgham-bi-ghunna', label: 'إِدْغَامٌ بِغُنَّةٍ', x: 66.85, y: 45.38, actif: true, ecran: 'idgham-bi-ghunna-lecon' },
-  { id: 'ikhfa', label: 'إِخْفَاءٌ', x: 80.83, y: 45.38, actif: false },
+  { id: 'ikhfa', label: 'إِخْفَاءٌ', x: 80.83, y: 45.38, actif: true, ecran: 'ikhfa-lecon' },
 ];
 // Voix des personnages : pitch relevé pour se rapprocher d'une voix
 // d'enfant (l'API Web Speech ne propose pas de voix « enfant » dédiée,
@@ -453,7 +480,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -636,6 +663,10 @@ export default function JeuApp() {
 
       {ecran === 'idgham-bi-ghunna-lecon' && (
         <LeconScene scene={IDGHAM_BI_GHUNNA_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
+      )}
+
+      {ecran === 'ikhfa-lecon' && (
+        <LeconScene scene={IKHFA_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
       )}
 
       {ecran === 'bientot' && (
