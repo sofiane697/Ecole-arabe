@@ -243,10 +243,10 @@
 .jeu-lecon-scene-btn {
   position: absolute;
   left: 50%;
-  bottom: 0.9rem;
+  bottom: 0.5rem;
   transform: translateX(-50%);
-  font-size: 0.85rem;
-  padding: 0.7rem 1.5rem;
+  font-size: 0.7rem;
+  padding: 0.45rem 1rem;
 }
 
 /* ─── Leçon d'une porte ─── */
