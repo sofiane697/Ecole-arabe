@@ -24,6 +24,16 @@ import nounMimVideoMp4 from './assets/noun-mim-video.mp4';
 import nounMimVideoWebm from './assets/noun-mim-video.webm';
 import nounMimKids from './assets/noun-mim-kids.jpg';
 import nounMimLecon from './assets/noun-mim-lecon.jpg';
+import iqlabLecon from './assets/iqlab-lecon.jpg';
+import audioIqlabAnbatna from './assets/iqlab-anbatna.wav';
+import audioIqlabWaliyyan from './assets/iqlab-waliyyan.wav';
+import audioIqlabDanbin from './assets/iqlab-danbin.wav';
+import audioIqlabYanbaghi from './assets/iqlab-yanbaghi.wav';
+import audioIqlabHarasan from './assets/iqlab-harasan.wav';
+import audioIqlabTanbitu from './assets/iqlab-tanbitu.wav';
+import audioIqlabLayunbadhanna from './assets/iqlab-layunbadhanna.wav';
+import audioIqlabLafa from './assets/iqlab-lafa.wav';
+import audioIqlabTitre from './assets/iqlab-titre.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -91,6 +101,23 @@ const NOUN_MIM_LECON = {
     { text: 'أَمَّنْ', x: 70.5, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
     { text: 'ثُمَّ', x: 79.1, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
     { text: 'أَمَّا', x: 87.4, y: 87.4, zoneW: 6.5, zoneH: 4.6 },
+  ],
+};
+
+// Leçon de l'iqlab (porte إِقْلاَبٌ de la maison Noun et Mim) — zones cliquables
+// image-map.net fournies par Sofiane, converties en % (x,y = coin bas-droit).
+const IQLAB_LECON = {
+  img: iqlabLecon,
+  hotspots: [
+    { text: 'إِقْلاَبٌ', x: 75.54, y: 6.82, zoneW: 14.66, zoneH: 3.49, audio: audioIqlabTitre },
+    { text: 'أَنْۢبَتْنَا', x: 80.16, y: 72.09, zoneW: 12.74, zoneH: 4.23, audio: audioIqlabAnbatna },
+    { text: 'وَلِيًّا', x: 64.49, y: 71.98, zoneW: 11.95, zoneH: 3.95, audio: audioIqlabWaliyyan },
+    { text: 'ذَنۢبِ', x: 50.85, y: 72.66, zoneW: 13.76, zoneH: 4.79, audio: audioIqlabDanbin },
+    { text: 'يَنْۢبَغِي', x: 80.95, y: 77.45, zoneW: 13.87, zoneH: 4.23, audio: audioIqlabYanbaghi },
+    { text: 'حَرَسًا', x: 64.60, y: 77.73, zoneW: 12.51, zoneH: 4.57, audio: audioIqlabHarasan },
+    { text: 'تَنْۢبِتُ', x: 50.62, y: 77.96, zoneW: 13.53, zoneH: 4.74, audio: audioIqlabTanbitu },
+    { text: 'لَيُنْۢبَذَنَّ', x: 72.15, y: 83.37, zoneW: 13.42, zoneH: 4.68, audio: audioIqlabLayunbadhanna },
+    { text: 'لَفَى', x: 56.15, y: 83.48, zoneW: 14.66, zoneH: 4.85, audio: audioIqlabLafa },
   ],
 };
 
@@ -245,8 +272,8 @@ const PORTES_NOUN_MIM_LECON = {
 // pour l'instant (la ghunna, cf. NOUN_MIM_LECON), les 4 autres sont
 // verrouillées (contenu à venir). x,y = centre de la poignée.
 const PORTES_NOUN_MIM_DOORS = [
-  { id: 'mim-noun-mushaddadatan', label: 'مِيمْ وَنُونٌ مُشَدَّدَتَانِ', x: 24.52, y: 45.38, actif: true },
-  { id: 'iqlab', label: 'إِقْلاَبٌ', x: 38.67, y: 45.38, actif: false },
+  { id: 'mim-noun-mushaddadatan', label: 'مِيمْ وَنُونٌ مُشَدَّدَتَانِ', x: 24.52, y: 45.38, actif: true, ecran: 'noun-mim-lecon' },
+  { id: 'iqlab', label: 'إِقْلاَبٌ', x: 38.67, y: 45.38, actif: true, ecran: 'iqlab-lecon' },
   { id: 'idgham-bila-ghunna', label: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 52.65, y: 45.38, actif: false },
   { id: 'idgham-bi-ghunna', label: 'إِدْغَامٌ بِغُنَّةٍ', x: 66.85, y: 45.38, actif: false },
   { id: 'ikhfa', label: 'إِخْفَاءٌ', x: 80.83, y: 45.38, actif: false },
@@ -350,7 +377,7 @@ export default function JeuApp() {
       setTimeout(() => setPorteNounMimVerrouillee((v) => (v === d.id ? null : v)), 1600);
       return;
     }
-    setEcran('noun-mim-lecon');
+    setEcran(d.ecran);
   };
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
@@ -380,7 +407,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -551,6 +578,10 @@ export default function JeuApp() {
 
       {ecran === 'noun-mim-lecon' && (
         <LeconScene scene={NOUN_MIM_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
+      )}
+
+      {ecran === 'iqlab-lecon' && (
+        <LeconScene scene={IQLAB_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
       )}
 
       {ecran === 'bientot' && (
