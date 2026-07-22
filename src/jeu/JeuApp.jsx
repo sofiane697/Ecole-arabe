@@ -34,6 +34,16 @@ import audioIqlabTanbitu from './assets/iqlab-tanbitu.wav';
 import audioIqlabLayunbadhanna from './assets/iqlab-layunbadhanna.wav';
 import audioIqlabLafa from './assets/iqlab-lafa.wav';
 import audioIqlabTitre from './assets/iqlab-titre.wav';
+import idghamBilaGhunnaLecon from './assets/idgham-bila-ghunna-lecon.jpg';
+import audioIdghamBilaGhunnaTitre from './assets/idgham-bila-ghunna-titre.wav';
+import audioIdghamBilaGhunnaAnRabbihim from './assets/idgham-bila-ghunna-an-rabbihim.wav';
+import audioIdghamBilaGhunnaMinRabbika from './assets/idgham-bila-ghunna-min-rabbika.wav';
+import audioIdghamBilaGhunnaGhafurunRahim from './assets/idgham-bila-ghunna-ghafurun-rahim.wav';
+import audioIdghamBilaGhunnaMinRahiqin from './assets/idgham-bila-ghunna-min-rahiqin.wav';
+import audioIdghamBilaGhunnaQasamunLladhi from './assets/idgham-bila-ghunna-qasamun-lladhi.wav';
+import audioIdghamBilaGhunnaYakunLahu from './assets/idgham-bila-ghunna-yakun-lahu.wav';
+import audioIdghamBilaGhunnaAnLan from './assets/idgham-bila-ghunna-an-lan.wav';
+import audioIdghamBilaGhunnaAnLam from './assets/idgham-bila-ghunna-an-lam.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -118,6 +128,23 @@ const IQLAB_LECON = {
     { text: 'تَنْۢبِتُ', x: 50.62, y: 77.96, zoneW: 13.53, zoneH: 4.74, audio: audioIqlabTanbitu },
     { text: 'لَيُنْۢبَذَنَّ', x: 72.15, y: 83.37, zoneW: 13.42, zoneH: 4.68, audio: audioIqlabLayunbadhanna },
     { text: 'لَفَى', x: 56.15, y: 83.48, zoneW: 14.66, zoneH: 4.85, audio: audioIqlabLafa },
+  ],
+};
+
+// Leçon de l'idgham bila ghunna (porte إِدْغَامٌ بِلاَ غُنَّةٍ) — zones cliquables
+// image-map.net fournies par Sofiane, converties en % (x,y = coin bas-droit).
+const IDGHAM_BILA_GHUNNA_LECON = {
+  img: idghamBilaGhunnaLecon,
+  hotspots: [
+    { text: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 63.70, y: 7.27, zoneW: 25.82, zoneH: 4.06, audio: audioIdghamBilaGhunnaTitre },
+    { text: 'عَنْ رَّبِهِمْ', x: 78.69, y: 65.22, zoneW: 25.59, zoneH: 6.31, audio: audioIdghamBilaGhunnaAnRabbihim },
+    { text: 'مِنْ رَّبِكَ', x: 47.91, y: 65.16, zoneW: 23.45, zoneH: 5.81, audio: audioIdghamBilaGhunnaMinRabbika },
+    { text: 'غَفُورٌ رَّحِيمٌ', x: 78.81, y: 73.96, zoneW: 25.71, zoneH: 6.48, audio: audioIdghamBilaGhunnaGhafurunRahim },
+    { text: 'مِنْ رَّحِيقٍ', x: 48.03, y: 73.90, zoneW: 24.69, zoneH: 6.09, audio: audioIdghamBilaGhunnaMinRahiqin },
+    { text: 'قَسَمٌ لَّذِي', x: 78.69, y: 83.20, zoneW: 25.03, zoneH: 6.88, audio: audioIdghamBilaGhunnaQasamunLladhi },
+    { text: 'يَكُنْ لَّهُ', x: 47.80, y: 82.70, zoneW: 22.66, zoneH: 6.26, audio: audioIdghamBilaGhunnaYakunLahu },
+    { text: 'أَنْ لَّنْ', x: 77.79, y: 91.15, zoneW: 21.87, zoneH: 5.41, audio: audioIdghamBilaGhunnaAnLan },
+    { text: 'أَنْ لَّمْ', x: 47.69, y: 91.32, zoneW: 23.45, zoneH: 6.26, audio: audioIdghamBilaGhunnaAnLam },
   ],
 };
 
@@ -274,7 +301,7 @@ const PORTES_NOUN_MIM_LECON = {
 const PORTES_NOUN_MIM_DOORS = [
   { id: 'mim-noun-mushaddadatan', label: 'مِيمْ وَنُونٌ مُشَدَّدَتَانِ', x: 24.52, y: 45.38, actif: true, ecran: 'noun-mim-lecon' },
   { id: 'iqlab', label: 'إِقْلاَبٌ', x: 38.67, y: 45.38, actif: true, ecran: 'iqlab-lecon' },
-  { id: 'idgham-bila-ghunna', label: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 52.65, y: 45.38, actif: false },
+  { id: 'idgham-bila-ghunna', label: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 52.65, y: 45.38, actif: true, ecran: 'idgham-bila-ghunna-lecon' },
   { id: 'idgham-bi-ghunna', label: 'إِدْغَامٌ بِغُنَّةٍ', x: 66.85, y: 45.38, actif: false },
   { id: 'ikhfa', label: 'إِخْفَاءٌ', x: 80.83, y: 45.38, actif: false },
 ];
@@ -407,7 +434,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -582,6 +609,10 @@ export default function JeuApp() {
 
       {ecran === 'iqlab-lecon' && (
         <LeconScene scene={IQLAB_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
+      )}
+
+      {ecran === 'idgham-bila-ghunna-lecon' && (
+        <LeconScene scene={IDGHAM_BILA_GHUNNA_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
       )}
 
       {ecran === 'bientot' && (
