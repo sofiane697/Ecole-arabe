@@ -82,6 +82,17 @@ import audioLectureHalumma from './assets/lecture-halumma.wav';
 import audioLectureAimmata from './assets/lecture-aimmata.wav';
 import audioLectureUmma from './assets/lecture-umma.wav';
 import audioLectureNaammarahu from './assets/lecture-naammarahu.wav';
+import jeuDeLectureDe from './assets/jeu-de-lecture-de.jpg';
+import audioDeAlKhannasi from './assets/de-al-khannasi.wav';
+import audioDeLatarawunna from './assets/de-latarawunna.wav';
+import audioDeLatusalunna from './assets/de-latusalunna.wav';
+import audioDeJahannama from './assets/de-jahannama.wav';
+import audioDeAlMutmainnatu from './assets/de-al-mutmainnatu.wav';
+import audioDeLatarkabunna from './assets/de-latarkabunna.wav';
+import audioDeAlKhunnasi from './assets/de-al-khunnasi.wav';
+import audioDeAlKunnasi from './assets/de-al-kunnasi.wav';
+import audioDeAlJinna from './assets/de-al-jinna.wav';
+import audioDeTallaqakunna from './assets/de-tallaqakunna.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -244,6 +255,25 @@ const LECTURE_LECON = {
     { text: 'أَئِمَّةَ', x: 47.91, y: 57.10, zoneW: 9.47, zoneH: 5.30, audio: audioLectureAimmata },
     { text: 'أُمَّ', x: 34.05, y: 57.10, zoneW: 9.02, zoneH: 5.30, audio: audioLectureUmma },
     { text: 'نَعَمَّرَهُ', x: 22.10, y: 57.10, zoneW: 11.84, zoneH: 5.24, audio: audioLectureNaammarahu },
+  ],
+};
+
+// Jeu de lecture au dé (2e écran de la salle de jeux) — 10 mots (5 roses,
+// 5 bleus) avec zones audio image-map.net fournies par Sofiane, converties
+// en % (x,y = coin bas-droit).
+const JEU_DE_LECTURE = {
+  img: jeuDeLectureDe,
+  hotspots: [
+    { text: 'اَلْخَنَّاسِ', x: 80.38, y: 39.68, zoneW: 26.16, zoneH: 5.92, audio: audioDeAlKhannasi },
+    { text: 'لَتَرَوُنَّ', x: 47.91, y: 39.74, zoneW: 26.61, zoneH: 5.75, audio: audioDeLatarawunna },
+    { text: 'لَتُسْأَلُنَّ', x: 80.95, y: 47.52, zoneW: 27.17, zoneH: 5.19, audio: audioDeLatusalunna },
+    { text: 'جَهَنَّمَ', x: 47.13, y: 48.48, zoneW: 25.48, zoneH: 6.26, audio: audioDeJahannama },
+    { text: 'اَلْمُطْمَئِنَّةُ', x: 80.16, y: 56.03, zoneW: 26.72, zoneH: 5.75, audio: audioDeAlMutmainnatu },
+    { text: 'لَتَركَبُنَّ', x: 46.34, y: 56.37, zoneW: 23.23, zoneH: 5.07, audio: audioDeLatarkabunna },
+    { text: 'اَلْخُنَّسِ', x: 79.03, y: 64.43, zoneW: 25.03, zoneH: 5.75, audio: audioDeAlKhunnasi },
+    { text: 'اَلْكُنَّسِ', x: 46.90, y: 65.16, zoneW: 25.71, zoneH: 6.26, audio: audioDeAlKunnasi },
+    { text: 'اَلْجِنَّ', x: 78.47, y: 72.83, zoneW: 23.90, zoneH: 5.64, audio: audioDeAlJinna },
+    { text: 'طَلَّقَكُنَّ', x: 46.11, y: 73.06, zoneW: 24.69, zoneH: 5.64, audio: audioDeTallaqakunna },
   ],
 };
 
@@ -479,6 +509,8 @@ export default function JeuApp() {
   const [evaluationVerrouillee, setEvaluationVerrouillee] = useState(false);
   const [nounMimDebloque, setNounMimDebloque] = useState(false);
   const [porteNounMimVerrouillee, setPorteNounMimVerrouillee] = useState(null);
+  const [deResultat, setDeResultat] = useState(null);
+  const [deLance, setDeLance] = useState(false);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -522,6 +554,15 @@ export default function JeuApp() {
     }
     setEcran(d.ecran);
   };
+  const lancerDe = () => {
+    if (deLance) return;
+    setDeLance(true);
+    setDeResultat(null);
+    setTimeout(() => {
+      setDeResultat(Math.random() < 0.5 ? 'rose' : 'bleu');
+      setDeLance(false);
+    }, 600);
+  };
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
       setJeuxVerrouille(true);
@@ -550,7 +591,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -763,6 +804,39 @@ export default function JeuApp() {
               />
             ))}
             <EtoileDrag slots={ETOILE_SLOTS} boardZone={ETOILE_BOARD_ZONE} />
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('jeu-de-lecture')}>
+            Suite →
+          </button>
+        </div>
+      )}
+
+      {ecran === 'jeu-de-lecture' && (
+        <div className="jeu-carte jeu-lecon-scene">
+          <div className="jeu-carte-inner">
+            <img src={JEU_DE_LECTURE.img} alt="Jeu de lecture au dé" className="jeu-carte-img" />
+            {JEU_DE_LECTURE.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+            <button
+              type="button"
+              className={`jeu-de-bouton${deLance ? ' is-lance' : ''}`}
+              style={{ left: '44.5%', top: '78.2%', width: '15.8%', height: '8.6%' }}
+              onClick={lancerDe}
+              aria-label="Lancer le dé"
+            />
+            {deResultat && (
+              <span className={`jeu-de-resultat jeu-de-resultat--${deResultat}`}>
+                🎲 {deResultat === 'rose' ? 'Rose !' : 'Bleu !'}
+              </span>
+            )}
           </div>
           <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('portes-noun-mim')}>
             Retour au couloir →

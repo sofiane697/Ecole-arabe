@@ -467,3 +467,42 @@
 @media (min-width: 700px) {
   .jeu-carte-inner { max-width: 480px; margin: 0 auto; }
 }
+
+/* ─── Dé interactif (jeu de lecture au dé) ─── */
+.jeu-de-bouton {
+  position: absolute;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(191, 138, 48, 0.15);
+}
+.jeu-de-bouton.is-lance { animation: jeu-de-secoue 0.6s ease; }
+@keyframes jeu-de-secoue {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-15deg); }
+  40% { transform: rotate(12deg); }
+  60% { transform: rotate(-10deg); }
+  80% { transform: rotate(8deg); }
+}
+.jeu-de-resultat {
+  position: absolute;
+  left: 50%;
+  top: 88%;
+  transform: translate(-50%, -50%);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 980px;
+  background: #fff;
+  box-shadow: 0 10px 24px -10px rgba(31, 29, 26, 0.4);
+  animation: jeu-de-resultat-pop 0.3s ease;
+  white-space: nowrap;
+}
+.jeu-de-resultat--rose { color: #d6336c; border: 2px solid #f3a6c4; }
+.jeu-de-resultat--bleu { color: #1c7ed6; border: 2px solid #a5d8ff; }
+@keyframes jeu-de-resultat-pop {
+  from { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
