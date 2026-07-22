@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
+import EtoileDrag from './EtoileDrag';
 import kidsTaarif from './assets/kids-taarif.png';
 import carteVideoMp4 from './assets/carte-video.mp4';
 import carteVideoWebm from './assets/carte-video.webm';
@@ -60,6 +61,7 @@ import audioIkhfaMinJuin from './assets/ikhfa-min-juin.wav';
 import audioIkhfaManThaqulat from './assets/ikhfa-man-thaqulat.wav';
 import audioIkhfaAntum from './assets/ikhfa-antum.wav';
 import audioIkhfaAnSalatihim from './assets/ikhfa-an-salatihim.wav';
+import lectureLecon from './assets/lecture-lecon.jpg';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -193,6 +195,54 @@ const IKHFA_LECON = {
     { text: 'عَن صَلَاتِهِمْ', x: 32.02, y: 75.70, zoneW: 16.80, zoneH: 8.51, audio: audioIkhfaAnSalatihim },
   ],
 };
+
+// Salle de jeux de la maison Noun et Mim — tableau de lecture des 20 mots
+// (révision des 5 règles). Zones audio image-map.net fournies par Sofiane
+// (x,y = coin bas-droit) ; pas encore de fichiers audio dédiés (à venir) →
+// repli synthèse vocale via playHotspot. Le tableau « Mes bonnes lectures »
+// est un jeu de glisser-déposer d'étoiles indépendant (cf. EtoileDrag).
+const LECTURE_LECON = {
+  img: lectureLecon,
+  hotspots: [
+    { text: 'أُمَّهُ', x: 76.10, y: 34.05, zoneW: 10.15, zoneH: 5.47 },
+    { text: 'جَمَّا', x: 62.68, y: 33.76, zoneW: 10.37, zoneH: 4.85 },
+    { text: 'عَمَّ', x: 48.71, y: 33.99, zoneW: 10.26, zoneH: 5.35 },
+    { text: 'اَلْمُزَّمِّلُ', x: 35.40, y: 34.27, zoneW: 11.05, zoneH: 5.86 },
+    { text: 'حُمِلُوا۟', x: 20.97, y: 34.05, zoneW: 10.71, zoneH: 5.58 },
+    { text: 'هَمَّازٍ', x: 75.54, y: 41.66, zoneW: 9.58, zoneH: 5.47 },
+    { text: 'رُمَّانٌ', x: 62.12, y: 41.88, zoneW: 10.15, zoneH: 5.58 },
+    { text: 'اَلَيمَ', x: 48.93, y: 41.88, zoneW: 10.71, zoneH: 5.64 },
+    { text: 'يُتَمَّ', x: 35.06, y: 41.77, zoneW: 10.26, zoneH: 5.52 },
+    { text: 'هَمَّتْ', x: 20.41, y: 41.49, zoneW: 10.49, zoneH: 5.02 },
+    { text: 'مُسَمَّى', x: 76.55, y: 49.72, zoneW: 10.94, zoneH: 5.92 },
+    { text: 'مُحَمَّدٌ', x: 62.91, y: 49.38, zoneW: 10.60, zoneH: 5.30 },
+    { text: 'دَمَّرَ', x: 48.71, y: 49.32, zoneW: 10.49, zoneH: 5.24 },
+    { text: 'أُمَّةٍ', x: 35.06, y: 49.61, zoneW: 9.92, zoneH: 5.41 },
+    { text: 'اَلْأُمِّيّنَ', x: 20.86, y: 49.27, zoneW: 10.82, zoneH: 5.47 },
+    { text: 'مِمَّن', x: 76.66, y: 57.22, zoneW: 10.94, zoneH: 5.47 },
+    { text: 'هَلُمَّ', x: 62.35, y: 57.27, zoneW: 9.81, zoneH: 5.69 },
+    { text: 'أَئِمَّةَ', x: 47.91, y: 57.10, zoneW: 9.47, zoneH: 5.30 },
+    { text: 'أُمَّ', x: 34.05, y: 57.10, zoneW: 9.02, zoneH: 5.30 },
+    { text: 'نَعَمَّرَهُ', x: 22.10, y: 57.10, zoneW: 11.84, zoneH: 5.24 },
+  ],
+};
+
+// Cases du tableau « Mes bonnes lectures » (3 colonnes, remplies dans
+// l'ordre de lecture) — mesurées au pixel sur l'image 887×1774.
+const ETOILE_SLOTS = [
+  { x: 82.30, y: 33.99 }, { x: 88.28, y: 33.99 }, { x: 93.91, y: 33.99 },
+  { x: 82.30, y: 36.64 }, { x: 88.28, y: 36.64 }, { x: 93.91, y: 36.64 },
+  { x: 82.30, y: 39.35 }, { x: 88.28, y: 39.35 }, { x: 93.91, y: 39.35 },
+  { x: 82.30, y: 41.99 }, { x: 88.28, y: 41.99 }, { x: 93.91, y: 41.99 },
+  { x: 82.30, y: 44.70 }, { x: 88.28, y: 44.70 }, { x: 93.91, y: 44.70 },
+  { x: 82.30, y: 47.35 }, { x: 88.28, y: 47.35 }, { x: 93.91, y: 47.35 },
+  { x: 82.30, y: 50.06 }, { x: 88.28, y: 50.06 },
+];
+const ETOILE_BOARD_ZONE = { left: 78, top: 32, width: 20, height: 20 };
+
+// Point d'entrée « Salle de jeux » sur le couloir Noun et Mim, sur la
+// pancarte de la porte bleue.
+const SALLE_JEUX_NOUN_MIM_HOTSPOT = { x: 94, y: 42 };
 
 const EVALUATION_SCENE = {
   img: evaluationTaarif,
@@ -480,7 +530,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -645,6 +695,15 @@ export default function JeuApp() {
                 {porteNounMimVerrouillee === d.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
               </button>
             ))}
+            <button
+              type="button"
+              className="jeu-repere is-actif"
+              style={{ left: `${SALLE_JEUX_NOUN_MIM_HOTSPOT.x}%`, top: `${SALLE_JEUX_NOUN_MIM_HOTSPOT.y}%` }}
+              onClick={() => setEcran('lecture-defi')}
+              aria-label="Salle de jeux"
+            >
+              <span className="jeu-repere-point" />
+            </button>
           </div>
         </div>
       )}
@@ -667,6 +726,28 @@ export default function JeuApp() {
 
       {ecran === 'ikhfa-lecon' && (
         <LeconScene scene={IKHFA_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
+      )}
+
+      {ecran === 'lecture-defi' && (
+        <div className="jeu-carte jeu-lecon-scene">
+          <div className="jeu-carte-inner">
+            <img src={LECTURE_LECON.img} alt="Défi de lecture" className="jeu-carte-img" />
+            {LECTURE_LECON.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+            <EtoileDrag slots={ETOILE_SLOTS} boardZone={ETOILE_BOARD_ZONE} />
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('portes-noun-mim')}>
+            Retour au couloir →
+          </button>
+        </div>
       )}
 
       {ecran === 'bientot' && (

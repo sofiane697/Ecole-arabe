@@ -404,6 +404,59 @@
   box-shadow: 0 16px 30px -12px rgba(31, 29, 26, 0.35);
   text-align: center;
 }
+/* ─── Étoiles à glisser (défi lecture, tableau « Mes bonnes lectures ») ─── */
+.jeu-etoile-board-zone {
+  position: absolute;
+}
+.jeu-etoile-board {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.jeu-etoile-placee {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 1.05rem;
+  line-height: 1;
+  animation: jeu-etoile-pop 0.25s ease;
+}
+@keyframes jeu-etoile-pop {
+  from { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.jeu-etoile-tray {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  max-width: 130px;
+  padding: 0.4rem;
+  background: rgba(255, 253, 248, 0.85);
+  border: 1px solid rgba(191, 138, 48, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px -8px rgba(31, 29, 26, 0.35);
+  z-index: 6;
+}
+.jeu-etoile-source {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.15rem;
+  cursor: grab;
+  touch-action: none;
+}
+.jeu-etoile-source:active { cursor: grabbing; transform: scale(0.9); }
+.jeu-etoile-ghost {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  font-size: 1.6rem;
+  transform: translate(-50%, -50%);
+}
+
 @keyframes jeu-shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-6px); }
