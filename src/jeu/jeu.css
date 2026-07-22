@@ -411,18 +411,9 @@
 .jeu-etoile-board {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-}
-.jeu-etoile-placee {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-size: 1.05rem;
-  line-height: 1;
-  animation: jeu-etoile-pop 0.25s ease;
-}
-@keyframes jeu-etoile-pop {
-  from { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
-  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 .jeu-etoile-tray {
   position: absolute;
