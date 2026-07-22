@@ -8,6 +8,13 @@ import carteVideoWebm from './assets/carte-video.webm';
 import royaumeMap from './assets/royaume-map-nouvelle.jpg';
 import villageScene from './assets/village-scene.jpg';
 import maisonTaarifPortes from './assets/maison-taarif-portes.jpg';
+import maisonNounMimPortes from './assets/maison-noun-mim-portes.jpg';
+import audioNounMimMushaddadatan from './assets/noun-mim-mim-noun-mushaddadatan.wav';
+import audioNounMimIqlab from './assets/noun-mim-iqlab.wav';
+import audioNounMimIdghamBilaGhunna from './assets/noun-mim-idgham-bila-ghunna.wav';
+import audioNounMimIdghamBiGhunna from './assets/noun-mim-idgham-bi-ghunna.wav';
+import audioNounMimIkhfa from './assets/noun-mim-ikhfa.wav';
+import audioNounMimTitre from './assets/noun-mim-titre.wav';
 import leconShamsiya from './assets/lecon-shamsiya.jpg';
 import leconQamariya from './assets/lecon-qamariya.jpg';
 import coinLectureShamsiya from './assets/coin-lecture-shamsiya.jpg';
@@ -217,6 +224,33 @@ const MAISONS_VILLAGE = [
   { id: 'taarif', label: "Les secrets de « ال » التعريف", x: 80, y: 38, actif: true },
 ];
 
+// Couloir de la maison secrète du Noun et Mim — pancartes des 5 règles +
+// panneau du titre, avec zones audio invisibles (mêmes conventions que
+// NOUN_MIM_LECON : x,y = coin bas-droit de la zone, zoneW/zoneH = taille,
+// coordonnées fournies par Sofiane via image-map.net sur l'image 887×1774,
+// converties en %).
+const PORTES_NOUN_MIM_LECON = {
+  img: maisonNounMimPortes,
+  hotspots: [
+    { text: 'مِيمْ وَنُونٌ مُشَدَّدَتَانِ', x: 28.86, y: 32.47, zoneW: 8.01, zoneH: 5.92, audio: audioNounMimMushaddadatan },
+    { text: 'إِقْلاَبٌ', x: 43.86, y: 32.53, zoneW: 9.13, zoneH: 5.41, audio: audioNounMimIqlab },
+    { text: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 57.38, y: 33.37, zoneW: 8.23, zoneH: 5.92, audio: audioNounMimIdghamBilaGhunna },
+    { text: 'إِدْغَامٌ بِغُنَّةٍ', x: 71.25, y: 33.93, zoneW: 8.57, zoneH: 5.92, audio: audioNounMimIdghamBiGhunna },
+    { text: 'إِخْفَاءٌ', x: 84.90, y: 33.48, zoneW: 8.01, zoneH: 5.47, audio: audioNounMimIkhfa },
+    { text: 'اَلنُّونِ وَ الْمِيمُ', x: 13.75, y: 40.81, zoneW: 11.39, zoneH: 2.20, audio: audioNounMimTitre },
+  ],
+};
+
+// Les 5 portes du couloir — seule مِيمْ وَنُونٌ مُشَدَّدَتَانِ mène à une leçon
+// pour l'instant (la ghunna, cf. NOUN_MIM_LECON), les 4 autres sont
+// verrouillées (contenu à venir). x,y = centre de la poignée.
+const PORTES_NOUN_MIM_DOORS = [
+  { id: 'mim-noun-mushaddadatan', label: 'مِيمْ وَنُونٌ مُشَدَّدَتَانِ', x: 24.52, y: 45.38, actif: true },
+  { id: 'iqlab', label: 'إِقْلاَبٌ', x: 38.67, y: 45.38, actif: false },
+  { id: 'idgham-bila-ghunna', label: 'إِدْغَامٌ بِلاَ غُنَّةٍ', x: 52.65, y: 45.38, actif: false },
+  { id: 'idgham-bi-ghunna', label: 'إِدْغَامٌ بِغُنَّةٍ', x: 66.85, y: 45.38, actif: false },
+  { id: 'ikhfa', label: 'إِخْفَاءٌ', x: 80.83, y: 45.38, actif: false },
+];
 // Voix des personnages : pitch relevé pour se rapprocher d'une voix
 // d'enfant (l'API Web Speech ne propose pas de voix « enfant » dédiée,
 // on approxime avec un pitch plus aigu + un débit un peu plus vif).
@@ -274,6 +308,7 @@ export default function JeuApp() {
   const [evaluationDebloquee, setEvaluationDebloquee] = useState(false);
   const [evaluationVerrouillee, setEvaluationVerrouillee] = useState(false);
   const [nounMimDebloque, setNounMimDebloque] = useState(false);
+  const [porteNounMimVerrouillee, setPorteNounMimVerrouillee] = useState(null);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -306,8 +341,16 @@ export default function JeuApp() {
       return;
     }
     if (m.id === 'taarif') setEcran('intro');
-    else if (m.id === 'noun-mim') setEcran('noun-mim-lecon');
+    else if (m.id === 'noun-mim') setEcran('portes-noun-mim');
     else setEcran('bientot');
+  };
+  const cliquerPorteNounMim = (d) => {
+    if (!d.actif) {
+      setPorteNounMimVerrouillee(d.id);
+      setTimeout(() => setPorteNounMimVerrouillee((v) => (v === d.id ? null : v)), 1600);
+      return;
+    }
+    setEcran('noun-mim-lecon');
   };
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
@@ -337,7 +380,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -475,8 +518,39 @@ export default function JeuApp() {
         />
       )}
 
+      {ecran === 'portes-noun-mim' && (
+        <div className="jeu-carte">
+          <div className="jeu-carte-inner">
+            <img src={maisonNounMimPortes} alt="Le couloir de la maison secrète du Noun et Mim" className="jeu-carte-img" />
+            {PORTES_NOUN_MIM_LECON.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+            {PORTES_NOUN_MIM_DOORS.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={`jeu-repere${d.actif ? ' is-actif' : ' is-verrouille'}`}
+                style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                onClick={() => cliquerPorteNounMim(d)}
+                aria-label={d.label}
+              >
+                <span className="jeu-repere-point" />
+                {porteNounMimVerrouillee === d.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {ecran === 'noun-mim-lecon' && (
-        <LeconScene scene={NOUN_MIM_LECON} onFini={() => setEcran('village')} boutonLabel="J'ai compris →" />
+        <LeconScene scene={NOUN_MIM_LECON} onFini={() => setEcran('portes-noun-mim')} boutonLabel="J'ai compris →" />
       )}
 
       {ecran === 'bientot' && (
