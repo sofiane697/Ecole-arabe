@@ -62,6 +62,26 @@ import audioIkhfaManThaqulat from './assets/ikhfa-man-thaqulat.wav';
 import audioIkhfaAntum from './assets/ikhfa-antum.wav';
 import audioIkhfaAnSalatihim from './assets/ikhfa-an-salatihim.wav';
 import lectureLecon from './assets/lecture-lecon.jpg';
+import audioLectureUmmahu from './assets/lecture-ummahu.wav';
+import audioLectureJamma from './assets/lecture-jamma.wav';
+import audioLectureAmma from './assets/lecture-amma.wav';
+import audioLectureAlMuzzammilu from './assets/lecture-al-muzzammilu.wav';
+import audioLectureHumilu from './assets/lecture-humilu.wav';
+import audioLectureHammazin from './assets/lecture-hammazin.wav';
+import audioLectureRummanun from './assets/lecture-rummanun.wav';
+import audioLectureAlayma from './assets/lecture-alayma.wav';
+import audioLectureYutamma from './assets/lecture-yutamma.wav';
+import audioLectureMusamma from './assets/lecture-musamma.wav';
+import audioLectureHammat from './assets/lecture-hammat.wav';
+import audioLectureMuhammadun from './assets/lecture-muhammadun.wav';
+import audioLectureDammara from './assets/lecture-dammara.wav';
+import audioLectureUmmatin from './assets/lecture-ummatin.wav';
+import audioLectureAlUmmiyyina from './assets/lecture-al-ummiyyina.wav';
+import audioLectureMimman from './assets/lecture-mimman.wav';
+import audioLectureHalumma from './assets/lecture-halumma.wav';
+import audioLectureAimmata from './assets/lecture-aimmata.wav';
+import audioLectureUmma from './assets/lecture-umma.wav';
+import audioLectureNaammarahu from './assets/lecture-naammarahu.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -204,26 +224,26 @@ const IKHFA_LECON = {
 const LECTURE_LECON = {
   img: lectureLecon,
   hotspots: [
-    { text: 'أُمَّهُ', x: 76.10, y: 34.05, zoneW: 10.15, zoneH: 5.47 },
-    { text: 'جَمَّا', x: 62.68, y: 33.76, zoneW: 10.37, zoneH: 4.85 },
-    { text: 'عَمَّ', x: 48.71, y: 33.99, zoneW: 10.26, zoneH: 5.35 },
-    { text: 'اَلْمُزَّمِّلُ', x: 35.40, y: 34.27, zoneW: 11.05, zoneH: 5.86 },
-    { text: 'حُمِلُوا۟', x: 20.97, y: 34.05, zoneW: 10.71, zoneH: 5.58 },
-    { text: 'هَمَّازٍ', x: 75.54, y: 41.66, zoneW: 9.58, zoneH: 5.47 },
-    { text: 'رُمَّانٌ', x: 62.12, y: 41.88, zoneW: 10.15, zoneH: 5.58 },
-    { text: 'اَلَيمَ', x: 48.93, y: 41.88, zoneW: 10.71, zoneH: 5.64 },
-    { text: 'يُتَمَّ', x: 35.06, y: 41.77, zoneW: 10.26, zoneH: 5.52 },
-    { text: 'هَمَّتْ', x: 20.41, y: 41.49, zoneW: 10.49, zoneH: 5.02 },
-    { text: 'مُسَمَّى', x: 76.55, y: 49.72, zoneW: 10.94, zoneH: 5.92 },
-    { text: 'مُحَمَّدٌ', x: 62.91, y: 49.38, zoneW: 10.60, zoneH: 5.30 },
-    { text: 'دَمَّرَ', x: 48.71, y: 49.32, zoneW: 10.49, zoneH: 5.24 },
-    { text: 'أُمَّةٍ', x: 35.06, y: 49.61, zoneW: 9.92, zoneH: 5.41 },
-    { text: 'اَلْأُمِّيّنَ', x: 20.86, y: 49.27, zoneW: 10.82, zoneH: 5.47 },
-    { text: 'مِمَّن', x: 76.66, y: 57.22, zoneW: 10.94, zoneH: 5.47 },
-    { text: 'هَلُمَّ', x: 62.35, y: 57.27, zoneW: 9.81, zoneH: 5.69 },
-    { text: 'أَئِمَّةَ', x: 47.91, y: 57.10, zoneW: 9.47, zoneH: 5.30 },
-    { text: 'أُمَّ', x: 34.05, y: 57.10, zoneW: 9.02, zoneH: 5.30 },
-    { text: 'نَعَمَّرَهُ', x: 22.10, y: 57.10, zoneW: 11.84, zoneH: 5.24 },
+    { text: 'أُمَّهُ', x: 76.10, y: 34.05, zoneW: 10.15, zoneH: 5.47, audio: audioLectureUmmahu },
+    { text: 'جَمَّا', x: 62.68, y: 33.76, zoneW: 10.37, zoneH: 4.85, audio: audioLectureJamma },
+    { text: 'عَمَّ', x: 48.71, y: 33.99, zoneW: 10.26, zoneH: 5.35, audio: audioLectureAmma },
+    { text: 'اَلْمُزَّمِّلُ', x: 35.40, y: 34.27, zoneW: 11.05, zoneH: 5.86, audio: audioLectureAlMuzzammilu },
+    { text: 'حُمِلُوا۟', x: 20.97, y: 34.05, zoneW: 10.71, zoneH: 5.58, audio: audioLectureHumilu },
+    { text: 'هَمَّازٍ', x: 75.54, y: 41.66, zoneW: 9.58, zoneH: 5.47, audio: audioLectureHammazin },
+    { text: 'رُمَّانٌ', x: 62.12, y: 41.88, zoneW: 10.15, zoneH: 5.58, audio: audioLectureRummanun },
+    { text: 'اَلَيمَ', x: 48.93, y: 41.88, zoneW: 10.71, zoneH: 5.64, audio: audioLectureAlayma },
+    { text: 'يُتَمَّ', x: 35.06, y: 41.77, zoneW: 10.26, zoneH: 5.52, audio: audioLectureYutamma },
+    { text: 'هَمَّتْ', x: 20.41, y: 41.49, zoneW: 10.49, zoneH: 5.02, audio: audioLectureHammat },
+    { text: 'مُسَمَّى', x: 76.55, y: 49.72, zoneW: 10.94, zoneH: 5.92, audio: audioLectureMusamma },
+    { text: 'مُحَمَّدٌ', x: 62.91, y: 49.38, zoneW: 10.60, zoneH: 5.30, audio: audioLectureMuhammadun },
+    { text: 'دَمَّرَ', x: 48.71, y: 49.32, zoneW: 10.49, zoneH: 5.24, audio: audioLectureDammara },
+    { text: 'أُمَّةٍ', x: 35.06, y: 49.61, zoneW: 9.92, zoneH: 5.41, audio: audioLectureUmmatin },
+    { text: 'اَلْأُمِّيّنَ', x: 20.86, y: 49.27, zoneW: 10.82, zoneH: 5.47, audio: audioLectureAlUmmiyyina },
+    { text: 'مِمَّن', x: 76.66, y: 57.22, zoneW: 10.94, zoneH: 5.47, audio: audioLectureMimman },
+    { text: 'هَلُمَّ', x: 62.35, y: 57.27, zoneW: 9.81, zoneH: 5.69, audio: audioLectureHalumma },
+    { text: 'أَئِمَّةَ', x: 47.91, y: 57.10, zoneW: 9.47, zoneH: 5.30, audio: audioLectureAimmata },
+    { text: 'أُمَّ', x: 34.05, y: 57.10, zoneW: 9.02, zoneH: 5.30, audio: audioLectureUmma },
+    { text: 'نَعَمَّرَهُ', x: 22.10, y: 57.10, zoneW: 11.84, zoneH: 5.24, audio: audioLectureNaammarahu },
   ],
 };
 
