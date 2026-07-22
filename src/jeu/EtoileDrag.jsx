@@ -11,7 +11,7 @@ const RAYON_INT = RAYON_EXT * 0.38;
 // Calcule directement les coordonnées absolues d'une étoile à 5 branches
 // centrée sur (cx, cy), sans passer par `transform` (translate/scale) —
 // un seul calcul simple, pas de composition de transformations.
-function etoileD(cx, cy, rExt = RAYON_EXT, rInt = RAYON_INT) {
+export function etoileD(cx, cy, rExt = RAYON_EXT, rInt = RAYON_INT) {
   const points = [];
   for (let i = 0; i < 10; i++) {
     const r = i % 2 === 0 ? rExt : rInt;

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MAISON_TAARIF } from './jeuData';
 import DragSort from './DragSort';
-import EtoileDrag from './EtoileDrag';
+import EtoileDrag, { etoileD } from './EtoileDrag';
 import kidsTaarif from './assets/kids-taarif.png';
 import carteVideoMp4 from './assets/carte-video.mp4';
 import carteVideoWebm from './assets/carte-video.webm';
@@ -93,6 +93,23 @@ import audioDeAlKhunnasi from './assets/de-al-khunnasi.wav';
 import audioDeAlKunnasi from './assets/de-al-kunnasi.wav';
 import audioDeAlJinna from './assets/de-al-jinna.wav';
 import audioDeTallaqakunna from './assets/de-tallaqakunna.wav';
+import jeuLectureCrayons from './assets/jeu-lecture-crayons.jpg';
+import audioLecture2AnBadin from './assets/lecture2-an-badin.wav';
+import audioLecture2YadhanuBihi from './assets/lecture2-yadhanu-bihi.wav';
+import audioLecture2MashshainBinamimin from './assets/lecture2-mashshain-binamimin.wav';
+import audioLecture2MakaninBaidin from './assets/lecture2-makanin-baidin.wav';
+import audioLecture2ShadidunBima from './assets/lecture2-shadidun-bima.wav';
+import audioLecture2Dhanbin from './assets/lecture2-dhanbin.wav';
+import audioLecture2Layunbadhanna from './assets/lecture2-layunbadhanna.wav';
+import audioLecture2NafsinBima from './assets/lecture2-nafsin-bima.wav';
+import audioLecture2YuminuBirabbihi from './assets/lecture2-yuminu-birabbihi.wav';
+import audioLecture2KiraminBararatin from './assets/lecture2-kiramin-bararatin.wav';
+import audioLecture2YawmaidhinBibanihi from './assets/lecture2-yawmaidhin-bibanihi.wav';
+import audioLecture2YawmaidhinBijahannama from './assets/lecture2-yawmaidhin-bijahannama.wav';
+import audioLecture2ShayinBiamri from './assets/lecture2-shayin-biamri.wav';
+import audioLecture2Yanbaghi from './assets/lecture2-yanbaghi.wav';
+import audioLecture2Anbatna from './assets/lecture2-anbatna.wav';
+import audioLecture2UtullinBaada from './assets/lecture2-utullin-baada.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -276,6 +293,50 @@ const JEU_DE_LECTURE = {
     { text: 'طَلَّقَكُنَّ', x: 46.11, y: 73.06, zoneW: 24.69, zoneH: 5.64, audio: audioDeTallaqakunna },
   ],
 };
+
+// Jeu de lecture à colorier (3e écran de la salle de jeux) — 16 mots en
+// grille 4×4, un crayon virtuel permet de colorier l'étoile de chaque carte
+// après lecture (clic = colorie, définitif). Coordonnées mesurées au pixel
+// sur l'image 887×1774 (mêmes conventions que EtoileDrag : cercles centrés
+// cx,cy ; zones audio x,y = coin bas-droit).
+const LECTURE_MOTS_CRAYON = {
+  img: jeuLectureCrayons,
+  hotspots: [
+    { text: 'عَنْ بَعْضٍ', x: 95.83, y: 36.36, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2AnBadin },
+    { text: 'يَأْذَن بِهِ', x: 69.90, y: 36.36, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2YadhanuBihi },
+    { text: 'مَشَّاءٍ بِنَمِيمٍ', x: 46.22, y: 36.36, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2MashshainBinamimin },
+    { text: 'مَكَانٍ بَعِيدٍ', x: 22.55, y: 36.36, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2MakaninBaidin },
+    { text: 'شَدِيدٌ بِمَا', x: 95.83, y: 54.23, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2ShadidunBima },
+    { text: 'ذَنبٍ', x: 69.90, y: 54.23, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2Dhanbin },
+    { text: 'لَيُنْبَذَنَّ', x: 46.22, y: 54.23, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2Layunbadhanna },
+    { text: 'نَفْسٍ بِمَا', x: 22.55, y: 54.23, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2NafsinBima },
+    { text: 'يُؤْمِنْ بِرَبِّهِ', x: 95.83, y: 71.82, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2YuminuBirabbihi },
+    { text: 'كِرَامٍ بَرَرَةٍ', x: 69.90, y: 71.82, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2KiraminBararatin },
+    { text: 'يَوْمَئِذٍ بِبَنِيهِ', x: 46.22, y: 71.82, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2YawmaidhinBibanihi },
+    { text: 'يَوْمَئِذٍ بِجَهَنَّمَ', x: 22.55, y: 71.82, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2YawmaidhinBijahannama },
+    { text: 'شَىْءٍ بِأَمْرِ', x: 95.83, y: 85.01, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2ShayinBiamri },
+    { text: 'يَنْبَغِي', x: 69.90, y: 85.01, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2Yanbaghi },
+    { text: 'أَنبَتْنَا', x: 46.22, y: 85.01, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2Anbatna },
+    { text: 'عُتُلٍّ بَعْدَ', x: 22.55, y: 85.01, zoneW: 21.99, zoneH: 8.46, audio: audioLecture2UtullinBaada },
+  ],
+  // Centres des étoiles à colorier (une par carte), mêmes positions que les
+  // mots ci-dessus (rangée/colonne), en % du centre cette fois (pas coin).
+  etoiles: [
+    { cx: 92.90, cy: 39.46 }, { cx: 69.56, cy: 39.46 }, { cx: 45.32, cy: 39.46 }, { cx: 21.42, cy: 39.46 },
+    { cx: 92.90, cy: 57.33 }, { cx: 69.56, cy: 57.33 }, { cx: 45.32, cy: 57.33 }, { cx: 21.42, cy: 57.33 },
+    { cx: 92.90, cy: 74.92 }, { cx: 69.56, cy: 74.92 }, { cx: 45.32, cy: 74.92 }, { cx: 21.42, cy: 74.92 },
+    { cx: 92.90, cy: 88.11 }, { cx: 69.56, cy: 88.11 }, { cx: 45.32, cy: 88.11 }, { cx: 21.42, cy: 88.11 },
+  ],
+};
+// Centres des 16 petites étoiles de la rangée « Ma récompense » (remplies
+// une par une, dans l'ordre où l'élève colorie les cartes — même logique que
+// ETOILE_SLOTS/EtoileDrag).
+const LECTURE_RECOMPENSE_ETOILES = [
+  { cx: 23.51, cy: 96.45 }, { cx: 28.19, cy: 96.45 }, { cx: 32.25, cy: 96.45 }, { cx: 36.30, cy: 96.45 },
+  { cx: 40.42, cy: 96.45 }, { cx: 44.42, cy: 96.45 }, { cx: 48.48, cy: 96.45 }, { cx: 52.60, cy: 96.45 },
+  { cx: 56.71, cy: 96.45 }, { cx: 60.82, cy: 96.45 }, { cx: 65.00, cy: 96.45 }, { cx: 69.05, cy: 96.45 },
+  { cx: 73.11, cy: 96.45 }, { cx: 77.23, cy: 96.45 }, { cx: 81.40, cy: 96.45 }, { cx: 85.52, cy: 96.45 },
+];
 
 // Cases du tableau « Mes bonnes lectures » (3 colonnes, remplies dans
 // l'ordre de lecture) — mesurées au pixel sur l'image 887×1774.
@@ -511,6 +572,7 @@ export default function JeuApp() {
   const [porteNounMimVerrouillee, setPorteNounMimVerrouillee] = useState(null);
   const [deResultat, setDeResultat] = useState(null);
   const [deLance, setDeLance] = useState(false);
+  const [motsColories, setMotsColories] = useState(() => Array(LECTURE_MOTS_CRAYON.etoiles.length).fill(false));
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -563,6 +625,9 @@ export default function JeuApp() {
       setDeLance(false);
     }, 600);
   };
+  const colorierMot = (i) => {
+    setMotsColories((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
+  };
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
       setJeuxVerrouille(true);
@@ -591,7 +656,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -837,6 +902,64 @@ export default function JeuApp() {
                 🎲 {deResultat === 'rose' ? 'Rose !' : 'Bleu !'}
               </span>
             )}
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('lecture-mots-crayon')}>
+            Suite →
+          </button>
+        </div>
+      )}
+
+      {ecran === 'lecture-mots-crayon' && (
+        <div className="jeu-carte jeu-lecon-scene">
+          <div className="jeu-carte-inner">
+            <img src={LECTURE_MOTS_CRAYON.img} alt="Jeu de lecture à colorier" className="jeu-carte-img" />
+            {LECTURE_MOTS_CRAYON.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+            {LECTURE_MOTS_CRAYON.etoiles.map((e, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-crayon-etoile"
+                style={{ left: `${e.cx}%`, top: `${e.cy}%` }}
+                onClick={() => colorierMot(i)}
+                aria-label={`Colorier l'étoile du mot ${i + 1}`}
+              />
+            ))}
+            <svg className="jeu-crayon-svg" viewBox="0 0 887 1774" preserveAspectRatio="none">
+              {motsColories.some(Boolean) && (
+                <path
+                  d={LECTURE_MOTS_CRAYON.etoiles
+                    .filter((_, i) => motsColories[i])
+                    .map((e) => etoileD((e.cx / 100) * 887, (e.cy / 100) * 1774))
+                    .join(' ')}
+                  fill="#ffc93c"
+                  stroke="#e08a1e"
+                  strokeWidth={1.5}
+                />
+              )}
+              {(() => {
+                const nb = motsColories.filter(Boolean).length;
+                return nb > 0 && (
+                  <path
+                    d={LECTURE_RECOMPENSE_ETOILES.slice(0, nb)
+                      .map((e) => etoileD((e.cx / 100) * 887, (e.cy / 100) * 1774, 13, 4.94))
+                      .join(' ')}
+                    fill="#ffc93c"
+                    stroke="#e08a1e"
+                    strokeWidth={1}
+                  />
+                );
+              })()}
+            </svg>
+            <span className="jeu-crayon-icone" aria-hidden="true">🖍️</span>
           </div>
           <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('portes-noun-mim')}>
             Retour au couloir →
