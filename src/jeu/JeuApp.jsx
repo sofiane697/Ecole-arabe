@@ -154,6 +154,24 @@ import audioLecture4LanYaqdira from './assets/lecture4-lan-yaqdira.wav';
 import audioLecture4AmilatunNasibatun from './assets/lecture4-amilatun-nasibatun.wav';
 import audioLecture4YawmaidhinNaimatun from './assets/lecture4-yawmaidhin-naimatun.wav';
 import audioLecture4FamanYamal from './assets/lecture4-faman-yamal.wav';
+import jeuDeLectureIkhfa from './assets/jeu-de-lecture-ikhfa.jpg';
+import audioJeuIkhfaTitre from './assets/jeuikhfa-titre.wav';
+import audioJeuIkhfaInda from './assets/jeuikhfa-inda.wav';
+import audioJeuIkhfaAnzalnahu from './assets/jeuikhfa-anzalnahu.wav';
+import audioJeuIkhfaAnka from './assets/jeuikhfa-anka.wav';
+import audioJeuIkhfaFaandhartukum from './assets/jeuikhfa-faandhartukum.wav';
+import audioJeuIkhfaYantahi from './assets/jeuikhfa-yantahi.wav';
+import audioJeuIkhfaMunfakkina from './assets/jeuikhfa-munfakkina.wav';
+import audioJeuIkhfaFaansab from './assets/jeuikhfa-faansab.wav';
+import audioJeuIkhfaAnqad from './assets/jeuikhfa-anqad.wav';
+import audioJeuIkhfaMinMain from './assets/jeuikhfa-min-main.wav';
+import audioJeuIkhfaDallanFahada from './assets/jeuikhfa-dallan-fahada.wav';
+import audioJeuIkhfaNasiyatinKadhibatin from './assets/jeuikhfa-nasiyatin-kadhibatin.wav';
+import audioJeuIkhfaNaranTalazza from './assets/jeuikhfa-naran-talazza.wav';
+import audioJeuIkhfaAnTabaqin from './assets/jeuikhfa-an-tabaqin.wav';
+import audioJeuIkhfaDakkanDakkan from './assets/jeuikhfa-dakkan-dakkan.wav';
+import audioJeuIkhfaAilanFaaghna from './assets/jeuikhfa-ailan-faaghna.wav';
+import audioJeuIkhfaMinDariin from './assets/jeuikhfa-min-dariin.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -439,6 +457,32 @@ const LECTURE_IDGHAM_BI_GHUNNA = {
     { text: 'عَامِلَةٌ نَّاصِبَةٌ', x: 72.49, y: 91.77, zoneW: 20.63, zoneH: 6.09, audio: audioLecture4AmilatunNasibatun },
     { text: 'يَوْمَئِذٍ نَّاعِمَةٌ', x: 48.82, y: 91.83, zoneW: 21.20, zoneH: 6.82, audio: audioLecture4YawmaidhinNaimatun },
     { text: 'فَمَن يَعْمَلْ', x: 24.13, y: 91.88, zoneW: 19.28, zoneH: 6.76, audio: audioLecture4FamanYamal },
+  ],
+};
+
+// Jeu de lecture de l'ikhfa (6e écran de la salle de jeux) — titre + 16 mots
+// en grille 4×4, zones audio image-map.net fournies par Sofiane, converties
+// en % (x,y = coin bas-droit).
+const JEU_DE_LECTURE_IKHFA = {
+  img: jeuDeLectureIkhfa,
+  hotspots: [
+    { text: 'إِخْفَاءِ', x: 68.32, y: 15.16, zoneW: 18.60, zoneH: 4.45, audio: audioJeuIkhfaTitre },
+    { text: 'عِندَ', x: 93.46, y: 56.31, zoneW: 14.32, zoneH: 6.65, audio: audioJeuIkhfaInda },
+    { text: 'أَنزَلْنَهُ', x: 71.36, y: 56.42, zoneW: 18.04, zoneH: 7.27, audio: audioJeuIkhfaAnzalnahu },
+    { text: 'عَنكَ', x: 46.22, y: 57.05, zoneW: 17.25, zoneH: 8.00, audio: audioJeuIkhfaAnka },
+    { text: 'فَأَنذَرْتُكُم', x: 23.45, y: 57.10, zoneW: 18.72, zoneH: 7.55, audio: audioJeuIkhfaFaandhartukum },
+    { text: 'يَنتَهِ', x: 93.80, y: 68.32, zoneW: 14.32, zoneH: 5.52, audio: audioJeuIkhfaYantahi },
+    { text: 'مُنفَكِّينَ', x: 70.58, y: 68.77, zoneW: 17.14, zoneH: 7.95, audio: audioJeuIkhfaMunfakkina },
+    { text: 'فَأَنصَبْ', x: 45.89, y: 68.94, zoneW: 17.36, zoneH: 6.88, audio: audioJeuIkhfaFaansab },
+    { text: 'أَنقَضَ', x: 22.10, y: 68.77, zoneW: 16.46, zoneH: 7.05, audio: audioJeuIkhfaAnqad },
+    { text: 'مِن مَّآءٍ', x: 94.70, y: 80.50, zoneW: 17.70, zoneH: 7.16, audio: audioJeuIkhfaMinMain },
+    { text: 'ضَآلًّا فَهَدَىٰ', x: 72.72, y: 81.51, zoneW: 20.86, zoneH: 8.06, audio: audioJeuIkhfaDallanFahada },
+    { text: 'نَاصِيَةٍ كَٰذِبَةٍ', x: 48.71, y: 81.06, zoneW: 21.42, zoneH: 8.23, audio: audioJeuIkhfaNasiyatinKadhibatin },
+    { text: 'نَارًا تَلَظَّىٰ', x: 23.11, y: 81.17, zoneW: 18.38, zoneH: 7.84, audio: audioJeuIkhfaNaranTalazza },
+    { text: 'عَن طَبَقٍ', x: 94.93, y: 92.78, zoneW: 18.38, zoneH: 7.38, audio: audioJeuIkhfaAnTabaqin },
+    { text: 'دَكًّا دَكًّا', x: 70.58, y: 92.78, zoneW: 17.70, zoneH: 7.16, audio: audioJeuIkhfaDakkanDakkan },
+    { text: 'عَآئِلًا فَأَغْنَىٰ', x: 48.14, y: 93.63, zoneW: 19.50, zoneH: 8.29, audio: audioJeuIkhfaAilanFaaghna },
+    { text: 'مِن ضَرِيعٍ', x: 23.23, y: 93.12, zoneW: 18.49, zoneH: 8.06, audio: audioJeuIkhfaMinDariin },
   ],
 };
 
@@ -780,7 +824,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna', 'jeu-de-lecture-ikhfa'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -1128,6 +1172,27 @@ export default function JeuApp() {
           <div className="jeu-carte-inner">
             <img src={LECTURE_IDGHAM_BI_GHUNNA.img} alt="Lecture idgham bi ghunna" className="jeu-carte-img" />
             {LECTURE_IDGHAM_BI_GHUNNA.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('jeu-de-lecture-ikhfa')}>
+            Suite →
+          </button>
+        </div>
+      )}
+
+      {ecran === 'jeu-de-lecture-ikhfa' && (
+        <div className="jeu-carte jeu-lecon-scene">
+          <div className="jeu-carte-inner">
+            <img src={JEU_DE_LECTURE_IKHFA.img} alt="Jeu de lecture de l'ikhfa" className="jeu-carte-img" />
+            {JEU_DE_LECTURE_IKHFA.hotspots.map((h, i) => (
               <button
                 key={i}
                 type="button"
