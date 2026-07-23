@@ -625,6 +625,7 @@ export default function JeuApp() {
   const [deResultat, setDeResultat] = useState(null);
   const [deLance, setDeLance] = useState(false);
   const [motsColories, setMotsColories] = useState(() => Array(LECTURE_MOTS_CRAYON.etoiles.length).fill(false));
+  const [crayonDrag, setCrayonDrag] = useState(null);
 
   const maison = MAISON_TAARIF;
   const toutesPortesVues = maison.portes.every((p) => portesVues.includes(p.id));
@@ -680,6 +681,25 @@ export default function JeuApp() {
   const colorierMot = (i) => {
     setMotsColories((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
   };
+  const demarrerDragCrayon = (e) => {
+    e.preventDefault();
+    setCrayonDrag({ x: e.clientX, y: e.clientY });
+  };
+  useEffect(() => {
+    if (!crayonDrag) return;
+    const onMove = (e) => setCrayonDrag((d) => d && { ...d, x: e.clientX, y: e.clientY });
+    const onUp = (e) => {
+      const cible = document.elementFromPoint(e.clientX, e.clientY)?.closest('.jeu-crayon-etoile');
+      if (cible) colorierMot(Number(cible.dataset.index));
+      setCrayonDrag(null);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [crayonDrag]);
   const cliquerSalleJeux = () => {
     if (!toutesPortesVues) {
       setJeuxVerrouille(true);
@@ -980,6 +1000,7 @@ export default function JeuApp() {
                 key={i}
                 type="button"
                 className="jeu-crayon-etoile"
+                data-index={i}
                 style={{ left: `${e.cx}%`, top: `${e.cy}%` }}
                 onClick={() => colorierMot(i)}
                 aria-label={`Colorier l'étoile du mot ${i + 1}`}
@@ -1011,11 +1032,21 @@ export default function JeuApp() {
                 );
               })()}
             </svg>
-            <span className="jeu-crayon-icone" aria-hidden="true">🖍️</span>
+            <button
+              type="button"
+              className={`jeu-crayon-icone${crayonDrag ? ' is-en-cours' : ''}`}
+              onPointerDown={demarrerDragCrayon}
+              aria-label="Crayon à glisser sur une étoile pour la colorier"
+            >
+              🖍️
+            </button>
           </div>
           <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('lecture-idgham-bila-ghunna')}>
             Suite →
           </button>
+          {crayonDrag && (
+            <div className="jeu-crayon-ghost" style={{ left: crayonDrag.x, top: crayonDrag.y }} aria-hidden="true">🖍️</div>
+          )}
         </div>
       )}
 
