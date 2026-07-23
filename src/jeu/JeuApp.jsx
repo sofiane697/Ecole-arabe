@@ -110,6 +110,28 @@ import audioLecture2ShayinBiamri from './assets/lecture2-shayin-biamri.wav';
 import audioLecture2Yanbaghi from './assets/lecture2-yanbaghi.wav';
 import audioLecture2Anbatna from './assets/lecture2-anbatna.wav';
 import audioLecture2UtullinBaada from './assets/lecture2-utullin-baada.wav';
+import lectureIdghamBilaGhunna from './assets/lecture-idgham-bila-ghunna.jpg';
+import audioLecture3Titre from './assets/lecture3-titre.wav';
+import audioLecture3HumazatiLumazatin from './assets/lecture3-humazati-lumazatin.wav';
+import audioLecture3NuhunRabbi from './assets/lecture3-nuhun-rabbi.wav';
+import audioLecture3MalaLubadan from './assets/lecture3-mala-lubadan.wav';
+import audioLecture3WaylulLikulli from './assets/lecture3-waylul-likulli.wav';
+import audioLecture3KhayrulLaka from './assets/lecture3-khayrul-laka.wav';
+import audioLecture3FayawmaidhilLa from './assets/lecture3-fayawmaidhil-la.wav';
+import audioLecture3FaaalulLima from './assets/lecture3-faaalul-lima.wav';
+import audioLecture3NafsulLamma from './assets/lecture3-nafsul-lamma.wav';
+import audioLecture3LaibratalLiman from './assets/lecture3-laibratal-liman.wav';
+import audioLecture3MataaanLakum from './assets/lecture3-mataaan-lakum.wav';
+import audioLecture3MannaaulLilkhayri from './assets/lecture3-mannaaul-lilkhayri.wav';
+import audioLecture3AnRabbihim from './assets/lecture3-an-rabbihim.wav';
+import audioLecture3MinRabbika from './assets/lecture3-min-rabbika.wav';
+import audioLecture3AnLan from './assets/lecture3-an-lan.wav';
+import audioLecture3ShihabanRasadan from './assets/lecture3-shihaban-rasadan.wav';
+import audioLecture3AnLam from './assets/lecture3-an-lam.wav';
+import audioLecture3YakunLahu from './assets/lecture3-yakun-lahu.wav';
+import audioLecture3MinRahiqin from './assets/lecture3-min-rahiqin.wav';
+import audioLecture3QasamulLidhi from './assets/lecture3-qasamul-lidhi.wav';
+import audioLecture3AkhadhatanRabiyatan from './assets/lecture3-akhadhatan-rabiyatan.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -337,6 +359,36 @@ const LECTURE_RECOMPENSE_ETOILES = [
   { cx: 56.71, cy: 96.45 }, { cx: 60.82, cy: 96.45 }, { cx: 65.00, cy: 96.45 }, { cx: 69.05, cy: 96.45 },
   { cx: 73.11, cy: 96.45 }, { cx: 77.23, cy: 96.45 }, { cx: 81.40, cy: 96.45 }, { cx: 85.52, cy: 96.45 },
 ];
+
+// Lecture pratique de l'idgham bila ghunna (4e écran de la salle de jeux) —
+// 20 mots en grille 4×5 + le titre de la règle, zones audio image-map.net
+// fournies par Sofiane, converties en % (x,y = coin bas-droit).
+const LECTURE_IDGHAM_BILA_GHUNNA = {
+  img: lectureIdghamBilaGhunna,
+  hotspots: [
+    { text: 'إِدْغَامُ بِلَا غُنَّةٍ', x: 71.36, y: 18.20, zoneW: 38.22, zoneH: 5.02, audio: audioLecture3Titre },
+    { text: 'هُمَزَةِ لُمَزَةٍ', x: 96.51, y: 38.95, zoneW: 19.28, zoneH: 7.16, audio: audioLecture3HumazatiLumazatin },
+    { text: 'نُوحٌ رَبِّ', x: 72.38, y: 38.78, zoneW: 17.36, zoneH: 6.76, audio: audioLecture3NuhunRabbi },
+    { text: 'مَالَا لُبَدًا', x: 48.93, y: 38.61, zoneW: 18.72, zoneH: 6.42, audio: audioLecture3MalaLubadan },
+    { text: 'وَيْلٌ لِّكُلِ', x: 24.92, y: 38.50, zoneW: 17.59, zoneH: 6.82, audio: audioLecture3WaylulLikulli },
+    { text: 'خَيْرٌ لَّكَ', x: 96.28, y: 49.89, zoneW: 19.62, zoneH: 6.65, audio: audioLecture3KhayrulLaka },
+    { text: 'فَيَوْمَئِذٍ لَّا', x: 73.39, y: 49.94, zoneW: 20.29, zoneH: 7.05, audio: audioLecture3FayawmaidhilLa },
+    { text: 'فَعَّالٌ لِّمَا', x: 48.03, y: 50.62, zoneW: 16.46, zoneH: 7.27, audio: audioLecture3FaaalulLima },
+    { text: 'نَفْسٌ لَّمَّا', x: 24.69, y: 50.00, zoneW: 17.02, zoneH: 7.10, audio: audioLecture3NafsulLamma },
+    { text: 'لَعِبْرَةً لِّمَنْ', x: 97.18, y: 61.72, zoneW: 21.31, zoneH: 7.55, audio: audioLecture3LaibratalLiman },
+    { text: 'مَتَاعًا لَّكُمْ', x: 72.94, y: 61.22, zoneW: 20.07, zoneH: 6.60, audio: audioLecture3MataaanLakum },
+    { text: 'مَنَّاعٌ لِّلْخَيْرِ', x: 49.94, y: 61.50, zoneW: 20.97, zoneH: 6.76, audio: audioLecture3MannaaulLilkhayri },
+    { text: 'عَنْ رَّبِّهِمْ', x: 25.03, y: 60.88, zoneW: 18.38, zoneH: 6.31, audio: audioLecture3AnRabbihim },
+    { text: 'مِن رَّبِّكَ', x: 96.17, y: 72.83, zoneW: 19.05, zoneH: 7.05, audio: audioLecture3MinRabbika },
+    { text: 'أَن لَّنْ', x: 70.80, y: 73.11, zoneW: 16.69, zoneH: 7.38, audio: audioLecture3AnLan },
+    { text: 'شِهَابًا رَّصَدًا', x: 49.27, y: 72.10, zoneW: 21.20, zoneH: 6.31, audio: audioLecture3ShihabanRasadan },
+    { text: 'أَن لَّمْ', x: 24.35, y: 71.53, zoneW: 15.67, zoneH: 5.75, audio: audioLecture3AnLam },
+    { text: 'يَكُن لَّهُ', x: 95.60, y: 83.77, zoneW: 17.02, zoneH: 6.71, audio: audioLecture3YakunLahu },
+    { text: 'مِن رَّحِيقٍ', x: 72.61, y: 84.44, zoneW: 19.50, zoneH: 7.72, audio: audioLecture3MinRahiqin },
+    { text: 'قَسَمٌ لِّذِي', x: 48.03, y: 83.88, zoneW: 18.27, zoneH: 7.16, audio: audioLecture3QasamulLidhi },
+    { text: 'أَخَذَةً رَّابِيَةً', x: 25.93, y: 84.05, zoneW: 21.76, zoneH: 7.44, audio: audioLecture3AkhadhatanRabiyatan },
+  ],
+};
 
 // Cases du tableau « Mes bonnes lectures » (3 colonnes, remplies dans
 // l'ordre de lecture) — mesurées au pixel sur l'image 887×1774.
@@ -656,7 +708,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -960,6 +1012,27 @@ export default function JeuApp() {
               })()}
             </svg>
             <span className="jeu-crayon-icone" aria-hidden="true">🖍️</span>
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('lecture-idgham-bila-ghunna')}>
+            Suite →
+          </button>
+        </div>
+      )}
+
+      {ecran === 'lecture-idgham-bila-ghunna' && (
+        <div className="jeu-carte jeu-lecon-scene">
+          <div className="jeu-carte-inner">
+            <img src={LECTURE_IDGHAM_BILA_GHUNNA.img} alt="Lecture idgham bila ghunna" className="jeu-carte-img" />
+            {LECTURE_IDGHAM_BILA_GHUNNA.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
           </div>
           <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('portes-noun-mim')}>
             Retour au couloir →
