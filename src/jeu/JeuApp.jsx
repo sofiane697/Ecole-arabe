@@ -182,6 +182,8 @@ import portesVideo2Mp4 from './assets/portes-video-2.mp4';
 import portesVideo2Webm from './assets/portes-video-2.webm';
 import villageVideoMp4 from './assets/village-video.mp4';
 import villageVideoWebm from './assets/village-video.webm';
+import villageWaqfVideoMp4 from './assets/village-waqf-video.mp4';
+import villageWaqfVideoWebm from './assets/village-waqf-video.webm';
 import audioQamariyaAlAqabatu from './assets/audio/qamariya-ma-al-aqabatu.mp3';
 import audioQamariyaWaAlFajri from './assets/audio/qamariya-wa-al-fajri.mp3';
 import audioQamariyaAlWatri from './assets/audio/qamariya-al-watri.mp3';
@@ -717,6 +719,8 @@ export default function JeuApp() {
   const [evaluationDebloquee, setEvaluationDebloquee] = useState(false);
   const [evaluationVerrouillee, setEvaluationVerrouillee] = useState(false);
   const [nounMimDebloque, setNounMimDebloque] = useState(false);
+  const [waqfDebloque, setWaqfDebloque] = useState(false);
+  const [maisonBientotLabel, setMaisonBientotLabel] = useState('');
   const [porteNounMimVerrouillee, setPorteNounMimVerrouillee] = useState(null);
   const [deResultat, setDeResultat] = useState(null);
   const [deLance, setDeLance] = useState(false);
@@ -755,7 +759,7 @@ export default function JeuApp() {
     }
     if (m.id === 'taarif') setEcran('intro');
     else if (m.id === 'noun-mim') setEcran('portes-noun-mim');
-    else setEcran('bientot');
+    else { setMaisonBientotLabel(m.label); setEcran('bientot'); }
   };
   const cliquerPorteNounMim = (d) => {
     if (!d.actif) {
@@ -813,7 +817,11 @@ export default function JeuApp() {
     setEcran('evaluation');
   };
 
-  const maisonsVillage = MAISONS_VILLAGE.map((m) => (m.id === 'noun-mim' ? { ...m, actif: nounMimDebloque } : m));
+  const maisonsVillage = MAISONS_VILLAGE.map((m) => {
+    if (m.id === 'noun-mim') return { ...m, actif: nounMimDebloque };
+    if (m.id === 'waqf') return { ...m, actif: waqfDebloque };
+    return m;
+  });
 
   const zones = maison.portes.map((p) => ({ id: p.id, label: p.sousTitre, emoji: p.mascotte, couleur: p.couleur }));
   const defiItems = maison.evaluation.map((m, i) => ({ id: `m${i}`, mot: m.mot, famille: m.famille }));
@@ -824,7 +832,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna', 'jeu-de-lecture-ikhfa'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna', 'jeu-de-lecture-ikhfa', 'village-video-waqf'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -999,7 +1007,22 @@ export default function JeuApp() {
               <span className="jeu-repere-point" />
             </button>
           </div>
+          <button
+            type="button"
+            className="jeu-btn jeu-lecon-scene-btn"
+            onClick={() => setEcran('village-video-waqf')}
+          >
+            Je quitte la maison →
+          </button>
         </div>
+      )}
+
+      {ecran === 'village-video-waqf' && (
+        <VideoIntro
+          mp4={villageWaqfVideoMp4}
+          webm={villageWaqfVideoWebm}
+          onEnded={() => { setWaqfDebloque(true); setEcran('village'); }}
+        />
       )}
 
       {ecran === 'noun-mim-lecon' && (
@@ -1212,7 +1235,7 @@ export default function JeuApp() {
       {ecran === 'bientot' && (
         <div className="jeu-screen jeu-intro">
           <img src={nounMimKids} alt="" className="jeu-intro-kids" />
-          <h1 className="jeu-title">Les secrets du Noun et du Mim</h1>
+          <h1 className="jeu-title">{maisonBientotLabel}</h1>
           <p className="jeu-desc">
             Cette maison arrive bientôt. Reviens vite pour découvrir ses secrets !
           </p>
