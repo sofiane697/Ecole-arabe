@@ -132,6 +132,28 @@ import audioLecture3YakunLahu from './assets/lecture3-yakun-lahu.wav';
 import audioLecture3MinRahiqin from './assets/lecture3-min-rahiqin.wav';
 import audioLecture3QasamulLidhi from './assets/lecture3-qasamul-lidhi.wav';
 import audioLecture3AkhadhatanRabiyatan from './assets/lecture3-akhadhatan-rabiyatan.wav';
+import lectureIdghamBiGhunna from './assets/lecture-idgham-bi-ghunna.jpg';
+import audioLecture4Titre from './assets/lecture4-titre.wav';
+import audioLecture4BihijaratinMin from './assets/lecture4-bihijaratin-min.wav';
+import audioLecture4HablunMin from './assets/lecture4-hablun-min.wav';
+import audioLecture4MinMasadin from './assets/lecture4-min-masadin.wav';
+import audioLecture4AbidunMa from './assets/lecture4-abidun-ma.wav';
+import audioLecture4SuhufanMutahharatan from './assets/lecture4-suhufan-mutahharatan.wav';
+import audioLecture4AmadinMumaddadatin from './assets/lecture4-amadin-mumaddadatin.wav';
+import audioLecture4KhayrunMin from './assets/lecture4-khayrun-min.wav';
+import audioLecture4RasulunMin from './assets/lecture4-rasulun-min.wav';
+import audioLecture4RabbihimMin from './assets/lecture4-rabbihim-min.wav';
+import audioLecture4LahabinWa from './assets/lecture4-lahabin-wa.wav';
+import audioLecture4MalanWa from './assets/lecture4-malan-wa.wav';
+import audioLecture4QuwwatinWala from './assets/lecture4-quwwatin-wala.wav';
+import audioLecture4MinWaraihim from './assets/lecture4-min-waraihim.wav';
+import audioLecture4YawmaidhinYasduru from './assets/lecture4-yawmaidhin-yasduru.wav';
+import audioLecture4HisabanYasiran from './assets/lecture4-hisaban-yasiran.wav';
+import audioLecture4LanYahura from './assets/lecture4-lan-yahura.wav';
+import audioLecture4LanYaqdira from './assets/lecture4-lan-yaqdira.wav';
+import audioLecture4AmilatunNasibatun from './assets/lecture4-amilatun-nasibatun.wav';
+import audioLecture4YawmaidhinNaimatun from './assets/lecture4-yawmaidhin-naimatun.wav';
+import audioLecture4FamanYamal from './assets/lecture4-faman-yamal.wav';
 import leconShamsiyaVideoMp4 from './assets/lecon-shamsiya-video.mp4';
 import leconShamsiyaVideoWebm from './assets/lecon-shamsiya-video.webm';
 import leconQamariyaVideoMp4 from './assets/lecon-qamariya-video.mp4';
@@ -387,6 +409,36 @@ const LECTURE_IDGHAM_BILA_GHUNNA = {
     { text: 'مِن رَّحِيقٍ', x: 72.61, y: 84.44, zoneW: 19.50, zoneH: 7.72, audio: audioLecture3MinRahiqin },
     { text: 'قَسَمٌ لِّذِي', x: 48.03, y: 83.88, zoneW: 18.27, zoneH: 7.16, audio: audioLecture3QasamulLidhi },
     { text: 'أَخَذَةً رَّابِيَةً', x: 25.93, y: 84.05, zoneW: 21.76, zoneH: 7.44, audio: audioLecture3AkhadhatanRabiyatan },
+  ],
+};
+
+// Lecture pratique de l'idgham bi ghunna (5e écran de la salle de jeux) —
+// 20 mots en grille 4×5 + le titre de la règle, zones audio image-map.net
+// fournies par Sofiane, converties en % (x,y = coin bas-droit).
+const LECTURE_IDGHAM_BI_GHUNNA = {
+  img: lectureIdghamBiGhunna,
+  hotspots: [
+    { text: 'إِدْغَامُ بِغُنَّةٍ', x: 67.19, y: 15.95, zoneW: 31.91, zoneH: 5.07, audio: audioLecture4Titre },
+    { text: 'بِحِجَارَةٍ مِّن', x: 95.38, y: 52.98, zoneW: 19.73, zoneH: 5.92, audio: audioLecture4BihijaratinMin },
+    { text: 'حَبْلٌ مِّن', x: 71.02, y: 53.78, zoneW: 18.38, zoneH: 6.93, audio: audioLecture4HablunMin },
+    { text: 'مِن مَّسَدٍ', x: 47.13, y: 53.72, zoneW: 17.02, zoneH: 5.64, audio: audioLecture4MinMasadin },
+    { text: 'عَابِدُ مَا', x: 23.34, y: 53.33, zoneW: 16.35, zoneH: 5.30, audio: audioLecture4AbidunMa },
+    { text: 'صُحُفًا مُّطَهَّرَةً', x: 94.48, y: 63.19, zoneW: 19.17, zoneH: 6.71, audio: audioLecture4SuhufanMutahharatan },
+    { text: 'عَمَدٍ مُّمَدَّدَةٍ', x: 71.93, y: 63.59, zoneW: 20.29, zoneH: 7.27, audio: audioLecture4AmadinMumaddadatin },
+    { text: 'خَيْرٌ مِّن', x: 48.25, y: 63.02, zoneW: 19.50, zoneH: 6.48, audio: audioLecture4KhayrunMin },
+    { text: 'رَسُولٌ مِّن', x: 23.90, y: 63.30, zoneW: 18.38, zoneH: 6.71, audio: audioLecture4RasulunMin },
+    { text: 'رَبِّهِم مِّن', x: 95.04, y: 72.77, zoneW: 19.73, zoneH: 6.54, audio: audioLecture4RabbihimMin },
+    { text: 'لَهَبٍ وَ', x: 71.14, y: 72.83, zoneW: 18.60, zoneH: 6.88, audio: audioLecture4LahabinWa },
+    { text: 'مَالًا وَ', x: 47.13, y: 72.83, zoneW: 17.25, zoneH: 6.48, audio: audioLecture4MalanWa },
+    { text: 'قُوَّةٍ وَلَا', x: 24.24, y: 72.72, zoneW: 16.91, zoneH: 5.86, audio: audioLecture4QuwwatinWala },
+    { text: 'مِن وَرَآئِهِم', x: 94.48, y: 82.19, zoneW: 18.60, zoneH: 6.03, audio: audioLecture4MinWaraihim },
+    { text: 'يَوْمَئِذٍ يَصْدُرُ', x: 72.15, y: 82.41, zoneW: 20.29, zoneH: 6.42, audio: audioLecture4YawmaidhinYasduru },
+    { text: 'حِسَابًا يَسِيرًا', x: 48.82, y: 82.13, zoneW: 21.08, zoneH: 6.31, audio: audioLecture4HisabanYasiran },
+    { text: 'لَن يَحُورَ', x: 24.35, y: 82.30, zoneW: 19.17, zoneH: 6.71, audio: audioLecture4LanYahura },
+    { text: 'لَن يَقْدِرَ', x: 93.80, y: 91.71, zoneW: 18.15, zoneH: 6.48, audio: audioLecture4LanYaqdira },
+    { text: 'عَامِلَةٌ نَّاصِبَةٌ', x: 72.49, y: 91.77, zoneW: 20.63, zoneH: 6.09, audio: audioLecture4AmilatunNasibatun },
+    { text: 'يَوْمَئِذٍ نَّاعِمَةٌ', x: 48.82, y: 91.83, zoneW: 21.20, zoneH: 6.82, audio: audioLecture4YawmaidhinNaimatun },
+    { text: 'فَمَن يَعْمَلْ', x: 24.13, y: 91.88, zoneW: 19.28, zoneH: 6.76, audio: audioLecture4FamanYamal },
   ],
 };
 
@@ -728,7 +780,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -1055,6 +1107,27 @@ export default function JeuApp() {
           <div className="jeu-carte-inner">
             <img src={LECTURE_IDGHAM_BILA_GHUNNA.img} alt="Lecture idgham bila ghunna" className="jeu-carte-img" />
             {LECTURE_IDGHAM_BILA_GHUNNA.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+          </div>
+          <button type="button" className="jeu-btn jeu-lecon-scene-btn" onClick={() => setEcran('lecture-idgham-bi-ghunna')}>
+            Suite →
+          </button>
+        </div>
+      )}
+
+      {ecran === 'lecture-idgham-bi-ghunna' && (
+        <div className="jeu-carte jeu-lecon-scene">
+          <div className="jeu-carte-inner">
+            <img src={LECTURE_IDGHAM_BI_GHUNNA.img} alt="Lecture idgham bi ghunna" className="jeu-carte-img" />
+            {LECTURE_IDGHAM_BI_GHUNNA.hotspots.map((h, i) => (
               <button
                 key={i}
                 type="button"
