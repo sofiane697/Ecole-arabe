@@ -184,6 +184,12 @@ import villageVideoMp4 from './assets/village-video.mp4';
 import villageVideoWebm from './assets/village-video.webm';
 import villageWaqfVideoMp4 from './assets/village-waqf-video.mp4';
 import villageWaqfVideoWebm from './assets/village-waqf-video.webm';
+import maisonWaqfPortes from './assets/maison-waqf-portes.jpg';
+import audioWaqfTitre from './assets/waqf-titre.wav';
+import audioWaqfHurufulMaddi from './assets/waqf-huruful-maddi.wav';
+import audioWaqfAttauMarbutatu from './assets/waqf-attau-marbutatu.wav';
+import audioWaqfAlfathatani from './assets/waqf-alfathatani.wav';
+import audioWaqfSukunulWaqfi from './assets/waqf-sukunul-waqfi.wav';
 import audioQamariyaAlAqabatu from './assets/audio/qamariya-ma-al-aqabatu.mp3';
 import audioQamariyaWaAlFajri from './assets/audio/qamariya-wa-al-fajri.mp3';
 import audioQamariyaAlWatri from './assets/audio/qamariya-al-watri.mp3';
@@ -662,6 +668,36 @@ const PORTES_NOUN_MIM_DOORS = [
   { id: 'idgham-bi-ghunna', label: 'إِدْغَامٌ بِغُنَّةٍ', x: 66.85, y: 45.38, actif: true, ecran: 'idgham-bi-ghunna-lecon' },
   { id: 'ikhfa', label: 'إِخْفَاءٌ', x: 80.83, y: 45.38, actif: true, ecran: 'ikhfa-lecon' },
 ];
+
+// Couloir de la maison secrète du Waqf — pancartes des 4 règles + panneau du
+// titre, avec zones audio invisibles (mêmes conventions que
+// PORTES_NOUN_MIM_LECON : x,y = coin bas-droit de la zone, zoneW/zoneH =
+// taille, coordonnées fournies par Sofiane via image-map.net sur l'image
+// 887×1774, converties en %).
+const PORTES_WAQF_LECON = {
+  img: maisonWaqfPortes,
+  hotspots: [
+    { text: 'La Maison des Arrêts', x: 15.78, y: 25.37, zoneW: 13.53, zoneH: 3.10, audio: audioWaqfTitre },
+    { text: 'سُكُونُ الْوَقْفِ', x: 32.81, y: 32.53, zoneW: 10.26, zoneH: 6.71, audio: audioWaqfSukunulWaqfi },
+    { text: 'اَلْفَتْحَتَانِ', x: 50.17, y: 31.45, zoneW: 12.51, zoneH: 4.11, audio: audioWaqfAlfathatani },
+    { text: 'اَلتَّاءُ الْمَرْبُوطَةُ', x: 66.52, y: 32.02, zoneW: 13.19, zoneH: 6.20, audio: audioWaqfAttauMarbutatu },
+    { text: 'حُرُوفُ الْمَدِّ', x: 81.40, y: 32.47, zoneW: 11.27, zoneH: 6.71, audio: audioWaqfHurufulMaddi },
+  ],
+};
+
+// Les 4 portes du couloir du Waqf — aucune leçon développée pour l'instant,
+// toutes verrouillées (contenu à venir). x,y = centre de la poignée.
+const PORTES_WAQF_DOORS = [
+  { id: 'sukunul-waqfi', label: 'سُكُونُ الْوَقْفِ', x: 27.68, y: 45.38, actif: false },
+  { id: 'alfathatani', label: 'اَلْفَتْحَتَانِ', x: 43.92, y: 45.38, actif: false },
+  { id: 'attau-marbutatu', label: 'اَلتَّاءُ الْمَرْبُوطَةُ', x: 59.92, y: 45.38, actif: false },
+  { id: 'huruful-maddi', label: 'حُرُوفُ الْمَدِّ', x: 75.76, y: 45.38, actif: false },
+];
+
+// Point d'entrée « Salle de jeux » sur le couloir du Waqf, sur la pancarte
+// de la porte bleue (pas encore de contenu, verrouillée).
+const SALLE_JEUX_WAQF_HOTSPOT = { x: 91.32, y: 46.79 };
+
 // Voix des personnages : pitch relevé pour se rapprocher d'une voix
 // d'enfant (l'API Web Speech ne propose pas de voix « enfant » dédiée,
 // on approxime avec un pitch plus aigu + un débit un peu plus vif).
@@ -722,6 +758,8 @@ export default function JeuApp() {
   const [waqfDebloque, setWaqfDebloque] = useState(false);
   const [maisonBientotLabel, setMaisonBientotLabel] = useState('');
   const [porteNounMimVerrouillee, setPorteNounMimVerrouillee] = useState(null);
+  const [porteWaqfVerrouillee, setPorteWaqfVerrouillee] = useState(null);
+  const [jeuxWaqfVerrouille, setJeuxWaqfVerrouille] = useState(false);
   const [deResultat, setDeResultat] = useState(null);
   const [deLance, setDeLance] = useState(false);
   const [motsColories, setMotsColories] = useState(() => Array(LECTURE_MOTS_CRAYON.etoiles.length).fill(false));
@@ -759,6 +797,7 @@ export default function JeuApp() {
     }
     if (m.id === 'taarif') setEcran('intro');
     else if (m.id === 'noun-mim') setEcran('portes-noun-mim');
+    else if (m.id === 'waqf') setEcran('portes-waqf');
     else { setMaisonBientotLabel(m.label); setEcran('bientot'); }
   };
   const cliquerPorteNounMim = (d) => {
@@ -768,6 +807,18 @@ export default function JeuApp() {
       return;
     }
     setEcran(d.ecran);
+  };
+  const cliquerPorteWaqf = (d) => {
+    if (!d.actif) {
+      setPorteWaqfVerrouillee(d.id);
+      setTimeout(() => setPorteWaqfVerrouillee((v) => (v === d.id ? null : v)), 1600);
+      return;
+    }
+    setEcran(d.ecran);
+  };
+  const cliquerSalleJeuxWaqf = () => {
+    setJeuxWaqfVerrouille(true);
+    setTimeout(() => setJeuxWaqfVerrouille(false), 1600);
   };
   const lancerDe = () => {
     if (deLance) return;
@@ -832,7 +883,7 @@ export default function JeuApp() {
   const retourCible = estEcranVillage ? 'carte' : estEcranLecture ? 'portes' : 'village';
   const leconScene = porteActive ? LECON_SCENES[porteActive] : null;
   const leconVideo = porteActive ? LECON_VIDEOS[porteActive] : null;
-  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna', 'jeu-de-lecture-ikhfa', 'village-video-waqf'].includes(ecran) || (ecran === 'lecon' && leconScene);
+  const ecranPleinEcran = ['carte', 'carte-video', 'village', 'village-video', 'portes', 'portes-video-1', 'portes-video-2', 'portes-noun-mim', 'lecture', 'lecture2', 'lecon-video', 'evaluation', 'noun-mim-video', 'noun-mim-lecon', 'iqlab-lecon', 'idgham-bila-ghunna-lecon', 'idgham-bi-ghunna-lecon', 'ikhfa-lecon', 'lecture-defi', 'jeu-de-lecture', 'lecture-mots-crayon', 'lecture-idgham-bila-ghunna', 'lecture-idgham-bi-ghunna', 'jeu-de-lecture-ikhfa', 'village-video-waqf', 'portes-waqf'].includes(ecran) || (ecran === 'lecon' && leconScene);
 
   return (
     <div className={`jeu-app${ecranPleinEcran ? ' jeu-app--carte' : ''}`}>
@@ -1023,6 +1074,47 @@ export default function JeuApp() {
           webm={villageWaqfVideoWebm}
           onEnded={() => { setWaqfDebloque(true); setEcran('village'); }}
         />
+      )}
+
+      {ecran === 'portes-waqf' && (
+        <div className="jeu-carte">
+          <div className="jeu-carte-inner">
+            <img src={maisonWaqfPortes} alt="Le couloir de la maison secrète du Waqf" className="jeu-carte-img" />
+            {PORTES_WAQF_LECON.hotspots.map((h, i) => (
+              <button
+                key={i}
+                type="button"
+                className="jeu-repere-zone"
+                style={{ left: `${h.x}%`, top: `${h.y}%`, width: `${h.zoneW}%`, height: `${h.zoneH}%` }}
+                onClick={() => playHotspot(h)}
+                aria-label={`Écouter la prononciation de ${h.text}`}
+              />
+            ))}
+            {PORTES_WAQF_DOORS.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={`jeu-repere${d.actif ? ' is-actif' : ' is-verrouille'}`}
+                style={{ left: `${d.x}%`, top: `${d.y}%` }}
+                onClick={() => cliquerPorteWaqf(d)}
+                aria-label={d.label}
+              >
+                <span className="jeu-repere-point" />
+                {porteWaqfVerrouillee === d.id && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="jeu-repere is-verrouille"
+              style={{ left: `${SALLE_JEUX_WAQF_HOTSPOT.x}%`, top: `${SALLE_JEUX_WAQF_HOTSPOT.y}%` }}
+              onClick={cliquerSalleJeuxWaqf}
+              aria-label="Salle de jeux"
+            >
+              <span className="jeu-repere-point" />
+              {jeuxWaqfVerrouille && <span className="jeu-repere-toast">🔒 Bientôt disponible</span>}
+            </button>
+          </div>
+        </div>
       )}
 
       {ecran === 'noun-mim-lecon' && (
